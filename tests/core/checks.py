@@ -64,7 +64,7 @@ def verdict(before: Snapshot, after: Snapshot) -> list[tuple[int, str]]:
     return [(p.check, p.message) for p in check(before, after).problems]
 
 
-REMEDY_CHECK_5 = "; write a new decision that replaces or narrows it"
+REMEDY_CHECK_5 = "; a correction or a shorter reasoning is a new decision that replaces it"
 REMEDY_CHECK_4 = "; list it in the decision's changes"
 REMEDY_CHECK_3 = (
     "; add quote: {text, where, when} with the author's words, or record it under your own role"

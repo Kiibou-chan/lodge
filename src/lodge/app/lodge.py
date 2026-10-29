@@ -15,30 +15,30 @@ class Lodge:
         self._w = Wiring(store, clock, ids, settings)
 
     def search(self, query: str, filters: Filters, limit: int = 20) -> Listed:
-        return reads.search_records(self._w.store, query, filters, limit)
+        return reads.search_records(self._w, query, filters, limit)
 
     def show(self, ref: str, reasoning: bool = False, provenance: bool = False) -> Shown:
-        return reads.show(self._w.store, ref, reasoning, provenance)
+        return reads.show(self._w, ref, reasoning, provenance)
 
     def waiting(self) -> Listed:
-        return reads.waiting(self._w.store)
+        return reads.waiting(self._w)
 
     def timeline(self, limit: int = 50) -> Listed:
-        return reads.timeline(self._w.store, limit)
+        return reads.timeline(self._w, limit)
 
     def spec(self, area: str | None = None) -> tuple[str, Read, tuple[SpecArea, ...]]:
         """The Markdown, how fresh it is, and the same areas as structure."""
-        return reads.spec(self._w.store, area)
+        return reads.spec(self._w, area)
 
     def problems(self) -> tuple[CheckResult, Read]:
         return self.check(gate=False)
 
     def check(self, gate: bool) -> tuple[CheckResult, Read]:
-        return reads.check(self._w.store, self._w.clock, self._w.settings, gate)
+        return reads.check(self._w, gate)
 
     def draft(self, ref: str) -> str:
         """The file of `ref`, an ID, a code, or `area:<name>`, ready to edit and add."""
-        return reads.draft(self._w.store, ref)
+        return reads.draft(self._w, ref)
 
     def mint(self, prefix: Literal["d", "s"]) -> str:
         return writes.mint(self._w, prefix)

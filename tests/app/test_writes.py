@@ -102,7 +102,7 @@ def test_dry_run_reports_feedback_and_check() -> None:
     assert failing.outcome is AddOutcome.CHECK_FAILED
 
 
-def test_feedback_skips_edited_decisions() -> None:
+def test_feedback_skips_edited_decisions_which_the_check_refuses() -> None:
     wordy = decision(
         id="d-cccccc",
         title="Wordy",
@@ -117,7 +117,8 @@ def test_feedback_skips_edited_decisions() -> None:
     longer = lodge.draft("s-aaaaaa").replace("What holds now.", " ".join(["word"] * 160))
     edit = decision_text("changes:", "  - {entry: s-aaaaaa, action: edit}")
     added = lodge.add([("a.md", shorter), ("b.md", longer), ("c.md", edit)])
-    assert added.outcome is AddOutcome.PUBLISHED
+    assert added.outcome is AddOutcome.CHECK_FAILED
+    assert [p.check for p in added.check.problems] == [5]
     noted = {f.record_id for f in added.feedback}
     assert "s-aaaaaa" in noted and "d-cccccc" not in noted
 

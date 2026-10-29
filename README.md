@@ -7,7 +7,7 @@ The author of the project browses the same knowledge without a session, in a loc
 ## What it holds
 
 - A **decision** records a change and why, with a scope (`product` or `process`), who decided, and the entries it changes, replaces, or narrows.
-  A decision is immutable once published; a correction is a new decision.
+  A decision is immutable once published, its reasoning included; a correction or a shorter reasoning is a new decision that replaces it.
 - A **specification entry** says what holds now, in one paragraph, and belongs to an **area**, a named group with a title, an intro, and the order of its entries.
   Entries are rewritten in place, and each change to one names the decision behind it.
 
@@ -43,7 +43,7 @@ lodge search WORDS          # level-1 blocks, by words, ID, or code
 lodge show REF              # level 1; add --reasoning or --provenance
 lodge spec                  # the readable specification, in area order
 lodge waiting               # agent decisions that wait for the author
-lodge check                 # the checks that need one state of the records
+lodge check                 # every check, against the published state too
 ```
 
 A REF is an ID such as `d-y8p15p` or a code such as `ITEM-1`.
@@ -85,7 +85,8 @@ An agent that changes what the author decided or confirmed raises a flag, shown 
 
 In checkout mode, the default, `add` stages the files in the working tree, and they travel with the commit that implements the change.
 In branch mode, `add` commits to a branch of its own and pushes it.
-`lodge check --gate` compares with the published state and gates publication.
+Reads, the viewer, and `lodge check` compare with the published state as well, so an edited published decision shows as failing everywhere.
+`lodge check --gate` and `lodge add` are the ones that refuse, and the gate publishes nothing it fails.
 In branch mode the gate runs inside `lodge add`, so a push to the branch by hand skips it.
 A rewrite of the branch is detected only by a clone that read the branch before the rewrite, normally the author's own, since every fresh clone accepts the tip it first sees.
 The exit codes are 0 for done, 1 for a failed check or a store that changed under the command, and 2 for a usage or environment problem.

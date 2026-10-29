@@ -80,26 +80,18 @@ def agent(reasoning: str) -> Decision:
     return creates(SPEC, id=OLD, date=at(0), reasoning=reasoning)
 
 
-def test_check_5_agent_reasoning_growing_fails() -> None:
-    assert verdict(state(agent("Two words")), state(agent("Now three words"))) == [
-        (
-            5,
-            "d-aaaaaa: reasoning of a published agent decision grew from 2 to 3 words"
-            + REMEDY_CHECK_5,
-        )
-    ]
-
-
-def test_shrunk_agent_reasoning_is_note() -> None:
-    result = check(state(agent("Now three words")), state(agent("Two words")))
-    assert result.ok
-    assert result.notes == ("d-aaaaaa: reasoning of an agent decision shortened from 3 to 2 words",)
-
-
-def test_check_5_agent_reasoning_reworded_at_the_same_length_fails() -> None:
-    before = state(agent("one two three four five six"))
-    after = state(agent("six five four three two one"))
-    assert verdict(before, after) == [
+@pytest.mark.parametrize(
+    ("before", "after"),
+    [
+        ("Two words", "Now three words"),
+        ("Now three words", "Two words"),
+        ("one two three four five six", "six five four three two one"),
+        ("Two\nwords", "Two   words"),
+    ],
+    ids=["grew", "shrank", "reworded", "reflowed"],
+)
+def test_check_5_agent_reasoning_changed_in_any_way_fails(before: str, after: str) -> None:
+    assert verdict(state(agent(before)), state(agent(after))) == [
         (
             5,
             "d-aaaaaa: reasoning of a published agent decision was changed" + REMEDY_CHECK_5,
@@ -107,10 +99,9 @@ def test_check_5_agent_reasoning_reworded_at_the_same_length_fails() -> None:
     ]
 
 
-def test_check_5_reasoning_reflowed_is_unchanged() -> None:
-    result = check(state(agent("Two\nwords")), state(agent("Two   words")))
-    assert result.ok
-    assert result.notes == ()
+def test_check_5_agent_reasoning_unchanged_passes() -> None:
+    result = check(state(agent("Two words")), state(agent("Two words")))
+    assert result.ok and result.notes == ()
 
 
 def test_check_5_author_reasoning_reflowed_fails() -> None:

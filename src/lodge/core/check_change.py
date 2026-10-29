@@ -40,16 +40,15 @@ def check_change(
             notes.append(f"already published, check {found.check}: {found.path}: {found.message}")
         else:
             problems.append(found)
-    immutable, shrunk = check_immutable(published, after)
     problems += [
         *_missing(published, after),
         *_dates(published, after, now, current),
         *_imports_over_live(published, after),
         *check_entries(published, after, settings),
-        *immutable,
+        *check_immutable(published, after),
         *_links_to_dead(published, after),
     ]
-    notes += [*shrunk, *_area_notes(published, after)]
+    notes += _area_notes(published, after)
     return CheckResult(tuple(sorted(problems, key=sort_key)), tuple(notes))
 
 

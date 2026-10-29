@@ -6,12 +6,10 @@ from datetime import datetime
 
 from lodge import core
 from lodge.app.errors import LodgeError
-from lodge.app.ports import Clock, Store
 from lodge.app.results import Listed, Read, Shown
-from lodge.app.state import State, not_found, read_state, resolve_ref
+from lodge.app.state import State, Wiring, not_found, read_checked, read_state, resolve_ref
 from lodge.core import (
     CheckResult,
-    CoreSettings,
     Filters,
     Level1,
     Problem,
@@ -30,14 +28,14 @@ from lodge.core import (
 _AREA = "area:"
 
 
-def search_records(store: Store, query: str, filters: Filters, limit: int) -> Listed:
-    state = read_state(store)
+def search_records(w: Wiring, query: str, filters: Filters, limit: int) -> Listed:
+    state = read_checked(w)
     ids, total = core.search_counted(state.snapshot, state.derived, query, filters, limit)
     return Listed(_views(state, ids), state.read, total - len(ids))
 
 
-def show(store: Store, ref: str, reasoning: bool, provenance: bool) -> Shown:
-    state = read_state(store)
+def show(w: Wiring, ref: str, reasoning: bool, provenance: bool) -> Shown:
+    state = read_checked(w)
     record_id = resolve_ref(state, ref)
     s, d = state.snapshot, state.derived
     return Shown(
@@ -49,21 +47,21 @@ def show(store: Store, ref: str, reasoning: bool, provenance: bool) -> Shown:
     )
 
 
-def waiting(store: Store) -> Listed:
-    state = read_state(store)
+def waiting(w: Wiring) -> Listed:
+    state = read_checked(w)
     return Listed(_newest_first(state, state.derived.awaiting_author), state.read)
 
 
-def timeline(store: Store, limit: int) -> Listed:
+def timeline(w: Wiring, limit: int) -> Listed:
     if limit < 0:
         raise LodgeError(f"the limit must not be negative, got {limit}")
-    state = read_state(store)
+    state = read_checked(w)
     everything = _newest_first(state, state.snapshot.decisions)
     return Listed(everything[:limit], state.read, max(0, len(everything) - limit))
 
 
-def spec(store: Store, area: str | None) -> tuple[str, Read, tuple[SpecArea, ...]]:
-    state = read_state(store)
+def spec(w: Wiring, area: str | None) -> tuple[str, Read, tuple[SpecArea, ...]]:
+    state = read_checked(w)
     s = state.snapshot
     if area is not None and area not in s.areas and all(e.area != area for e in s.entries.values()):
         raise not_found(state, f"area named {area}", area)
@@ -71,20 +69,18 @@ def spec(store: Store, area: str | None) -> tuple[str, Read, tuple[SpecArea, ...
     return text, state.read, spec_view(s, state.derived, state.failing, area)
 
 
-def check(
-    store: Store, clock: Clock, settings: CoreSettings, gate: bool
-) -> tuple[CheckResult, Read]:
+def check(w: Wiring, gate: bool) -> tuple[CheckResult, Read]:
     """The one-state checks, or with `gate` the comparison with the published state."""
-    state = read_state(store)
+    state = read_checked(w)
     if not gate:
         return state.result, state.read
-    base = store.gate(state.current)
-    published, now = load(base.published), clock.now()
+    base = w.store.gate(state.current)
+    published, now = load(base.published), w.clock.now()
     found: dict[Problem, list[str]] = {}
     notes: dict[str, None] = {}
     for label, tree in base.checked:
         snapshot = state.snapshot if tree is state.current else load(tree)
-        result = core.check_change(published, snapshot, settings, now)
+        result = core.check_change(published, snapshot, w.settings, now)
         for problem in result.problems:
             found.setdefault(problem, []).append(label)
         notes.update(dict.fromkeys(result.notes))
@@ -104,9 +100,9 @@ def _labelled(problem: Problem, labels: list[str]) -> Problem:
     return replace(problem, message=f"{named}: {problem.message}") if named else problem
 
 
-def draft(store: Store, ref: str) -> str:
+def draft(w: Wiring, ref: str) -> str:
     """The file of a record or area, with a `base` key and for an area a `name` key added."""
-    state = read_state(store)
+    state = read_state(w.store)
     s = state.snapshot
     if ref.startswith(_AREA):
         name = ref.removeprefix(_AREA)

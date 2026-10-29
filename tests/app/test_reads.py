@@ -150,9 +150,9 @@ def test_check_gate_compares_with_the_published_state() -> None:
     store = project(staged=True)
     path = next(p for p in store.files if p.startswith("lodge/spec/storage/s-"))
     store.files[path] = store.files[path].replace("Held.", "Changed.")
-    assert wired(store).check(gate=False)[0].ok
+    plain, _ = wired(store).check(gate=False)
     gate, _ = wired(store).check(gate=True)
-    assert [p.check for p in gate.problems] == [4]
+    assert [p.check for p in plain.problems] == [p.check for p in gate.problems] == [4]
 
 
 def _edited(store: MemoryStore, old: str, new: str) -> Tree:

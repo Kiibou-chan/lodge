@@ -9,7 +9,11 @@ def test_check_and_gate(project: Project) -> None:
     project.publish_main()
     path = next((project.root / "lodge" / "decisions").glob(f"{ids.decision}-*.md"))
     path.write_text(path.read_text(encoding="utf-8").replace("are kept", "are dropped"))
-    assert project.run("check").out == "ok\n"
+    plain = project.run("check")
+    assert (plain.code, plain.err) == (1, "")
+    assert plain.out.startswith("check 5: ") and ids.decision in plain.out
+    shown = project.run("show", ids.decision)
+    assert "fails check" in shown.out
     gate = project.run("check", "--gate")
     assert (gate.code, gate.err) == (1, "")
     lines = gate.out.splitlines()

@@ -14,7 +14,7 @@ A REF is an ID or a code such as ITEM-1.
 `--reasoning` adds level 2, the why; for an entry it lists the decisions that changed it, so show one of them with `--reasoning` for its why.
 `--provenance` adds level 3: the author's quote, numbers, work item, attachments, and links both ways; ask for levels 2 and 3 only when the task needs them.
 "awaiting the author" means an agent changed something the author decided or confirmed, so do not treat it as settled.
-A `problem:` line names a file lodge cannot read; tell the author.
+A `problem:` line names a file lodge cannot read, and a record flagged `fails check` fails a check, such as a published decision edited by hand; tell the author.
 A line saying the lodge branch was rewritten is for the author too; only the author accepts it, with the git command it names.
 
 ## Writing
@@ -43,7 +43,7 @@ Transcripts are kept whole.
 An entry draft has `kind: spec`, `id`, `area`, and `title`; an area draft has `kind: area`, `name`, `title`, and `order`.
 A new entry needs its area, and a new area needs an area draft in the same add.
 Actions in `changes` are `create`, `edit`, and `retire`.
-A correction is a new decision with `replaces: [d-xxxxxx]` or `narrows: [d-xxxxxx]`, never an edit.
+A correction, or a shorter reasoning, is a new decision with `replaces: [d-xxxxxx]` or `narrows: [d-xxxxxx]`, never an edit.
 A number in a statement needs `numbers: [{value: "40 %", handle: "a command, or a record and key"}]`.
 To keep evidence such as a log, list `attachments: [<name>]` in the one new decision and run `lodge add --attach PATH FILE...`.
 lodge stores each text file at `lodge/attachments/<decision id>/<name>`, the name being the file's own, so `--attach ../out/runs.log` is `attachments: [runs.log]`; repeat `--attach` for more.

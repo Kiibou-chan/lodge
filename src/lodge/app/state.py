@@ -1,6 +1,6 @@
 """One reading of the store: the snapshot, what derives from it, and what the check finds."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from lodge import core
 from lodge.app.errors import LodgeError, NotFound
@@ -53,6 +53,28 @@ def read_state(store: Store) -> State:
         result,
         failing_ids(snapshot, result),
         Read(store.freshness(), unrecorded_problems(snapshot, result), derived.status),
+    )
+
+
+def read_checked(w: Wiring) -> State:
+    """`read_state`, with the checks against the published state folded into the failing records.
+
+    Checks 4, 5, and 6 (LODGE-9) need the comparison; it is the one the gate makes, on the
+    published tree the store returned, so a rewritten branch is compared with its accepted tip.
+    """
+    state = read_state(w.store)
+    change = core.check_change(load(state.published), state.snapshot, w.settings, w.clock.now())
+    known = set(state.result.problems)
+    problems = (*state.result.problems, *(p for p in change.problems if p not in known))
+    result = CheckResult(
+        tuple(sorted(problems, key=lambda p: (p.path, p.check, p.message))), state.result.notes
+    )
+    unrecorded = unrecorded_problems(state.snapshot, result)
+    return replace(
+        state,
+        result=result,
+        failing=failing_ids(state.snapshot, result),
+        read=replace(state.read, unrecorded=unrecorded),
     )
 
 

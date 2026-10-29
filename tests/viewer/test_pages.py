@@ -226,3 +226,14 @@ def test_flag_ids_on_list_and_spec_rows_are_links_with_their_status() -> None:
     assert linked in pages.search_page(lodge.search("", Filters()), "", Filters())
     assert linked in pages.timeline_page(lodge.timeline())
     assert linked in pages.spec_page(areas, read)
+
+
+def test_hand_edited_published_decision_fails_on_its_page_and_in_problems() -> None:
+    store = MemoryStore(area(order=("s-aaaaaa",)), ENTRY, FIRST, staged=True)
+    path = next(p for p in store.files if "d-aaaaaa" in p)
+    store.files[path] = store.files[path].replace(FIRST.statement, "Deleted after a day.")
+    lodge = wired(store)
+    assert "fails check" in pages.record_page(lodge.show("d-aaaaaa", True, True))
+    result, read = lodge.problems()
+    page = pages.problems_page(result, read)
+    assert "check 5" in page and "statement of a published decision was changed" in page

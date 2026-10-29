@@ -194,7 +194,7 @@ def test_edit_of_imported_entry_keeping_its_origin_needs_no_flag() -> None:
     assert "changes imported_from of s-aaaaaa" in problems(apply(s, tree, moved))[0].message
 
 
-def test_decision_reasoning_edit_keeps_date_and_passes() -> None:
+def test_decision_reasoning_edit_keeps_date_and_fails_check_5() -> None:
     old = decision(
         id="d-aaaaaa",
         title="Keep transcripts",
@@ -223,7 +223,7 @@ def test_decision_reasoning_edit_keeps_date_and_passes() -> None:
     assert isinstance(written, Decision) and written.date == at(3)
     after = load(Tree(None, {**tree.files, **result.files}))
     checked = check_change(s, after, CoreSettings(), datetime.fromisoformat(NOW))
-    assert checked.ok and any("shortened from 6 to 3" in n for n in checked.notes)
+    assert [p.check for p in checked.problems] == [5]
 
 
 def test_decision_edit_changing_statement_is_judged_by_the_check() -> None:
