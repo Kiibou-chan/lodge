@@ -10,6 +10,7 @@ from checks import (
     NOTES,
     OLD,
     REMEDY_CHECK_5,
+    REMEDY_CHECK_5_REASONING,
     SPEC,
     Item,
     check,
@@ -71,7 +72,8 @@ def test_author_reasoning_edit_fails() -> None:
     assert verdict(before, after) == [
         (
             5,
-            "d-aaaaaa: reasoning of a published author decision was changed" + REMEDY_CHECK_5,
+            "d-aaaaaa: reasoning of a published author decision was changed"
+            + REMEDY_CHECK_5_REASONING,
         )
     ]
 
@@ -94,7 +96,8 @@ def test_check_5_agent_reasoning_changed_in_any_way_fails(before: str, after: st
     assert verdict(state(agent(before)), state(agent(after))) == [
         (
             5,
-            "d-aaaaaa: reasoning of a published agent decision was changed" + REMEDY_CHECK_5,
+            "d-aaaaaa: reasoning of a published agent decision was changed"
+            + REMEDY_CHECK_5_REASONING,
         )
     ]
 
@@ -110,7 +113,8 @@ def test_check_5_author_reasoning_reflowed_fails() -> None:
     assert verdict(before, after) == [
         (
             5,
-            "d-aaaaaa: reasoning of a published author decision was changed" + REMEDY_CHECK_5,
+            "d-aaaaaa: reasoning of a published author decision was changed"
+            + REMEDY_CHECK_5_REASONING,
         )
     ]
 

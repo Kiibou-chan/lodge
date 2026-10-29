@@ -9,7 +9,8 @@ from lodge.core.model import Decision, Problem
 from lodge.core.snapshot import Snapshot
 
 _APART = {"id"}
-REMEDY = "; a correction or a shorter reasoning is a new decision that replaces it"
+REMEDY = "; a correction is a new decision that replaces it"
+REASONING_REMEDY = "; a correction or a shorter reasoning is a new decision that replaces it"
 
 
 def check_immutable(published: Snapshot, after: Snapshot) -> list[Problem]:
@@ -19,12 +20,11 @@ def check_immutable(published: Snapshot, after: Snapshot) -> list[Problem]:
         before, now = published.decisions[decision_id], after.decisions[decision_id]
         who = "author" if is_author(before) else "agent"
         for name in _changed_fields(before, now):
-            subject = (
-                f"reasoning of a published {who} decision"
-                if name == "reasoning"
-                else (f"{name} of a published decision")
-            )
-            problems.append(problem_at(after, decision_id, 5, f"{subject} was changed" + REMEDY))
+            if name == "reasoning":
+                message = f"reasoning of a published {who} decision was changed{REASONING_REMEDY}"
+            else:
+                message = f"{name} of a published decision was changed{REMEDY}"
+            problems.append(problem_at(after, decision_id, 5, message))
     return problems
 
 
