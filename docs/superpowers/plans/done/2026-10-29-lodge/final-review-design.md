@@ -92,7 +92,7 @@ Both share D1 and D2.
 ## Area 5, public repository hygiene
 
 **Important D12. Four review files on the build branch, already pushed to the public repository, carry a local scratch path with the user's account name.**
-Handle: `docs/superpowers/plans/2026-10-29-lodge/task-4-review.md:22`, `task-9-review.md:4`, `task-9-recheck-1.md:4`, `task-9-recheck-2.md:4`, each naming a scratch path under the temporary directory.
+Handle: `docs/superpowers/plans/done/2026-10-29-lodge/task-4-review.md:22`, `task-9-review.md:4`, `task-9-recheck-1.md:4`, `task-9-recheck-2.md:4`, each naming a scratch path under the temporary directory.
 CLAUDE.md, Hard rules: "no personal paths, machine names, … in code, tests, or docs"; merging puts them on `main`.
 Fix: replace each with "the reviewer's scratch directory"; the branch history keeps them, which is the author's call (rewrite or accept).
 

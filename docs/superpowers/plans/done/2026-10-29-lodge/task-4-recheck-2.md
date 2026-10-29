@@ -45,6 +45,6 @@ I1: P6 and P15 stay flagged; R3 and R4 clear.
 
 ### M3 (Minor): the Task 5 refusal is recorded only in the ledger
 
-Handle: the plan's Task 5 check 1 and check 4 (`docs/superpowers/plans/2026-10-29-lodge.md:250`, `:253`) do not mention refusing an imported decision that changes an entry a published non-imported decision already changed; it lives only in `Ruling: I2,` (ledger line 60).
+Handle: the plan's Task 5 check 1 and check 4 (`docs/superpowers/plans/done/2026-10-29-lodge.md:250`, `:253`) do not mention refusing an imported decision that changes an entry a published non-imported decision already changed; it lives only in `Ruling: I2,` (ledger line 60).
 Scenario: Task 5's brief is written from the plan's task text, misses the ruling, and P7 ends up with no owner, since Task 4's test pinning it was removed.
 Fix: carry the ruling into Task 5's brief with a named test (for example `test_import_changing_live_edited_entry_refused`), or amend the plan's check 1 line.

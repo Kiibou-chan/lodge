@@ -1,9 +1,9 @@
-# Ledger: lodge 0.1, plan docs/superpowers/plans/2026-10-29-lodge.md
+# Ledger: lodge 0.1, plan docs/superpowers/plans/done/2026-10-29-lodge.md
 
 Spec: `docs/superpowers/specs/2026-10-29-lodge-design.md` (approved 2026-10-29 14:26; LODGE-1 to LODGE-5 answered).
 Plan: reviewed from two angles, fixed, rechecked twice; plan and process approved by the author 2026-10-29 14:57 ("Approved, build").
 Branch `build-0.1` from `main` c758046, worktree `.claude/worktrees/build-0.1`.
-Briefs, reports, and reviews: `docs/superpowers/plans/2026-10-29-lodge/`; review packages are scratch, not committed.
+Briefs, reports, and reviews: `docs/superpowers/plans/done/2026-10-29-lodge/`; review packages are scratch, not committed.
 
 ## Preflight scan
 
@@ -218,3 +218,5 @@ Fix round LODGE-9, LODGE-10: 5fa6e60 (1071 passed; reads fold check_change into 
 Fix round LODGE-9, LODGE-10: recheck in lodge-9-10-recheck.md, 0 Blocking, 0 Important, D1 scenario run end to end, new tests fail when reverted; M1 (the shorter-reasoning remedy on every check 5 message) fixed by the coordinator in 8d96c05, test changed first and seen failing; 1071 passed, gate ok.
 Merge: build-0.1 fast-forwarded into main on the author's go (22:49); the plan stays open for Task 14.
 Tag v0.1.0 (annotated e0b7ce2 on 5d8f67a) pushed on the author's go (23:33, "Yes you may"). Task 14: started, relayed to the first user's session; the spawning prompt carries the author's authorisation, testing whether a prompt alone lets the install through.
+Task 14: complete. A fresh cloud session holding only the first user's project, on Sonnet, with the author's authorisation in its spawning prompt and no human message before it ran: `uv tool install git+https://github.com/Kiibou-chan/lodge@v0.1.0` exit 0, not blocked, built at 5d8f67a, installed lodge 0.1.0 with pyyaml 6.0.3 (one stderr warning, uv's deprecated `UV_NATIVE_TLS`); `lodge --version` gave `lodge 0.1.0`; `lodge guide` printed the guide; in a scratch repository `lodge init`, `lodge id s`, and `lodge check` all exit 0, `check` gave `ok`. So a spawning prompt carrying the authorisation is enough; a CLAUDE.md line and a settings allow rule were not tested.
+Plan done: plan, ledger, and folder moved to `docs/superpowers/plans/done/`.

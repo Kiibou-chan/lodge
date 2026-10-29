@@ -35,7 +35,7 @@ Tests: `test_agent_change_to_missing_entry_does_not_crash`, `test_agent_after_au
 ### B2 (Blocking): an imported decision with `decided_by: author` that replaces or narrows a live author decision is never flagged
 
 Handle: `src/lodge/core/derive.py:94`, `if is_author(d) or ...: continue`, skips every author decision before the import rule at `derive.py:112-116` is reached.
-Binding text: the plan's "Calls made", "an imported decision that replaces or narrows a non-imported author decision is flagged like any agent decision" (`docs/superpowers/plans/2026-10-29-lodge.md:51`).
+Binding text: the plan's "Calls made", "an imported decision that replaces or narrows a non-imported author decision is flagged like any agent decision" (`docs/superpowers/plans/done/2026-10-29-lodge.md:51`).
 The brief narrowed this to "an agent decision D … when D is imported" (`task-4-brief.md`, Flag), and the builder followed the brief; the plan governs the brief.
 Scenario, run (P5): live author decision `d-aaaaaa`; `lodge add --import` of `d-bbbbbb` with `decided_by: author`, `imported_from` set, `replaces: [d-aaaaaa]`; `awaiting_author` is empty and nothing shows on `d-aaaaaa`.
 Check 3 exempts imported author decisions from the quote (spec, "The check", item 3), so an agent running the importer can replace her live decision with no quote and no flag; this is must-not 2 exactly.
@@ -106,5 +106,5 @@ Plan rules no test enforces: the import clause of the plan's "Calls made" (B2) a
 
 ## Files
 
-Read: `.claude/agents/reviewer.md`, `CLAUDE.md`, `task-4-brief.md`, `task-4-report.md`, the plan's Global Constraints, Process, Calls made, Review Focus, Tasks 4 and 5 (`docs/superpowers/plans/2026-10-29-lodge.md:15-72,197-263`), the spec's Must nots to Review flag and Rollout (`docs/superpowers/specs/2026-10-29-lodge-design.md:53-175,218-230`), `src/lodge/core/derive.py`, `src/lodge/core/snapshot.py`, `src/lodge/core/model.py`, the `src/lodge/core/__init__.py` and `vulture_allow.py` diffs, `tests/core/builders.py`, `tests/core/test_derive.py`, `tests/core/test_snapshot.py`.
+Read: `.claude/agents/reviewer.md`, `CLAUDE.md`, `task-4-brief.md`, `task-4-report.md`, the plan's Global Constraints, Process, Calls made, Review Focus, Tasks 4 and 5 (`docs/superpowers/plans/done/2026-10-29-lodge.md:15-72,197-263`), the spec's Must nots to Review flag and Rollout (`docs/superpowers/specs/2026-10-29-lodge-design.md:53-175,218-230`), `src/lodge/core/derive.py`, `src/lodge/core/snapshot.py`, `src/lodge/core/model.py`, the `src/lodge/core/__init__.py` and `vulture_allow.py` diffs, `tests/core/builders.py`, `tests/core/test_derive.py`, `tests/core/test_snapshot.py`.
 Not read: the review package diff as a file (read the same range through the files), `src/lodge/core/fileformat.py` beyond its definitions, `headers.py`, `fields.py`, `drafts.py`, `settings.py`, `yamlio.py`, and the plan's Tasks 6 to 14 beyond the lines cited.

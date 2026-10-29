@@ -38,7 +38,7 @@ Fix: in `load_yaml`, `except RecursionError: raise YamlError("the header is nest
 
 ### I2 (Important, spec compliance): `slug` has no length cap, contrary to the ledger ruling
 
-Handle: `src/lodge/core/fileformat.py:79-80`; ruling in `docs/superpowers/plans/2026-10-29-lodge-progress.md` ("`slug` gets a 60-character cap, cut at a word boundary").
+Handle: `src/lodge/core/fileformat.py:79-80`; ruling in `docs/superpowers/plans/done/2026-10-29-lodge-progress.md` ("`slug` gets a 60-character cap, cut at a word boundary").
 Scenario: a title of one 300-letter word gives `d-3m8qk2-aaa….md`, 312 bytes; creating that name locally fails with `OSError: [Errno 36] File name too long` (run in probe 4), so the checkout-mode store cannot write the record, and a branch-mode tree holding it cannot be checked out.
 Six 34-letter words give a 231-character path, already near the limit.
 Fix: after joining the six words, if the slug exceeds 60 characters cut it at the last `-` at or before position 60, and when the first word alone is longer, cut that word at 60; compute it once in `new_record_path` (`fileformat.py:69` calls `slug` twice).

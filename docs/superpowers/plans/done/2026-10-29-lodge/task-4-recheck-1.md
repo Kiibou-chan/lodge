@@ -84,5 +84,5 @@ Parked for the next round touching `derive.py`.
 
 ## Files
 
-Read: `.claude/agents/rechecker.md`, `task-4-review.md`, the ledger's Task 4 rulings, the report's "Fix round 1", the fix diff, `src/lodge/core/derive.py` at 4fb80cc, the spec's Must nots answers, Review flag, and Rollout (`:61-65`, `:169-174`, `:218-229`), the plan's "Calls made" (`docs/superpowers/plans/2026-10-29-lodge.md:45-56`).
+Read: `.claude/agents/rechecker.md`, `task-4-review.md`, the ledger's Task 4 rulings, the report's "Fix round 1", the fix diff, `src/lodge/core/derive.py` at 4fb80cc, the spec's Must nots answers, Review flag, and Rollout (`:61-65`, `:169-174`, `:218-229`), the plan's "Calls made" (`docs/superpowers/plans/done/2026-10-29-lodge.md:45-56`).
 Probes: first reviewer's under `scratchpad/probes/`; mine at `scratchpad/probes-rc1/probe_regress.py`.

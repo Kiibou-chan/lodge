@@ -74,7 +74,7 @@ Every write the check would refuse is refused, by `apply_drafts` or by the check
 - M8. `src/lodge/core/apply.py:110-133`, values of the wrong shape get messages about absence: `area: [storage]` gives "needs an area key", an edit with `id: S-BBBBBB` gives "needs an area key", and `id:` empty gives "the decision  does not exist" with a double space (probe, probe3).
   Fix: tell a missing `area` from a non-string one, and check `is_id` before looking the ID up ("id S-BBBBBB is not a lodge ID; IDs are lower case").
 - M9. `tests/core/test_feedback.py:217`, the trailing `assert isinstance(d, Decision)` tests the builder, not feedback; drop it.
-- M10. `docs/superpowers/plans/2026-10-29-lodge-progress.md:100`, the ruling cites "task-7-report.md, concerns 2 to 4 and 6", but the report lists five concerns and the decisions-only number rule sits under "Behaviour worth knowing".
+- M10. `docs/superpowers/plans/done/2026-10-29-lodge-progress.md:100`, the ruling cites "task-7-report.md, concerns 2 to 4 and 6", but the report lists five concerns and the decisions-only number rule sits under "Behaviour worth knowing".
   Fix: cite "concerns 1 to 3 and Behaviour worth knowing, the number rule"; I concur with the ruling's substance (probes above: the narrowed `imported_from` rule still leaves imported-entry edits to check 4).
 
 ## Pass 3: design

@@ -3,7 +3,7 @@
 Status: approved by the author, 2026-10-29 14:26 ("Approved"); her questions LODGE-1 to LODGE-4 answered.
 Source: the lodge brainstorm (her words verbatim, the evidence, the prior art).
 Quotes are the author's; "agreed" marks a proposal she accepted; **[my call]** marks a choice made in writing this document, for her to check.
-The next step is the implementation plan, `docs/superpowers/plans/2026-10-29-lodge.md`.
+The implementation plan is `docs/superpowers/plans/done/2026-10-29-lodge.md`.
 
 ## Intent
 
