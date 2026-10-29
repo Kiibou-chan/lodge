@@ -211,3 +211,4 @@ History rewrite (author, 2026-10-29 22:12, "Remove them completely"; repository 
 Ruling: every author record's reasoning is its quote's text and nothing else (21 records re-added through `lodge add`, checked by script: 0 differ); why: the author ruled that nothing but her quotes is her text (22:12), so agent wording under `decided_by: author` is a must-not 1 failure; cost if wrong: author records read less fluently, and her words can be added to them later.
 Task 13: I1 closed by the re-add above, which settles LODGE-8.
 Task 13: complete.
+Author: LODGE-10 (22:46), reasoning of every published decision is immutable, a shorter reasoning is a new decision that replaces it; spec check 5 and Her decisions edited; code (check_immutable shrink note, guide) waits to batch with LODGE-9.

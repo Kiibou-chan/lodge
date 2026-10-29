@@ -159,7 +159,7 @@ It fails on:
 2. an ID that does not resolve, or two records sharing an ID or code;
 3. an author decision without a quote, with where and when, unless it is imported;
 4. a specification entry created, edited, or retired without a decision in the same change naming it in `changes`, unless it is imported;
-5. an existing decision whose statement, quote, `decided_by`, or links changed (decisions are immutable; a correction is a new decision); reasoning may be shortened, and the check lists such edits **[my call]**;
+5. an existing decision whose statement, quote, `decided_by`, links, or reasoning changed (decisions are immutable; a correction or a shorter reasoning is a new decision that replaces it, LODGE-10);
 6. a record added in this change that links to a replaced decision or a retired entry, other than through `replaces`, or `changes` with `retire`; older records keep their links, and reads show each target's status beside them **[my call]**;
 7. a specification entry not placed in its area's order.
 
@@ -293,6 +293,7 @@ Runtime dependencies kept to PyYAML **[my call]**; the viewer uses the standard 
 - LODGE-4, how cloud sessions get lodge: "I would intend this tool to eventually become public" (14:21), then "A" (14:22), public now, chosen over private until a first release with a setup script and token in the meantime; this changes LODGE-3's private to public.
 - LODGE-6, an agent changing what she confirmed: "A: Yes, flag it" (2026-10-29 17:17), a confirmed decision counts as hers for the review flag, chosen over flagging only decisions she wrote.
 - LODGE-7, replacing an agent's change to her entry: "Seems like A makes (more) sense" (2026-10-29 17:19), a retirement counts only while its decision stands and feedback asks to edit the entry back, chosen over the entry keeping the agent's change.
+- LODGE-10, shortening a decision's reasoning: "The latter seems like the better option." (2026-10-29 22:46), reasoning is immutable like the rest of a decision and a shorter reasoning is a new decision that replaces it, chosen over allowing an edit that only removes parts of it.
 - Engineering principles enforced from the first commit: "I don't want another 2 weeks of cleanup as was needed with gloss."
 
 ## Open
