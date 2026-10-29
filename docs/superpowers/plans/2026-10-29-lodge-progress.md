@@ -212,3 +212,5 @@ Ruling: every author record's reasoning is its quote's text and nothing else (21
 Task 13: I1 closed by the re-add above, which settles LODGE-8.
 Task 13: complete.
 Author: LODGE-10 (22:46), reasoning of every published decision is immutable, a shorter reasoning is a new decision that replaces it; spec check 5 and Her decisions edited; code (check_immutable shrink note, guide) waits to batch with LODGE-9.
+Author: LODGE-9 (22:47), reads, the viewer, and `lodge check` run checks 4 to 6 against the published state; spec "The check" and Her decisions edited.
+Fix round LODGE-9 and LODGE-10: final-review-design.md D1 (fold check_change into read_state, failing records carry `fails check`, plain `lodge check` prints them and keeps its exit code) and check 5 with reasoning immutable for every decision (the shrink note removed); then one recheck.

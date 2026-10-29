@@ -165,7 +165,7 @@ It fails on:
 
 "The same change" **[my call]** is the difference between two states of the records: the last published state and the state about to be published.
 The published state is the remote tip of the shared branch (in the first user, `lodge`), or the merge base with `main` where a project keeps records on its work branches; there the gate runs before every push to `lodge`.
-Checks 4, 5, and 6 compare the two states and run only at the gate; reads and the viewer run checks 1, 2, 3, and 7, which need one state.
+Checks 4, 5, and 6 compare the two states; reads, the viewer, and `lodge check` run all seven against the published state, so a record failing any check is shown as failing, and only `lodge check --gate` and `lodge add` refuse (LODGE-9).
 So `core`'s check takes two snapshots, and the Store port gives the current and the published snapshot, which a server can also give; no history beyond that is needed.
 
 **Review flag** **[my call]**, answering must-not 2: an agent decision is flagged "awaiting the author" when it replaces or narrows an author decision, or changes a specification entry whose last change was an author decision.
@@ -293,6 +293,7 @@ Runtime dependencies kept to PyYAML **[my call]**; the viewer uses the standard 
 - LODGE-4, how cloud sessions get lodge: "I would intend this tool to eventually become public" (14:21), then "A" (14:22), public now, chosen over private until a first release with a setup script and token in the meantime; this changes LODGE-3's private to public.
 - LODGE-6, an agent changing what she confirmed: "A: Yes, flag it" (2026-10-29 17:17), a confirmed decision counts as hers for the review flag, chosen over flagging only decisions she wrote.
 - LODGE-7, replacing an agent's change to her entry: "Seems like A makes (more) sense" (2026-10-29 17:19), a retirement counts only while its decision stands and feedback asks to edit the entry back, chosen over the entry keeping the agent's change.
+- LODGE-9, which checks reads run: "A" (2026-10-29 22:47), reads run checks 4 to 6 as well, so a hand edit of a published decision shows as failing everywhere, chosen over keeping them at the gate only.
 - LODGE-10, shortening a decision's reasoning: "The latter seems like the better option." (2026-10-29 22:46), reasoning is immutable like the rest of a decision and a shorter reasoning is a new decision that replaces it, chosen over allowing an edit that only removes parts of it.
 - Engineering principles enforced from the first commit: "I don't want another 2 weeks of cleanup as was needed with gloss."
 
