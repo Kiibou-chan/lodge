@@ -207,3 +207,7 @@ Final wave B2: recheck 1 in final-wave-b2-recheck.md: 0 Blocking, 0 Important, i
 Final wave B2: closing round 3bafd60 (B1 m1, m2; B2 n1, n2; 1063 passed), read by the coordinator: each fix has its test, the provisional mark applies only in a dry run.
 Final wave: complete. `sh scripts/check.sh` on build-0.1 merged with origin/main (c758046, the merge base, so the merge is a fast-forward) in a scratch clone: 1063 passed, gate ok.
 Waiting on the author: LODGE-8 (four author records, then `Task 13: complete`), D1 (reads run checks 4 to 6), D13 (personal paths in the spec and brainstorm on main), then the merge go, the v0.1.0 tag go, and Task 14.
+History rewrite (author, 2026-10-29 22:12, "Remove them completely"; repository deleted and recreated by the author): private details were removed from the tree, and the history was squashed into two commits, main (design, plan, process files) and build-0.1 (the build on top). Commit hashes cited above refer to the history before the rewrite, kept only on the author's machine.
+Ruling: every author record's reasoning is its quote's text and nothing else (21 records re-added through `lodge add`, checked by script: 0 differ); why: the author ruled that nothing but her quotes is her text (22:12), so agent wording under `decided_by: author` is a must-not 1 failure; cost if wrong: author records read less fluently, and her words can be added to them later.
+Task 13: I1 closed by the re-add above, which settles LODGE-8.
+Task 13: complete.
