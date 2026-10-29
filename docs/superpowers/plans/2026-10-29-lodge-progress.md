@@ -214,3 +214,6 @@ Task 13: complete.
 Author: LODGE-10 (22:46), reasoning of every published decision is immutable, a shorter reasoning is a new decision that replaces it; spec check 5 and Her decisions edited; code (check_immutable shrink note, guide) waits to batch with LODGE-9.
 Author: LODGE-9 (22:47), reads, the viewer, and `lodge check` run checks 4 to 6 against the published state; spec "The check" and Her decisions edited.
 Fix round LODGE-9 and LODGE-10: final-review-design.md D1 (fold check_change into read_state, failing records carry `fails check`, plain `lodge check` prints them and keeps its exit code) and check 5 with reasoning immutable for every decision (the shrink note removed); then one recheck.
+Fix round LODGE-9, LODGE-10: 5fa6e60 (1071 passed; reads fold check_change into failing records; agent reasoning compared exactly); recheck running. Author's go to merge (22:49): "You have my go now. If this is done you may merge into main."
+Fix round LODGE-9, LODGE-10: recheck in lodge-9-10-recheck.md, 0 Blocking, 0 Important, D1 scenario run end to end, new tests fail when reverted; M1 (the shorter-reasoning remedy on every check 5 message) fixed by the coordinator in 8d96c05, test changed first and seen failing; 1071 passed, gate ok.
+Merge: build-0.1 fast-forwarded into main on the author's go (22:49); the plan stays open for Task 14.
