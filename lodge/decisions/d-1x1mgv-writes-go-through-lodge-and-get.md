@@ -20,7 +20,7 @@ The feedback covers length, related decisions, numbers without a handle, and a c
 
 Writing through lodge, never by hand, is how every change to the specification comes to name the decision behind it.
 
-Feedback rather than refusal at write time was settled with the author as the guardrail style (d-c6n1ng); a failing check still refuses the add (LODGE-9), as the next decisions describe.
+Feedback rather than refusal at write time was settled with the author as the guardrail style (`docs/superpowers/specs/2026-10-29-lodge-design.md:148`); her words on guardrails are in d-c6n1ng. A failing check still refuses the add (LODGE-9, d-qbfdqt), as d-4032xv describes.
 
 The feedback asks when a decision that changes nothing, replaces nothing, and narrows nothing sits among related current decisions.
 

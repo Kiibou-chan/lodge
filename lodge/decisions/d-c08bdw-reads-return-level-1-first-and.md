@@ -16,7 +16,7 @@ Search and show return Level 1, the readable specification is rendered on demand
 
 ## Reasoning
 
-Reasoning and provenance come on request, which keeps the third step explicit (d-n30kqr).
+Reasoning and provenance come on request, which keeps the third step explicit; the three levels were agreed with the author (`docs/superpowers/specs/2026-10-29-lodge-design.md:122-126`).
 
 The readable specification is rendered on demand because a committed copy would be a third copy, which the third must-not rules out.
 

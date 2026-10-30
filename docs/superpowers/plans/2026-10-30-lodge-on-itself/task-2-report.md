@@ -184,7 +184,7 @@ Reasons carried, by decision (the spec's own reasons; where a reason depends on 
 
 - "Left to the builder" (spec:306-313): not entries, per the plan.
 - The status and provenance header (spec:3-6) and the implementation plan pointer: document metadata, not claims about lodge.
-- The author's quotes (spec:21-22, 29, 49, 55, 237, and the whole of 274-298): not copied into entries or decisions; paraphrased in reasoning where a reason depends on them. Her rulings stay as the author decisions of Task 1 and earlier.
+- The author's quotes (spec:21-22, 29, 49, 55, 237, and the whole of 274-298): not copied into entries or decisions; where a reason depends on them, the reasoning cites the place they are written, by decision ID only where that decision's quote holds the words, otherwise by design-document line, and restates nothing. Her rulings stay as the author decisions of Task 1 and earlier.
 - The "**[my call]**" and "agreed" markers (spec:5): the entries state what holds; whose call it was is carried by the decisions' reasoning where it matters (agent call named as such).
 - The Task 14 statements (spec:73-74, 81): entries state what holds after Task 14 (done ledger line 221): the clone through the proxy works, so the fallbacks are not needed; a spawning-prompt authorisation is enough; a `CLAUDE.md` line and a settings allow rule are untested.
 - The directory layout block (spec:208-213) and the package tree (spec:243-253): restated in prose in s-evv024 and in the package entries rather than as code blocks, since entries are one paragraph.
@@ -235,3 +235,20 @@ Verification: `uv run lodge check` ok; `lodge spec` has no `awaiting`, `fails ch
 
 Not fixed: none.
 Note: file names of edited decisions keep their old slugs; the title in the header is the new one.
+
+## Fix round 2
+
+Method as in round 1: in-place edits through `lodge draft`, dry run, `lodge add`; no published record (on main) touched.
+Rule for pointers to the author: a record ID is cited for her words only where that record's quote holds them; otherwise the reasoning cites the design document line where they are written, or drops the attribution.
+
+| Finding | What changed | Records |
+|---|---|---|
+| N1 | d-5mhgpp: the framing goals now point at the design document's Intent lines 21-22 (d-n30kqr and d-c6n1ng dropped there), and the agreed measures at line 32; d-9k0dfe is cited only for "very important". d-f84m43: the must-nots point at the document's Must nots lines 53-58 (not d-9k0dfe). d-cg3nn3: d-rkcb17 is cited only for the serverless start, the later server, one interface, and Kotlin are the document's non-goals (line 43), the Kotlin remark d-7v4crf pointer and the d-gcz871 pointer are gone. d-jj72ps: command-line route cites line 69, d-14vk9b only for MCP. d-zq5sfb: Python cites line 76 and d-7v4crf for her words, the d-dd17rs pointer became lines 78-79. d-18terz: three levels cite lines 122-126, d-n30kqr only for the size of the reasoning. d-1x1mgv: guardrail style cites line 148. d-mzkt6e: the second must-not cites line 58, not d-9k0dfe. d-c08bdw: the three levels cite lines 122-126. d-x42f0x: the viewer cites line 192, not d-gcz871. | d-5mhgpp, d-f84m43, d-cg3nn3, d-jj72ps, d-zq5sfb, d-18terz, d-1x1mgv, d-mzkt6e, d-c08bdw, d-x42f0x |
+| N2 | The marker claim covers "the same change" only; the published-state definition (line 167) is said to be unmarked. | d-4032xv |
+| N3 | The dated clause is in the past tense throughout. | s-qkcp0s |
+| N4 | Positional references replaced by IDs: d-92t2m8, d-4032xv, d-qbfdqt, s-hh97bm, s-x84e3h. | d-18terz, d-1x1mgv, d-cg3nn3, d-3epcjd |
+| N5 | The "Left out" bullet on her quotes is rewritten in place to say where the reasoning cites them. | this report |
+| N6 | The scope entry states that other kinds of knowledge come into scope only after an evaluation against past records and then a pilot, in words that do not repeat her quote. | s-7ah5n7 |
+| M9 (open part) | d-jj72ps's statement says "the author's authorisation". | d-jj72ps |
+
+Not fixed: none.

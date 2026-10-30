@@ -19,7 +19,7 @@ Three of the checks need a before and an after, so the check takes two snapshots
 
 The published state is the remote tip of the shared branch, or the merge base with `main` where a project keeps records on its work branches.
 
-'The same change' as the difference between two states, and the choice of published state, are the specification author's calls, marked in the design document for the author to check.
+'The same change' as the difference between two states is the specification author's call, marked in the design document for the author to check; the definition of the published state (`docs/superpowers/specs/2026-10-29-lodge-design.md:167`) is not marked.
 
 Reads run all seven against the published state (LODGE-9), so a hand edit of a published decision shows as failing everywhere, rather than only at the gate.
 

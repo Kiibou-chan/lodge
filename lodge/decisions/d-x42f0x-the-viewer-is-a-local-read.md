@@ -14,7 +14,7 @@ The viewer is local, read-only, and started from the command line, with search, 
 
 ## Reasoning
 
-A local web viewer was settled with the author (d-gcz871); that it lets her find a decision quicker than by asking a session is a goal, measured after the pilot (s-3ht96p).
+A local web viewer was settled with the author (`docs/superpowers/specs/2026-10-29-lodge-design.md:192`); that it lets her find a decision quicker than by asking a session is a goal, measured after the pilot (s-3ht96p).
 
 It is built on the same parser and check as the command line, which is how it cannot disagree with the gate and show wrong information.
 

@@ -20,10 +20,10 @@ Public from the first commit is LODGE-4 (d-y8p15p), which changed the private re
 
 The same decision is why code holds no personal paths or specifics of the first user, and why everything project-specific is in `.lodge.toml`.
 
-Python was chosen by the author (d-7v4crf).
+Python is settled in the design document (`docs/superpowers/specs/2026-10-29-lodge-design.md:76`); the author's words are in d-7v4crf.
 
 Files in git are the only source of truth, and any index is disposable; this was agreed with the author.
 
-Knowledge lives in the repository of the project it is about, and lodge is its own repository, both settled (d-dd17rs).
+Knowledge lives in the repository of the project it is about, and lodge is its own repository, both settled in the design document (`docs/superpowers/specs/2026-10-29-lodge-design.md:78-79`).
 
 Record prose follows the author's invariants, which are British English, no em-dashes, an Oxford comma, and one sentence per line.

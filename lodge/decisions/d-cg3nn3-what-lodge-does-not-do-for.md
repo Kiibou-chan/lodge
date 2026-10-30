@@ -18,7 +18,7 @@ For now lodge has no server and no MCP server, leaves out other kinds of knowled
 
 Each non-goal has a reason in the specification.
 
-No server for now: the author's decision on a serverless start, a server later, and storage behind one interface is d-rkcb17; Kotlin as a candidate language for a later server is the specification author's note, and the author's remarks on languages are in d-7v4crf.
+No server for now: the author's decision on a serverless start is d-rkcb17. A shared server later, storage behind one interface, and Kotlin as a candidate language then are the design document's non-goals (`docs/superpowers/specs/2026-10-29-lodge-design.md:43`).
 
 No MCP server: the author's decision is d-14vk9b.
 
@@ -26,10 +26,10 @@ Other kinds of project knowledge are left out until they have been evaluated, fi
 
 The author's personal to-do list is left out for now, and may be integrated later.
 
-Conversation logs are left out as provenance; the author's decision on provenance in the repository is d-pf8xm9.
+Conversation logs are left out as provenance; the author's words on accessible provenance are in d-pf8xm9.
 
 Length limits stay soft; the author's words on guardrails are in d-c6n1ng.
 
-Making the viewer read-only was the specification author's call, taken from the project whose viewer served as the model: the author's decisions reach lodge through a session, quoted, as they reach the first user's files today; the author's decision on a local web viewer is d-gcz871.
+Making the viewer read-only was the specification author's call, taken from the project whose viewer served as the model: the author's decisions reach lodge through a session, quoted, as they reach the first user's files today.
 
-Porting a second project is left out, and whether a second project adopts lodge later stays open (see the rollout area).
+Porting a second project is left out, and whether a second project adopts lodge later stays open (s-hh97bm).

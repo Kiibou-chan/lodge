@@ -29,4 +29,4 @@ Decisions are immutable, which is why a correction or a shorter reasoning is a n
 
 Older records keep their links to superseded records, and reads show each target's status beside them, so history is not rewritten to satisfy the sixth check.
 
-Imported records are exempt from the author-quote and entry-needs-decision checks, as the rollout area describes.
+Imported records are exempt from the author-quote and entry-needs-decision checks, as s-x84e3h describes.

@@ -17,7 +17,7 @@ The flag is derived, shown at Level 1, and cleared by an author decision.
 
 ## Reasoning
 
-The flag answers the must-not that an agent must not quietly rewrite what the author decided (d-9k0dfe); the flag and its rule are the specification author's call, marked in the design document for the author to check; it is derived rather than typed so that it cannot be forgotten.
+The flag answers the must-not that an agent must not quietly rewrite a decision the author made (`docs/superpowers/specs/2026-10-29-lodge-design.md:58`); the flag and its rule are the specification author's call, marked in the design document for the author to check; it is derived rather than typed so that it cannot be forgotten.
 
 A decision she confirmed counts as hers for the flag (LODGE-6, d-8nkamy), chosen over flagging only decisions she wrote.
 

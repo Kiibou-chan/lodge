@@ -31,13 +31,13 @@ The logs grow without bound, with entries of tens of thousands of characters, fe
 
 The author reaches decisions and rulings only through a session.
 
-The author's words on short, searchable decisions with the full reasoning as a further step are in d-n30kqr, and on tooling that constrains how knowledge is worked with in d-c6n1ng; the goals above are the specification's reading of them, which is why writing goes through one defined route.
+The author's own framing of these goals is written in the design document's Intent section (`docs/superpowers/specs/2026-10-29-lodge-design.md:21-22`) and is not repeated here.
 
 On replacing the old files rather than sitting beside them, the author's words are in d-vzvfg2.
 
 The structure rules come first rather than last because the first user's cleanup came after the fact; the author's requirement is in d-vxfdz7.
 
-The six success measures were agreed with the author (d-9k0dfe), each to be measured.
+The six success measures were agreed with the author, each to be measured (`docs/superpowers/specs/2026-10-29-lodge-design.md:32`).
 
 The baseline for rulings is measured on the first user, in fresh tokens, calls, and minutes per ruling.
 

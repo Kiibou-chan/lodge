@@ -15,11 +15,11 @@ numbers:
 ---
 
 lodge is a command-line tool that every session installs from a tag of its public repository.
-The entries state what holds after the cloud check: a fresh session holding only the first user's project installs lodge, with the user's authorisation in the spawning prompt.
+The entries state what holds after the cloud check: a fresh session holding only the first user's project installs lodge, with the author's authorisation in the spawning prompt.
 
 ## Reasoning
 
-The command-line route is settled: cloud sessions run lodge through Bash, with instructions in the project (d-14vk9b).
+The command-line route is settled: cloud sessions run lodge through Bash, with instructions in the project (`docs/superpowers/specs/2026-10-29-lodge-design.md:69`); the author's words on MCP servers are in d-14vk9b.
 
 Installing from a tag of the public repository is LODGE-4 (d-y8p15p).
 

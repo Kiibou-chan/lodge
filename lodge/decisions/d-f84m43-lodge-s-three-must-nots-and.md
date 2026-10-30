@@ -16,7 +16,7 @@ Each has an answer in the design.
 
 ## Reasoning
 
-The three must-nots are the author's decision d-9k0dfe.
+The design document's Must nots section lists the three must-nots after the author's words on them (`docs/superpowers/specs/2026-10-29-lodge-design.md:53-58`).
 
 The answer to the first is that every Level 1 view carries who decided, the status, and any open review flag, because a short entry could otherwise read as more settled than it is.
 
