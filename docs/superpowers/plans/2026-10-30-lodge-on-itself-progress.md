@@ -19,3 +19,7 @@ Ruling: one fix round takes I1 to I9 and M1 to M11 on the Task 2 builder, resume
 Tasks 1 and 2: fix round 1 54916ae, all of I1 to I9 and M1 to M11 reported closed; lodge accepted the four Task 1 records becoming imports (done ledger lines 210, 211, 214, 215); coordinator spot-check: LODGE-9 and d-gqyp3n dated 2026-10-29 and imported, `lodge search "check 5"` finds check 5 first, `lodge check` ok. Recheck running.
 Tasks 1 and 2: recheck in task-1-2-recheck.md, 19 of 20 closed, M9 partly; new 0 Blocking, 1 Important (N1, pointers to author records that do not hold the words cited), 5 Minor; fix round 2 on the builder takes all of them.
 Finding for the author: d-9k0dfe (published on main, an author record from the 0.1 build) states the must-nots and success measures while its quote is only "4 is very important"; its statement says more than her quote, the LODGE-8 failure, and only a replacing author decision in her words or her confirmation can settle it.
+Tasks 1 and 2: fix round 2 02f4f94 (N1 to N6, M9).
+Ruling: the coordinator rechecked fix round 2 itself; why: N1 was the only Important, and a script listing every author record the fix cites with its quote showed each quote holding the words cited (d-14vk9b, d-7v4crf, d-pf8xm9, d-rkcb17, d-c6n1ng, d-9k0dfe for "very important" only, d-n30kqr for the size only); cost if wrong: a Minor left in decision wording, still open to the final review.
+Task 1: complete.
+Task 2: complete.
