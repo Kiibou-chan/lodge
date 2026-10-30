@@ -1,7 +1,7 @@
 ---
 id: s-yhppm5
 kind: spec
-title: "An author decision without a quote fails the check"
+title: "Check 3: an author decision without a quote fails"
 ---
 
 An author decision without a quote, with where and when, fails the check, unless it is imported.

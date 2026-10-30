@@ -22,4 +22,4 @@ The specification author chose the values as guidance to be tuned in the pilot, 
 
 For scale, the first user's longest records run to hundreds of words, all at one level today.
 
-The limits are soft because the author doubts that hard limits would serve writers well, and guardrails alone usually already help.
+The limits are soft guidance rather than hard limits; the author's words on guardrails are in d-c6n1ng.

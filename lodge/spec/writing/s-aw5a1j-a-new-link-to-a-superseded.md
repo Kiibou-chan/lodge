@@ -1,7 +1,7 @@
 ---
 id: s-aw5a1j
 kind: spec
-title: "A new link to a superseded record fails the check"
+title: "Check 6: a new link to a superseded record fails"
 ---
 
 A record added in this change that links to a replaced decision or a retired entry fails the check, unless the link is through `replaces`, or through `changes` with `retire`.

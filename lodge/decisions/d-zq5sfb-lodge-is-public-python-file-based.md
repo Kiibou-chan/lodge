@@ -16,14 +16,14 @@ lodge is public from its first commit, written in Python, keeps files in git as 
 
 ## Reasoning
 
-Public from the first commit was the author's decision when she said she intended the tool to become public and chose public now over private until a first release; that decision changed the earlier choice of a private repository, because a private repository would have needed a setup script and token in the meantime.
+Public from the first commit is LODGE-4 (d-y8p15p), which changed the private repository of LODGE-3 (d-7m3rc1) and chose public now over private until a first release with a setup script and token in the meantime.
 
 The same decision is why code holds no personal paths or specifics of the first user, and why everything project-specific is in `.lodge.toml`.
 
-Python was chosen because it is easily accessible; the author likes Kotlin, but judged it too much for now.
+Python was chosen by the author (d-7v4crf).
 
-Files in git are the only source of truth, and any index is disposable, so there is nothing to keep in step; this was agreed with her.
+Files in git are the only source of truth, and any index is disposable; this was agreed with the author.
 
-Knowledge lives in the repository of the project it is about, and lodge is its own repository, both settled.
+Knowledge lives in the repository of the project it is about, and lodge is its own repository, both settled (d-dd17rs).
 
 Record prose follows the author's invariants, which are British English, no em-dashes, an Oxford comma, and one sentence per line.

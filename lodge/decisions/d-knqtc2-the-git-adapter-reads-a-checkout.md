@@ -11,11 +11,12 @@ changes:
   - {entry: s-sgprxs, action: create}
 ---
 
-The git adapter reads and writes either the current checkout or a named branch kept in its own worktree. In the first user the records live on a branch that never merges, and lodge's own data lives on lodge's main.
+The git adapter reads and writes either the current checkout or a named branch kept in its own worktree.
+In the first user the records live on a branch that never merges, and lodge's own data lives on lodge's main.
 
 ## Reasoning
 
-The first user's branch that never merges is the author's call (LODGE-1), chosen over records on `main` landing with merges.
+The first user's branch that never merges is the author's call (LODGE-1, d-49rmkb), chosen over records on `main` landing with merges.
 
 A specification change therefore does not travel on the work branch that implements it, so the decision names that branch in `work_item`, as the first user's lines that record what was built, and on which branch, do today.
 

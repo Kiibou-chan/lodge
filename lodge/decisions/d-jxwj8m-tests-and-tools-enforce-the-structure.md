@@ -15,7 +15,8 @@ numbers:
   - {value: "Python 3.12", handle: "docs/superpowers/specs/2026-10-29-lodge-design.md:269"}
 ---
 
-A structure test written with `ast`, strict typing, Ruff, Vulture, and test-first development with end-to-end tests enforce the structure from the first commit. Python 3.12 or later and PyYAML are the environment.
+A structure test written with `ast`, strict typing, Ruff, Vulture, and test-first development with end-to-end tests enforce the structure from the first commit.
+Python 3.12 or later and PyYAML are the environment.
 
 ## Reasoning
 

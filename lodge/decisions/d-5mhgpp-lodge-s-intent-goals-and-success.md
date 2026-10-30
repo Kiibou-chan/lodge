@@ -1,7 +1,7 @@
 ---
 id: d-5mhgpp
 kind: decision
-title: "lodge's intent, goals, and success measures are specification entries"
+title: "lodge's intent, goals, and success measures"
 scope: product
 decided_by: coordinator
 date: 2026-10-30T01:26:15+01:00
@@ -12,9 +12,12 @@ changes:
   - {entry: s-rx9d11, action: create}
   - {entry: s-3ht96p, action: create}
   - {entry: s-ph9z0t, action: create}
+numbers:
+  - {value: "tens of thousands of characters", handle: "docs/superpowers/specs/2026-10-29-lodge-design.md:18"}
 ---
 
-lodge exists so that agents record and read a project's decisions and specification in one defined way, and the author browses them without a session. Its intent, its goals, and the six measures that judge the pilot become specification entries in the purpose area.
+lodge exists so that agents record and read a project's decisions and specification in one defined way, and the author browses them without a session.
+Its goals are short, searchable, layered knowledge, one defined way to write it, and replacing the first user's files, and six measures judge the pilot.
 
 ## Reasoning
 
@@ -28,18 +31,16 @@ The logs grow without bound, with entries of tens of thousands of characters, fe
 
 The author reaches decisions and rulings only through a session.
 
-The author's framing was that decisions must be searchable and short, with their reasoning shortened too, and the full reasoning only available as a third step if needed.
+The author's words on short, searchable decisions with the full reasoning as a further step are in d-n30kqr, and on tooling that constrains how knowledge is worked with in d-c6n1ng; the goals above are the specification's reading of them, which is why writing goes through one defined route.
 
-She also wanted tooling that works on this knowledge effectively and constrains how it can be worked with and what can be done with it, which is why writing goes through one defined route.
+On replacing the old files rather than sitting beside them, the author's words are in d-vzvfg2.
 
-On replacing the old files, her ruling was that the tooling takes their place, like any other knowledge kept in files in the project, rather than sitting beside them; a second copy would be the upkeep cost the third must-not names.
+The structure rules come first rather than last because the first user's cleanup came after the fact; the author's requirement is in d-vxfdz7.
 
-The cleanup the first user needed is the reason the structure rules come first rather than last.
+The six success measures were agreed with the author (d-9k0dfe), each to be measured.
 
-The success measures were agreed after the design, each to be measured.
-
-The baseline for rulings is measured on the first user, in fresh tokens, calls, and minutes per ruling, because those are the quantities the ruling runs were costly in.
+The baseline for rulings is measured on the first user, in fresh tokens, calls, and minutes per ruling.
 
 The baseline for the third measure is that few entries in the first user's logs say what they replace.
 
-The measure that agents actually use lodge, with no decision written anywhere else, was the one the author weighted most, and it is the reason the hook against writing elsewhere exists.
+The measure that agents actually use lodge, with no decision written anywhere else, is the one the author called very important (d-9k0dfe); the hook against writing elsewhere serves it.

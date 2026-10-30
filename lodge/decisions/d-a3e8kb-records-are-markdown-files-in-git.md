@@ -11,7 +11,8 @@ changes:
   - {entry: s-r1eh11, action: create}
 ---
 
-Records are Markdown files with a YAML header in git, one per file, behind one storage interface. Settings live in `.lodge.toml` at the root of the working checkout, outside the data.
+Records are Markdown files with a YAML header in git, one per file, behind one storage interface.
+Settings live in `.lodge.toml` at the root of the working checkout, outside the data.
 
 ## Reasoning
 
@@ -22,3 +23,5 @@ The layout puts an area's title, intro, and order in `_area.md`, entries and dec
 Settings are outside the data because in branch mode lodge must know where the data is before it can read it.
 
 Markdown with a YAML header follows an existing project: the header for programs, the body for people.
+
+The layout, the Markdown with a YAML header, and the location of the settings are the specification author's calls, marked in the design document for the author to check.

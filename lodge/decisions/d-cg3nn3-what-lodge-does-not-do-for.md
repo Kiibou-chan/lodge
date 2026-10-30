@@ -1,7 +1,7 @@
 ---
 id: d-cg3nn3
 kind: decision
-title: "What lodge does not do for now is recorded as specification entries"
+title: "lodge's non-goals for now: no server, no MCP server, limited scope, soft limits, read-only viewer"
 scope: product
 decided_by: coordinator
 date: 2026-10-30T01:26:15+01:00
@@ -12,24 +12,24 @@ changes:
   - {entry: s-582qav, action: create}
 ---
 
-The non-goals are specification entries: no server and no MCP server, a limited scope, soft length guidance, and a read-only viewer.
+For now lodge has no server and no MCP server, leaves out other kinds of knowledge and projects, keeps length limits soft, and has a read-only viewer.
 
 ## Reasoning
 
 Each non-goal has a reason in the specification.
 
-A server is left out because a serverless prototype is reasonable first; a shared server is the later ideal and might be worth a little money, so storage sits behind one interface a server can replace, and Kotlin, which the author prefers, is a candidate then.
+No server for now: the author's decision on a serverless start, a server later, and storage behind one interface is d-rkcb17; Kotlin as a candidate language for a later server is the specification author's note, and the author's remarks on languages are in d-7v4crf.
 
-An MCP server is left out because the author does not think she can install additional MCP servers in cloud environments, so a command-line tool run through Bash is the route.
+No MCP server: the author's decision is d-14vk9b.
 
 Other kinds of project knowledge are left out until they have been evaluated, first on the past and then in a pilot.
 
-Her personal to-do list is left out for now, with the possibility of integration later in whatever way makes sense.
+The author's personal to-do list is left out for now, and may be integrated later.
 
-Conversation logs are left out as provenance; the specification notes elsewhere that cloud transcripts are not always accessible.
+Conversation logs are left out as provenance; the author's decision on provenance in the repository is d-pf8xm9.
 
-The author doubts that hard character limits would serve writers well, and expects guardrails alone to help.
+Length limits stay soft; the author's words on guardrails are in d-c6n1ng.
 
-Making the viewer read-only was the specification author's call, taken from the project whose viewer served as the model: the author's decisions reach lodge through a session, quoted, as they reach the first user's files today.
+Making the viewer read-only was the specification author's call, taken from the project whose viewer served as the model: the author's decisions reach lodge through a session, quoted, as they reach the first user's files today; the author's decision on a local web viewer is d-gcz871.
 
-Porting a second project is left out, and whether a second project adopts lodge later stays open.
+Porting a second project is left out, and whether a second project adopts lodge later stays open (see the rollout area).

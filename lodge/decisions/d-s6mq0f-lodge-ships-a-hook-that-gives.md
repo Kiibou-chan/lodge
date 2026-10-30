@@ -10,11 +10,12 @@ changes:
   - {entry: s-h12s8w, action: create}
 ---
 
-lodge ships a hook command for a project's Claude Code settings that gives feedback, without blocking, after a hand edit of a record file or of a file lodge has replaced. The pilot counts how often it fires.
+lodge ships a hook command for a project's Claude Code settings that gives feedback, without blocking, after a hand edit of a record file or of a file lodge has replaced.
+The pilot counts how often it fires.
 
 ## Reasoning
 
-The hook serves the success measure the author called very important, that agents use lodge and no decision is written anywhere else.
+The hook serves the success measure the author called very important (d-9k0dfe), that agents use lodge and no decision is written anywhere else.
 
 It was the specification author's call to ship it, modelled on the author's hook on auto-loaded files.
 

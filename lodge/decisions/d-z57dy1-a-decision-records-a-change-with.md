@@ -15,7 +15,8 @@ numbers:
   - {value: "2011", handle: "docs/superpowers/specs/2026-10-29-lodge-design.md:93"}
 ---
 
-A decision records a change, close to an architecture decision record, with a scope, who decided, the entries it changes, and the decisions it replaces or narrows. Its status, current or replaced, is derived.
+A decision records a change, close to an architecture decision record, with a scope, who decided, the entries it changes, and the decisions it replaces or narrows.
+Its status, current or replaced, is derived.
 
 ## Reasoning
 
@@ -25,10 +26,12 @@ Scope is one field on one record kind, which was agreed, so the first user's dec
 
 Number handles exist so that every number a decision states can be traced to a record and key or a runnable command.
 
-Attachments hold expanded evidence such as logs where it matters for evaluation, outside the default read path so that it costs nothing to ordinary reads.
+Attachments hold expanded evidence such as logs where it matters for evaluation, outside the default read path.
 
 `imported_from` records where a converted record came from, which the importer needs.
 
 A replaced decision's file does not change and does not move: a stored status or an archive folder would be a second copy of what the links already say, and would mean editing an immutable record.
+
+That a replaced decision's file does not change or move is the specification author's call, marked in the design document for the author to check.
 
 Reads and the viewer therefore show current records by default and the rest by filter, and a narrowed decision stays current.

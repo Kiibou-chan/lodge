@@ -1,7 +1,7 @@
 ---
 id: d-zh00c5
 kind: decision
-title: "Three questions stay open and are recorded as entries"
+title: "Open questions: the licence, a second project, and the length guidance values"
 scope: product
 decided_by: coordinator
 date: 2026-10-30T01:26:24+01:00
@@ -11,7 +11,7 @@ changes:
   - {entry: s-yrz8fz, action: create}
 ---
 
-Three questions stay open: the licence, whether a second project adopts lodge, and the values of the length guidance. Each is an entry in the rollout area.
+Three questions stay open: the licence, whether a second project adopts lodge, and the values of the length guidance.
 
 ## Reasoning
 

@@ -16,7 +16,8 @@ changes:
   - {entry: s-s27z33, action: create}
 ---
 
-The check gates publication, as a check before merge, and has seven checks. They cover the header, identifiers, the author's quote, entries without decisions, altered decisions, new links to superseded records, and entry order.
+The check gates publication, as a check before merge, and has seven checks.
+They cover the header, identifiers, the author's quote, entries without decisions, altered decisions, new links to superseded records, and entry order.
 
 ## Reasoning
 

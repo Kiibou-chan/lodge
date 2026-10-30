@@ -9,7 +9,8 @@ changes:
   - {entry: s-e55e3t, action: create}
 ---
 
-A plan is reviewed before building, and each task ends with a maintainability review from a practice view and a design view. Multi-agent builds follow the plan, review, and implement rounds of an existing project.
+A plan is reviewed before building, and each task ends with a maintainability review from a practice view and a design view.
+Multi-agent builds follow the plan, review, and implement rounds of an existing project.
 
 ## Reasoning
 

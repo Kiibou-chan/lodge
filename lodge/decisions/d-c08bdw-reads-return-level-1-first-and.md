@@ -16,10 +16,12 @@ Search and show return Level 1, the readable specification is rendered on demand
 
 ## Reasoning
 
-Level 1 first keeps reads cheap, and reasoning and provenance on request keeps the third step explicit.
+Reasoning and provenance come on request, which keeps the third step explicit (d-n30kqr).
 
 The readable specification is rendered on demand because a committed copy would be a third copy, which the third must-not rules out.
 
-A read states how fresh its data is when it comes from a shared branch, so the reader can judge whether it is current.
+A read states how fresh its data is when it comes from a shared branch.
 
 A project's `CLAUDE.md` points at the guide instead of copying it, so the rules live once, versioned with the tool.
+
+Rendering on demand and having lodge print the guide are the specification author's calls, marked in the design document for the author to check.

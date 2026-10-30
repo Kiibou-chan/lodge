@@ -1,7 +1,7 @@
 ---
 id: d-f84m43
 kind: decision
-title: "lodge's three must-nots and how the design answers each are entries"
+title: "lodge's three must-nots and how the design answers each"
 scope: product
 decided_by: coordinator
 date: 2026-10-30T01:26:15+01:00
@@ -11,11 +11,12 @@ changes:
   - {entry: s-4ykcm0, action: create}
 ---
 
-The three things lodge must not do are specification entries: show wrong information, let an agent quietly rewrite the author's decision, and become a costly third copy. Each entry carries how the design answers it.
+lodge must not show wrong information, let an agent quietly rewrite the author's decision, or become a costly third copy.
+Each has an answer in the design.
 
 ## Reasoning
 
-The author named the tool showing wrong information as the clearest must-not, and said the others would also not be good.
+The three must-nots are the author's decision d-9k0dfe.
 
 The answer to the first is that every Level 1 view carries who decided, the status, and any open review flag, because a short entry could otherwise read as more settled than it is.
 

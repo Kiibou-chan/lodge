@@ -14,11 +14,14 @@ numbers:
   - {value: "Python 3.13", handle: "docs/superpowers/specs/2026-10-29-lodge-design.md:72"}
 ---
 
-lodge is a command-line tool that every session installs from a tag of its public repository. The entries state what holds after the cloud check: a fresh session holding only the first user's project installs lodge, with the user's authorisation in the spawning prompt.
+lodge is a command-line tool that every session installs from a tag of its public repository.
+The entries state what holds after the cloud check: a fresh session holding only the first user's project installs lodge, with the user's authorisation in the spawning prompt.
 
 ## Reasoning
 
-The command-line route is settled: cloud sessions run lodge through Bash, with instructions in the project.
+The command-line route is settled: cloud sessions run lodge through Bash, with instructions in the project (d-14vk9b).
+
+Installing from a tag of the public repository is LODGE-4 (d-y8p15p).
 
 Every session installs lodge itself, because attaching lodge as a session repository does not reach the child sessions that the first user's coordinator starts, which get one repository each.
 

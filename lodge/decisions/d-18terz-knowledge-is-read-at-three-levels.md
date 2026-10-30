@@ -10,14 +10,13 @@ changes:
   - {entry: s-bzatqh, action: create}
 ---
 
-Knowledge is read at three levels: the decision or entry, then the reasoning, then the provenance. Exact provenance is kept only for the author's own words, numbers, and what a decision replaces or narrows.
+Knowledge is read at three levels: the decision or entry, then the reasoning, then the provenance.
+Exact provenance is kept only for the author's own words, numbers, and what a decision replaces or narrows.
 
 ## Reasoning
 
-The author agreed three levels, with the reasoning one explicit step away and the provenance a further step.
+The author agreed three levels, with the reasoning one explicit step away and the provenance a further step; her words are in d-n30kqr.
 
-She sized the reasoning at a few hundred words, up to a thousand or more at most.
+The size of the reasoning is given in the next decision's guidance.
 
-Her rule for provenance was that summarised reasoning is enough, and that exact provenance is needed only for her own words, as a quote, numbers, as a record or a runnable command, and what a decision replaces or narrows, as an ID.
-
-She also required provenance to be accessible, because cloud transcripts are not always available.
+The provenance rule was agreed with the author: summarised reasoning is enough, and exact provenance is kept only for her own words as a quote, numbers as a record or a runnable command, and what a decision replaces or narrows as an ID; her words on accessible provenance are in d-pf8xm9.

@@ -12,7 +12,8 @@ changes:
   - {entry: s-t7qz74, action: create}
 ---
 
-lodge is built, then holds its own decisions, then is evaluated on the first user's past in a scratch copy, then piloted with the old files frozen, then replaces the old files. The build provides only what the importer needs.
+lodge is built, then holds its own decisions, then is evaluated on the first user's past in a scratch copy, then piloted with the old files frozen, then replaces the old files.
+The build provides only what the importer needs.
 
 ## Reasoning
 
