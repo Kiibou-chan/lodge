@@ -1,2 +1,5 @@
 [store]
 mode = "checkout"
+
+[import]
+sources = ["docs/superpowers/plans/done/2026-10-29-lodge-progress.md"]
