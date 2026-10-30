@@ -24,3 +24,5 @@ Ruling: the coordinator rechecked fix round 2 itself; why: N1 was the only Impor
 Task 1: complete.
 Task 2: complete.
 Task 4: build 2e035c5 (62 coordinator imports from the done ledger, 52 standing, 2 overturned and replaced: line 114 by d-71vj1t, line 188 by d-cvnk95, 8 closed process; gate 0); coordinator check: no refs or tags from the old history in either checkout, no personal paths in the new files. Review running.
+Task 4: review in task-4-review.md, 0 Blocking, 6 Important, 5 Minor; fix round 1 on the builder takes all of them.
+Ruling: I2, a ruling is dated by the first commit whose ledger line holds it with the same substance; a later edit that only renames a word (line 187, "handoff" to "brainstorm" in the redaction commit) does not re-date it; why: the date says when the ruling was made, and the redaction made no ruling; cost if wrong: line 187 sorts before her answer to D13, which it preceded in fact.
