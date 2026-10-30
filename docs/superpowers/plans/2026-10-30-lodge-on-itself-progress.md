@@ -23,3 +23,4 @@ Tasks 1 and 2: fix round 2 02f4f94 (N1 to N6, M9).
 Ruling: the coordinator rechecked fix round 2 itself; why: N1 was the only Important, and a script listing every author record the fix cites with its quote showed each quote holding the words cited (d-14vk9b, d-7v4crf, d-pf8xm9, d-rkcb17, d-c6n1ng, d-9k0dfe for "very important" only, d-n30kqr for the size only); cost if wrong: a Minor left in decision wording, still open to the final review.
 Task 1: complete.
 Task 2: complete.
+Task 4: build 2e035c5 (62 coordinator imports from the done ledger, 52 standing, 2 overturned and replaced: line 114 by d-71vj1t, line 188 by d-cvnk95, 8 closed process; gate 0); coordinator check: no refs or tags from the old history in either checkout, no personal paths in the new files. Review running.
