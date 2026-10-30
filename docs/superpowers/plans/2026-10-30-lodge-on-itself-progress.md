@@ -37,3 +37,7 @@ Author decision d-2hcgav (2026-10-30 09:34): editing from the viewer is a goal f
 Author decision d-dyrpc6 (2026-10-30 09:41): she interacts with knowledge through the viewer now, confirming included; it narrows d-cg3nn3 and d-x42f0x, the read-only viewer.
 Ruling: Task 3 waits until the viewer can confirm, and Task 5 runs now, making lodge the authority with the entries unprotected until she confirms; why: she wants to confirm through the viewer (d-dyrpc6) and asked on 2026-10-31 at 00:47 for the work to go on overnight, "Can you just go through this"; cost if wrong: an agent edit to an entry before her confirmation goes unflagged, though each entry's history still names the decision behind it. (d-x1aacr)
 Ruling: Codex builds the tasks from here on, Claude agents review, and the coordinator commits and pushes; why: her words on 2026-10-31 at 00:48, "Use codex for implementing where applicable"; cost if wrong: a Codex run that misreads a brief costs one fix round, caught by the review. (d-x4spd2)
+The author's go of 2026-10-31 00:58: "You may merge to main and use release tags as you see fit."
+Task 5: built by Codex (645a537); review 0 Blocking, 1 Important, 8 Minor (`task-5-review.md`).
+Task 5: fix round 1 by the coordinator: I1 the notice moved to the end of the design document, so its line handles hold again; M7 the entries' status kept in `CLAUDE.md` only; M8 a hard rule naming the hook and the frozen files; M1 to M4 parked for the final wave; M5 and M6 need nothing (the gate is green outside the sandbox).
+Task 5: complete.

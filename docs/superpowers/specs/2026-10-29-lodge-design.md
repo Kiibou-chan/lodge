@@ -1,5 +1,3 @@
-The specification and her decisions now live in lodge (`lodge spec`, `lodge show`); this document is frozen.
-
 # lodge design
 
 Status: approved by the author, 2026-10-29 14:26 ("Approved"); her questions LODGE-1 to LODGE-4 answered.
@@ -313,3 +311,5 @@ Runtime dependencies kept to PyYAML **[my call]**; the viewer uses the standard 
 - Staleness bound for fetching a shared branch, and the retry policy on a rejected push.
 - The viewer's page layout and styling.
 - How the hook recognises a hand edit of a record file.
+
+The specification and her decisions now live in lodge (`lodge spec`, `lodge show`); this document is frozen.

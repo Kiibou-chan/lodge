@@ -29,6 +29,7 @@ In `core` and `app`, take the time and randomness through the ports; never read 
 - Public repository: no personal paths, machine names, secrets, or another project's records in code, tests, or docs; fixtures synthetic (a made-up project), never her words or another project's records.
 - Tests never touch a real repository: git only in `tmp_path` with `GIT_CONFIG_GLOBAL` empty, `GIT_CONFIG_NOSYSTEM=1`, `git init -b main`; no network.
 - Record files are written only through `lodge add`, never by hand, here too.
+- The hook in `.claude/settings.json` advises on a hand edit of a record file or of a file matching a `frozen` glob in `.lodge.toml` (the design document and the done ledger of the first build); those files are not edited.
 - User-facing text and Markdown: British English, no em-dashes, Oxford comma, one sentence per line.
 
 ## Build process (adapted from an existing project)
