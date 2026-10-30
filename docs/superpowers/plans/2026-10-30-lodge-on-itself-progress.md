@@ -34,3 +34,6 @@ Ruling: the coordinator rechecked Task 4's fix round 1 itself; why: each of the 
 Task 4: complete.
 Tasks 3 and 5 wait on the author's SPEC-1.
 Author decision d-2hcgav (2026-10-30 09:34): editing from the viewer is a goal for later; coordinator decision d-vme42w edits s-582qav to match, kept apart from hers so the entry's agent text never shows as hers at level 1.
+Author decision d-dyrpc6 (2026-10-30 09:41): she interacts with knowledge through the viewer now, confirming included; it narrows d-cg3nn3 and d-x42f0x, the read-only viewer.
+Ruling: Task 3 waits until the viewer can confirm, and Task 5 runs now, making lodge the authority with the entries unprotected until she confirms; why: she wants to confirm through the viewer (d-dyrpc6) and asked on 2026-10-31 at 00:47 for the work to go on overnight, "Can you just go through this"; cost if wrong: an agent edit to an entry before her confirmation goes unflagged, though each entry's history still names the decision behind it.
+Ruling: Codex builds the tasks from here on, Claude agents review, and the coordinator commits and pushes; why: her words on 2026-10-31 at 00:48, "Use codex for implementing where applicable"; cost if wrong: a Codex run that misreads a brief costs one fix round, caught by the review.
