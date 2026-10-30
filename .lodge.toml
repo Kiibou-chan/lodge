@@ -3,3 +3,6 @@ mode = "checkout"
 
 [import]
 sources = ["docs/superpowers/plans/done/2026-10-29-lodge-progress.md"]
+
+[hook]
+frozen = ["docs/superpowers/specs/2026-10-29-lodge-design.md", "docs/superpowers/plans/done/2026-10-29-lodge-progress.md"]

@@ -1,3 +1,5 @@
+The specification and her decisions now live in lodge (`lodge spec`, `lodge show`); this document is frozen.
+
 # lodge design
 
 Status: approved by the author, 2026-10-29 14:26 ("Approved"); her questions LODGE-1 to LODGE-4 answered.
