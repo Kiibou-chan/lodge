@@ -1,8 +1,8 @@
 ---
 id: s-582qav
 kind: spec
-title: "The viewer does not edit"
+title: "The viewer does not edit yet"
 ---
 
-The viewer is read-only, as s-dm37qr states.
-The author's decisions reach lodge through a session, quoted, as they reach the first user's files today.
+For now the viewer is read-only, as s-dm37qr states, and the author's decisions reach lodge through a session, quoted, as they reach the first user's files today.
+Editing from the viewer is a goal for later.

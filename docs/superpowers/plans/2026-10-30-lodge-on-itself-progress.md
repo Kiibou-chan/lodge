@@ -33,3 +33,4 @@ Task 4: fix round 1 (I1 to I6, M1 to M4; M5 a finding): imports edited through `
 Ruling: the coordinator rechecked Task 4's fix round 1 itself; why: each of the six Important findings has one observable result, and `lodge show` gave each (d-rvb42r narrowed by d-dhz8an and dated 19:32:58, d-z727gh dated 22:43:31, d-226x4j replaced by d-t22n7w, d-g2p3ng, d-xd09bw, and d-fx4xv3 narrowed), with `lodge check` ok; cost if wrong: a wording Minor in the new decisions, still open to the final review.
 Task 4: complete.
 Tasks 3 and 5 wait on the author's SPEC-1.
+Author decision d-2hcgav (2026-10-30 09:34): editing from the viewer is a goal for later; coordinator decision d-vme42w edits s-582qav to match, kept apart from hers so the entry's agent text never shows as hers at level 1.
