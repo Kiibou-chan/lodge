@@ -15,4 +15,5 @@ A loaded header joins UTF-16 surrogate pairs (as `json.dumps` writes emoji by de
 
 An agent writing drafts with `json.dumps` defaults would otherwise be refused for any emoji in her words.
 Cost if wrong: none.
-Line handles such as spec:N refer to the files at this ruling's date.
+Line handles such as spec:N refer to the files at this ruling's date, in the history before the squash, which this repository does not hold; the section named beside a handle is the way in.
+Report and review names are files in `docs/superpowers/plans/done/2026-10-29-lodge/`; probe scripts were scratch and are not kept.

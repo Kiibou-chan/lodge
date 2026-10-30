@@ -15,4 +15,5 @@ I3, `load` files the duplicate-ID problem against both paths, so both records fa
 
 Mapping by path is how `failing_ids` works, and parsing paths out of messages would couple it to wording.
 Cost if wrong: a published duplicate gives two notes instead of one.
-Line handles such as spec:N refer to the files at this ruling's date.
+Line handles such as spec:N refer to the files at this ruling's date, in the history before the squash, which this repository does not hold; the section named beside a handle is the way in.
+Report and review names are files in `docs/superpowers/plans/done/2026-10-29-lodge/`; probe scripts were scratch and are not kept.

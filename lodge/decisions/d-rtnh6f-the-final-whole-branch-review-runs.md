@@ -15,4 +15,5 @@ The final whole-branch review runs before Task 14, not after.
 
 Task 14 installs the v0.1.0 tag, and the tag comes only after the final review and the merge, on her go (Task 13 ruling).
 Cost if wrong: none to the code, Task 14 runs later than the plan orders.
-Line handles such as spec:N refer to the files at this ruling's date.
+Line handles such as spec:N refer to the files at this ruling's date, in the history before the squash, which this repository does not hold; the section named beside a handle is the way in.
+Report and review names are files in `docs/superpowers/plans/done/2026-10-29-lodge/`; probe scripts were scratch and are not kept.

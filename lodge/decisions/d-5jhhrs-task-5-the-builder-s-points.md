@@ -14,4 +14,5 @@ The builder's points 4 to 6 are overturned by B1, M1, and M3; points 1 to 3 stan
 ## Reasoning
 
 No reason is given in the ledger line, which cites task-5-review.md for the points.
-Line handles such as spec:N refer to the files at this ruling's date.
+Line handles such as spec:N refer to the files at this ruling's date, in the history before the squash, which this repository does not hold; the section named beside a handle is the way in.
+Report and review names are files in `docs/superpowers/plans/done/2026-10-29-lodge/`; probe scripts were scratch and are not kept.

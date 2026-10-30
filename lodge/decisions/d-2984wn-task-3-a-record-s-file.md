@@ -17,4 +17,5 @@ imported_from: {file: "docs/superpowers/plans/done/2026-10-29-lodge-progress.md"
 
 Six long words can pass a file-name limit, and the slug is the plan's call, not the spec's.
 Cost if wrong: none; taken in this task's fix round or the final wave.
-Line handles such as spec:N refer to the files at this ruling's date.
+Line handles such as spec:N refer to the files at this ruling's date, in the history before the squash, which this repository does not hold; the section named beside a handle is the way in.
+Report and review names are files in `docs/superpowers/plans/done/2026-10-29-lodge/`; probe scripts were scratch and are not kept.

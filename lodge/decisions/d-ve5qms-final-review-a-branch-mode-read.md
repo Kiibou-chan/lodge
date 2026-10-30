@@ -15,4 +15,5 @@ G1, a branch-mode read that cannot take the lock serves the cached ref and says 
 
 The plan's offline rule already serves the cache on a failed fetch, and a read never needs the lock to be correct.
 Cost if wrong: a read during another add shows a state at most one add old, labelled.
-Line handles such as spec:N refer to the files at this ruling's date.
+Line handles such as spec:N refer to the files at this ruling's date, in the history before the squash, which this repository does not hold; the section named beside a handle is the way in.
+Report and review names are files in `docs/superpowers/plans/done/2026-10-29-lodge/`; probe scripts were scratch and are not kept.

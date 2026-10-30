@@ -15,4 +15,5 @@ I2, `check_change` gains a fourth parameter `now: datetime` (timezone-aware), an
 
 One future-dated record otherwise blocks every later change to what it touches (task-5-review.md, I2, run), against "one bad record never blocks everyone", and the spec's Structure has core take the time as a parameter.
 Cost if wrong: one parameter through Task 8, whose brief passes `clock.now()` (plan:380 omits `settings` too; Task 8's brief carries both).
-Line handles such as spec:N refer to the files at this ruling's date.
+Line handles such as spec:N refer to the files at this ruling's date, in the history before the squash, which this repository does not hold; the section named beside a handle is the way in.
+Report and review names are files in `docs/superpowers/plans/done/2026-10-29-lodge/`; probe scripts were scratch and are not kept.

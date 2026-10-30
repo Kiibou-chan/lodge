@@ -15,4 +15,5 @@ Task 4 M2 and N2 are taken in Task 7: `apply_drafts` assigns new IDs in ascendin
 
 Dates are shared within one add and `derive` breaks ties by ID, so draft order becomes decision order without faking seconds.
 Cost if wrong: two adds in the same second still tie by random ID, which check 1 refuses for linked decisions.
-Line handles such as spec:N refer to the files at this ruling's date.
+Line handles such as spec:N refer to the files at this ruling's date, in the history before the squash, which this repository does not hold; the section named beside a handle is the way in.
+Report and review names are files in `docs/superpowers/plans/done/2026-10-29-lodge/`; probe scripts were scratch and are not kept.

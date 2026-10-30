@@ -15,4 +15,5 @@ R1 to R3 wait for the final fix wave rather than a third round.
 
 They are all in the viewer exemption, no later task builds on them, the task reviews read every task's diff for I/O in any case, and name-based rules cannot be complete.
 Cost if wrong: a viewer write slips past the test until the final review.
-Line handles such as spec:N refer to the files at this ruling's date.
+Line handles such as spec:N refer to the files at this ruling's date, in the history before the squash, which this repository does not hold; the section named beside a handle is the way in.
+Report and review names are files in `docs/superpowers/plans/done/2026-10-29-lodge/`; probe scripts were scratch and are not kept.

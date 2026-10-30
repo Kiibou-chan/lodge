@@ -15,4 +15,5 @@ N1, the signal handler defers the exit while a git child runs and exits when it 
 
 Killing git mid-write leaves index.lock, which blocks the user's own git.
 Cost if wrong: a SIGTERM waits for at most one git call.
-Line handles such as spec:N refer to the files at this ruling's date.
+Line handles such as spec:N refer to the files at this ruling's date, in the history before the squash, which this repository does not hold; the section named beside a handle is the way in.
+Report and review names are files in `docs/superpowers/plans/done/2026-10-29-lodge/`; probe scripts were scratch and are not kept.

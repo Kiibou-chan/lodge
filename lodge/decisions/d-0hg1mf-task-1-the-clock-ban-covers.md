@@ -15,4 +15,5 @@ The builder's ruling, adopted: `now`, `today`, `utcnow`, `fromtimestamp` are ban
 
 The plan's literal ban on the name would reject its own port.
 Cost if wrong: an aliased class (`d = datetime; d.now()`) slips past, while the module allow-list still keeps `time`, `os`, and `secrets` out.
-Line handles such as spec:N refer to the files at this ruling's date.
+Line handles such as spec:N refer to the files at this ruling's date, in the history before the squash, which this repository does not hold; the section named beside a handle is the way in.
+Report and review names are files in `docs/superpowers/plans/done/2026-10-29-lodge/`; probe scripts were scratch and are not kept.

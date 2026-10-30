@@ -15,4 +15,5 @@ The builder's wrong-folder problem 1, the latest-earlier-change rule, dangling I
 
 Each matches the spec's wording or the reviewer ran it clean (task-4-review.md, Pass 2 and 3).
 Cost if wrong: a rename or reorder in Task 7.
-Line handles such as spec:N refer to the files at this ruling's date.
+Line handles such as spec:N refer to the files at this ruling's date, in the history before the squash, which this repository does not hold; the section named beside a handle is the way in.
+Report and review names are files in `docs/superpowers/plans/done/2026-10-29-lodge/`; probe scripts were scratch and are not kept.

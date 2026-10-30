@@ -15,4 +15,5 @@ M7, writes equal to the current file are dropped, and an add with nothing left p
 
 An empty commit in branch mode is noise in her history.
 Cost if wrong: one note string.
-Line handles such as spec:N refer to the files at this ruling's date.
+Line handles such as spec:N refer to the files at this ruling's date, in the history before the squash, which this repository does not hold; the section named beside a handle is the way in.
+Report and review names are files in `docs/superpowers/plans/done/2026-10-29-lodge/`; probe scripts were scratch and are not kept.

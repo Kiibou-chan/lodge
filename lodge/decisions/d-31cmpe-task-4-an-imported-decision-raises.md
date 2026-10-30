@@ -15,4 +15,5 @@ B2 follows the plan over the brief, so an imported decision raises the flag what
 
 The plan's "Calls made" (plan:51) governs the brief, and check 3 exempts imports from the quote, so an unflagged import is must-not 2.
 Cost if wrong: an imported author decision gets a flag she clears with one confirm.
-Line handles such as spec:N refer to the files at this ruling's date.
+Line handles such as spec:N refer to the files at this ruling's date, in the history before the squash, which this repository does not hold; the section named beside a handle is the way in.
+Report and review names are files in `docs/superpowers/plans/done/2026-10-29-lodge/`; probe scripts were scratch and are not kept.

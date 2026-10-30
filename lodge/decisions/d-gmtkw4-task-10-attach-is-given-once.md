@@ -15,4 +15,5 @@ imported_from: {file: "docs/superpowers/plans/done/2026-10-29-lodge-progress.md"
 
 A greedy list would swallow the draft files, and a decision dated further ahead is check 1's to refuse (task-10-report.md, Fix round 1, concerns 1, 3, and 4).
 Cost if wrong: one more flag per attachment.
-Line handles such as spec:N refer to the files at this ruling's date.
+Line handles such as spec:N refer to the files at this ruling's date, in the history before the squash, which this repository does not hold; the section named beside a handle is the way in.
+Report and review names are files in `docs/superpowers/plans/done/2026-10-29-lodge/`; probe scripts were scratch and are not kept.

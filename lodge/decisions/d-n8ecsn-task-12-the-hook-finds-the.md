@@ -13,6 +13,7 @@ M1 and M2, the hook finds the repository from the edited file's folder, not the 
 
 ## Reasoning
 
-Task-12-review.md, Minors, each run.
+See task-12-review.md, Minors, each run.
 Cost if wrong: one more path lookup per edit.
-Line handles such as spec:N refer to the files at this ruling's date.
+Line handles such as spec:N refer to the files at this ruling's date, in the history before the squash, which this repository does not hold; the section named beside a handle is the way in.
+Report and review names are files in `docs/superpowers/plans/done/2026-10-29-lodge/`; probe scripts were scratch and are not kept.

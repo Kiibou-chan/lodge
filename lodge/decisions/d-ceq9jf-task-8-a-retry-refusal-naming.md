@@ -15,4 +15,5 @@ M4, a refusal on a retry that names an area or entry absent from the first attem
 
 It is a race, and exit 1 tells the caller to retry (task-8-review.md, M4, probe).
 Cost if wrong: a genuine usage error that only shows on a retry exits 1.
-Line handles such as spec:N refer to the files at this ruling's date.
+Line handles such as spec:N refer to the files at this ruling's date, in the history before the squash, which this repository does not hold; the section named beside a handle is the way in.
+Report and review names are files in `docs/superpowers/plans/done/2026-10-29-lodge/`; probe scripts were scratch and are not kept.

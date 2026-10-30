@@ -15,4 +15,5 @@ I1, the hook's advice is the review's text (reverse your own edit with the same 
 
 "undo with git" discards her uncommitted edits and records an earlier `lodge add` staged (task-12-review.md, I1).
 Cost if wrong: none.
-Line handles such as spec:N refer to the files at this ruling's date.
+Line handles such as spec:N refer to the files at this ruling's date, in the history before the squash, which this repository does not hold; the section named beside a handle is the way in.
+Report and review names are files in `docs/superpowers/plans/done/2026-10-29-lodge/`; probe scripts were scratch and are not kept.

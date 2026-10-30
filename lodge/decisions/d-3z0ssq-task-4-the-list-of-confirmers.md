@@ -15,4 +15,5 @@ imported_from: {file: "docs/superpowers/plans/done/2026-10-29-lodge-progress.md"
 
 It records who confirmed, and the flag, not that list, says whether her review is outstanding (spec, Review flag).
 Cost if wrong: a reader sees a confirmer beside a decision still flagged, and Task 9's reader filters the list.
-Line handles such as spec:N refer to the files at this ruling's date.
+Line handles such as spec:N refer to the files at this ruling's date, in the history before the squash, which this repository does not hold; the section named beside a handle is the way in.
+Report and review names are files in `docs/superpowers/plans/done/2026-10-29-lodge/`; probe scripts were scratch and are not kept.

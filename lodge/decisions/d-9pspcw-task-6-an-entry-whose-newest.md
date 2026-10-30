@@ -15,4 +15,5 @@ I6, an entry whose newest changing decision is replaced or narrowed carries `its
 
 Must-not 1, the spec is silent on this case.
 Cost if wrong: one more flag string, renamed in one place.
-Line handles such as spec:N refer to the files at this ruling's date.
+Line handles such as spec:N refer to the files at this ruling's date, in the history before the squash, which this repository does not hold; the section named beside a handle is the way in.
+Report and review names are files in `docs/superpowers/plans/done/2026-10-29-lodge/`; probe scripts were scratch and are not kept.

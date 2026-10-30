@@ -15,4 +15,5 @@ For "the entry's last change", `derive` skips changes by a decision that is neit
 
 LODGE-7 A has replacing undo the change where lodge can work it out, and otherwise the next agent edit of an entry she just took back is unflagged (task-4-report.md, LODGE round, concern 2); her own replaced decisions stay counted, since correcting her own decision must not unflag the next agent edit (lodge-round-recheck.md, L1, probes H1 and H1b).
 Cost if wrong: an agent edit after her rejection is flagged even when her own last change is older.
-Line handles such as spec:N refer to the files at this ruling's date.
+Line handles such as spec:N refer to the files at this ruling's date, in the history before the squash, which this repository does not hold; the section named beside a handle is the way in.
+Report and review names are files in `docs/superpowers/plans/done/2026-10-29-lodge/`; probe scripts were scratch and are not kept.

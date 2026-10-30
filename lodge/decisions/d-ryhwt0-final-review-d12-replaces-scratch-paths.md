@@ -15,4 +15,5 @@ D12, the four review files' scratch paths are replaced with "the reviewer's scra
 
 Rewriting a pushed public branch is destructive and needs her go, and the path names only the account already public as the GitHub identity.
 Cost if wrong: the path stays readable in the branch history until she rules.
-Line handles such as spec:N refer to the files at this ruling's date.
+Line handles such as spec:N refer to the files at this ruling's date, in the history before the squash, which this repository does not hold; the section named beside a handle is the way in.
+Report and review names are files in `docs/superpowers/plans/done/2026-10-29-lodge/`; probe scripts were scratch and are not kept.

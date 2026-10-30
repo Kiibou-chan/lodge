@@ -15,4 +15,5 @@ G4, lodge keeps its own ref `refs/lodge/accepted`, the last lodge tip it accepte
 
 Git's own fetch moves the remote-tracking ref, so only a ref lodge alone moves can see a rewrite, and a git command keeps the CLI the spec describes.
 Cost if wrong: a stranger has to run one git command to accept a rewrite they meant.
-Line handles such as spec:N refer to the files at this ruling's date.
+Line handles such as spec:N refer to the files at this ruling's date, in the history before the squash, which this repository does not hold; the section named beside a handle is the way in.
+Report and review names are files in `docs/superpowers/plans/done/2026-10-29-lodge/`; probe scripts were scratch and are not kept.

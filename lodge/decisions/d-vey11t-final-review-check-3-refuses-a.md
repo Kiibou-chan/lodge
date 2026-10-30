@@ -15,4 +15,5 @@ R1, check 3 refuses a decided_by that contains "author" in any spelling but is n
 
 A lookalike reads as hers with no quote (must-not 1, LODGE-2).
 Cost if wrong: an agent role spelt with "author" in it, such as "co-author", is refused and must be renamed.
-Line handles such as spec:N refer to the files at this ruling's date.
+Line handles such as spec:N refer to the files at this ruling's date, in the history before the squash, which this repository does not hold; the section named beside a handle is the way in.
+Report and review names are files in `docs/superpowers/plans/done/2026-10-29-lodge/`; probe scripts were scratch and are not kept.

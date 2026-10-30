@@ -13,6 +13,7 @@ M3, a listed attachment name resolves to `lodge/attachments/<decision id>/<name>
 
 ## Reasoning
 
-The spec's Storage layout places attachments at `lodge/attachments/<id>/` (spec:208).
+The spec's Storage layout places attachments at `lodge/attachments/<id>/` (spec:212, Storage, the `lodge/attachments/<id>/` line).
 Cost if wrong: Task 9 and the guide (Task 13) follow this form and change together.
-Line handles such as spec:N refer to the files at this ruling's date.
+Line handles such as spec:N refer to the files at this ruling's date, in the history before the squash, which this repository does not hold; the section named beside a handle is the way in.
+Report and review names are files in `docs/superpowers/plans/done/2026-10-29-lodge/`; probe scripts were scratch and are not kept.

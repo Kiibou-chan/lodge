@@ -15,4 +15,5 @@ The final wave runs as Part A (Important and must-fix) then Part B (minors), eac
 
 Thirty items overflow one builder's context.
 Cost if wrong: one extra recheck.
-Line handles such as spec:N refer to the files at this ruling's date.
+Line handles such as spec:N refer to the files at this ruling's date, in the history before the squash, which this repository does not hold; the section named beside a handle is the way in.
+Report and review names are files in `docs/superpowers/plans/done/2026-10-29-lodge/`; probe scripts were scratch and are not kept.

@@ -15,4 +15,5 @@ Task 13 builds and pushes the branch but creates no tag; `v0.1.0` is tagged afte
 
 A tag on the public repository is a release others can install, and the code has not had its final review.
 Cost if wrong: Task 14 waits for the tag.
-Line handles such as spec:N refer to the files at this ruling's date.
+Line handles such as spec:N refer to the files at this ruling's date, in the history before the squash, which this repository does not hold; the section named beside a handle is the way in.
+Report and review names are files in `docs/superpowers/plans/done/2026-10-29-lodge/`; probe scripts were scratch and are not kept.

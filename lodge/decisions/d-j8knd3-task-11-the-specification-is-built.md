@@ -15,4 +15,5 @@ I1, `core` gains `spec_view(s, d, failing, area=None)` returning the areas as st
 
 A statement starting `## ` rendered a flagged entry's text as a separate unflagged entry (task-11-review.md, I1, run), must-not 1, and the escape keeps `lodge spec` output unambiguous too.
 Cost if wrong: one more core function and a changed `spec_page` signature.
-Line handles such as spec:N refer to the files at this ruling's date.
+Line handles such as spec:N refer to the files at this ruling's date, in the history before the squash, which this repository does not hold; the section named beside a handle is the way in.
+Report and review names are files in `docs/superpowers/plans/done/2026-10-29-lodge/`; probe scripts were scratch and are not kept.

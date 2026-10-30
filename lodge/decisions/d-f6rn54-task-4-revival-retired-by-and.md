@@ -15,4 +15,5 @@ L2, a decision that revives an entry by replacing its last standing retirement c
 
 Must-not 1, each read otherwise shows a revived or retired entry as more settled than it is (lodge-round-recheck.md, H2 to H4).
 Cost if wrong: one more feedback line per revival.
-Line handles such as spec:N refer to the files at this ruling's date.
+Line handles such as spec:N refer to the files at this ruling's date, in the history before the squash, which this repository does not hold; the section named beside a handle is the way in.
+Report and review names are files in `docs/superpowers/plans/done/2026-10-29-lodge/`; probe scripts were scratch and are not kept.

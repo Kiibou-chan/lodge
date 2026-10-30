@@ -15,4 +15,5 @@ I1, the flag clears only on a non-imported author decision ordered after the fla
 
 The spec says "a later author decision" (Review flag), and imports are exempt from check 1's dates and check 3's quote.
 Cost if wrong: an imported confirmation from the old record leaves a flag she confirms again.
-Line handles such as spec:N refer to the files at this ruling's date.
+Line handles such as spec:N refer to the files at this ruling's date, in the history before the squash, which this repository does not hold; the section named beside a handle is the way in.
+Report and review names are files in `docs/superpowers/plans/done/2026-10-29-lodge/`; probe scripts were scratch and are not kept.

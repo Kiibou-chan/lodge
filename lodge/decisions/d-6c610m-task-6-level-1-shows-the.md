@@ -13,6 +13,7 @@ B1, `Level1` gains `quote: Quote | None`, printed by `format_level1` after the s
 
 ## Reasoning
 
-Spec:174 makes the quote at level 1 the safeguard for LODGE-2, and the spec outranks the plan's `Level1` (plan:283-286).
+The spec at spec:178 (Writing, and feedback on writes) makes the quote at level 1 the safeguard for LODGE-2, and the spec outranks the plan's `Level1` (plan:283-286).
 Cost if wrong: one more line per level-1 read; Tasks 8, 10, and 11 consume the new field.
-Line handles such as spec:N refer to the files at this ruling's date.
+Line handles such as spec:N refer to the files at this ruling's date, in the history before the squash, which this repository does not hold; the section named beside a handle is the way in.
+Report and review names are files in `docs/superpowers/plans/done/2026-10-29-lodge/`; probe scripts were scratch and are not kept.

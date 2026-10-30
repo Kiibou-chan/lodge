@@ -15,4 +15,5 @@ I4, no Task 6 change; every CLI read (Task 10) and every viewer page (Task 11) s
 
 A file that does not parse cannot be attributed to any record, and the check refuses publishing a new one, so only a hand-edited checkout reaches this.
 Cost if wrong: reads that are right but carry a warning line.
-Line handles such as spec:N refer to the files at this ruling's date.
+Line handles such as spec:N refer to the files at this ruling's date, in the history before the squash, which this repository does not hold; the section named beside a handle is the way in.
+Report and review names are files in `docs/superpowers/plans/done/2026-10-29-lodge/`; probe scripts were scratch and are not kept.

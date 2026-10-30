@@ -15,4 +15,5 @@ C1, the checkout gate checks both HEAD's tree and the working tree and fails if 
 
 HEAD alone stops checking staged records before a commit, the working tree alone misses a partial commit.
 Cost if wrong: a gate run with uncommitted, broken records fails before the commit, which is the earlier and cheaper place.
-Line handles such as spec:N refer to the files at this ruling's date.
+Line handles such as spec:N refer to the files at this ruling's date, in the history before the squash, which this repository does not hold; the section named beside a handle is the way in.
+Report and review names are files in `docs/superpowers/plans/done/2026-10-29-lodge/`; probe scripts were scratch and are not kept.

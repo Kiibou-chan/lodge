@@ -15,4 +15,5 @@ The builder's choices stand: `test_add_non_string_scalar_exits_2` uses a list, s
 
 Each is within the brief or makes its output more exact (task-10-report.md, concerns 1 to 4 and 6).
 Cost if wrong: one line of output text.
-Line handles such as spec:N refer to the files at this ruling's date.
+Line handles such as spec:N refer to the files at this ruling's date, in the history before the squash, which this repository does not hold; the section named beside a handle is the way in.
+Report and review names are files in `docs/superpowers/plans/done/2026-10-29-lodge/`; probe scripts were scratch and are not kept.

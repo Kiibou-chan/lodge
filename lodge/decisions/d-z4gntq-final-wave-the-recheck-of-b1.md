@@ -15,4 +15,5 @@ Recheck B1 (fresh Sonnet rechecker on a scratch copy of 2c6b62b) and build B2 ru
 
 The rechecker never writes to the worktree, and any B1 fix folds into the B2 recheck round.
 Cost if wrong: a B1 fix lands after B2 and needs one more small recheck.
-Line handles such as spec:N refer to the files at this ruling's date.
+Line handles such as spec:N refer to the files at this ruling's date, in the history before the squash, which this repository does not hold; the section named beside a handle is the way in.
+Report and review names are files in `docs/superpowers/plans/done/2026-10-29-lodge/`; probe scripts were scratch and are not kept.
