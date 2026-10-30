@@ -30,3 +30,6 @@ Ruling: I1, d-dhz8an narrows d-rvb42r instead of replacing it; why: the routing 
 Finding for the next code plan: the viewer-exemption minors R1 to R3 and the aliased `datetime` minor (done ledger lines 41 to 44) were not taken by the 0.1 final wave and are open (d-t22n7w); `tests/structure_calls.py:161-165`.
 Finding for the next code plan: a process ruling whose work item is finished still shows `current` at level 1 (Task 4 review, M5).
 Task 4: fix round 1 (I1 to I6, M1 to M4; M5 a finding): imports edited through `lodge draft` and `lodge add --import`, five live decisions d-dhz8an, d-t22n7w, d-b576zz, d-jrsa66, d-7299pr.
+Ruling: the coordinator rechecked Task 4's fix round 1 itself; why: each of the six Important findings has one observable result, and `lodge show` gave each (d-rvb42r narrowed by d-dhz8an and dated 19:32:58, d-z727gh dated 22:43:31, d-226x4j replaced by d-t22n7w, d-g2p3ng, d-xd09bw, and d-fx4xv3 narrowed), with `lodge check` ok; cost if wrong: a wording Minor in the new decisions, still open to the final review.
+Task 4: complete.
+Tasks 3 and 5 wait on the author's SPEC-1.
