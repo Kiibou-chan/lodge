@@ -63,6 +63,11 @@ def read_checked(w: Wiring) -> State:
     published tree the store returned, so a rewritten branch is compared with its accepted tip.
     """
     state = read_state(w.store)
+    if (state.current.files, state.current.attachments) == (
+        state.published.files,
+        state.published.attachments,
+    ):
+        return state
     published = load(state.published)
     before = core.derive(published)
     facts = core.ChangeFacts(
