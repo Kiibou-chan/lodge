@@ -27,4 +27,4 @@ def test_no_command_is_a_usage_error(project: Project) -> None:
 
 
 def test_version_works_anywhere(project: Project, tmp_path: Path) -> None:
-    assert project.run("--version", cwd=tmp_path).out == "lodge 0.1.0\n"
+    assert project.run("--version", cwd=tmp_path).out == "lodge 0.2.0\n"
