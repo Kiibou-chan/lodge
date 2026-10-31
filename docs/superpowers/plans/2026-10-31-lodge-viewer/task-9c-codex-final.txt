@@ -1,0 +1,8 @@
+DONE_WITH_CONCERNS
+
+Added decisions d-7n4jyj and d-h3v99q, plus eight entries: s-eb9kn7, s-2bzwzv, s-rh08jw, s-q42qd7, s-704ssg, s-rpn77e, s-bet2rj, and s-nnp7y3.
+
+Gate green; dependency marks 0; no commit.
+Concern: wheel test skipped because DNS was unavailable; socket tests deferred as required.
+
+[Report](docs/superpowers/plans/2026-10-31-lodge-viewer/task-9c-report.md)
