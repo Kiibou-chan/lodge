@@ -41,13 +41,25 @@ def check_entries(
     for d in added:
         for change in dict.fromkeys(d.changes):
             if change.action is Action.LINK and change.entry in after.entries:
+                if any(
+                    other.id != d.id
+                    and any(
+                        c.entry == change.entry and c.action in (Action.EDIT, Action.CREATE)
+                        for c in other.changes
+                    )
+                    for other in added
+                ):
+                    continue
                 before = published.entries.get(change.entry)
                 entry = after.entries[change.entry]
                 reason = ""
                 if before is None:
-                    reason = "is new; list it with action create"
+                    reason = "is new; list it with action create in another decision of this change"
                 elif not _only_rests_on_differs(before, entry):
-                    reason = "changes more than rests_on; list it with action edit"
+                    reason = (
+                        "changes more than rests_on; list it with action edit "
+                        "in another decision of this change"
+                    )
                 if reason:
                     yield problem_at(
                         after, d.id, 4, f"lists link for {change.entry}, which {reason}"

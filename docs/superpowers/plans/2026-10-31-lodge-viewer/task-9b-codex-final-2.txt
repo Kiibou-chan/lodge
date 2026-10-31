@@ -1,0 +1,7 @@
+Step 1: DONE. Both test cases failed before the fix; check 4, guide, and errors now agree.
+
+Step 2: DONE_WITH_CONCERNS. Added decisions `d-68b0j2`, `d-6zyet3`, and `d-m4ky49`, plus 14 entries listed in the [final report](docs/superpowers/plans/2026-10-31-lodge-viewer/task-9b-report.md).
+
+Gate green: 1367 tests passed; “changed since” is 0. No commit.
+
+Concern: dependency reconciliation brought two obsolete viewer claims forward from Task 9c. Socket tests remain for the coordinator’s gate.

@@ -41,3 +41,4 @@ Task 8: complete, with that one link left for after the merge.
 Task 9a: review 0 Blocking, 1 Important, 4 Minor (`task-9a-review.md`).
 Task 9a: fix round 1 by Codex: d-s69cq4 no longer narrows d-mzkt6e; Minors fixed. Task 9a: complete.
 Task 9b: first run blocked on check 4 charging a later text edit to earlier link decisions; ruling d-na1eg7: a link passes when another decision of the same change edits the entry.
+Check 4 per ruling d-na1eg7, with both tests failing first (Codex). Task 9b: built by Codex: three decisions and 14 entries; the builder notes two viewer claims brought forward from Task 9c; no 'changed since' marks.

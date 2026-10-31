@@ -1,5 +1,6 @@
 from dataclasses import replace
 
+import pytest
 from builders import area, at, decision, entry, snapshot_of
 from checks import check
 
@@ -44,7 +45,7 @@ def test_link_changing_the_statement_fails_check_4() -> None:
         and p.message
         == (
             "d-cccccc: lists link for s-aaaaaa, which changes more than rests_on; "
-            "list it with action edit"
+            "list it with action edit in another decision of this change"
         )
         for p in trial(Action.LINK, statement="Changed.").problems
     )
@@ -54,7 +55,8 @@ def test_link_for_a_new_entry_fails_check_4() -> None:
     assert any(
         p.check == 4
         and p.message
-        == "d-cccccc: lists link for s-aaaaaa, which is new; list it with action create"
+        == "d-cccccc: lists link for s-aaaaaa, which is new; list it with action create "
+        "in another decision of this change"
         for p in trial(Action.LINK, new=True).problems
     )
 
@@ -111,3 +113,32 @@ def test_kept_rest_on_retired_entry_passes_check_6() -> None:
     retired = decision(changes=(Change(B.id, Action.RETIRE),))
     before = snapshot_of(area(), replace(A, rests_on=(B.id,)), B, retired)
     assert not any(p.check == 6 for p in check(before, before).problems)
+
+
+@pytest.mark.parametrize("new, action", [(False, Action.EDIT), (True, Action.CREATE)])
+def test_link_with_another_decision_accounting_for_text_passes(new: bool, action: Action) -> None:
+    before = snapshot_of(area(order=(B.id,) if new else (B.id, A.id)), B, *(() if new else (A,)))
+    changed = replace(A, statement="Changed.", rests_on=(B.id,))
+    link = decision(id="d-cccccc", date=at(30), changes=(Change(A.id, Action.LINK),))
+    edit = decision(id="d-dddddd", date=at(31), changes=(Change(A.id, action),))
+    assert check(before, snapshot_of(area(order=(B.id, A.id)), B, changed, link, edit)).ok
+
+
+@pytest.mark.parametrize("field", ["statement", "title"])
+def test_link_without_another_decision_accounting_for_text_fails(field: str) -> None:
+    changed = replace(A, rests_on=(B.id,))
+    changed = (
+        replace(changed, statement="Changed.")
+        if field == "statement"
+        else replace(changed, title="Changed.")
+    )
+    link = decision(id="d-cccccc", date=at(30), changes=(Change(A.id, Action.LINK),))
+    unrelated = decision(id="d-dddddd", date=at(31), changes=(Change(B.id, Action.EDIT),))
+    result = check(snapshot_of(area(), A, B), snapshot_of(area(), changed, B, link, unrelated))
+    assert any(
+        p.check == 4
+        and p.message
+        == "d-cccccc: lists link for s-aaaaaa, which changes more than rests_on; "
+        "list it with action edit in another decision of this change"
+        for p in result.problems
+    )

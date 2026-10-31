@@ -41,7 +41,7 @@ Transcripts are kept whole.
 ```
 
 An entry draft has `kind: spec`, `id`, `area`, and `title`; an area draft has `kind: area`, `name`, `title`, and `order`; a new entry needs its area, and a new area needs an area draft in the same add.
-In `changes`, use `create`, `edit`, `link`, or `retire`; an entry lists what it needs in `rests_on: [s-…]`, and a decision changing only that list uses action `link`.
+In `changes`, use `create`, `edit`, `link`, or `retire`; an entry lists what it needs in `rests_on: [s-…]`, and a decision changing only that list uses action `link`; check 4 accepts other entry changes alongside it only when another decision of the same change lists that entry with `edit` or `create`.
 When an entry still holds after an entry it rests on changed, say so with a decision that lists it with `edit`, its text unchanged, and why in the reasoning.
 A correction, or a shorter reasoning, is a new decision with `replaces: [d-xxxxxx]` or `narrows: [d-xxxxxx]`, never an edit.
 A number in a statement needs `numbers: [{value: "40 %", handle: "a command, or a record and key"}]`.
