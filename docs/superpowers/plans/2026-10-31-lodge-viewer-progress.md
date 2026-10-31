@@ -47,3 +47,4 @@ Task 10: built by Codex: README, a `lodge waiting` line in `CLAUDE.md`, the view
 Task 10: complete; its prose is rechecked by the final review.
 Task 11: built by Codex: the ten areas ranked in the first design's section order, and `lodge spec` shows them so; the builder notes order-change notes on five areas whose order lines did not change, for the final review.
 Tasks 9b and 9c: review 0 Blocking, 3 Important, 8 Minor (`task-9bc-review.md`); fixed in the fix wave with the final review's findings.
+Final review: 0 Blocking, 1 Important, 11 Minor (`final-review.md`); gate green with socket tests (1392); end to end and write gate verified; every per-task Important closed; ready to merge after one fix wave.
