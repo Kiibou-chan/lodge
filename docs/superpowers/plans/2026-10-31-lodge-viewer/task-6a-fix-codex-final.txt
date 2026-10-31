@@ -1,0 +1,5 @@
+DONE_WITH_CONCERNS
+
+Tests: 1307 passed; builder gate green; 19 socket tests blocked by sandbox permissions.
+
+All requested findings fixed; mutation failures recorded under “Fix round 1”. Cross-process confirmation races remain outside scope and are documented. No commit made.

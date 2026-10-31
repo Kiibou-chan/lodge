@@ -3,7 +3,13 @@
 from lodge.core.apply import Applied, StaleBase, apply_drafts
 from lodge.core.check_change import check_change
 from lodge.core.check_state import CheckResult, check_state
-from lodge.core.confirmation import VIEWER, behind_area, confirmable_ids, confirmation_draft
+from lodge.core.confirmation import (
+    MINUTE_FORMAT,
+    VIEWER,
+    behind_area,
+    confirmable_ids,
+    confirmation_draft,
+)
 from lodge.core.derive import Derived, derive, is_author
 from lodge.core.drafts import Draft, parse_draft, record_from_draft
 from lodge.core.feedback import Feedback, area_feedback, feedback
@@ -66,6 +72,7 @@ from lodge.core.yamlio import YamlError, load_yaml
 
 __all__ = [
     "ATTACHMENTS",
+    "MINUTE_FORMAT",
     "THREADS",
     "VIEWER",
     "Action",

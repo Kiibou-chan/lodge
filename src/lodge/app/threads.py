@@ -32,7 +32,7 @@ def _message(
     if by == "author":
         if where is None or not where.strip():
             raise LodgeError("a message by author needs where, the place of the author's words")
-        stamp = when if when is not None else now.strftime("%Y-%m-%d %H:%M")
+        stamp = when if when is not None else now.strftime(core.MINUTE_FORMAT)
     else:
         if where is not None or when is not None:
             raise LodgeError("where and when are for messages by author")

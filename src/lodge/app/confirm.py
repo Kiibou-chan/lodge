@@ -10,7 +10,7 @@ from lodge.app.state import State, Wiring, not_found, read_state
 from lodge.core import VIEWER, Scope, clean_text, confirmation_draft, level1
 
 
-def _behind(state: State, name: str) -> tuple[str, ...]:
+def _behind_ids(state: State, name: str) -> tuple[str, ...]:
     s = state.snapshot
     if name not in s.areas and all(e.area != name for e in s.entries.values()):
         raise not_found(state, f"area named {name}", name)
@@ -30,8 +30,16 @@ def behind_area(w: Wiring, name: str) -> tuple[Behind, ...]:
                 )
             ),
         )
-        for i in _behind(state, name)
+        for i in _behind_ids(state, name)
     )
+
+
+def _expected(state: State, ids: Sequence[str], area: str | None) -> tuple[str, ...]:
+    if area is not None:
+        return _behind_ids(state, area)
+    if len(ids) == 1 and ids[0] in core.confirmable_ids(state.snapshot, state.derived):
+        return (ids[0],)
+    return ()
 
 
 def confirm(
@@ -41,19 +49,19 @@ def confirm(
     area: str | None,
     commit: bool,
 ) -> Written:
+    """Check the list once before publishing; callers must serialise confirmations.
+
+    Task 6b's viewer.writes.handle_post holds its module-level _LOCK across this
+    entire call, including add retries and commit, within one viewer process.
+    Separate viewer processes and CLI writes can still interleave.
+    """
     words = clean_text(words)
+    if "\r\n" in words:
+        raise LodgeError("your words hold a character lodge cannot store")
     if not words:
         raise LodgeError("your words are required; nothing was written")
     state = read_state(w.store)
-    expected = (
-        _behind(state, area)
-        if area is not None
-        else (
-            (ids[0],)
-            if len(ids) == 1 and ids[0] in core.confirmable_ids(state.snapshot, state.derived)
-            else ()
-        )
-    )
+    expected = _expected(state, ids, area)
     if not expected or len(ids) != len(expected) or set(ids) != set(expected):
         raise StaleList("the list changed since the page was loaded; nothing was written")
     scope = (
@@ -63,7 +71,7 @@ def confirm(
     )
     try:
         draft = confirmation_draft(
-            expected, scope, words, w.clock.now().strftime("%Y-%m-%d %H:%M"), area
+            expected, scope, words, w.clock.now().strftime(core.MINUTE_FORMAT), area
         )
     except ValueError as error:
         raise LodgeError("your words hold a character lodge cannot store") from error

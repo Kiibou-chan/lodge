@@ -19,3 +19,5 @@ Task 5: review 0 Blocking, 3 Important, 7 Minor (`task-5-review.md`).
 Tasks 4 and 5: fix round 1 by Codex in one round, with ruling d-wez56g; all Importants and the cheap Minors fixed with failing-first evidence in both reports; gate green.
 Task 4: complete. Task 5: complete. Both fix rounds are rechecked by the final review.
 Task 6a: review 0 Blocking, 3 Important, 7 Minor (`task-6a-review.md`).
+Task 6a: fix round 1 by Codex, each test shown failing against the review's mutation; a race between two viewer processes stays out of scope and is documented in the code; gate green.
+Task 6a: complete; the fix round is rechecked by the final review.

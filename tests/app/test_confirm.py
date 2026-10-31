@@ -52,7 +52,13 @@ def test_confirmed_decision_keeps_decided_by_and_clears_its_flag() -> None:
 
 
 def test_scope_product_when_any_listed_is_product() -> None:
-    store = MemoryStore(area(), entry(id="s-aaaaaa"), entry(id="s-bbbbbb"), AGENT, OTHER)
+    store = MemoryStore(
+        area(),
+        entry(id="s-aaaaaa"),
+        entry(id="s-bbbbbb"),
+        AGENT,
+        replace(OTHER, scope=Scope.PROCESS),
+    )
     wired(store).confirm([AGENT.id, OTHER.id], "Read.", "storage")
     assert made(store).scope is Scope.PRODUCT
 
@@ -70,7 +76,9 @@ def test_area_confirms_exactly_the_listed() -> None:
 
 
 def test_stale_area_list_writes_nothing() -> None:
-    store = store_for()
+    store = MemoryStore(area(), entry(id="s-aaaaaa"), entry(id="s-bbbbbb"), AGENT, OTHER)
+    wired(store).confirm([OTHER.id], "Read.")
+    store.publishes.clear()
     with pytest.raises(
         StaleList, match="the list changed since the page was loaded; nothing was written"
     ):
@@ -97,7 +105,9 @@ def test_words_required(words: str) -> None:
 
 def test_words_with_specials_kept_verbatim() -> None:
     store = store_for()
-    words = 'Read: "yes" \\ # [x]\r\n\tCaveat: café.\rInside.'
+    words = (
+        'Read: "yes" \\ # [x]\r\n\tCaveat: café.\rInside.\n## Reasoning\nMore.\n---\nStill here.'
+    )
     wired(store).confirm([AGENT.id], " \n" + words + " \n")
     expected = words.replace("\r\n", "\n")
     assert made(store).reasoning == expected
@@ -146,3 +156,46 @@ def test_show_marks_confirmable() -> None:
     lodge.confirm([AGENT.id], "Read.")
     assert not lodge.show(AGENT.id).confirmable
     assert not lodge.show("d-111111").confirmable
+
+
+@pytest.mark.parametrize("staged,commit", [(False, True), (True, False)])
+def test_confirmation_does_not_commit_unless_staged_and_requested(
+    staged: bool, commit: bool
+) -> None:
+    store = store_for(staged=staged)
+    result = wired(store).confirm([AGENT.id], "Read.", commit=commit)
+    assert result.outcome is (AddOutcome.STAGED if staged else AddOutcome.PUBLISHED)
+    assert result.committed is None
+    assert store.commits == []
+
+
+def test_confirmation_failed_check_writes_and_commits_nothing() -> None:
+    store = MemoryStore(replace(AGENT, date="2026-10-29T09:31:00+01:00"), staged=True)
+    result = wired(store).confirm([AGENT.id], "Read.", commit=True)
+    assert result.outcome is AddOutcome.CHECK_FAILED
+    assert not result.check.ok
+    assert store.publishes == []
+    assert store.commits == []
+
+
+def test_repeated_cr_before_lf_is_refused() -> None:
+    store = store_for()
+    with pytest.raises(LodgeError, match="your words hold a character lodge cannot store"):
+        wired(store).confirm([AGENT.id], "a\r\r\nb")
+    assert store.publishes == []
+
+
+def test_second_area_confirmation_is_stale() -> None:
+    store = store_for(staged=True)
+    lodge = wired(store)
+    lodge.confirm([AGENT.id], "Read.", "storage")
+    with pytest.raises(StaleList):
+        lodge.confirm([AGENT.id], "Read.", "storage")
+    assert len(store.publishes) == 1
+
+
+def test_duplicate_confirmation_ids_are_stale() -> None:
+    store = store_for()
+    with pytest.raises(StaleList):
+        wired(store).confirm([AGENT.id, AGENT.id], "Read.", "storage")
+    assert store.publishes == []

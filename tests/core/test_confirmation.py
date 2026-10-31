@@ -1,3 +1,4 @@
+import pytest
 from builders import at, decision, entry, snapshot_of
 
 from lodge.core import (
@@ -29,11 +30,11 @@ def test_confirmable_ids_skip_author_confirmed_and_replaced() -> None:
 def test_behind_area_lists_creators_and_last_changers_oldest_first() -> None:
     s = snapshot_of(
         entry(id="s-aaaaaa"),
-        decision(id="d-cccccc", date=at(2), changes=(Change("s-aaaaaa", Action.EDIT),)),
-        decision(id="d-aaaaaa", date=at(0), changes=(Change("s-aaaaaa", Action.CREATE),)),
+        decision(id="d-aaaaaa", date=at(2), changes=(Change("s-aaaaaa", Action.EDIT),)),
+        decision(id="d-cccccc", date=at(0), changes=(Change("s-aaaaaa", Action.CREATE),)),
         decision(id="d-bbbbbb", date=at(1), changes=(Change("s-aaaaaa", Action.EDIT),)),
     )
-    assert behind_area(s, derive(s), "storage") == ("d-aaaaaa", "d-cccccc")
+    assert behind_area(s, derive(s), "storage") == ("d-cccccc", "d-aaaaaa")
 
 
 def test_behind_area_includes_the_retirer_of_a_retired_entry() -> None:
@@ -84,3 +85,29 @@ def test_confirmation_draft_area_lists_with_the_oxford_comma() -> None:
     assert isinstance(made, Decision)
     assert made.title == "Confirms the decisions behind area storage"
     assert made.statement == "The author confirms d-aaaaaa, d-bbbbbb, and d-cccccc."
+
+
+def test_behind_area_same_date_uses_id_tie_break() -> None:
+    s = snapshot_of(
+        entry(id="s-aaaaaa"),
+        decision(id="d-cccccc", date=at(0), changes=(Change("s-aaaaaa", Action.CREATE),)),
+        decision(id="d-aaaaaa", date=at(0), changes=(Change("s-aaaaaa", Action.CREATE),)),
+    )
+    assert behind_area(s, derive(s), "storage") == ("d-aaaaaa", "d-cccccc")
+
+
+def test_confirmation_draft_two_uses_and() -> None:
+    draft = parse_draft(
+        "viewer",
+        confirmation_draft(["d-aaaaaa", "d-bbbbbb"], Scope.PRODUCT, "Read.", "now", "storage"),
+    )
+    assert isinstance(draft, Draft)
+    made = record_from_draft(draft, "d-cccccc", at(1), None)
+    assert isinstance(made, Decision)
+    assert made.statement == "The author confirms d-aaaaaa and d-bbbbbb."
+
+
+@pytest.mark.parametrize("ids", [[], ["d-aaaaaa", "d-bbbbbb"]])
+def test_confirmation_draft_without_area_requires_one_id(ids: list[str]) -> None:
+    with pytest.raises(ValueError, match="one decision"):
+        confirmation_draft(ids, Scope.PRODUCT, "Read.", "now", None)
