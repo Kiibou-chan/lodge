@@ -16,5 +16,5 @@ Plan rechecked: `plan-recheck-opus.md` (all 18 fixed; N1 to N4 Important, N5 to 
 Fix round 2 (`plan-fix-2.md`): every finding taken, none parked; the index's invariants in the Global Constraints, tested by fault injection.
 The coordinator's ruling for fix round 2, recorded: d-6hb3yd.
 The planner's calls for fix round 2, recorded: d-c0q20c, d-aej8rs, d-9r24jc, d-4n5tr6, d-gd00c6.
-For the coordinator to confirm or narrow: d-gd00c6 keeps broad searches under the stop until the coordinator rules otherwise.
+The coordinator's ruling on broad searches, recorded: d-hxmdkz (narrows d-gd00c6), their own stop at 1.0 s warm; the 0.3 s stop covers the point reads and searches with at most 5,000 candidates.
 Open with the author: SCALE-1; the plan keeps four states as the one constant `KEPT_STATES` until she answers (d-ytf272).

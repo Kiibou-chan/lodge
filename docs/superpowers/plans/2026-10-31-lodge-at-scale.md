@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development to implement this plan task by task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** an agent's reads through lodge are cheap and fast at 160,000 record files: the superlinear steps go, headers parse with libyaml where that is provably the same, identical states are not compared, reads batch several refs and queries and treat codes as codes, and a local SQLite index answers a read of a seen state in at most 0.3 s on native disk.
+**Goal:** an agent's reads through lodge are cheap and fast at 160,000 record files: the superlinear steps go, headers parse with libyaml where that is provably the same, identical states are not compared, reads batch several refs and queries and treat codes as codes, and a local SQLite index answers a read of a seen state in at most 0.3 s on native disk, and a search with more than 5,000 candidates in at most 1.0 s (d-hxmdkz).
 
 **Architecture:** `core` gains linear checks and traversals, one `derive` per snapshot, a guarded C loader, a per-file parse and an assembly from parses, a plain-value codec, the new search ranking, and code families.
 `app` gains the identical-state shortcut, multi-ref and multi-query reads, an `Index` port, and a read path that answers `show`, `search`, `waiting`, `threads`, and `thread` from stored rows.
@@ -64,7 +64,7 @@ Each is recorded in lodge as a process decision with its reasoning, handles, and
 16. d-zyqzkg: identical states skip `check_change`, by the proof in Task 4.
 17. d-q051s2: the C loader parses only headers a guard admits as the writer's shapes.
 18. d-dxqxsn: each state's own statuses and `check_state` problems are stored by its identity alone, for a later change check.
-19. d-me8vm3, narrowed by d-gd00c6: searches with more than 5,000 candidates are measured apart, and the stop covers them until the coordinator rules otherwise.
+19. d-me8vm3, narrowed by d-gd00c6 and d-hxmdkz: searches with more than 5,000 candidates are measured apart, with their own stop at 1.0 s warm at 160,000 files; the 0.3 s stop covers `show`, `waiting`, `threads`, `thread`, and searches with at most 5,000 candidates.
 20. d-26e6zj: the stop on missed targets applies after Task 11.
 21. d-6hb3yd and d-aej8rs: the index's invariants of the Global Constraints.
 
@@ -73,7 +73,7 @@ Each is recorded in lodge as a process decision with its reasoning, handles, and
 | Read | Today | After Tasks 2 to 4 | After Task 11 |
 |---|---|---|---|
 | a point read (`show`, `waiting`), seen state | not finished in 900 s on a FUSE disk; natively the phases of `probes/phases.py` sum to 53 s with `_missing` made linear, and today's `_missing` is quadratic (6.7 s at 16,008 files, so about 100 times that at 160,000) | about 14 s: trees 5.5, one load 7.1 (libyaml where the guard admits, which the writer's records all are), `derive` 0.9, `check_state` about 0.5 | about 0.2 s: import 0.10, git 0.08 (`rev-parse`, `merge-base`, `diff-index` 0.012, `diff-files` 0.045), folder signatures 0.01, SQLite 0.01 |
-| a broad search (100,000 candidates) | as above | as above | about 0.7 s, measured apart, under the stop (d-gd00c6) |
+| a broad search (100,000 candidates) | as above | as above | about 0.7 s, measured apart, against its own 1.0 s stop (d-hxmdkz) |
 | after one changed record (checkout, uncommitted) | as above | about 25 s (two loads, the change check) | about 3 s: listing 0.06, parse cache 0.45, assembly 0.2, `derive` 0.9, `check_state` 0.3, the change check with stored published facts 0.6, rows 0.6, writing 0.2 |
 | first read in a clone | as above | as above | about 12 s: parse 7, FTS 1.1, parse cache 1.4, state 2.5 |
 | the gate, `add`, `spec`, the viewer | as above | about 14 s | about 4 s: exact trees 2.0 (every working-tree file read), parse cache 0.45, assembly, `derive`, and checks 1.5 |
@@ -601,5 +601,5 @@ The changed-record row is at its target; Task 10c measures it, and Task 12 appli
 - Consumes: every task.
 - Produces: `timings.md`, for `s900`, `s9000`, and `s90000` on native disk, per line of `scripts/bench_reads.txt`: the base build of Task 1, this branch `cold`, `seen`, and `changed`, `check --gate` included, with the output and exit-status comparison against the base build (identical, or the lines Tasks 5 to 7 changed on purpose, named); each search's candidate count, with searches over 5,000 candidates in a table of their own (d-me8vm3); the index file's size per store; the machine's Python, SQLite, and disk kind; where a FUSE-mounted copy of `s90000` is at hand, the same `show {code}` `seen` on it, one line, without its path.
 - [ ] **Step 1:** run the replay; write `timings.md`.
-- [ ] **Step 2:** the stop (d-26e6zj, d-232gxs, d-gd00c6): if a point read or a search at 160,000 files, broad ones included, is above 0.3 s `seen`, or a read is above 3 s `changed`, `timings.md` gives the phase table, and the ledger records that the server question goes to the coordinator; broad searches are reported apart with their candidate counts, whatever they are.
+- [ ] **Step 2:** the stop (d-26e6zj, d-232gxs, d-hxmdkz): if at 160,000 files `show`, `waiting`, `threads`, `thread`, or a search with at most 5,000 candidates is above 0.3 s `seen`, a search with more than 5,000 candidates is above 1.0 s `seen`, or a read is above 3 s `changed`, `timings.md` gives the phase table, and the ledger records that the server question goes to the coordinator; broad searches are reported apart with their candidate counts, whatever they are.
 - [ ] **Step 3:** gate, commit, push.
