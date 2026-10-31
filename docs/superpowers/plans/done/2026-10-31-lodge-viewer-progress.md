@@ -50,3 +50,4 @@ Tasks 9b and 9c: review 0 Blocking, 3 Important, 8 Minor (`task-9bc-review.md`);
 Final review: 0 Blocking, 1 Important, 11 Minor (`final-review.md`); gate green with socket tests (1392); end to end and write gate verified; every per-task Important closed; ready to merge after one fix wave.
 Final fix wave: final I1, 9b/9c I1 to I3, Minors m2 to m5, m7, m10, m11, Task 6b m5 fixed by Codex (`fix-wave-report.md`); coordinator decision d-azeks4; gate green outside the sandbox (1395 passed); 0 changed-since marks; waiting empty.
 Fix wave recheck: 12 closed, 0 open, 0 new Blocking, 0 new Important (`fix-wave-recheck.md`). lodge-viewer: complete.
+Ruling: old plan paths stay in decisions and frozen files after the move to done/; editable files are fixed (d-knxs41). Plan, ledger, and folder moved to done/; merged into main at 0841f08.
