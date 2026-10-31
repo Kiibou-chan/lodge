@@ -85,17 +85,23 @@ def waiting_page(listed: Listed, waiting: ThreadsWaiting, notice: str | None = N
 
 def _branches(branches: tuple[Branch, ...]) -> str:
     seen: set[str] = set()
-
-    def render(items: tuple[Branch, ...]) -> str:
-        rows = []
-        for item in items:
-            repeated = item.id in seen
-            seen.add(item.id)
-            detail = " (see above)" if repeated else render(item.children)
-            rows.append(f"<li>{link(item.id, item.title)} {e(item.status)}{detail}</li>")
-        return "<ul>" + "".join(rows) + "</ul>" if rows else ""
-
-    return render(branches)
+    if not branches:
+        return ""
+    pending: list[Branch | str] = ["</ul>", *reversed(branches), "<ul>"]
+    parts: list[str] = []
+    while pending:
+        item = pending.pop()
+        if isinstance(item, str):
+            parts.append(item)
+            continue
+        parts.append(f"<li>{link(item.id, item.title)} {e(item.status)}")
+        pending.append("</li>")
+        if item.id in seen:
+            parts.append(" (see above)")
+        elif item.children:
+            pending.extend(["</ul>", *reversed(item.children), "<ul>"])
+        seen.add(item.id)
+    return "".join(parts)
 
 
 def problems_page(result: CheckResult, read: Read, notice: str | None = None) -> str:

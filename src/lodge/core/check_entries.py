@@ -1,22 +1,24 @@
 """Check 4: each entry created, edited, or retired is named by a decision of the same change."""
 
-from collections.abc import Iterator
+from collections.abc import Iterator, Mapping
 from dataclasses import replace
 
 from lodge.core.check_state import new_decisions, problem_at
-from lodge.core.derive import derive
+from lodge.core.derive import Status
 from lodge.core.model import Action, Problem, Record, SpecEntry
 from lodge.core.settings import CoreSettings
 from lodge.core.snapshot import Snapshot
 
 
 def check_entries(
-    published: Snapshot, after: Snapshot, settings: CoreSettings
+    published: Snapshot,
+    after: Snapshot,
+    settings: CoreSettings,
+    was: Mapping[str, Status],
+    now: Mapping[str, Status],
 ) -> Iterator[Problem]:
     added = new_decisions(published, after)
     listed = {(c.entry, c.action) for d in added for c in d.changes}
-    was = derive(published).status
-    now = derive(after).status
     for entry_id in sorted(after.entries):
         entry = after.entries[entry_id]
         before = published.entries.get(entry_id)

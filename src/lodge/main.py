@@ -1,5 +1,6 @@
 """The composition root: the one place that wires the adapters to the operations."""
 
+import gc
 import io
 import secrets
 import signal
@@ -107,6 +108,8 @@ def main(argv: list[str] | None = None) -> int:
         if isinstance(stream, io.TextIOWrapper):
             stream.reconfigure(errors="replace")
     args = sys.argv[1:] if argv is None else argv
+    if argv is None and args[:1] != ["view"]:
+        gc.disable()
     try:
         return run(args, _make_lodge, _init, _view, _hook)
     except LodgeError as error:

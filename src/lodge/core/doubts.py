@@ -13,22 +13,23 @@ def doubt_marks(
     questions = _open(s, Raises.QUESTION)
     marks: dict[str, list[str]] = {}
     affected: set[str] = set()
+    changed_doubts: dict[str, set[str]] = {}
+    for decision in doubts & s.decisions.keys():
+        for change in s.decisions[decision].changes:
+            if change.action is Action.CREATE:
+                changed_doubts.setdefault(change.entry, set()).add(decision)
+    for ident, changes in changed_by.items():
+        if changes and changes[0] in doubts:
+            changed_doubts.setdefault(ident, set()).add(changes[0])
     for ident in sorted(s.decisions.keys() | s.entries.keys()):
         local: list[str] = []
         if ident in doubts:
             local.append("in doubt")
         if ident in questions:
             local.append("question open")
-        changed = False
         if ident in s.entries:
-            for decision in sorted(doubts & s.decisions.keys()):
-                created = any(
-                    c.entry == ident and c.action is Action.CREATE
-                    for c in s.decisions[decision].changes
-                )
-                if created or changed_by.get(ident, ())[:1] == (decision,):
-                    changed = True
-                    local.append(f"changed by {decision}, in doubt")
+            changed = changed_doubts.get(ident, set())
+            local.extend(f"changed by {decision}, in doubt" for decision in sorted(changed))
             if ident in doubts or changed:
                 affected.add(ident)
         if local:
@@ -42,18 +43,22 @@ def _open(s: Snapshot, kind: Raises) -> set[str]:
 
 
 def _propagate(s: Snapshot, affected: set[str], marks: dict[str, list[str]]) -> None:
-    for ident, entry in sorted(s.entries.items()):
-        seen = {ident}
-        pending = list(entry.rests_on)
-        reached: set[str] = set()
+    reverse: dict[str, list[str]] = {}
+    for ident, entry in s.entries.items():
+        for target in entry.rests_on:
+            reverse.setdefault(target, []).append(ident)
+    reached: dict[str, set[str]] = {}
+    for source in affected:
+        seen = {source}
+        pending = list(reverse.get(source, ()))
         while pending:
-            target = pending.pop()
-            if target in seen:
+            ident = pending.pop()
+            if ident in seen:
                 continue
-            seen.add(target)
-            if target in affected:
-                reached.add(target)
-            if target in s.entries:
-                pending.extend(s.entries[target].rests_on)
-        if reached:
-            marks.setdefault(ident, []).extend(f"rests on {t}, in doubt" for t in sorted(reached))
+            seen.add(ident)
+            reached.setdefault(ident, set()).add(source)
+            pending.extend(reverse.get(ident, ()))
+    for ident in sorted(reached):
+        marks.setdefault(ident, []).extend(
+            f"rests on {t}, in doubt" for t in sorted(reached[ident])
+        )

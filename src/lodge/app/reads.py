@@ -83,11 +83,19 @@ def check(w: Wiring, gate: bool) -> tuple[CheckResult, Read]:
         return state.result, state.read
     base = w.store.gate(state.current)
     published, now = load(base.published), w.clock.now()
+    before = core.derive(published)
+    known = frozenset(
+        (p.path, p.check, p.message) for p in core.check_state(published, derived=before).problems
+    )
     found: dict[Problem, list[str]] = {}
     notes: dict[str, None] = {}
     for label, tree in base.checked:
         snapshot = state.snapshot if tree is state.current else load(tree)
-        result = core.check_change(published, snapshot, w.settings, now)
+        derived = state.derived if tree is state.current else core.derive(snapshot)
+        facts = core.ChangeFacts(
+            before.status, known, derived, core.check_state(snapshot, derived=derived).problems
+        )
+        result = core.check_change(published, snapshot, w.settings, now, facts=facts)
         for problem in result.problems:
             found.setdefault(problem, []).append(label)
         notes.update(dict.fromkeys(result.notes))

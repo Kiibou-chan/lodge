@@ -1,7 +1,7 @@
 """The pure core: record kinds, identifiers, settings, and the file format."""
 
 from lodge.core.apply import Applied, StaleBase, apply_drafts
-from lodge.core.check_change import check_change
+from lodge.core.check_change import ChangeFacts, change_facts, check_change
 from lodge.core.check_state import CheckResult, check_state
 from lodge.core.confirmation import (
     MINUTE_FORMAT,
@@ -89,6 +89,7 @@ __all__ = [
     "Area",
     "Branch",
     "Change",
+    "ChangeFacts",
     "CheckResult",
     "CoreSettings",
     "Decision",
@@ -126,6 +127,7 @@ __all__ = [
     "area_path",
     "attachment_path",
     "behind_area",
+    "change_facts",
     "check_change",
     "check_state",
     "clean_text",
