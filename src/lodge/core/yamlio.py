@@ -8,6 +8,8 @@ from typing import Any
 import yaml
 from yaml.constructor import ConstructorError
 
+from lodge.core import yamlfast
+
 _KEPT_TAGS = {"tag:yaml.org,2002:str", "tag:yaml.org,2002:seq", "tag:yaml.org,2002:map", None}
 _UNREADABLE = re.compile(r"[\x00-\x1f\x7f-\x9f\u2028\u2029\ud800-\udfff\ufffe\uffff]")
 
@@ -53,6 +55,11 @@ def _join_pair(pair: re.Match[str]) -> str:
 
 def load_yaml(text: str) -> object:
     """The one YAML document in `text`, with every scalar a `str`."""
+    if getattr(yaml, "__with_libyaml__", False) and yamlfast.admitted(text):
+        try:
+            return yamlfast.load_yaml(text)
+        except Exception:
+            pass  # Only the Python loader supplies diagnostics, including their lines.
     try:
         return yaml.load(text, Loader=_TextLoader)
     except yaml.MarkedYAMLError as error:
