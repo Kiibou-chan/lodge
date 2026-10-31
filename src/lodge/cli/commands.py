@@ -42,7 +42,7 @@ def run(
     argv: Sequence[str],
     make_lodge: Callable[[], Lodge],
     init: Callable[[], str],
-    view: Callable[[int], int],
+    view: Callable[[int, tuple[str, ...]], int],
     hook: Callable[[], int],
 ) -> int:
     """Parse `argv` and run the command; the exit status, 0, 1 for a failed check, 2 for usage.
@@ -83,8 +83,11 @@ def run(
             return run_thread(command, make_lodge())
         case Guide():
             print(files("lodge.cli").joinpath("guide.md").read_text(encoding="utf-8"), end="")
-        case View(port):
-            return view(port)
+        case View(port, allow_hosts):
+            if any(not h or "/" in h or any(c.isspace() for c in h) for h in allow_hosts):
+                print("lodge: --allow-host needs a host without whitespace or /", file=sys.stderr)
+                return 2
+            return view(port, allow_hosts)
         case Hook(event):
             return hook() if event == HOOK_EVENT else 0
     return 0

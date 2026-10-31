@@ -72,6 +72,7 @@ class Guide:
 @dataclass(frozen=True)
 class View:
     port: int
+    allow_hosts: tuple[str, ...]
 
 
 @dataclass(frozen=True)
@@ -136,7 +137,10 @@ def _parser() -> argparse.ArgumentParser:
     spec.add_argument("--area", help="only this area")
     add("waiting", "list what waits: for an agent, then for the author", lambda _: Waiting())
     add("guide", "print the guide for agents", lambda _: Guide())
-    view = add("view", "serve the read-only viewer on this machine", _view_of)
+    view = add(
+        "view", "serve the viewer on this machine: read, confirm, and raise doubts", _view_of
+    )
+    view.add_argument("--allow-host", action="append", default=[])
     view.add_argument("--port", type=int, default=DEFAULT_PORT, help=f"default {DEFAULT_PORT}")
     hook = add("hook", "answer a Claude Code hook event: post-tool-use", lambda a: Hook(a.event))
     hook.add_argument("event", choices=(HOOK_EVENT,))
@@ -224,4 +228,4 @@ def _spec_of(args: argparse.Namespace) -> Command:
 
 
 def _view_of(args: argparse.Namespace) -> Command:
-    return View(args.port)
+    return View(args.port, tuple(args.allow_host))

@@ -14,3 +14,4 @@ Task 4: built by Codex (a64c88e).
 Task 4: review 0 Blocking, 1 Important, 10 Minor (`task-4-review.md`); the git layer passed every probe in scratch repositories.
 Ruling d-wez56g: a thread whose subject no longer resolves is shown, not refused (`ThreadShown.about` is `Level1 | None`), fixed with Task 5's `thread_head` in one round.
 Task 6a: built by Codex; the builder notes the stale-list check is not atomic with publication, which Task 6b's write lock covers.
+Task 6b: built by Codex; the builder says test-first was not followed throughout, so its review checks that each security test fails on a gate without its rule.

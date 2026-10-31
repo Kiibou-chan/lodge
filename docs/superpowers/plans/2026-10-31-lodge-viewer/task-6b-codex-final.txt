@@ -1,0 +1,7 @@
+DONE_WITH_CONCERNS
+
+Tests: builder gate passed, 1,278 passed and one skipped; CLI subset passed.
+
+Concerns: socket tests need coordinator verification; strict test-first sequencing was not fully followed.
+
+Report: [task-6b-report.md](docs/superpowers/plans/2026-10-31-lodge-viewer/task-6b-report.md).

@@ -10,15 +10,15 @@ _SCOPES = tuple(scope.value for scope in Scope)
 _NONE = Read(None, ())
 
 
-def search_page(listed: Listed, query: str, filters: Filters) -> str:
+def search_page(listed: Listed, query: str, filters: Filters, notice: str | None = None) -> str:
     form = _search_form(query, filters)
     results = _results(listed.items, "No matches.", listed.read)
     shown, total = len(listed.items), len(listed.items) + listed.more
     cut = f"<p>{shown} of {total} shown; narrow the query.</p>" if listed.more else ""
-    return page("Search", f"<h1>Search</h1>{form}{results}{cut}", listed.read)
+    return page("Search", f"<h1>Search</h1>{form}{results}{cut}", listed.read, notice)
 
 
-def record_page(shown: Shown) -> str:
+def record_page(shown: Shown, notice: str | None = None) -> str:
     v = shown.level1
     known = {v.id: v.status}
     if shown.level3 is not None:
@@ -36,27 +36,29 @@ def record_page(shown: Shown) -> str:
     body = (
         f'<article class="record"><h1>{e(v.title)}</h1>{level1_body(v, known)}{sections}</article>'
     )
-    return page(v.title, body, shown.read)
+    return page(v.title, body, shown.read, notice)
 
 
-def spec_page(areas: tuple[SpecArea, ...], read: Read) -> str:
+def spec_page(areas: tuple[SpecArea, ...], read: Read, notice: str | None = None) -> str:
     body = "".join(_spec_area(held, read) for held in areas)
-    return page("Specification", body or "<p>Nothing is recorded yet.</p>", read)
+    return page("Specification", body or "<p>Nothing is recorded yet.</p>", read, notice)
 
 
-def timeline_page(listed: Listed) -> str:
+def timeline_page(listed: Listed, notice: str | None = None) -> str:
     body = _results(listed.items, "No decisions yet.", listed.read)
     total = len(listed.items) + listed.more
     cut = f"<p>{len(listed.items)} of {total} shown.</p>" if listed.more else ""
-    return page("Timeline", f"<h1>Timeline</h1>{body}{cut}", listed.read)
+    return page("Timeline", f"<h1>Timeline</h1>{body}{cut}", listed.read, notice)
 
 
-def waiting_page(listed: Listed) -> str:
+def waiting_page(listed: Listed, notice: str | None = None) -> str:
     body = _results(listed.items, "Nothing waits for the author.", listed.read)
-    return page("Waiting for the author", f"<h1>Waiting for the author</h1>{body}", listed.read)
+    return page(
+        "Waiting for the author", f"<h1>Waiting for the author</h1>{body}", listed.read, notice
+    )
 
 
-def problems_page(result: CheckResult, read: Read) -> str:
+def problems_page(result: CheckResult, read: Read, notice: str | None = None) -> str:
     body = "<h1>Problems</h1>"
     if result.ok:
         body += "<p>ok</p>"
@@ -70,7 +72,7 @@ def problems_page(result: CheckResult, read: Read) -> str:
     if result.notes:
         notes = "".join(f"<li>{e(note)}</li>" for note in result.notes)
         body += f"<h2>Notes</h2><ul>{notes}</ul>"
-    return page("Problems", body, read)
+    return page("Problems", body, read, notice)
 
 
 def error_page(message: str) -> str:
