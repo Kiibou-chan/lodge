@@ -18,3 +18,8 @@ The coordinator's ruling for fix round 2, recorded: d-6hb3yd.
 The planner's calls for fix round 2, recorded: d-c0q20c, d-aej8rs, d-9r24jc, d-4n5tr6, d-gd00c6.
 The coordinator's ruling on broad searches, recorded: d-hxmdkz (narrows d-gd00c6), their own stop at 1.0 s warm; the 0.3 s stop covers the point reads and searches with at most 5,000 candidates.
 Open with the author: SCALE-1; the plan keeps four states as the one constant `KEPT_STATES` until she answers (d-ytf272).
+Rechecked again: `plan-recheck-2.md` (V1 to V3 Important, V4 to V8 Minor).
+Fix round 3 (`plan-fix-3.md`): every finding taken, none parked; the index's consistency rewritten so nothing a kept state depends on is ever deleted.
+The coordinator's ruling for fix round 3, recorded: d-t3afj1 (replaces d-6hb3yd).
+The planner's calls for fix round 3, recorded: d-4j98ph (replaces d-aej8rs), d-gvz66f, d-n6tqzq.
+The index's size cap follows SCALE-1's option A through `INDEX_BYTES_PER_FILE`; her answer changes that one constant.
