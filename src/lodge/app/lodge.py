@@ -3,11 +3,20 @@
 from collections.abc import Sequence
 from typing import Literal
 
-from lodge.app import reads, writes
+from lodge.app import reads, threads, writes
 from lodge.app.ports import Clock, IdSource, Store
-from lodge.app.results import Added, Listed, Read, Shown
+from lodge.app.results import (
+    Added,
+    Listed,
+    Read,
+    Shown,
+    ThreadList,
+    ThreadShown,
+    ThreadsWaiting,
+    Written,
+)
 from lodge.app.state import Wiring
-from lodge.core import CheckResult, CoreSettings, Filters, SpecArea
+from lodge.core import CheckResult, CoreSettings, Filters, Raises, SpecArea
 
 
 class Lodge:
@@ -52,3 +61,46 @@ class Lodge:
     ) -> Added:
         """Add `drafts`; `attachments`, (name, text) files, go beside the one decision created."""
         return writes.add(self._w, drafts, importing, dry_run, attachments)
+
+    def ask(
+        self,
+        ref: str,
+        raises: Raises,
+        by: str,
+        text: str,
+        where: str | None = None,
+        when: str | None = None,
+        commit: bool = False,
+    ) -> Written:
+        return threads.write(self._w, ref, raises, by, text, where, when, commit)
+
+    def reply(
+        self,
+        thread: str,
+        by: str,
+        text: str,
+        where: str | None = None,
+        when: str | None = None,
+        commit: bool = False,
+    ) -> Written:
+        return threads.write(self._w, thread, None, by, text, where, when, commit)
+
+    def close(
+        self,
+        thread: str,
+        by: str,
+        text: str | None = None,
+        where: str | None = None,
+        when: str | None = None,
+        commit: bool = False,
+    ) -> Written:
+        return threads.write(self._w, thread, None, by, text or "", where, when, commit, True)
+
+    def threads(self) -> ThreadList:
+        return threads.list_open(self._w)
+
+    def thread(self, ref: str) -> ThreadShown:
+        return threads.show(self._w, ref)
+
+    def threads_waiting(self) -> ThreadsWaiting:
+        return threads.waiting(self._w)

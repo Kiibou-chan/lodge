@@ -1,6 +1,6 @@
 """What the operations need from outside: the store, the clock, and the entropy."""
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
@@ -13,6 +13,21 @@ class PublishOutcome(StrEnum):
     PUBLISHED = "published"
     STAGED = "staged"
     REJECTED = "rejected"
+
+
+class CommitOutcome(StrEnum):
+    COMMITTED = "committed"
+    ON_BASE = "on the base branch"
+    DETACHED = "on a detached HEAD"
+    IN_PROGRESS = "during a merge, rebase, cherry-pick, or revert"
+    LOCKED = "git's index is locked by another process"
+    FAILED = "git could not commit"
+
+
+@dataclass(frozen=True)
+class Committed:
+    outcome: CommitOutcome
+    detail: str = ""
 
 
 @dataclass(frozen=True)
@@ -28,6 +43,8 @@ class Gate:
 
 
 class Store(Protocol):
+    def commit(self, paths: Sequence[str], message: str) -> Committed: ...
+
     def trees(self) -> tuple[Tree, Tree]:
         """The current and the published state, from one read."""
         ...

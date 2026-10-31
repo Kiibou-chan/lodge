@@ -40,7 +40,7 @@ class _Request:
 
 def mint(w: Wiring, prefix: Literal["d", "s"]) -> str:
     s = read_state(w.store).snapshot
-    return _mint(w.ids, prefix, {*s.decisions, *s.entries})
+    return mint_unused(w.ids, prefix, {*s.decisions, *s.entries})
 
 
 def add(
@@ -80,7 +80,7 @@ def _attempt(w: Wiring, state: State, first: Snapshot, request: _Request) -> Add
     now = _after_newest(w.clock, s)
     new_ids: list[str] = []
     for _ in range(sum(d.kind == "decision" and "id" not in d.header for d in drafts)):
-        new_ids.append(_mint(w.ids, "d", {*s.decisions, *s.entries, *new_ids}))
+        new_ids.append(mint_unused(w.ids, "d", {*s.decisions, *s.entries, *new_ids}))
     applied = apply_drafts(
         s, state.current, drafts, new_ids, now.isoformat(timespec="seconds"), importing
     )
@@ -110,7 +110,7 @@ def _attempt(w: Wiring, state: State, first: Snapshot, request: _Request) -> Add
     if outcome is PublishOutcome.REJECTED:
         return None
     published = AddOutcome.PUBLISHED if outcome is PublishOutcome.PUBLISHED else AddOutcome.STAGED
-    return Added(applied.ids, notes, check, published)
+    return Added(applied.ids, notes, check, published, paths=tuple((*files, *placed)))
 
 
 def _attached(attachments: Sequence[tuple[str, str]], drafts: Sequence[Draft]) -> dict[str, str]:
@@ -189,7 +189,7 @@ def _raced(drafts: Sequence[Draft], first: Snapshot, now: Snapshot) -> bool:
     return False
 
 
-def _mint(ids: IdSource, prefix: Literal["d", "s"], taken: Collection[str]) -> str:
+def mint_unused(ids: IdSource, prefix: Literal["d", "s", "q"], taken: Collection[str]) -> str:
     for _ in range(_MINT_DRAWS):
         candidate = mint_id(prefix, ids.entropy())
         if candidate not in taken:

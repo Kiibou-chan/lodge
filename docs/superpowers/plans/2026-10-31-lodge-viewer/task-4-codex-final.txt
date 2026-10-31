@@ -1,0 +1,7 @@
+DONE
+
+Builder gate passed: 1,201 tests, plus two socket-free viewer tests.
+Socket-bound tests remain for the coordinator; no other concerns.
+
+[Report](docs/superpowers/plans/2026-10-31-lodge-viewer/task-4-report.md) written.
+No commits or pushes.

@@ -21,6 +21,7 @@ from lodge.core import (
     level2_views,
     level3,
     load,
+    newest_last,
     render_spec,
     spec_view,
 )
@@ -44,6 +45,7 @@ def show(w: Wiring, ref: str, reasoning: bool, provenance: bool) -> Shown:
         level3(s, d, record_id) if provenance else None,
         state.read,
         level2_views(s, d, record_id, state.failing) if reasoning else (),
+        newest_last(t for t in s.threads.values() if t.about == record_id),
     )
 
 
