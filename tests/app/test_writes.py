@@ -7,7 +7,7 @@ from fakes import START, CountingIds, FixedClock, MemoryStore
 from support import AREA, FIRST, project, wired
 
 from lodge.app import AddOutcome, Conflict, LodgeError
-from lodge.core import Tree, check_state, load, parse_record
+from lodge.core import Feedback, Tree, check_state, load, parse_record
 
 NEW_DECISION = decision_text("changes:", "  - {entry: s-bbbbbb, action: create}")
 NEW_ENTRY = spec_text("id: s-bbbbbb", "area: storage", body="Everything is kept.")
@@ -169,3 +169,19 @@ def test_only_changed_files_are_published() -> None:
     lodge.add([("e.md", edited), ("a.md", lodge.draft("area:storage")), ("d.md", edit)])
     written = sorted(store.publishes[0][0])
     assert "lodge/spec/storage/_area.md" not in written and len(written) == 2
+
+
+def test_add_area_sharing_a_rank_gives_feedback() -> None:
+
+    store = MemoryStore()
+    lodge = wired(store)
+    lodge.add([("a.md", area_text("name: other", "rank: 1"))])
+    added = lodge.add([("b.md", area_text("name: storage", "rank: 1"))])
+    assert added.outcome is not AddOutcome.CHECK_FAILED
+    assert (
+        Feedback(
+            "area:storage",
+            "rank 1 is shared with area other; areas that share a rank are ordered by name",
+        )
+        in added.feedback
+    )

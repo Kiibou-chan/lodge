@@ -1,0 +1,6 @@
+DONE
+
+Builder gate: 1,084 passed, 1 skipped; both socket-free end-to-end tests passed separately.
+Concerns: socket-bound tests await the coordinator’s gate.
+
+[Report](docs/superpowers/plans/2026-10-31-lodge-viewer/task-1-report.md)

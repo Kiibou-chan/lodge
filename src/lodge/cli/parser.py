@@ -125,7 +125,11 @@ def _parser() -> argparse.ArgumentParser:
     _add(add("add", "add draft files: new records, edits, areas", _add_of))
     check = add("check", "run the checks; --gate compares with the published state", _check_of)
     check.add_argument("--gate", action="store_true", help="the check that gates publication")
-    spec = add("spec", "print the readable specification in area order", _spec_of)
+    spec = add(
+        "spec",
+        "print the readable specification: areas by rank, entries after what they rest on",
+        _spec_of,
+    )
     spec.add_argument("--area", help="only this area")
     add("waiting", "list the agent decisions that wait for the author", lambda _: Waiting())
     add("guide", "print the guide for agents", lambda _: Guide())

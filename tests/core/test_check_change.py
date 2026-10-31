@@ -164,3 +164,9 @@ def test_area_added_and_removed_are_notes() -> None:
     assert added.ok
     assert added.notes == ("area other: added",)
     assert check(state(other), published()).notes == ("area other: removed",)
+
+
+def test_area_rank_change_is_note() -> None:
+    result = check(published(), state(area(order=(SPEC,), rank=1)))
+    assert result.ok
+    assert "area storage: rank changed" in result.notes

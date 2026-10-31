@@ -69,6 +69,7 @@ class SpecEntry:
     statement: str
     code: str | None = None
     imported_from: Imported | None = None
+    rests_on: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -77,6 +78,7 @@ class Area:
     title: str
     intro: str
     order: tuple[str, ...]
+    rank: int | None = None
 
 
 Record = Decision | SpecEntry

@@ -130,6 +130,6 @@ def _area_notes(published: Snapshot, after: Snapshot) -> Iterator[str]:
         yield f"area {name}: removed"
     for name in sorted(published.areas.keys() & after.areas.keys()):
         before, now = published.areas[name], after.areas[name]
-        for field in ("title", "intro", "order"):
+        for field in ("title", "intro", "order", "rank"):
             if getattr(before, field) != getattr(now, field):
                 yield f"area {name}: {field} changed"

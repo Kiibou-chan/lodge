@@ -5,7 +5,7 @@ from lodge.core.check_change import check_change
 from lodge.core.check_state import CheckResult, check_state
 from lodge.core.derive import Derived, derive, is_author
 from lodge.core.drafts import Draft, parse_draft, record_from_draft
-from lodge.core.feedback import Feedback, feedback
+from lodge.core.feedback import Feedback, area_feedback, feedback
 from lodge.core.fileformat import (
     area_path,
     content_hash,
@@ -30,7 +30,8 @@ from lodge.core.model import (
     Scope,
     SpecEntry,
 )
-from lodge.core.render import SpecArea, render_spec, spec_view
+from lodge.core.order import Placement, area_names, derived_order, written_order
+from lodge.core.render import Placed, SpecArea, render_spec, spec_view
 from lodge.core.search import AmbiguousRef, Filters, related, resolve, search, search_counted
 from lodge.core.settings import CoreSettings, LengthGuidance, SettingsError, parse_core_settings
 from lodge.core.snapshot import ATTACHMENTS, Files, Snapshot, Tree, attachment_path, load
@@ -69,6 +70,8 @@ __all__ = [
     "Level1",
     "Level3",
     "NumberHandle",
+    "Placed",
+    "Placement",
     "Problem",
     "Quote",
     "Record",
@@ -81,12 +84,15 @@ __all__ = [
     "Tree",
     "YamlError",
     "apply_drafts",
+    "area_feedback",
+    "area_names",
     "area_path",
     "attachment_path",
     "check_change",
     "check_state",
     "content_hash",
     "derive",
+    "derived_order",
     "failing_ids",
     "feedback",
     "format_level1",
@@ -117,4 +123,5 @@ __all__ = [
     "unrecorded_problems",
     "write_area",
     "write_record",
+    "written_order",
 ]

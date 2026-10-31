@@ -20,6 +20,7 @@ from lodge.core.fields import (
     read_map,
     read_maps,
     read_optional_str,
+    read_rank,
     read_str,
     read_strs,
     require,
@@ -40,8 +41,8 @@ DECISION_KEYS = (
     *("id", "kind", "code", "title", "scope", "decided_by", "date", "changes", "replaces"),
     *("narrows", "confirms", "work_item", "quote", "numbers", "attachments", "imported_from"),
 )
-SPEC_KEYS = ("id", "kind", "code", "title", "imported_from")
-AREA_KEYS = ("kind", "title", "order")
+SPEC_KEYS = ("id", "kind", "code", "title", "imported_from", "rests_on")
+AREA_KEYS = ("kind", "title", "order", "rank")
 
 
 def decision_from(header: Mapping[str, object], body: str) -> Decision:
@@ -100,6 +101,7 @@ def spec_from(header: Mapping[str, object], body: str, area: str) -> SpecEntry:
         statement=statement,
         code=read_code(header),
         imported_from=_imported(header),
+        rests_on=_ids(header, "rests_on", "s"),
     )
 
 
@@ -111,6 +113,7 @@ def area_from(header: Mapping[str, object], body: str, name: str) -> Area:
         title=read_str(require(header, "title"), "title"),
         intro=trim_block(body),
         order=_ids(header, "order", "s"),
+        rank=read_rank(header["rank"]) if "rank" in header else None,
     )
 
 

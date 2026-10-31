@@ -1,10 +1,11 @@
 """What lodge prints after an add: soft notes on the records just written, never a refusal."""
 
 import re
-from collections.abc import Iterator, Sequence
+from collections.abc import Collection, Iterator, Sequence
 from dataclasses import dataclass
 
 from lodge.core.derive import Derived, is_author
+from lodge.core.fileformat import area_path
 from lodge.core.model import Action, Decision, Record
 from lodge.core.search import related
 from lodge.core.settings import LengthGuidance
@@ -177,3 +178,21 @@ def _numbers(text: str, codes: set[str]) -> list[str]:
         text = hidden.sub(" ", text)
     text = _CODE.sub(lambda m: " " if m.group().lower() in codes else m.group(), text)
     return [token.strip() for token in _NUMBER.findall(text)]
+
+
+def area_feedback(after: Snapshot, written_paths: Collection[str]) -> list[Feedback]:
+    """Soft notes for written areas whose rank is shared."""
+    notes: list[Feedback] = []
+    for name, area in sorted(after.areas.items()):
+        if area.rank is None or area_path(name) not in written_paths:
+            continue
+        others = sorted(n for n, a in after.areas.items() if n != name and a.rank == area.rank)
+        if others:
+            notes.append(
+                Feedback(
+                    f"area:{name}",
+                    f"rank {area.rank} is shared with area {_listed(others)}; "
+                    "areas that share a rank are ordered by name",
+                )
+            )
+    return notes

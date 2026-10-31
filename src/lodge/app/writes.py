@@ -96,6 +96,7 @@ def _attempt(w: Wiring, state: State, first: Snapshot, request: _Request) -> Add
     check = core.check_change(load(state.published), after, w.settings, now, s)
     notes = tuple(
         core.feedback(_written(s, after, applied.ids), after, core.derive(after), w.settings.length)
+        + core.area_feedback(after, files.keys())
     )
     if not check.ok:
         return Added(
