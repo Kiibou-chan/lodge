@@ -10,7 +10,7 @@ Written as the work goes; the probes are in `probes/`, run from the worktree roo
 
 ## Probes so far (native disk, best of 3 where repeated)
 
-- Start-up: bare Python 0.025 s; `import lodge.main` 0.10 s from a native-disk venv with bytecode compiled, 0.25 s from the worktree's venv on `/home` (NTFS), 0.35 s on a native venv before its bytecode was written.
+- Start-up: bare Python 0.025 s; `import lodge.main` 0.10 s from a native-disk venv with bytecode compiled, 0.25 s from a venv on a FUSE-mounted NTFS disk, 0.35 s on a native venv before its bytecode was written.
 - `probes/walk.py` at 159,716 files: today's `disk_tree` read of every file 2.02 s; a names-only `os.scandir` walk 85 ms; `stat` of the 2,253 known folders 4.3 ms; `git diff-files` 45 ms; `git diff-index --cached HEAD` 12 ms; `git ls-files -s` 40 ms; `git ls-files -o` 134 ms; `git status --porcelain=v2 --untracked-files=all --ignored` 176 ms; `git rev-parse HEAD HEAD:lodge` 1.6 ms. At 16,008 files the same are 8, 8, 0.4, 200, 14, 4, 5, 12, 19, and 2 ms.
 - git's untracked cache does not help a pathspec'd status here: 175 to 184 ms with `core.untrackedCache=true` set and the cache built, on a copy of the 160,000 store.
 - `probes/phases.py` (with `_missing` linear and libyaml on): at 16,008 files `load` 0.67 s with libyaml against 3.47 s pure, the C loader fell back 0 times; `check_change` 0.60 s once `_missing` is linear (6.7 s of `_missing` alone in the unpatched profile); `check_state` 0.13 s, `derive` 0.056 s, level 1 of every record 0.035 s, one search 0.2 s, pickle of every record 0.06 s each way, SQLite insert of every parsed record 0.11 s, select of all 0.02 s, an index file of 48 MB.
