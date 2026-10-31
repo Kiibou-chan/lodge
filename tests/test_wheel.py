@@ -37,7 +37,7 @@ def test_installed_wheel_runs(tmp_path: Path) -> None:
     assert lodge is not None
     where = tmp_path
     version = subprocess.run([lodge, "--version"], cwd=where, capture_output=True, text=True)
-    assert (version.returncode, version.stdout) == (0, "lodge 0.1.0\n")
+    assert (version.returncode, version.stdout) == (0, "lodge 0.2.0\n")
     guide = subprocess.run([lodge, "guide"], cwd=where, capture_output=True, text=True)
     assert guide.returncode == 0
     assert guide.stdout.startswith("# ") and "lodge add" in guide.stdout

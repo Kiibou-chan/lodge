@@ -1,6 +1,6 @@
 [project]
 name = "lodge"
-version = "0.1.0"
+version = "0.2.0"
 description = "Knowledge tool for agent-built software: decisions and specification entries, levelled reads, a check."
 readme = "README.md"
 requires-python = ">=3.12"
