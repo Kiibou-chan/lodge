@@ -78,7 +78,7 @@ def run(
             print("\n".join([*read_lines(read), text.rstrip("\n") or NOTHING_RECORDED]))
         case Waiting():
             lodge = make_lodge()
-            print(waiting_text(lodge.waiting(), lodge.threads_waiting()))
+            print(waiting_text(*lodge.waiting_all()))
         case Threads() | ThreadCommand() | Ask() | Reply() | Close():
             return run_thread(command, make_lodge())
         case Guide():

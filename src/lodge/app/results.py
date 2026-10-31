@@ -73,7 +73,7 @@ class ThreadList:
 @dataclass(frozen=True)
 class ThreadShown:
     thread: Thread
-    about: Level1
+    about: Level1 | None
     read: Read
 
 

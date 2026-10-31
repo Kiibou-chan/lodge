@@ -22,30 +22,26 @@ class ThreadCommand:
 
 
 @dataclass(frozen=True)
-class Ask:
+class MessageCommand:
     ref: str
+    by: str
+    where: str | None
+    when: str | None
+
+
+@dataclass(frozen=True)
+class Ask(MessageCommand):
     kind: Raises
-    by: str
-    where: str | None
-    when: str | None
     file: str
 
 
 @dataclass(frozen=True)
-class Reply:
-    ref: str
-    by: str
-    where: str | None
-    when: str | None
+class Reply(MessageCommand):
     file: str
 
 
 @dataclass(frozen=True)
-class Close:
-    ref: str
-    by: str
-    where: str | None
-    when: str | None
+class Close(MessageCommand):
     file: str | None
 
 
@@ -66,9 +62,9 @@ def add_thread_commands(add: Callable[[str, str, object], argparse.ArgumentParse
         sub.add_argument("ref")
         if name == "ask":
             sub.add_argument("--kind", required=True, choices=("doubt", "question"))
-        sub.add_argument("--by", required=True)
-        sub.add_argument("--where")
-        sub.add_argument("--when")
+        sub.add_argument("--by", required=True, help="the role writing the message")
+        sub.add_argument("--where", help="for --by author: where the words were said")
+        sub.add_argument("--when", help="for --by author: when the words were said")
         sub.add_argument("file", metavar="FILE", nargs="?" if name == "close" else None)
 
 
@@ -82,7 +78,7 @@ def _message_command(args: argparse.Namespace) -> Ask | Reply | Close:
     elif args.where is not None or args.when is not None:
         raise LodgeError("--where and --when are for messages by author")
     if args.thread_action == "ask":
-        return Ask(args.ref, Raises(args.kind), args.by, args.where, args.when, args.file)
+        return Ask(args.ref, args.by, args.where, args.when, Raises(args.kind), args.file)
     cls = Reply if args.thread_action == "reply" else Close
     return cls(args.ref, args.by, args.where, args.when, args.file)
 
@@ -90,20 +86,21 @@ def _message_command(args: argparse.Namespace) -> Ask | Reply | Close:
 def run_thread(command: ThreadCommands, lodge: Lodge) -> int:
     if isinstance(command, Threads):
         listed = lodge.threads()
-        heads = [thread_head(t, listed.titles.get(t.about, "")) for t in listed.items]
+        heads = [thread_head(t, listed.titles.get(t.about)) for t in listed.items]
         print("\n".join([*read_lines(listed.read), "\n\n".join(heads) or "no open threads"]))
         return 0
     if isinstance(command, ThreadCommand):
         print(thread_text(lodge.thread(command.ref)))
         return 0
-    text = "" if command.file is None else read_file(command.file, "not UTF-8 text", False)
-    if isinstance(command, Ask):
-        written = lodge.ask(
-            command.ref, command.kind, command.by, text, command.where, command.when
-        )
-    else:
-        write = lodge.reply if isinstance(command, Reply) else lodge.close
-        written = write(command.ref, command.by, text, command.where, command.when)
+    text = "" if command.file is None else read_file(command.file, "not UTF-8 text", True)
+    match command:
+        case Ask():
+            written = lodge.ask(
+                command.ref, command.kind, command.by, text, command.where, command.when
+            )
+        case Reply() | Close():
+            write = lodge.reply if isinstance(command, Reply) else lodge.close
+            written = write(command.ref, command.by, text, command.where, command.when)
     if written.outcome is AddOutcome.CHECK_FAILED:
         print("\n".join([*check_lines(written.check), "not published: the check failed"]))
         return 1

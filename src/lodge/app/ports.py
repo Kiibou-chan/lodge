@@ -43,7 +43,12 @@ class Gate:
 
 
 class Store(Protocol):
-    def commit(self, paths: Sequence[str], message: str) -> Committed: ...
+    def commit(self, paths: Sequence[str], message: str) -> Committed:
+        """Commit exactly `paths` with the checkout's identity and hooks.
+
+        Leave other staged files staged; the outcome says why when it does not commit.
+        """
+        ...
 
     def trees(self) -> tuple[Tree, Tree]:
         """The current and the published state, from one read."""

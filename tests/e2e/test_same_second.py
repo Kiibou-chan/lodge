@@ -24,6 +24,8 @@ def test_agent_edit_in_the_same_second_is_flagged(
     flagged = agent_edit(project, ids.entry)
     assert stuck_clock.slept == [0.75]
     waiting = project.run("waiting").out.splitlines()
+    group_start = waiting.index("waiting for the author")
+    assert not any(flagged in line for line in waiting[:group_start])
     group = waiting.index("waiting for the author")
     assert waiting[group + 1].startswith(f"{flagged} · current · coordinator")
     shown = project.run("show", ids.entry).out.splitlines()[0]
@@ -41,6 +43,8 @@ def test_agent_edit_in_the_same_second_publishes_in_branch_mode(
     tree = project.git("--git-dir", str(project.remote), "ls-tree", "-r", "--name-only", "lodge")
     assert any(line.startswith(f"lodge/decisions/{flagged}-") for line in tree.splitlines())
     waiting = project.run("waiting").out.splitlines()
+    group_start = waiting.index("waiting for the author")
+    assert not any(flagged in line for line in waiting[:group_start])
     assert waiting[waiting.index("waiting for the author") + 1].startswith(f"{flagged} ·")
     gated = project.run("check", "--gate").out.splitlines()
     assert "ok" in gated and gated[-1].startswith("note: in branch mode the gate runs inside")

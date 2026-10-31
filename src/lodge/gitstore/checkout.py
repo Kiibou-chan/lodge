@@ -39,12 +39,14 @@ class CheckoutStore:
         return commit_paths(self._root, self._settings.base, paths, message, self._retry)
 
     def trees(self) -> tuple[Tree, Tree]:
+        """The working tree, and the tree at the merge base of `HEAD` with the base branch."""
         if not data_folder_exists(self._root):
             raise NotInitialised(NOT_INITIALISED)
         self._published = published_state(self._root, self._settings)
         return disk_tree(self._root), self._published.tree
 
     def freshness(self) -> str | None:
+        """Only that the published state is missing; None otherwise."""
         return None if self._published is None else self._published.missing
 
     def gate(self, current: Tree) -> Gate:

@@ -33,6 +33,10 @@ class Lodge:
     def waiting(self) -> Listed:
         return reads.waiting(self._w)
 
+    def waiting_all(self) -> tuple[Listed, ThreadsWaiting]:
+        """Decisions and threads waiting, checked in the same snapshot."""
+        return reads.waiting_all(self._w)
+
     def timeline(self, limit: int = 50) -> Listed:
         return reads.timeline(self._w, limit)
 
@@ -73,7 +77,7 @@ class Lodge:
         when: str | None = None,
         commit: bool = False,
     ) -> Written:
-        return threads.write(self._w, ref, raises, by, text, where, when, commit)
+        return threads.write(self._w, ref, raises, by, text, where, when, commit=commit)
 
     def reply(
         self,
@@ -84,7 +88,7 @@ class Lodge:
         when: str | None = None,
         commit: bool = False,
     ) -> Written:
-        return threads.write(self._w, thread, None, by, text, where, when, commit)
+        return threads.write(self._w, thread, None, by, text, where, when, commit=commit)
 
     def close(
         self,
@@ -95,7 +99,9 @@ class Lodge:
         when: str | None = None,
         commit: bool = False,
     ) -> Written:
-        return threads.write(self._w, thread, None, by, text or "", where, when, commit, True)
+        return threads.write(
+            self._w, thread, None, by, text or "", where, when, commit=commit, close=True
+        )
 
     def threads(self) -> ThreadList:
         return threads.list_open(self._w)

@@ -5,8 +5,9 @@ from dataclasses import replace
 from datetime import datetime
 
 from lodge import core
+from lodge.app import threads
 from lodge.app.errors import LodgeError
-from lodge.app.results import Listed, Read, Shown
+from lodge.app.results import Listed, Read, Shown, ThreadsWaiting
 from lodge.app.state import State, Wiring, not_found, read_checked, read_state, resolve_ref
 from lodge.core import (
     CheckResult,
@@ -53,6 +54,12 @@ def show(w: Wiring, ref: str, reasoning: bool, provenance: bool) -> Shown:
 def waiting(w: Wiring) -> Listed:
     state = read_checked(w)
     return Listed(_newest_first(state, state.derived.awaiting_author), state.read)
+
+
+def waiting_all(w: Wiring) -> tuple[Listed, ThreadsWaiting]:
+    state = read_checked(w)
+    listed = Listed(_newest_first(state, state.derived.awaiting_author), state.read)
+    return listed, threads.waiting_in(state)
 
 
 def timeline(w: Wiring, limit: int) -> Listed:

@@ -30,12 +30,11 @@ def open_store(
     clock: Clock,
     *,
     lock_wait_seconds: float = LOCK_WAIT_SECONDS,
-    index_retry_seconds: float = 1.0,
 ) -> Store:
     common = _common_dir(root)
     if settings.mode == "branch":
         return BranchStore(root, settings, clock, common, lock_wait_seconds)
-    return CheckoutStore(root, settings, common, lock_wait_seconds, index_retry_seconds)
+    return CheckoutStore(root, settings, common, lock_wait_seconds)
 
 
 def init_store(root: Path, settings: StoreSettings) -> str:

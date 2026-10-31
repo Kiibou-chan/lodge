@@ -153,3 +153,16 @@ def send(make: Callable[[], Lodge], path: str, **fields: str) -> writes.Reply:
         HEADERS,
         urlencode({"token": TOKEN} | fields).encode(),
     )
+
+
+@pytest.mark.parametrize("action", ["reply", "close"])
+def test_orphaned_thread_post_does_not_fail(action: str) -> None:
+    make, store = staged_world()
+    send(make, "/threads", about="d-cccccc", kind="question", text="Why?")
+    path = "lodge/threads/q-111111.md"
+    store.files[path] = store.files[path].replace("d-cccccc", "s-zzzzzz")
+    result = send(make, f"/threads/q-111111/{action}", text="Answer")
+    assert result.status == 400
+    assert 'href="/r/s-zzzzzz"' in result.text
+    assert "s-zzzzzz" in result.text
+    assert len(store.publishes) == 1

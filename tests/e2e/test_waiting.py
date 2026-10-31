@@ -22,6 +22,20 @@ def test_waiting(project: Project) -> None:
     assert f"waiting for the author\n{flagged} · current · coordinator" in waiting.out
     assert "awaiting the author" in waiting.out.split("waiting for the author\n")[1].splitlines()[0]
     assert ids.decision not in waiting.out
+    thread = project.run(
+        "ask",
+        ids.entry,
+        "--kind",
+        "question",
+        "--by",
+        "reviewer",
+        project.draft("thread.txt", "Why?"),
+    ).out.split()[-1]
+    out = project.run("waiting").out
+    assert out.index("waiting for an agent") < out.index("waiting for the author")
+    first, second = out.split("waiting for the author")
+    assert flagged not in first and thread not in first
+    assert second.index(flagged) < second.index(thread)
 
 
 def test_waiting_groups_threads(project: Project) -> None:
@@ -49,6 +63,8 @@ def test_waiting_groups_threads(project: Project) -> None:
         project.draft("agent.txt", "Check storage."),
     )
     assert author.code == agent.code == 0
-    first, second = project.run("waiting").out.split("waiting for the author")
+    out = project.run("waiting").out
+    assert out.index("waiting for an agent") < out.index("waiting for the author")
+    first, second = out.split("waiting for the author")
     assert author.out.split()[-1] in first and agent.out.split()[-1] not in first
     assert agent.out.split()[-1] in second and author.out.split()[-1] not in second

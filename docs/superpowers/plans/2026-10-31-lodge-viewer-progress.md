@@ -15,3 +15,7 @@ Task 4: review 0 Blocking, 1 Important, 10 Minor (`task-4-review.md`); the git l
 Ruling d-wez56g: a thread whose subject no longer resolves is shown, not refused (`ThreadShown.about` is `Level1 | None`), fixed with Task 5's `thread_head` in one round.
 Task 6a: built by Codex; the builder notes the stale-list check is not atomic with publication, which Task 6b's write lock covers.
 Task 6b: built by Codex; the builder says test-first was not followed throughout, so its review checks that each security test fails on a gate without its rule.
+Task 5: review 0 Blocking, 3 Important, 7 Minor (`task-5-review.md`).
+Tasks 4 and 5: fix round 1 by Codex in one round, with ruling d-wez56g; all Importants and the cheap Minors fixed with failing-first evidence in both reports; gate green.
+Task 4: complete. Task 5: complete. Both fix rounds are rechecked by the final review.
+Task 6a: review 0 Blocking, 3 Important, 7 Minor (`task-6a-review.md`).

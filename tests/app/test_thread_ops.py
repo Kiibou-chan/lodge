@@ -1,11 +1,13 @@
 """Thread operations over the made-up storage project."""
 
+from datetime import timedelta
+
 import pytest
 from applying import area_text
-from fakes import START, MemoryStore
+from fakes import START, CountingIds, FixedClock, MemoryStore
 from support import project, wired
 
-from lodge.app import AddOutcome, Lodge, LodgeError, NotFound
+from lodge.app import AddOutcome, Conflict, Lodge, LodgeError, NotFound
 from lodge.core import Filters, Raises, Thread, ThreadState, Tree, load
 
 Q = "q-111111"
@@ -74,7 +76,10 @@ def test_agent_message_may_not_carry_where(meta: dict[str, str]) -> None:
 
 @pytest.mark.parametrize("by", ["Author", "the author", ""])
 def test_role_like_author_refused(by: str) -> None:
-    with pytest.raises(LodgeError, match=r"role|author|by"):
+    with pytest.raises(
+        LodgeError,
+        match=("write author exactly, or use your own role" if by else "by needs a non-empty role"),
+    ):
         wired(project()).ask("s-aaaaaa", Raises.DOUBT, by, "Why?")
 
 
@@ -177,12 +182,14 @@ def test_no_commit_when_published() -> None:
 
 
 def test_threads_lists_open_newest_last() -> None:
-    _, lodge = opened()
+    store = project()
+    lodge = wired(store, FixedClock(step=timedelta(minutes=1)), CountingIds(first=9, step=-1))
+    lodge.ask("s-aaaaaa", Raises.DOUBT, "agent", "First")
     lodge.ask("s-aaaaaa", Raises.QUESTION, "agent", "Second")
     third = lodge.ask("s-aaaaaa", Raises.DOUBT, "agent", "Third")
     lodge.close(third.ids[0], "agent")
     listed = lodge.threads()
-    assert [t.id for t in listed.items] == [Q, "q-222222"]
+    assert [t.id for t in listed.items] == ["q-999999", "q-888888"]
     assert listed.titles["s-aaaaaa"] == "Transcripts are kept"
     assert listed.read.freshness is not None
 
@@ -190,7 +197,7 @@ def test_threads_lists_open_newest_last() -> None:
 def test_thread_shows_one_thread() -> None:
     _, lodge = opened()
     shown = lodge.thread(Q.upper())
-    assert shown.thread.id == Q and shown.about.id == "s-aaaaaa"
+    assert shown.thread.id == Q and shown.about is not None and shown.about.id == "s-aaaaaa"
     assert shown.read.freshness is not None
     with pytest.raises(NotFound, match="no thread named q-000000"):
         lodge.thread("q-000000")
@@ -223,3 +230,21 @@ def test_search_and_timeline_leave_threads_out() -> None:
     _, lodge = opened()
     assert {i.id for i in lodge.search("", Filters()).items} == {"s-aaaaaa", "d-aaaaaa"}
     assert [i.id for i in lodge.timeline().items] == ["d-aaaaaa"]
+
+
+def test_thread_about_a_missing_record_reads() -> None:
+    store, lodge = opened()
+    store.files[PATH] = store.files[PATH].replace("s-aaaaaa", "s-zzzzzz")
+    shown = lodge.thread(Q)
+    assert shown.about is None
+    assert shown.thread.messages[0].text == "Why?"
+    assert lodge.threads().items[0].about == "s-zzzzzz"
+    assert lodge.threads_waiting().for_author[0].id == Q
+
+
+def test_three_rejections_are_a_conflict() -> None:
+    store = project()
+    store.reject_next({}, {}, {})
+    with pytest.raises(Conflict, match="three times"):
+        wired(store).ask("s-aaaaaa", Raises.DOUBT, "agent", "Why?")
+    assert store.attempts == 3 and store.publishes == []

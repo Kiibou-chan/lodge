@@ -48,6 +48,7 @@ def write(
     text: str,
     where: str | None,
     when: str | None,
+    *,
     commit: bool,
     close: bool = False,
 ) -> Written:
@@ -88,12 +89,12 @@ def write(
         check = core.check_change(core.load(state.published), after, w.settings, now, s)
         if not check.ok:
             return Written((thread.id,), AddOutcome.CHECK_FAILED, check, about=thread.about)
-        description = f"Thread {thread.id}: {description}"
-        outcome = w.store.publish(state.current, {path: content}, description)
+        commit_message = f"Thread {thread.id}: {description}"
+        outcome = w.store.publish(state.current, {path: content}, commit_message)
         if outcome is PublishOutcome.REJECTED:
             continue
         committed = (
-            w.store.commit((path,), description)
+            w.store.commit((path,), commit_message)
             if commit and outcome is PublishOutcome.STAGED
             else None
         )
@@ -109,7 +110,10 @@ def _titles(state: State, threads: tuple[Thread, ...]) -> Mapping[str, str]:
 
 
 def list_open(w: Wiring) -> ThreadList:
-    state = read_checked(w)
+    return open_in(read_checked(w))
+
+
+def open_in(state: State) -> ThreadList:
     threads = core.newest_last(
         t for t in state.snapshot.threads.values() if t.state is ThreadState.OPEN
     )
@@ -119,12 +123,21 @@ def list_open(w: Wiring) -> ThreadList:
 def show(w: Wiring, ref: str) -> ThreadShown:
     state = read_checked(w)
     thread = _find(state, ref)
-    about = core.level1(state.snapshot, state.derived, thread.about, state.failing)
+    s = state.snapshot
+    about = (
+        core.level1(s, state.derived, thread.about, state.failing)
+        if thread.about in s.decisions or thread.about in s.entries
+        else None
+    )
     return ThreadShown(thread, about, state.read)
 
 
 def waiting(w: Wiring) -> ThreadsWaiting:
-    listed = list_open(w)
+    return waiting_in(read_checked(w))
+
+
+def waiting_in(state: State) -> ThreadsWaiting:
+    listed = open_in(state)
     return ThreadsWaiting(
         tuple(t for t in listed.items if t.messages[-1].by == "author"),
         tuple(t for t in listed.items if t.messages[-1].by != "author"),

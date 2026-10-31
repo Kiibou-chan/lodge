@@ -143,3 +143,73 @@ The implementation follows that ruling.
 No implementation concerns remain.
 The coordinator still needs to run `sh scripts/check.sh` outside the sandbox, stage explicit paths, commit, and push as directed by the brief.
 Pre-existing untracked planning material was left untouched.
+
+## Fix round 1
+
+Applied the coordinator ruling d-wez56g, read with `uv run --frozen --quiet lodge show d-wez56g --reasoning`.
+No commit or push was made.
+
+### Findings and changes
+
+- I1: `ThreadShown.about` is now `Level1 | None`, and `threads.show` returns None for a missing decision or entry.
+  Open-thread reads retain the orphaned thread and omit its missing title.
+  Task 5 prints its messages and a separate `about ID, not found` line.
+  Task 6b's reply and close routes now reach the normal check refusal with HTTP 400 and a back link, rather than catching a KeyError as HTTP 500.
+- M1: a silent failed hook returns `git commit exited with status N`, keeping HEAD and both staged files intact.
+- M2: commits use `--literal-pathspecs`, so an attachment name containing a glob cannot widen a commit.
+- M3: the six operation paths come from one `git rev-parse` invocation.
+- M4: tests now exercise both real store commit methods, including checkout base refusal, successful explicit-path commits, and branch-mode refusal.
+- M5: removed the unused `open_store` retry keyword, leaving the default only on `CheckoutStore`.
+- M6: restored both checkout read docstrings and documented `Store.commit`; the commit module describes the checkout's identity and hooks.
+  Restoring the two docstrings exceeds the original brief's eight-line diff allowance by two lines, as specifically requested by this fix round; the module remains 267 lines, below the structure limit.
+- M7: already resolved by Task 6a, which introduced `core.clean_text`; thread messages, appended messages, and confirmations use it.
+- M8: `commit` and `close` are keyword-only in the internal publish loop, with named arguments at every caller, and `commit_message` no longer reuses `description`.
+- M9: role refusals require the exact sentences, chronological ordering uses increasing time with descending IDs, and real merge, revert, and cherry-pick tests stage a named file after creating the conflict and assert it stays staged.
+- M10: three rejected publishes must raise Conflict after exactly three attempts and leave nothing published.
+- Task 5 M2: added `waiting_all`, retaining existing read interfaces while returning decisions and thread groups from one checked state and one Read object.
+
+### Failing-first evidence
+
+The initial command was `uv run pytest tests/app/test_thread_ops.py tests/gitstore/test_commit.py tests/e2e/test_threads.py tests/e2e/test_guide.py -q`.
+Its result was `6 failed, 58 passed in 3.23s`.
+The Task 4 failures were:
+
+- `test_thread_about_a_missing_record_reads`: `KeyError: 's-zzzzzz'`.
+- `test_silent_hook_failure_has_detail`: empty detail instead of `git commit exited with status 1`.
+- `test_commit_paths_are_literal`: HEAD also contained `another.md` instead of only `a*.md`.
+
+Before implementing the orphan-read fix, `uv run pytest tests/app/test_thread_fix_paths.py tests/viewer/test_post_routes.py -q` also showed:
+
+- `test_orphaned_thread_outputs`: `KeyError: 's-zzzzzz'`.
+- `test_waiting_reads_one_snapshot`: `AttributeError: 'Lodge' object has no attribute 'waiting_all'`.
+- `test_orphaned_thread_post_does_not_fail[reply]` and `[close]`: HTTP 500 instead of 400, with stderr `lodge: viewer: KeyError: 's-zzzzzz'`.
+  The final test additionally verifies the check message, back link, and absence of a second publish.
+
+Tests for already-correct behaviour were run against temporary faulty variants before completing the fixes.
+Every variant was restored immediately after its pytest run:
+
+| Test | Faulty variant | First result |
+| --- | --- | --- |
+| `test_role_like_author_refused`, all three roles | Replace the two exact refusal sentences with generic role refusals | 3 failed |
+| `test_threads_lists_open_newest_last` | Sort threads by ID alone | 1 failed |
+| Merge, revert, and cherry-pick refusal tests | Unstage the named paths before returning IN_PROGRESS | 3 failed |
+| `test_checkout_store_commits_by_path` | Delegate with base `work` instead of the configured base | 1 failed |
+| `test_branch_store_refuses_commit` | Return COMMITTED instead of refusing | 1 failed |
+| `test_three_rejections_are_a_conflict` | Allow four publish attempts | 1 failed |
+
+The None guard in the existing successful thread-read assertion adapts it to the optional interface.
+It does not change the successful-read requirement.
+The new tests live in `test_thread_ops.py`, `test_thread_fix_paths.py`, `test_commit.py`, and the existing viewer route test file.
+
+### Verification
+
+- The focused regression run covering both tasks and Task 6b POST routes ended `85 passed in 4.21s`.
+- `sh scripts/check.sh` passed format, lint, strict typing, and vulture, then ended with `19 failed, 1303 passed in 35.83s`.
+  Every failure was a sandbox socket permission refusal; the full list is in Task 5's Fix round 1 verification section.
+  Socket tests need the coordinator's outside-sandbox gate.
+- Every Important finding and each stated cheap Minor fix is addressed; Task 4 M7 was already addressed by Task 6a.
+
+- Final builder gate: `uv run ruff format --check && uv run ruff check && uv run mypy && uv run vulture && uv run pytest -q --ignore=tests/viewer/test_server.py --ignore=tests/e2e/test_view.py && uv run pytest tests/e2e/test_view.py -q -k 'not serves_the_project' && uv run lodge check --gate` passed.
+  Its last results were `428 files already formatted`, `All checks passed!`, `Success: no issues found in 188 source files`, vulture exit 0, `1297 passed in 35.20s`, `6 passed, 1 deselected in 0.35s`, and `ok` with area-added notes.
+  This final run includes the shared command-field refactor and the separate missing-subject line.
+- No review finding is left unresolved within this round's scope; the README wording remains scheduled for Task 10 as the review directs.

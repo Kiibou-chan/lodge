@@ -58,3 +58,16 @@ def test_guide_says_waiting_first(project: Project) -> None:
         "Write `--by author` only with the author's words verbatim, with `--where` and `--when`."
         in text
     )
+
+
+def test_guide_restores_introduction_and_heading_spacing(project: Project) -> None:
+    text = project.run("guide").out
+    assert "lodge holds a project's decisions and specification entries." in text
+    assert "An area is a named group with a title, an intro, and the order of its entries." in text
+    assert all(
+        not lines[i + 1]
+        for lines in [text.splitlines()]
+        for i, line in enumerate(lines)
+        if line.startswith("#")
+    )
+    assert len(text.splitlines()) <= 60

@@ -10,6 +10,7 @@ from lodge.app import LodgeError
 
 EDIT_TOOLS = frozenset({"Edit", "Write", "MultiEdit"})
 ATTACHMENTS = "attachments"
+THREADS = "threads"
 
 RESTORE = (
     "put back exactly the text you replaced, with the same tool. "
@@ -71,7 +72,7 @@ def respond(
     path = edited.resolve()
     if data_root is not None and _is_record(path, data_root.resolve()):
         template = (
-            THREAD_TEXT if path.is_relative_to(data_root.resolve() / "threads") else RECORD_TEXT
+            THREAD_TEXT if path.is_relative_to(data_root.resolve() / THREADS) else RECORD_TEXT
         )
         return _output(template, path, root)
     if path.is_relative_to(root) and _is_frozen(path.relative_to(root).as_posix(), frozen):
