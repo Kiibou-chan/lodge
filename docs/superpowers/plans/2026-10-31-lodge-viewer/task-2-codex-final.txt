@@ -1,0 +1,7 @@
+DONE_WITH_CONCERNS
+
+Builder gate passed: 1,111 tests; separate viewer port test passed.
+
+Concerns: design requires “supported by” where the brief says “supports”; five new tests already passed before implementation. Socket tests remain for the coordinator.
+
+Report: [task-2-report.md](docs/superpowers/plans/2026-10-31-lodge-viewer/task-2-report.md).

@@ -30,6 +30,8 @@ class Derived:
     awaiting_author: frozenset[str]
     touched_by_flagged: Links
     revived: Links
+    linked_by: Links
+    supports: Links
 
 
 def is_author(d: Decision) -> bool:
@@ -71,6 +73,14 @@ def derive(s: Snapshot) -> Derived:
             targets = {*d.replaces, *d.narrows, *touches[d.id], *behind}
             for target in sorted(targets & (s.decisions.keys() | s.entries.keys())):
                 touched.setdefault(target, []).append(d.id)
+    linked = _reverse(
+        newest_first, lambda d: (c.entry for c in d.changes if c.action is Action.LINK), s.entries
+    )
+    supports: dict[str, list[str]] = {}
+    for i, e in sorted(s.entries.items()):
+        for target in dict.fromkeys(e.rests_on):
+            if target in s.entries:
+                supports.setdefault(target, []).append(i)
     return Derived(
         status,
         replaced_by,
@@ -80,6 +90,8 @@ def derive(s: Snapshot) -> Derived:
         frozenset(flagged),
         {target: tuple(ids) for target, ids in touched.items()},
         {i: known for i, entries in revived.items() if (known := _known(entries, s.entries))},
+        linked,
+        {t: tuple(ids) for t, ids in supports.items()},
     )
 
 
@@ -89,7 +101,8 @@ def _order(d: Decision) -> tuple[datetime, str]:
 
 def _entries_changed(d: Decision, revived: Mapping[str, Iterable[str]]) -> tuple[str, ...]:
     """The entries `d` lists in `changes`, and those it revives."""
-    return tuple(dict.fromkeys((*(c.entry for c in d.changes), *revived.get(d.id, ()))))
+    entries = (c.entry for c in d.changes if c.action is not Action.LINK)
+    return tuple(dict.fromkeys((*entries, *revived.get(d.id, ()))))
 
 
 def _revived(oldest_first: list[Decision], replaced_by: Links) -> dict[str, list[str]]:

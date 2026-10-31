@@ -109,6 +109,12 @@ def _links_to_dead(published: Snapshot, after: Snapshot) -> Iterator[Problem]:
     """
     status = derive(published).status
     standing = derive(after).status
+    for e in sorted(after.entries.values(), key=lambda e: e.id):
+        before = published.entries.get(e.id)
+        previous = before.rests_on if before else ()
+        for target in dict.fromkeys(e.rests_on):
+            if target not in previous and standing.get(target) == "retired":
+                yield problem_at(after, e.id, 6, f"rests on {target}, which is retired")
     for d in new_decisions(published, after):
         for verb, targets in (("narrows", d.narrows), ("confirms", d.confirms)):
             for target in dict.fromkeys(targets):

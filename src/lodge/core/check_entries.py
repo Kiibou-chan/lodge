@@ -1,6 +1,7 @@
 """Check 4: each entry created, edited, or retired is named by a decision of the same change."""
 
 from collections.abc import Iterator
+from dataclasses import replace
 
 from lodge.core.check_state import new_decisions, problem_at
 from lodge.core.derive import derive
@@ -28,14 +29,29 @@ def check_entries(
             wanted.append((Action.RETIRE, "retired"))
         exempt = before is None and entry.imported_from is not None
         for action, verb in wanted:
-            if not exempt and (entry_id, action) not in listed:
+            links_only = before is not None and replace(before, rests_on=entry.rests_on) == entry
+            linked = links_only and action is Action.EDIT and (entry_id, Action.LINK) in listed
+            if not exempt and not linked and (entry_id, action) not in listed:
+                label = "edit or link" if links_only and action is Action.EDIT else str(action)
                 message = (
-                    f"{verb}, but no new decision in this change lists it with action {action}; "
+                    f"{verb}, but no new decision in this change lists it with action {label}; "
                     "list it in the decision's changes"
                 )
                 yield problem_at(after, entry_id, 4, message)
     for d in added:
         for change in dict.fromkeys(d.changes):
+            if change.action is Action.LINK and change.entry in after.entries:
+                before = published.entries.get(change.entry)
+                entry = after.entries[change.entry]
+                reason = ""
+                if before is None:
+                    reason = "is new; list it with action create"
+                elif replace(before, rests_on=entry.rests_on) != entry:
+                    reason = "changes more than rests_on; list it with action edit"
+                if reason:
+                    yield problem_at(
+                        after, d.id, 4, f"lists link for {change.entry}, which {reason}"
+                    )
             if change.action is Action.CREATE and change.entry in published.entries:
                 message = f"lists create for {change.entry}, which already exists"
                 yield problem_at(after, d.id, 4, message)

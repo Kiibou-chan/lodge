@@ -1,6 +1,7 @@
 """The three reading levels of a record, and which records fail the check."""
 
 from dataclasses import dataclass
+from datetime import datetime
 
 from lodge.core.check_state import CheckResult
 from lodge.core.derive import Derived, is_author
@@ -128,6 +129,9 @@ def level3(s: Snapshot, d: Derived, record_id: str) -> Level3:
             tuple(links),
         )
     add("changed by", d.changed_by.get(record_id, ()))
+    add("rests on", s.entries[record_id].rests_on)
+    add("supported by", d.supports.get(record_id, ()))
+    add("linked by", d.linked_by.get(record_id, ()))
     return Level3(None, (), None, (), s.entries[record_id].imported_from, tuple(links))
 
 
@@ -194,6 +198,17 @@ def _flags(
         flags.append("awaiting the author")
     elif waiting := d.touched_by_flagged.get(i):
         flags.append("awaiting the author on " + ", ".join(waiting))
+    if isinstance(record, SpecEntry):
+        for target in record.rests_on:
+            if d.status.get(target) == "retired":
+                flags.append(f"rests on {target}, retired")
+            elif who and (changes := d.changed_by.get(target)):
+                latest = s.decisions[changes[0]]
+                if (datetime.fromisoformat(latest.date), latest.id) > (
+                    datetime.fromisoformat(who.date),
+                    who.id,
+                ):
+                    flags.append(f"rests on {target}, changed since")
     if record.imported_from is not None:
         flags.append("imported")
         if isinstance(record, Decision) and record.decided_by == "author" and record.quote is None:

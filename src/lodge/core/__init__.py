@@ -2,6 +2,7 @@
 
 from lodge.core.apply import Applied, StaleBase, apply_drafts
 from lodge.core.check_change import check_change
+from lodge.core.check_cycles import check_cycles
 from lodge.core.check_state import CheckResult, check_state
 from lodge.core.derive import Derived, derive, is_author
 from lodge.core.drafts import Draft, parse_draft, record_from_draft
@@ -89,6 +90,7 @@ __all__ = [
     "area_path",
     "attachment_path",
     "check_change",
+    "check_cycles",
     "check_state",
     "content_hash",
     "derive",

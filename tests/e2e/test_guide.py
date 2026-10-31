@@ -34,3 +34,8 @@ def test_guide_is_short_and_covers_the_write_path(project: Project) -> None:
 def test_guide_names_the_author_not_a_person(project: Project) -> None:
     text = project.run("guide").out
     assert not re.search(r"\b(her|hers|she)\b", text, re.IGNORECASE)
+
+
+def test_guide_names_rests_on_and_link(project: Project) -> None:
+    out = project.run("guide").out
+    assert "rests_on" in out and "action `link`" in out

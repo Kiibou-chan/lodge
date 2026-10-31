@@ -4,6 +4,7 @@ from collections.abc import Iterator
 from dataclasses import dataclass
 
 from lodge.core.check_areas import check_areas
+from lodge.core.check_cycles import check_cycles
 from lodge.core.derive import is_author
 from lodge.core.model import Decision, Problem, Record
 from lodge.core.snapshot import Snapshot, attachment_path
@@ -31,6 +32,7 @@ def check_state(s: Snapshot) -> CheckResult:
         *_quotes(s),
         *_confirmations(s),
         *check_areas(s),
+        *check_cycles(s),
     ]
     return CheckResult(tuple(sorted(found, key=sort_key)), ())
 
@@ -68,6 +70,12 @@ def _file_names(s: Snapshot) -> Iterator[Problem]:
 
 
 def _unresolved(s: Snapshot) -> Iterator[Problem]:
+    for e in sorted(s.entries.values(), key=lambda e: e.id):
+        for target in dict.fromkeys(e.rests_on):
+            if target == e.id:
+                yield problem_at(s, e.id, 2, "rests_on itself")
+            elif target not in s.entries:
+                yield problem_at(s, e.id, 2, f"rests_on {target}, which does not exist")
     for d in decisions(s):
         targets = [
             ("changes", dict.fromkeys(c.entry for c in d.changes), s.entries),

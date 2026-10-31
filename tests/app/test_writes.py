@@ -185,3 +185,27 @@ def test_add_area_sharing_a_rank_gives_feedback() -> None:
         )
         in added.feedback
     )
+
+
+def test_cycle_made_in_one_add_is_refused() -> None:
+    store = project()
+    lodge = wired(store)
+    a = lodge.draft("s-aaaaaa").replace("---\n", "---\nrests_on: [s-bbbbbb]\n", 1)
+    b = spec_text("id: s-bbbbbb", "area: storage", "rests_on: [s-aaaaaa]")
+    d = decision_text("changes: [{entry: s-aaaaaa, action: link}, {entry: s-bbbbbb, action: link}]")
+    added = lodge.add([("a.md", a), ("b.md", b), ("d.md", d)])
+    assert added.outcome is AddOutcome.CHECK_FAILED
+    assert len([p for p in added.check.problems if p.check == 8]) == 2
+    assert store.publishes == []
+
+
+def test_rest_on_entry_retired_in_the_same_add_is_refused() -> None:
+    store = project()
+    b = spec_text("id: s-bbbbbb", "area: storage", "rests_on: [s-aaaaaa]")
+    d = decision_text(
+        "changes: [{entry: s-aaaaaa, action: retire}, {entry: s-bbbbbb, action: create}]"
+    )
+    added = wired(store).add([("b.md", b), ("d.md", d)])
+    assert added.outcome is AddOutcome.CHECK_FAILED
+    assert any(p.check == 6 for p in added.check.problems)
+    assert store.publishes == []

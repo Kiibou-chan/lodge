@@ -13,6 +13,7 @@ class Action(StrEnum):
     CREATE = "create"
     EDIT = "edit"
     RETIRE = "retire"
+    LINK = "link"
 
 
 @dataclass(frozen=True)

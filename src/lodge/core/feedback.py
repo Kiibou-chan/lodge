@@ -45,6 +45,12 @@ def _messages(record: Record, after: Snapshot, d: Derived, length: LengthGuidanc
     if isinstance(record, Decision):
         yield from _decision_messages(record, after, d, length)
     else:
+        for target in dict.fromkeys(re.findall(r"\bs-[0-9a-hjkmnp-tv-z]{6}\b", record.statement)):
+            if target in after.entries and target != record.id and target not in record.rests_on:
+                yield (
+                    f"the statement names {target}, but rests_on does not list it; "
+                    f"does {record.id} rest on {target}? If so, add it to rests_on"
+                )
         words, limit = len(record.statement.split()), length.spec_statement_words
         if words > limit:
             yield (

@@ -28,7 +28,6 @@ Never edit record files by hand.
 In checkout mode `add` stages the files, so commit them with your work; in branch mode it publishes them.
 The gate on a branch runs inside `lodge add`, so a push to the branch by hand skips it.
 A dry run marks new IDs `(provisional)`: the real add mints new ones, so never write them into another draft.
-
 ```
 ---
 kind: decision
@@ -39,10 +38,11 @@ changes: [{entry: s-4kq1zm, action: create}]
 ---
 Transcripts are kept whole.
 ```
-
 An entry draft has `kind: spec`, `id`, `area`, and `title`; an area draft has `kind: area`, `name`, `title`, and `order`.
 A new entry needs its area, and a new area needs an area draft in the same add.
-Actions in `changes` are `create`, `edit`, and `retire`.
+Actions in `changes` are `create`, `edit`, `link`, and `retire`.
+An entry lists the entries it would not hold without in `rests_on: [s-…]`; a decision that changes only `rests_on` lists the entry with action `link`.
+When an entry still holds after an entry it rests on changed, say so with a decision that lists it with `edit`, its text unchanged, and why in the reasoning.
 A correction, or a shorter reasoning, is a new decision with `replaces: [d-xxxxxx]` or `narrows: [d-xxxxxx]`, never an edit.
 A number in a statement needs `numbers: [{value: "40 %", handle: "a command, or a record and key"}]`.
 To keep evidence such as a log, list `attachments: [<name>]` in the one new decision and run `lodge add --attach PATH FILE...`.
