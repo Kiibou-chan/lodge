@@ -46,3 +46,4 @@ Task 9c: built by Codex: two decisions and eight entries; dependency marks 0.
 Task 10: built by Codex: README, a `lodge waiting` line in `CLAUDE.md`, the viewer design frozen; the coordinator added to `CLAUDE.md` that the viewer design was approved by the advisor, not by her.
 Task 10: complete; its prose is rechecked by the final review.
 Task 11: built by Codex: the ten areas ranked in the first design's section order, and `lodge spec` shows them so; the builder notes order-change notes on five areas whose order lines did not change, for the final review.
+Tasks 9b and 9c: review 0 Blocking, 3 Important, 8 Minor (`task-9bc-review.md`); fixed in the fix wave with the final review's findings.
