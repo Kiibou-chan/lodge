@@ -39,3 +39,5 @@ Task 8 fix round 1: I2 remains open only for s-j5ttw1 to s-aq3a5k: check 4 rejec
 Task 8: fix round 1 by Codex: 'changed since' needs a strictly later change (failing test first); 10 more links in six link decisions; d-76nt3b records unchanged-text edits that clear marks; the link s-j5ttw1 to s-aq3a5k waits until Task 9a's entries are published; 'changed since' 0; gate green.
 Task 8: complete, with that one link left for after the merge.
 Task 9a: review 0 Blocking, 1 Important, 4 Minor (`task-9a-review.md`).
+Task 9a: fix round 1 by Codex: d-s69cq4 no longer narrows d-mzkt6e; Minors fixed. Task 9a: complete.
+Task 9b: first run blocked on check 4 charging a later text edit to earlier link decisions; ruling d-na1eg7: a link passes when another decision of the same change edits the entry.

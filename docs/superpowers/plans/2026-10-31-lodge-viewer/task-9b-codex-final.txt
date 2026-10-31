@@ -1,0 +1,8 @@
+Step 1: DONE. Corrected d-s69cq4 and appended “Fix round 1” to the report.
+
+Step 2: BLOCKED. The first dry run failed check 4 on existing decisions d-96n7j6 and d-a16d4m. Stopped as required; drafts and feedback are preserved, and task-9b-report.md is written.
+
+Records added: none.
+Changed-since warnings: 0 → 0.
+Builder gate green: 1363 tests plus the port test passed.
+No commit made.

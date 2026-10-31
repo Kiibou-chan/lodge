@@ -20,7 +20,6 @@ changes:
   - {entry: s-j5ttw1, action: edit}
   - {entry: s-bdkjte, action: edit}
   - {entry: s-sm2mf7, action: edit}
-narrows: [d-mzkt6e]
 ---
 
 Viewer confirmations are separate author decisions that preserve the confirmed decisions' writers.
@@ -32,7 +31,7 @@ The store commits each checkout viewer write by explicit path where safe, withou
 The separate confirmation follows d-rnjh2s: reading and confirming cannot transfer authorship.
 LODGE-6 (d-8nkamy) still makes a confirmed decision count as hers for the review flag; preserving `decided_by` does not weaken that consequence.
 The s-j5ttw1 edit removes the obsolete blanket denial of a confirmation step, while preserving trust in the author label and visible provenance.
-This narrows d-mzkt6e only in its entry's blanket denial, not in its review-flag rule or its refusal to require an inaccessible author identity check.
+d-mzkt6e remains current: its review-flag rule and trust in the author label still hold.
 For advisor-marked claims, d-7w5aq0 requires listing every changed entry so the author sees the consequences, binding the write to the displayed IDs to avoid a stale confirmation, choosing scope independent of list order, redirecting to avoid repeated writes, preserving other staged work, using the checkout identity, and skipping commits during merge, rebase, or cherry-pick.
 The generated title and statement, per-write checkout commit without pushing, staged fallback on the base branch or detached HEAD, and store-port boundary are coordinator calls.
 Leaving a viewer write merely staged during normal checkout work risks unrelated commits or loss; an explicit-path commit isolates it, while the next session push carries it.

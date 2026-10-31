@@ -158,3 +158,25 @@ Socket-bound verification was deferred as required: `tests/viewer/test_server.py
 The remaining tests in the ignored end-to-end file were not required by this brief; the specified port test was run separately.
 The coordinator still needs to stage explicit paths, run `sh scripts/check.sh` outside the sandbox, commit, and push.
 This report uses the user's explicit `task-9a-report.md` path rather than the shared `task-9-report.md` mentioned in the generic parts section.
+
+## Fix round 1
+
+DONE.
+The earlier narrowing rationale and concern above are superseded by this correction.
+I1: extracted d-s69cq4 with `uv run --frozen --quiet lodge draft d-s69cq4`, removed `narrows: [d-mzkt6e]`, and replaced the narrowing rationale with an explicit statement that d-mzkt6e remains current.
+Its review-flag statement remains true; s-j5ttw1 already records the changed confirmation sentence.
+The dry run passed with area-order notes only, and the sandbox-recipe add staged d-s69cq4 with its existing ID.
+No new record was added.
+Draft: `.drafts/task9a-fix/confirming.md`.
+
+m1: retained the accurate s-bdkjte wording, and use the anchored warning suffix `, changed since)` for Task 9b counts rather than matching explanatory prose.
+m2: later reasoning uses “built”, with no claim of author approval.
+m3: no record fix was requested; later reasoning does not repeat the inaccurate account of the timestamp tie.
+m4: no record fix was requested; softening the two author statements remains an option for her check through an author decision.
+Only verbatim quotes are her words.
+
+No code or tests changed.
+The final gate results are recorded in the Task 9b report alongside the shared verification run.
+The shared final gate passed: formatting, lint, mypy, vulture, 1363 non-socket tests, the separately required port test, and `lodge check --gate`.
+`lodge check` prints `ok`, d-mzkt6e is current without a narrowing mark, and dependency warnings remain at 0.
+Socket-bound tests remain deferred as required by the sandbox recipe.
