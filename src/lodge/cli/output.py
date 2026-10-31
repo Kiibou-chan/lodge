@@ -7,7 +7,6 @@ from lodge.app import Added, AddOutcome, Listed, Read, Shown
 from lodge.core import CheckResult, Level1, Problem, format_level1, format_level3
 
 NO_MATCHES = "no matches"
-NOTHING_WAITS = "nothing waits for the author"
 NOTHING_RECORDED = "Nothing is recorded yet."
 DECISION_DRAFT_NOTE = (
     "note: decisions are immutable; to change one, write a new decision with replaces or narrows"

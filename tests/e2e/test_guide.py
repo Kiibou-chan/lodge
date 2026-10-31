@@ -41,3 +41,20 @@ def test_guide_names_rests_on_and_link(project: Project) -> None:
     assert "rests_on" in out and "action `link`" in out
     assert "\n\n```\n---" in out
     assert "Transcripts are kept whole.\n```\n\n" in out
+
+
+def test_guide_says_waiting_first(project: Project) -> None:
+    text = project.run("guide").out
+    assert (
+        "Run `lodge waiting` at the start of a session, and answer what waits for an agent first."
+        in text
+    )
+    assert (
+        "`lodge threads` lists the open doubts and questions, and `lodge thread Q` shows one."
+        in text
+    )
+    assert "close a thread only when the author asked for it." in text
+    assert (
+        "Write `--by author` only with the author's words verbatim, with `--where` and `--when`."
+        in text
+    )

@@ -1,12 +1,11 @@
 # lodge: the guide for agents
-
-lodge holds a project's decisions and specification entries.
 A decision records a change and why, with a scope, who decided, and the entries it changes.
 An entry says what holds now, in one paragraph, and belongs to an area.
-An area is a named group with a title, an intro, and the order of its entries.
 Read through lodge, never by opening record files.
 
 ## Reading
+Run `lodge waiting` at the start of a session, and answer what waits for an agent first.
+`lodge threads` lists the open doubts and questions, and `lodge thread Q` shows one.
 
 `lodge search WORDS`, `lodge show REF`, `lodge spec [--area A]`, and `lodge waiting` read.
 A REF is an ID or a code such as ITEM-1.
@@ -18,7 +17,9 @@ A `problem:` line names a file lodge cannot read, and a record flagged `fails ch
 A line saying the lodge branch was rewritten is for the author too; only the author accepts it, with the git command it names.
 
 ## Writing
-
+`lodge ask REF --kind doubt|question --by ROLE FILE`, `lodge reply Q --by ROLE FILE`, and `lodge close Q --by ROLE [FILE]` write threads.
+Answer a doubt by acting with a decision whose reasoning names the thread, then reply naming the decision; close a thread only when the author asked for it.
+Write `--by author` only with the author's words verbatim, with `--where` and `--when`.
 Never edit record files by hand.
 1. `lodge id s` gives the ID of each new entry, so the decision can name it.
 2. Write drafts, Markdown with a YAML header, outside `lodge/`; the body is the statement, and `## Reasoning` starts the why.
@@ -51,7 +52,6 @@ lodge dates a new decision at this machine's clock and waits up to three seconds
 `feedback:` and `note:` lines are advice; `check` lines are a gate, and nothing is published until they are gone.
 
 ## Quoting the author
-
 `decided_by: author` is for the author's decisions only, with `quote: {text, where, when}`.
 The text is the author's words verbatim, with where and when they were said; never paraphrase.
 Without their words it is not the author's decision, so record it under your own role; a role that contains the word author is refused.

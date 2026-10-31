@@ -5,12 +5,12 @@ from collections.abc import Callable, Sequence
 from importlib.resources import files
 from pathlib import Path
 
-from lodge.app import AddOutcome, Lodge, LodgeError
+from lodge.app import AddOutcome, Lodge
+from lodge.cli.files import read_file
 from lodge.cli.output import (
     DECISION_DRAFT_NOTE,
     NO_MATCHES,
     NOTHING_RECORDED,
-    NOTHING_WAITS,
     added_lines,
     check_lines,
     is_decision_file,
@@ -34,6 +34,8 @@ from lodge.cli.parser import (
     Waiting,
     parse,
 )
+from lodge.cli.thread_output import waiting_text
+from lodge.cli.threads import Ask, Close, Reply, ThreadCommand, Threads, run_thread
 
 
 def run(
@@ -75,7 +77,10 @@ def run(
             text, read, _ = make_lodge().spec(area)
             print("\n".join([*read_lines(read), text.rstrip("\n") or NOTHING_RECORDED]))
         case Waiting():
-            print(listed_text(make_lodge().waiting(), NOTHING_WAITS))
+            lodge = make_lodge()
+            print(waiting_text(lodge.waiting(), lodge.threads_waiting()))
+        case Threads() | ThreadCommand() | Ask() | Reply() | Close():
+            return run_thread(command, make_lodge())
         case Guide():
             print(files("lodge.cli").joinpath("guide.md").read_text(encoding="utf-8"), end="")
         case View(port):
@@ -105,21 +110,10 @@ def _check(lodge: Lodge, gate: bool) -> int:
 
 
 def _read_drafts(names: Sequence[str]) -> list[tuple[str, str]]:
-    return [(name, _read(name, "not UTF-8 text", False)) for name in names]
+    return [(name, read_file(name, "not UTF-8 text", False)) for name in names]
 
 
 def _read_attachments(paths: Sequence[str]) -> list[tuple[str, str]]:
     """Each file by its base name, with its text exactly as it is, line endings included."""
     problem = "not UTF-8 text; attachments are text in this version"
-    return [(Path(path).name, _read(path, problem, True)) for path in paths]
-
-
-def _read(name: str, not_utf8: str, exact: bool) -> str:
-    try:
-        if exact:
-            return Path(name).read_bytes().decode("utf-8")
-        return Path(name).read_text(encoding="utf-8")
-    except UnicodeDecodeError:
-        raise LodgeError(f"{name}: {not_utf8}") from None
-    except OSError as error:
-        raise LodgeError(f"{name}: cannot be read: {error.strerror or error}") from error
+    return [(Path(path).name, read_file(path, problem, True)) for path in paths]

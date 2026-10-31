@@ -240,3 +240,14 @@ def test_relative_path_without_a_payload_folder_is_read_from_the_process_folder(
     assert run(io.StringIO(raw), out, context, sub) == 0
     assert asked == [sub / "lodge" / "decisions" / "d.md"]
     assert "sub/lodge/decisions/d.md" in out.getvalue()
+
+
+def test_thread_file_edit_names_reply_and_close(tmp_path: Path) -> None:
+    text = context_text(
+        respond(payload("lodge/threads/q-111111.md"), tmp_path, tmp_path / "lodge", ())
+    )
+    assert "is a lodge thread file" in text
+    assert "`lodge reply Q --by ROLE FILE`" in text
+    assert "`lodge close Q --by ROLE`" in text
+    assert "lodge draft" not in text
+    assert "Reverse your own edit now:" in text

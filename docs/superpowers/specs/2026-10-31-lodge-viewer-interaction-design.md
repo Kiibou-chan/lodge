@@ -82,7 +82,7 @@ An author message's text is her words, verbatim, as typed in the viewer or quote
 
 In the viewer every record's page has "Raise a doubt" and "Ask a question", each a text field; the page shows the record's threads below it, newest last, with a reply field while a thread is open and a "Close" button.
 On the command line: `lodge threads` lists open threads, `lodge thread q-xxxxxx` shows one, `lodge ask REF --kind doubt|question --by ROLE FILE` opens one, `lodge reply q-xxxxxx --by ROLE FILE` appends a message, and `lodge close q-xxxxxx --by ROLE` closes it **[my call]**: her "Me, you, both" makes agents raise doubts too, a reviewer's say.
-Closing appends a message by whoever closes the thread, with the text "Closed." when none is given, so a closed thread shows who closed it and when **[advisor]**.
+Closing appends a message by whoever closes the thread, with an empty text when none is given, which reads show as "closed by BY", so a closed thread shows who closed it and when, and "Closed." is never recorded as anyone's words (d-a3h9f3) **[advisor]**.
 A message by `author` written from the command line needs `--where` and `--when`, as an author record's quote has both, and records them **[advisor: `--when`]**; the viewer records `where: "lodge viewer"` and the time of the write **[my call]**.
 An agent writes `--by author` only with her words verbatim from where it names, as for author decisions.
 `lodge waiting` gains a first group, waiting for an agent: the open threads whose last message is the author's.

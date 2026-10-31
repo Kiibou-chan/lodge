@@ -27,6 +27,11 @@ RECORD_TEXT = (
     "edit the draft, check it with `lodge add --dry-run FILE`, then publish it with "
     "`lodge add FILE`. " + REVERSE
 )
+THREAD_TEXT = (
+    "{path} is a lodge thread file, and lodge owns it: do not edit it by hand. "
+    "Add a message with `lodge reply Q --by ROLE FILE`, "
+    "or close it with `lodge close Q --by ROLE`. " + REVERSE
+)
 FROZEN_TEXT = (
     "{path} is frozen: lodge holds its content now, so do not edit it. "
     "Record the change as a new decision instead: write a draft (`lodge guide` shows the "
@@ -65,7 +70,10 @@ def respond(
         return None
     path = edited.resolve()
     if data_root is not None and _is_record(path, data_root.resolve()):
-        return _output(RECORD_TEXT, path, root)
+        template = (
+            THREAD_TEXT if path.is_relative_to(data_root.resolve() / "threads") else RECORD_TEXT
+        )
+        return _output(template, path, root)
     if path.is_relative_to(root) and _is_frozen(path.relative_to(root).as_posix(), frozen):
         return _output(FROZEN_TEXT, path, root)
     return None
