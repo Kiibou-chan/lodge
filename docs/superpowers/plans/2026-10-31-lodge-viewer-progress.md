@@ -43,3 +43,5 @@ Task 9a: fix round 1 by Codex: d-s69cq4 no longer narrows d-mzkt6e; Minors fixed
 Task 9b: first run blocked on check 4 charging a later text edit to earlier link decisions; ruling d-na1eg7: a link passes when another decision of the same change edits the entry.
 Check 4 per ruling d-na1eg7, with both tests failing first (Codex). Task 9b: built by Codex: three decisions and 14 entries; the builder notes two viewer claims brought forward from Task 9c; no 'changed since' marks.
 Task 9c: built by Codex: two decisions and eight entries; dependency marks 0.
+Task 10: built by Codex: README, a `lodge waiting` line in `CLAUDE.md`, the viewer design frozen; the coordinator added to `CLAUDE.md` that the viewer design was approved by the advisor, not by her.
+Task 10: complete; its prose is rechecked by the final review.

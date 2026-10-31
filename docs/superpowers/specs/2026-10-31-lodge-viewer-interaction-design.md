@@ -144,3 +144,5 @@ All of the following are tasks of the plan that builds this design, after the co
 ## Left to the builder
 
 The page layout and styling, within the existing viewer's look; the thread file's exact Markdown shape; the new modules' placement within the package rules in `tests/structure_rules.py`; how the derived order breaks ties beyond the rule above.
+
+Its content now lives in lodge (`lodge spec`, `lodge show`); this document is frozen.

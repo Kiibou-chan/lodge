@@ -1,0 +1,8 @@
+DONE
+
+Tests: sandbox gate passed, with 1,367 tests plus five selected viewer CLI tests passing.
+
+Report: [task-10-report.md](docs/superpowers/plans/2026-10-31-lodge-viewer/task-10-report.md).
+
+Concerns: socket tests await the coordinator’s external gate.
+Nothing staged, committed, or pushed.

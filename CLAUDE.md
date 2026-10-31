@@ -2,8 +2,9 @@
 
 Knowledge tool for agent-built software: decisions and specification entries, levelled reads, a check.
 Authority: `lodge spec`; the plan argues from it, never over it.
+Run `uv run --frozen --quiet lodge waiting` at the start of a session and answer what waits for an agent first.
 Read decisions and her rulings with `lodge show` and `lodge search`; her own decisions have `decided_by: author` (`lodge search --by author`).
-The entries are agent text written from the design document she approved, awaiting her confirmation through the viewer.
+The entries are agent text written from the design documents (the first approved by her, the viewer design by the advisor, d-7w5aq0), awaiting her confirmation through the viewer.
 The design document (`docs/superpowers/specs/2026-10-29-lodge-design.md`) is frozen history.
 Read through lodge, never by opening record files; run `uv run --frozen --quiet lodge guide` for the writing rules.
 Drafts go under `.drafts/`, and `lodge add --dry-run` precedes every `lodge add`.
