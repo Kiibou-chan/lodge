@@ -1,0 +1,10 @@
+DONE
+
+Added six author decisions, two coordinator decisions, and 22 specification entries.
+All IDs, edits, narrowings, and feedback answers are in [task-9a-report.md](docs/superpowers/plans/2026-10-31-lodge-viewer/task-9a-report.md).
+
+Tests: 1,362 passed, plus the port test; static checks and lodge gate passed.
+“Changed since”: 1 → 0.
+
+Concern: socket tests await the coordinator’s outside-sandbox gate.
+Nothing committed or pushed.

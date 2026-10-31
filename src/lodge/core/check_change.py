@@ -25,7 +25,7 @@ def check_change(
     now: datetime,
     current: Snapshot | None = None,
 ) -> CheckResult:
-    """Every problem of 4, 5, and 6, and those of 1, 2, 3, and 7 that `after` alone has.
+    """Every problem of 4, 5, and 6, and those of 1, 2, 3, 7, and 8 that `after` alone has.
 
     A problem of `after` that `published` has too, by path, check, and message, is a note.
     `current` is the state this change starts from when it is not the published one: a decision
@@ -53,8 +53,8 @@ def check_change(
 
 
 def _missing(published: Snapshot, after: Snapshot) -> Iterator[Problem]:
-    for record_id in sorted({*published.decisions, *published.entries}):
-        if record_id not in after.decisions and record_id not in after.entries:
+    for record_id in sorted({*published.decisions, *published.entries, *published.threads}):
+        if record_id not in after.decisions.keys() | after.entries.keys() | after.threads.keys():
             message = "was published and is missing from this state"
             yield problem_at(published, record_id, 2, message)
 
@@ -102,13 +102,20 @@ def _imports_over_live(published: Snapshot, after: Snapshot) -> Iterator[Problem
 
 
 def _links_to_dead(published: Snapshot, after: Snapshot) -> Iterator[Problem]:
-    """Check 6: a new decision narrows or confirms a replaced decision, or edits a retired entry.
+    """Check 6: a new decision narrows or confirms a replaced decision, or edits a retired entry,
+    or an entry newly rests on a retired entry.
 
     An entry counts as retired when it is retired both before and after the change, so a decision
     that replaces the last standing retirement may edit the entry.
     """
     status = derive(published).status
     standing = derive(after).status
+    for e in sorted(after.entries.values(), key=lambda e: e.id):
+        before = published.entries.get(e.id)
+        previous = before.rests_on if before else ()
+        for target in dict.fromkeys(e.rests_on):
+            if target not in previous and standing.get(target) == "retired":
+                yield problem_at(after, e.id, 6, f"rests on {target}, which is retired")
     for d in new_decisions(published, after):
         for verb, targets in (("narrows", d.narrows), ("confirms", d.confirms)):
             for target in dict.fromkeys(targets):
@@ -130,6 +137,6 @@ def _area_notes(published: Snapshot, after: Snapshot) -> Iterator[str]:
         yield f"area {name}: removed"
     for name in sorted(published.areas.keys() & after.areas.keys()):
         before, now = published.areas[name], after.areas[name]
-        for field in ("title", "intro", "order"):
+        for field in ("title", "intro", "order", "rank"):
             if getattr(before, field) != getattr(now, field):
                 yield f"area {name}: {field} changed"

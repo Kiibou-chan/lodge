@@ -80,7 +80,8 @@ def level1_body(v: Level1, statuses: Mapping[str, str] | None = None) -> str:
     return f"{meta(v)}{flags(v, statuses)}{statement}{quoted(v)}"
 
 
-def page(title: str, body: str, read: Read) -> str:
+def page(title: str, body: str, read: Read, notice: str | None = None) -> str:
+    status = f'<p class="notice" role="status">{e(notice)}</p>' if notice else ""
     nav = "".join(f'<a href="{href}">{label}</a>' for href, label in NAV)
     fresh = f'<p class="freshness">{e(read.freshness)}</p>' if read.freshness else ""
     return (
@@ -88,7 +89,7 @@ def page(title: str, body: str, read: Read) -> str:
         '<meta name="viewport" content="width=device-width, initial-scale=1">'
         f'<title>{e(title)} &ndash; lodge</title><link rel="stylesheet" href="/style.css">'
         f"</head><body><header><nav>{nav}</nav></header>{fresh}{_banner(read)}"
-        f"<main>{body}</main></body></html>\n"
+        f"<main>{status}{body}</main></body></html>\n"
     )
 
 

@@ -5,8 +5,9 @@ from dataclasses import replace
 from datetime import datetime
 
 from lodge import core
+from lodge.app import threads
 from lodge.app.errors import LodgeError
-from lodge.app.results import Listed, Read, Shown
+from lodge.app.results import Listed, Read, Shown, ThreadsWaiting
 from lodge.app.state import State, Wiring, not_found, read_checked, read_state, resolve_ref
 from lodge.core import (
     CheckResult,
@@ -21,6 +22,7 @@ from lodge.core import (
     level2_views,
     level3,
     load,
+    newest_last,
     render_spec,
     spec_view,
 )
@@ -44,12 +46,17 @@ def show(w: Wiring, ref: str, reasoning: bool, provenance: bool) -> Shown:
         level3(s, d, record_id) if provenance else None,
         state.read,
         level2_views(s, d, record_id, state.failing) if reasoning else (),
+        newest_last(t for t in s.threads.values() if t.about == record_id),
+        record_id in core.confirmable_ids(s, d),
+        core.rests_on_tree(s, d, record_id),
+        _views(state, d.supports.get(record_id, ())),
     )
 
 
-def waiting(w: Wiring) -> Listed:
+def waiting_all(w: Wiring) -> tuple[Listed, ThreadsWaiting]:
     state = read_checked(w)
-    return Listed(_newest_first(state, state.derived.awaiting_author), state.read)
+    listed = Listed(_newest_first(state, state.derived.awaiting_author), state.read)
+    return listed, threads.waiting_in(state)
 
 
 def timeline(w: Wiring, limit: int) -> Listed:

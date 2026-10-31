@@ -8,6 +8,8 @@ Read through lodge, never by opening record files.
 
 ## Reading
 
+Run `lodge waiting` at the start of a session, and answer what waits for an agent first.
+`lodge threads` lists the open doubts and questions, and `lodge thread Q` shows one.
 `lodge search WORDS`, `lodge show REF`, `lodge spec [--area A]`, and `lodge waiting` read.
 A REF is an ID or a code such as ITEM-1.
 `show` gives level 1: the statement, status, who decided, the date, and flags.
@@ -19,6 +21,9 @@ A line saying the lodge branch was rewritten is for the author too; only the aut
 
 ## Writing
 
+`lodge ask REF --kind doubt|question --by ROLE FILE`, `lodge reply Q --by ROLE FILE`, and `lodge close Q --by ROLE [FILE]` write threads.
+Answer a doubt by acting with a decision whose reasoning names the thread, then reply naming the decision; close a thread only when the author asked for it.
+Write `--by author` only with the author's words verbatim, with `--where` and `--when`.
 Never edit record files by hand.
 1. `lodge id s` gives the ID of each new entry, so the decision can name it.
 2. Write drafts, Markdown with a YAML header, outside `lodge/`; the body is the statement, and `## Reasoning` starts the why.
@@ -26,23 +31,18 @@ Never edit record files by hand.
 4. Run `lodge add --dry-run FILE...` first: feedback can only be acted on before publishing, since a published decision is immutable.
 5. Run `lodge add FILE...` with the decision and every entry it changes together; lodge fills `id` and `date`.
 In checkout mode `add` stages the files, so commit them with your work; in branch mode it publishes them.
-The gate on a branch runs inside `lodge add`, so a push to the branch by hand skips it.
-A dry run marks new IDs `(provisional)`: the real add mints new ones, so never write them into another draft.
+The gate on a branch runs inside `lodge add`, so a push to the branch by hand skips it; a dry run marks new IDs `(provisional)`: the real add mints new ones, so never write them into another draft.
 
 ```
 ---
-kind: decision
-title: "Keep whole transcripts"
-scope: product
-decided_by: coordinator
-changes: [{entry: s-4kq1zm, action: create}]
+{kind: decision, title: "Keep whole transcripts", scope: product, decided_by: coordinator, changes: [{entry: s-4kq1zm, action: create}]}
 ---
 Transcripts are kept whole.
 ```
 
-An entry draft has `kind: spec`, `id`, `area`, and `title`; an area draft has `kind: area`, `name`, `title`, and `order`.
-A new entry needs its area, and a new area needs an area draft in the same add.
-Actions in `changes` are `create`, `edit`, and `retire`.
+An entry draft has `kind: spec`, `id`, `area`, and `title`; an area draft has `kind: area`, `name`, `title`, and `order`; a new entry needs its area, and a new area needs an area draft in the same add.
+In `changes`, use `create`, `edit`, `link`, or `retire`; an entry lists what it needs in `rests_on: [s-…]`, and a decision changing only that list uses action `link`; check 4 accepts other entry changes alongside it only when another decision of the same change lists that entry with `edit` or `create`.
+When an entry still holds after an entry it rests on changed, say so with a decision that lists it with `edit`, its text unchanged, and why in the reasoning.
 A correction, or a shorter reasoning, is a new decision with `replaces: [d-xxxxxx]` or `narrows: [d-xxxxxx]`, never an edit.
 A number in a statement needs `numbers: [{value: "40 %", handle: "a command, or a record and key"}]`.
 To keep evidence such as a log, list `attachments: [<name>]` in the one new decision and run `lodge add --attach PATH FILE...`.

@@ -12,7 +12,7 @@ _CODE = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
 _AREA = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
 _STAMP = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}[+-][0-9]{2}:[0-9]{2}")
 _DAY = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}")
-ID_KIND = {"d": "decision", "s": "specification entry"}
+ID_KIND = {"d": "decision", "s": "specification entry", "q": "thread"}
 
 
 class FormatError(Exception):
@@ -142,3 +142,22 @@ def read_area_name(value: object, key: str) -> str:
     if _AREA.fullmatch(text) is None:
         raise FormatError(f"area name {text!r} must be lower-case words joined by hyphens", key)
     return text
+
+
+def read_rank(value: object) -> int:
+    """A non-negative whole number written without leading zeroes."""
+    if not isinstance(value, str) or re.fullmatch(r"0|[1-9][0-9]*", value) is None:
+        raise FormatError("rank must be a non-negative whole number without leading zeroes", "rank")
+    return int(value)
+
+
+def read_stamp(value: object, key: str) -> str:
+    """An ISO 8601 date and time with seconds and an offset."""
+    text = read_str(value, key)
+    if _STAMP.fullmatch(text):
+        try:
+            datetime.fromisoformat(text)
+            return text
+        except ValueError:
+            pass
+    raise FormatError(f"{key} must be ISO 8601 with seconds and an offset", key)

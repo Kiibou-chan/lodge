@@ -5,7 +5,7 @@ import pytest
 from e2e.conftest import Project
 
 COMMANDS = ["init", "id", "search", "show", "draft", "add", "check", "spec", "waiting"]
-COMMANDS += ["guide", "view", "hook"]
+COMMANDS += ["guide", "view", "hook", "threads", "thread", "ask", "reply", "close"]
 
 
 def test_help_lists_every_command(project: Project) -> None:

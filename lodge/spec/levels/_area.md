@@ -1,6 +1,7 @@
 ---
 kind: area
 title: "Levels"
+rank: 4
 order: [s-wcv4en, s-bzatqh, s-fehz74]
 ---
 

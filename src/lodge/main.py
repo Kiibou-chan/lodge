@@ -57,9 +57,9 @@ def _init() -> str:
     return init_store(root, _settings(root).store)
 
 
-def _view(port: int) -> int:
+def _view(port: int, allow_hosts: tuple[str, ...]) -> int:
     _make_lodge()
-    return serve(_make_lodge, port)
+    return serve(_make_lodge, port, allow_hosts, secrets.token_urlsafe(32))
 
 
 def _existing_folder(edited: Path) -> Path:

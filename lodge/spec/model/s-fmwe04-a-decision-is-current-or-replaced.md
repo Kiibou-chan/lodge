@@ -2,6 +2,7 @@
 id: s-fmwe04
 kind: spec
 title: "A decision is current or replaced, derived from later decisions"
+rests_on: [s-0yzshh]
 ---
 
 A decision's status is current or replaced, and is derived: it is replaced when a later decision names it in `replaces`.

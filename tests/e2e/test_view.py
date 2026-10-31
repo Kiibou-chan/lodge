@@ -55,7 +55,8 @@ def test_view_outside_a_repository_is_one_sentence(project: Project, tmp_path: P
 def test_view_passes_the_port_to_the_viewer() -> None:
     ports: list[int] = []
 
-    def view(port: int) -> int:
+    def view(port: int, allow_hosts: tuple[str, ...]) -> int:
+        assert allow_hosts == ()
         ports.append(port)
         return 0
 
@@ -68,3 +69,35 @@ def test_view_passes_the_port_to_the_viewer() -> None:
     for argv in (["view"], ["view", "--port", "9000"]):
         assert run(argv, unused, never, view, lambda: 0) == 0
     assert ports == [8787, 9000]
+
+
+def test_allow_host_is_repeatable_and_passed() -> None:
+    seen = []
+
+    def view(port: int, allow_hosts: tuple[str, ...]) -> int:
+        seen.append((port, allow_hosts))
+        return 0
+
+    assert (
+        run(
+            ["view", "--allow-host", "proxy:443", "--allow-host", "other"],
+            unused_lodge,
+            lambda: "",
+            view,
+            lambda: 0,
+        )
+        == 0
+    )
+    assert seen == [(8787, ("proxy:443", "other"))]
+
+
+@pytest.mark.parametrize("host", ["", "a b", "a/b"])
+def test_allow_host_with_space_slash_or_empty_exits_2(host: str) -> None:
+    assert (
+        run(["view", "--allow-host", host], unused_lodge, lambda: "", lambda p, h: 0, lambda: 0)
+        == 2
+    )
+
+
+def unused_lodge() -> Lodge:
+    raise AssertionError("not called")

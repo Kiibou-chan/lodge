@@ -116,3 +116,96 @@ def test_render_spec_escapes_indented_hashes_and_underline_headings() -> None:
         "## Held (s-aaaaaa)\n\n"
         "One.\n   \\## Fake\nTitle\n\\===\nOther\n\\---  \n\n\\----\nlast\n"
     )
+
+
+def test_render_spec_follows_rank_then_derived_order() -> None:
+    s = snapshot_of(
+        area(rank=0, order=("s-aaaaaa", "s-bbbbbb")),
+        area(name="access"),
+        entry(id="s-aaaaaa", title="Later", rests_on=("s-bbbbbb",)),
+        entry(id="s-bbbbbb", title="First"),
+    )
+    text = render_spec(s, derive(s), NONE)
+    assert text.index("# Storage") < text.index("## First") < text.index("## Later")
+    assert [a.name for a in spec_view(s, derive(s), NONE)] == ["storage", "access"]
+
+
+def test_render_spec_lists_cross_area_targets() -> None:
+    s = snapshot_of(
+        entry(id="s-aaaaaa", statement="Held.", rests_on=("s-bbbbbb",)),
+        entry(id="s-bbbbbb", area="other"),
+    )
+    assert "Held.\nrests on s-bbbbbb (other)" in render_spec(s, derive(s), NONE)
+
+
+def test_spec_view_places_with_depth_under_and_also() -> None:
+    s = snapshot_of(
+        area(order=("s-aaaaaa", "s-bbbbbb", "s-cccccc")),
+        entry(id="s-aaaaaa"),
+        entry(id="s-bbbbbb"),
+        entry(id="s-cccccc", rests_on=("s-aaaaaa", "s-bbbbbb")),
+    )
+    view = spec_view(s, derive(s), NONE)[0]
+    p = view.placed[2]
+    assert (p.entry.id, p.depth, p.under, p.also, p.across) == (
+        "s-cccccc",
+        1,
+        "s-bbbbbb",
+        ("s-aaaaaa",),
+        (),
+    )
+    assert tuple(e.id for e in view.entries) == ("s-aaaaaa", "s-bbbbbb", "s-cccccc")
+
+
+def test_cross_area_target_is_across_not_also() -> None:
+    s = snapshot_of(
+        entry(id="s-aaaaaa"),
+        entry(id="s-bbbbbb", area="other"),
+        entry(id="s-cccccc", rests_on=("s-bbbbbb", "s-aaaaaa")),
+    )
+    p = spec_view(s, derive(s), NONE, "storage")[0].placed[1]
+    assert (p.under, p.also, p.across) == ("s-aaaaaa", (), (("s-bbbbbb", "other"),))
+
+
+def test_retired_same_area_target_is_not_also() -> None:
+    s = snapshot_of(
+        entry(id="s-aaaaaa"),
+        entry(id="s-bbbbbb"),
+        entry(id="s-cccccc", rests_on=("s-aaaaaa", "s-bbbbbb")),
+        decision(changes=(Change("s-bbbbbb", Action.RETIRE),)),
+    )
+    p = spec_view(s, derive(s), NONE)[0].placed[1]
+    assert (p.under, p.also) == ("s-aaaaaa", ())
+
+
+def test_retired_cross_area_target_remains_across() -> None:
+    s = snapshot_of(
+        entry(id="s-aaaaaa", rests_on=("s-bbbbbb",)),
+        entry(id="s-bbbbbb", area="other"),
+        decision(changes=(Change("s-bbbbbb", Action.RETIRE),)),
+    )
+    p = spec_view(s, derive(s), NONE, "storage")[0].placed[0]
+    assert p.across == (("s-bbbbbb", "other"),)
+    assert "rests on s-bbbbbb (other)" in render_spec(s, derive(s), NONE)
+
+
+def test_duplicate_targets_are_shown_once() -> None:
+    s = snapshot_of(
+        area(order=("s-aaaaaa", "s-bbbbbb", "s-cccccc")),
+        entry(id="s-aaaaaa"),
+        entry(id="s-bbbbbb"),
+        entry(id="s-dddddd", area="other"),
+        entry(
+            id="s-cccccc",
+            rests_on=(
+                "s-aaaaaa",
+                "s-aaaaaa",
+                "s-bbbbbb",
+                "s-dddddd",
+                "s-dddddd",
+            ),
+        ),
+    )
+    p = spec_view(s, derive(s), NONE, "storage")[0].placed[2]
+    assert p.also == ("s-aaaaaa",)
+    assert p.across == (("s-dddddd", "other"),)

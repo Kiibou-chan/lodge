@@ -2,6 +2,7 @@
 id: s-dfejrb
 kind: spec
 title: "A flagged agent decision takes effect at once"
+rests_on: [s-01k42c]
 ---
 
 An agent decision takes effect at once even while flagged, so work does not stall overnight.

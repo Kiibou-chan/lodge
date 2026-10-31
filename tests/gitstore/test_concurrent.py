@@ -1,13 +1,13 @@
 """Two sessions adding at once, through the real operations over real stores (Review Focus 1)."""
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from pathlib import Path
 
 from applying import area_text, decision_text, spec_text
 from fakes import CountingIds, FixedClock
 
 from gitstore.repos import BRANCH, Ticker, bare_remote, clone, git, initialised, worktree
-from lodge.app import AddOutcome, Gate, Lodge, PublishOutcome, Store
+from lodge.app import AddOutcome, Committed, Gate, Lodge, PublishOutcome, Store
 from lodge.core import CoreSettings, Tree, check_state, load
 from lodge.gitstore import open_store
 
@@ -35,6 +35,9 @@ class Interleaved:
         self.drafts = A_DRAFTS
         self.fired = False
         self.outcomes: list[PublishOutcome] = []
+
+    def commit(self, paths: Sequence[str], message: str) -> Committed:
+        return self.inner.commit(paths, message)
 
     def trees(self) -> tuple[Tree, Tree]:
         read = self.inner.trees()

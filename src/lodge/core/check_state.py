@@ -1,9 +1,10 @@
-"""The checks that one state of the store answers alone: 1, 2, 3, and 7."""
+"""The checks that one state of the store answers alone: 1, 2, 3, 7, and 8."""
 
 from collections.abc import Iterator
 from dataclasses import dataclass
 
 from lodge.core.check_areas import check_areas
+from lodge.core.check_cycles import check_cycles
 from lodge.core.derive import is_author
 from lodge.core.model import Decision, Problem, Record
 from lodge.core.snapshot import Snapshot, attachment_path
@@ -31,6 +32,7 @@ def check_state(s: Snapshot) -> CheckResult:
         *_quotes(s),
         *_confirmations(s),
         *check_areas(s),
+        *check_cycles(s),
     ]
     return CheckResult(tuple(sorted(found, key=sort_key)), ())
 
@@ -61,13 +63,22 @@ def records(s: Snapshot) -> Iterator[Record]:
 
 
 def _file_names(s: Snapshot) -> Iterator[Problem]:
-    for record in records(s):
+    for record in (*records(s), *s.threads.values()):
         name = s.paths[record.id].rsplit("/", 1)[-1]
         if name != f"{record.id}.md" and not name.startswith(f"{record.id}-"):
             yield problem_at(s, record.id, 1, f"the file name {name} does not start with the ID")
 
 
 def _unresolved(s: Snapshot) -> Iterator[Problem]:
+    for t in s.threads.values():
+        if t.about not in s.decisions and t.about not in s.entries:
+            yield problem_at(s, t.id, 2, f"about {t.about}, which does not exist")
+    for e in sorted(s.entries.values(), key=lambda e: e.id):
+        for target in dict.fromkeys(e.rests_on):
+            if target == e.id:
+                yield problem_at(s, e.id, 2, "rests_on itself")
+            elif target not in s.entries:
+                yield problem_at(s, e.id, 2, f"rests_on {target}, which does not exist")
     for d in decisions(s):
         targets = [
             ("changes", dict.fromkeys(c.entry for c in d.changes), s.entries),

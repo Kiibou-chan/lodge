@@ -1,0 +1,5 @@
+DONE
+
+Tests: 1,218 passed; all static checks and lodge gate passed. Socket-bound tests await the external gate.
+
+All findings fixed; failing-first evidence appended under “Fix round 1”. No commit made.

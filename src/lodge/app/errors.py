@@ -21,6 +21,10 @@ class Conflict(LodgeError):
     exit_code = 1
 
 
+class StaleList(Conflict):
+    """The confirmation list changed since it was displayed."""
+
+
 def core_settings(table: Mapping[str, object]) -> CoreSettings:
     """The core settings of a parsed `.lodge.toml`, an error in them reported as a `LodgeError`."""
     try:

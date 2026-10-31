@@ -2,9 +2,10 @@
 
 Knowledge tool for agent-built software: decisions and specification entries, levelled reads, a check.
 Authority: `lodge spec`; the plan argues from it, never over it.
+Run `uv run --frozen --quiet lodge waiting` at the start of a session and answer what waits for an agent first.
 Read decisions and her rulings with `lodge show` and `lodge search`; her own decisions have `decided_by: author` (`lodge search --by author`).
-The entries are agent text written from the design document she approved, awaiting her confirmation through the viewer.
-The design document (`docs/superpowers/specs/2026-10-29-lodge-design.md`) is frozen history.
+The entries are agent text written from the design documents (the first approved by her, the viewer design by the advisor, d-7w5aq0), awaiting her confirmation through the viewer.
+Both design documents (`docs/superpowers/specs/2026-10-29-lodge-design.md` and `docs/superpowers/specs/2026-10-31-lodge-viewer-interaction-design.md`) are frozen history.
 Read through lodge, never by opening record files; run `uv run --frozen --quiet lodge guide` for the writing rules.
 Drafts go under `.drafts/`, and `lodge add --dry-run` precedes every `lodge add`.
 Open plans in `docs/superpowers/plans/`, each with `-progress.md` (the ledger) and a folder of briefs, reports, and reviews.
@@ -29,7 +30,7 @@ In `core` and `app`, take the time and randomness through the ports; never read 
 - Public repository: no personal paths, machine names, secrets, or another project's records in code, tests, or docs; fixtures synthetic (a made-up project), never her words or another project's records.
 - Tests never touch a real repository: git only in `tmp_path` with `GIT_CONFIG_GLOBAL` empty, `GIT_CONFIG_NOSYSTEM=1`, `git init -b main`; no network.
 - Record files are written only through `lodge add`, never by hand, here too.
-- The hook in `.claude/settings.json` advises on a hand edit of a record file or of a file matching a `frozen` glob in `.lodge.toml` (the design document and the done ledger of the first build); those files are not edited.
+- The hook in `.claude/settings.json` advises on a hand edit of a record file or of a file matching a `frozen` glob in `.lodge.toml` (both design documents and the done ledger of the first build); those files are not edited.
 - User-facing text and Markdown: British English, no em-dashes, Oxford comma, one sentence per line.
 
 ## Build process (adapted from an existing project)

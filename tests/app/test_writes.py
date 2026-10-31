@@ -7,7 +7,7 @@ from fakes import START, CountingIds, FixedClock, MemoryStore
 from support import AREA, FIRST, project, wired
 
 from lodge.app import AddOutcome, Conflict, LodgeError
-from lodge.core import Tree, check_state, load, parse_record
+from lodge.core import Feedback, Tree, check_state, load, parse_record
 
 NEW_DECISION = decision_text("changes:", "  - {entry: s-bbbbbb, action: create}")
 NEW_ENTRY = spec_text("id: s-bbbbbb", "area: storage", body="Everything is kept.")
@@ -169,3 +169,45 @@ def test_only_changed_files_are_published() -> None:
     lodge.add([("e.md", edited), ("a.md", lodge.draft("area:storage")), ("d.md", edit)])
     written = sorted(store.publishes[0][0])
     assert "lodge/spec/storage/_area.md" not in written and len(written) == 2
+
+
+def test_add_area_sharing_a_rank_gives_feedback() -> None:
+    store = MemoryStore()
+    lodge = wired(store)
+    lodge.add([("a.md", area_text("name: other", "rank: 1"))])
+    added = lodge.add([("b.md", area_text("name: storage", "rank: 1"))])
+    assert added.outcome is not AddOutcome.CHECK_FAILED
+    assert (
+        Feedback(
+            "area:storage",
+            "rank 1 is shared with area other; areas that share a rank are ordered by name",
+        )
+        in added.feedback
+    )
+
+
+def test_cycle_made_in_one_add_is_refused() -> None:
+    store = project()
+    lodge = wired(store)
+    a = lodge.draft("s-aaaaaa").replace("---\n", "---\nrests_on: [s-bbbbbb]\n", 1)
+    b = spec_text("id: s-bbbbbb", "area: storage", "rests_on: [s-aaaaaa]")
+    d = decision_text("changes: [{entry: s-aaaaaa, action: link}, {entry: s-bbbbbb, action: link}]")
+    added = lodge.add([("a.md", a), ("b.md", b), ("d.md", d)])
+    assert added.outcome is AddOutcome.CHECK_FAILED
+    assert len([p for p in added.check.problems if p.check == 8]) == 2
+    assert store.publishes == []
+
+
+def test_rest_on_entry_retired_in_the_same_add_is_refused() -> None:
+    store = project()
+    b = spec_text("id: s-bbbbbb", "area: storage", "rests_on: [s-aaaaaa]")
+    d = decision_text(
+        "changes: [{entry: s-aaaaaa, action: retire}, {entry: s-bbbbbb, action: create}]"
+    )
+    added = wired(store).add([("b.md", b), ("d.md", d)])
+    assert added.outcome is AddOutcome.CHECK_FAILED
+    assert any(
+        p.check == 6 and p.message == "s-bbbbbb: rests on s-aaaaaa, which is retired"
+        for p in added.check.problems
+    )
+    assert store.publishes == []

@@ -1,0 +1,52 @@
+# Progress: docs/superpowers/plans/2026-10-31-lodge-viewer.md
+Plan: written by the planner (3311c74); reviews correctness 2B/14I/16M and practice 3B/11I/10M (4f07618); advisor d-a3h9f3 on three findings held for the author; fix round 1 (61d91d1); recheck 1: 32 closed, 0 open, N1 Important and five Minors (`plan-recheck-1.md`).
+Plan: N1 closed by the coordinator: 09:37 is right (her message of 2026-10-30 is stamped 09:37), so the design's range is corrected to 09:34 to 09:47; M-a and M-b fixed in the plan; M-c, M-d, and M-e passed to the builders of Tasks 4 and 9 as notes.
+Preflight: the recheck's "Produces and Consumes after the splits" table (`plan-recheck-1.md`) is the scan; it found no mismatch.
+Task 1: built by Codex (a3b7ebd); review 0 Blocking, 2 Important, 9 Minor (`task-1-review.md`); fix round 1 by Codex, each new or stronger test shown failing against the variant the review named (report, "Fix round 1"); gate green.
+Task 1: complete; the fix round is rechecked by the final review, since each fix is a test with its recorded failing run.
+Task 2: built by Codex (f23dd1d); review 0 Blocking, 1 Important, 8 Minor (`task-2-review.md`).
+Task 3: built by Codex (68c4572).
+Task 2: fix round 1 by Codex: I1 the reverse of `rests_on` reads "supports", and the design's line 114 says so too; M1 to M8 fixed; gate green.
+Task 2: complete; the fix round is rechecked by the final review.
+Task 3: review 0 Blocking, 3 Important, 7 Minor (`task-3-review.md`); fix round 1 by Codex, all fixed with failing-first evidence in the report, the CR rule kept once in core and called by Task 4's code; gate green.
+Task 3: complete; the fix round is rechecked by the final review.
+Task 4: built by Codex (a64c88e).
+Task 4: review 0 Blocking, 1 Important, 10 Minor (`task-4-review.md`); the git layer passed every probe in scratch repositories.
+Ruling d-wez56g: a thread whose subject no longer resolves is shown, not refused (`ThreadShown.about` is `Level1 | None`), fixed with Task 5's `thread_head` in one round.
+Task 6a: built by Codex; the builder notes the stale-list check is not atomic with publication, which Task 6b's write lock covers.
+Task 6b: built by Codex; the builder says test-first was not followed throughout, so its review checks that each security test fails on a gate without its rule.
+Task 5: review 0 Blocking, 3 Important, 7 Minor (`task-5-review.md`).
+Tasks 4 and 5: fix round 1 by Codex in one round, with ruling d-wez56g; all Importants and the cheap Minors fixed with failing-first evidence in both reports; gate green.
+Task 4: complete. Task 5: complete. Both fix rounds are rechecked by the final review.
+Task 6a: review 0 Blocking, 3 Important, 7 Minor (`task-6a-review.md`).
+Task 6a: fix round 1 by Codex, each test shown failing against the review's mutation; a race between two viewer processes stays out of scope and is documented in the code; gate green.
+Task 6a: complete; the fix round is rechecked by the final review.
+Task 6b: review 0 Blocking, 2 Important, 8 Minor (`task-6b-review.md`), the gate probed with requests the tests do not send.
+Task 7: built by Codex.
+Task 6b: fix round 1 by Codex: a short body is refused with 400 and writes nothing, the size and thread-ID refusals each have a test that fails without them, a doubled Host or Origin is refused; m5 (a routing refactor) parked for the final wave; gate green.
+Task 6b: complete; the fix round is rechecked by the final review.
+Task 7: review 0 Blocking, 2 Important, 6 Minor (`task-7-review.md`); I2 was a `vulture_allow.py` line left out of the Task 7 commit, committed with the 6b fix.
+Task 7: fix round 1 by Codex: the entry tree shows each entry once, with a later occurrence as a reference, tested on 26 entries each resting on the two before it; the Minors fixed with failing-first evidence; gate green.
+Task 7: complete; the fix round is rechecked by the final review.
+Ruling d-mkstz5: `lodge-on-itself` merged into `main` (f28eb5c, gate green there) so the entries are published and Task 8's `link` changes pass check 4; its final review folds into this plan's final review.
+Task 8: first run blocked on check 4 before the merge; rerun after it.
+Task 8: built by Codex after the merge: 27 links on 20 entries in 7 link decisions, 14 proposals dropped as mentions; `lodge waiting` unchanged.
+Task 8: review 0 Blocking, 2 Important, 3 Minor (`task-8-review.md`): a false 'changed since' from a timestamp tie broken by ID, and about nine missed links.
+Task 9a: built by Codex: six author decisions with her quotes at their minutes (37 author records, reasoning equal to quote in all), two coordinator decisions, 22 entries; 'changed since' 1 to 0.
+Task 8 fix round 1: glossary-level terms (the first user and the pilot) do not alone make a rests-on link; a field, rule, or reading-level definition used by an entry does (M2).
+Task 8 fix round 1: I1 fixed with a failing-first same-second test; ten links added in six link decisions, and d-76nt3b acknowledges unchanged check statements to keep 'changed since' at 0.
+Task 8 fix round 1: I2 remains open only for s-j5ttw1 to s-aq3a5k: check 4 rejects a link-only action because Task 9a's committed statement edit is newer than the published baseline; retry after that baseline includes Task 9a.
+Task 8: fix round 1 by Codex: 'changed since' needs a strictly later change (failing test first); 10 more links in six link decisions; d-76nt3b records unchanged-text edits that clear marks; the link s-j5ttw1 to s-aq3a5k waits until Task 9a's entries are published; 'changed since' 0; gate green.
+Task 8: complete, with that one link left for after the merge.
+Task 9a: review 0 Blocking, 1 Important, 4 Minor (`task-9a-review.md`).
+Task 9a: fix round 1 by Codex: d-s69cq4 no longer narrows d-mzkt6e; Minors fixed. Task 9a: complete.
+Task 9b: first run blocked on check 4 charging a later text edit to earlier link decisions; ruling d-na1eg7: a link passes when another decision of the same change edits the entry.
+Check 4 per ruling d-na1eg7, with both tests failing first (Codex). Task 9b: built by Codex: three decisions and 14 entries; the builder notes two viewer claims brought forward from Task 9c; no 'changed since' marks.
+Task 9c: built by Codex: two decisions and eight entries; dependency marks 0.
+Task 10: built by Codex: README, a `lodge waiting` line in `CLAUDE.md`, the viewer design frozen; the coordinator added to `CLAUDE.md` that the viewer design was approved by the advisor, not by her.
+Task 10: complete; its prose is rechecked by the final review.
+Task 11: built by Codex: the ten areas ranked in the first design's section order, and `lodge spec` shows them so; the builder notes order-change notes on five areas whose order lines did not change, for the final review.
+Tasks 9b and 9c: review 0 Blocking, 3 Important, 8 Minor (`task-9bc-review.md`); fixed in the fix wave with the final review's findings.
+Final review: 0 Blocking, 1 Important, 11 Minor (`final-review.md`); gate green with socket tests (1392); end to end and write gate verified; every per-task Important closed; ready to merge after one fix wave.
+Final fix wave: final I1, 9b/9c I1 to I3, Minors m2 to m5, m7, m10, m11, Task 6b m5 fixed by Codex (`fix-wave-report.md`); coordinator decision d-azeks4; gate green outside the sandbox (1395 passed); 0 changed-since marks; waiting empty.
+Fix wave recheck: 12 closed, 0 open, 0 new Blocking, 0 new Important (`fix-wave-recheck.md`). lodge-viewer: complete.

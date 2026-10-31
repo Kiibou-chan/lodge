@@ -1,0 +1,6 @@
+DONE
+
+Tests: builder gate green, 1,154 passed; separate viewer port test passed.
+Concerns: socket-bound tests await the coordinator’s full gate.
+
+Report: [task-3-report.md](docs/superpowers/plans/2026-10-31-lodge-viewer/task-3-report.md).

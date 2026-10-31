@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from importlib.metadata import version
 from typing import Literal
 
+from lodge.cli.threads import ThreadCommands, add_thread_commands
 from lodge.core import Filters, Scope
 
 DEFAULT_PORT = 8787
@@ -71,6 +72,7 @@ class Guide:
 @dataclass(frozen=True)
 class View:
     port: int
+    allow_hosts: tuple[str, ...]
 
 
 @dataclass(frozen=True)
@@ -78,7 +80,9 @@ class Hook:
     event: str
 
 
-Command = Init | NewId | Search | Show | Draft | Add | Check | Spec | Waiting | Guide | View | Hook
+Command = (Init | NewId | Search | Show | Draft | Add | Check | Spec) | (
+    Waiting | Guide | View | Hook | ThreadCommands
+)
 
 
 def parse(argv: list[str]) -> Command | int:
@@ -125,14 +129,23 @@ def _parser() -> argparse.ArgumentParser:
     _add(add("add", "add draft files: new records, edits, areas", _add_of))
     check = add("check", "run the checks; --gate compares with the published state", _check_of)
     check.add_argument("--gate", action="store_true", help="the check that gates publication")
-    spec = add("spec", "print the readable specification in area order", _spec_of)
+    spec = add(
+        "spec",
+        "print the readable specification: areas by rank, entries after what they rest on",
+        _spec_of,
+    )
     spec.add_argument("--area", help="only this area")
-    add("waiting", "list the agent decisions that wait for the author", lambda _: Waiting())
+    add("waiting", "list what waits: for an agent, then for the author", lambda _: Waiting())
     add("guide", "print the guide for agents", lambda _: Guide())
-    view = add("view", "serve the read-only viewer on this machine", _view_of)
+    view = add(
+        "view", "serve the viewer on this machine: read, confirm, and raise doubts", _view_of
+    )
+    host_help = "also answer this Host header, name:port; repeatable"
+    view.add_argument("--allow-host", action="append", default=[], metavar="HOST", help=host_help)
     view.add_argument("--port", type=int, default=DEFAULT_PORT, help=f"default {DEFAULT_PORT}")
     hook = add("hook", "answer a Claude Code hook event: post-tool-use", lambda a: Hook(a.event))
     hook.add_argument("event", choices=(HOOK_EVENT,))
+    add_thread_commands(add)
     return parser
 
 
@@ -216,4 +229,4 @@ def _spec_of(args: argparse.Namespace) -> Command:
 
 
 def _view_of(args: argparse.Namespace) -> Command:
-    return View(args.port)
+    return View(args.port, tuple(args.allow_host))

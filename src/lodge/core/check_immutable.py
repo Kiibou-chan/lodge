@@ -5,7 +5,7 @@ from dataclasses import fields
 
 from lodge.core.check_state import problem_at
 from lodge.core.derive import is_author
-from lodge.core.model import Decision, Problem
+from lodge.core.model import Decision, Problem, ThreadState
 from lodge.core.snapshot import Snapshot
 
 _APART = {"id"}
@@ -25,6 +25,24 @@ def check_immutable(published: Snapshot, after: Snapshot) -> list[Problem]:
             else:
                 message = f"{name} of a published decision was changed{REMEDY}"
             problems.append(problem_at(after, decision_id, 5, message))
+    for ident in sorted(published.threads.keys() & after.threads.keys()):
+        old, new = published.threads[ident], after.threads[ident]
+        messages: list[str] = []
+        for name in ("about", "raises", "opened"):
+            if getattr(old, name) != getattr(new, name):
+                messages.append(f"{name} of a published thread was changed")
+        if new.messages[: len(old.messages)] != old.messages:
+            messages.append(
+                "a published message was changed or removed; messages are only appended"
+            )
+        if old.state is ThreadState.CLOSED:
+            if new.state is ThreadState.OPEN:
+                messages.append("a closed thread was opened again")
+            if len(new.messages) > len(old.messages):
+                messages.append("a message was added after the thread was closed")
+        elif new.state is ThreadState.CLOSED and len(new.messages) <= len(old.messages):
+            messages.append("a thread was closed without a closing message")
+        problems.extend(problem_at(after, ident, 5, message) for message in messages)
     return problems
 
 

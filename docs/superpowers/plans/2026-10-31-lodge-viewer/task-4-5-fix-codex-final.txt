@@ -1,0 +1,5 @@
+DONE_WITH_CONCERNS
+
+Tests: 1,303 passed; 19 socket tests blocked by sandbox permissions. All other checks passed; failing-first evidence recorded.
+
+All requested findings fixed; both reports appended. No commit made.

@@ -1,0 +1,5 @@
+DONE_WITH_CONCERNS
+
+Tests: 1,227 passed; two existing assertions expect the old waiting layout. Targeted tests and static checks pass; socket tests deferred.
+
+Those assertions remain unchanged pending permission. Report: [task-5-report.md](docs/superpowers/plans/2026-10-31-lodge-viewer/task-5-report.md).

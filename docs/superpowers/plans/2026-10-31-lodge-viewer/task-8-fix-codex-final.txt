@@ -1,0 +1,7 @@
+DONE_WITH_CONCERNS
+
+Added 10 links through six link decisions, plus acknowledgement d-76nt3b; details and IDs in the [Fix round 1 report](docs/superpowers/plans/2026-10-31-lodge-viewer/task-8-report.md#fix-round-1). All Minors addressed; no commit made.
+
+Tests: regression failed first, then passed; 1,363 sandbox tests and port test passed; gate green; “changed since” 0.
+
+I2 remains pending only for s-j5ttw1 → s-aq3a5k: check 4 rejects the link-only action until the published baseline includes Task 9a.

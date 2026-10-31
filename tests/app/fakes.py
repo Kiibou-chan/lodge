@@ -1,11 +1,11 @@
 """In-memory ports for the app tests; the project is made up."""
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from datetime import datetime, timedelta, timezone
 
 from builders import files_of
 
-from lodge.app import Gate, PublishOutcome
+from lodge.app import CommitOutcome, Committed, Gate, PublishOutcome
 from lodge.core import Area, Decision, SpecEntry, Tree
 
 START = datetime(2026, 10, 29, 9, 30, tzinfo=timezone(timedelta(hours=1)))
@@ -23,12 +23,18 @@ class MemoryStore:
         self.published = dict(self.files)
         self.staged = staged
         self.rev = 0
+        self.commits: list[tuple[tuple[str, ...], str]] = []
+        self.commit_result = Committed(CommitOutcome.COMMITTED)
         self.stamp: str | None = "fetched 2026-10-29T08:00:00+00:00"
         self.publishes: list[tuple[dict[str, str], str]] = []
         self.attempts = 0
         self.gate_for: Gate | None = None
         self._moves: list[Mapping[str, str]] = []
         self._rejections: list[Mapping[str, str]] = []
+
+    def commit(self, paths: Sequence[str], message: str) -> Committed:
+        self.commits.append((tuple(paths), message))
+        return self.commit_result
 
     def trees(self) -> tuple[Tree, Tree]:
         current = Tree(str(self.rev), dict(self.files))

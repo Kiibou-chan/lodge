@@ -78,7 +78,7 @@ def _broken() -> MemoryStore:
     [
         lambda lodge: lodge.search("", Filters()).read,
         lambda lodge: lodge.show("d-aaaaaa").read,
-        lambda lodge: lodge.waiting().read,
+        lambda lodge: lodge.waiting_all()[0].read,
         lambda lodge: lodge.timeline().read,
         lambda lodge: lodge.spec()[1],
         lambda lodge: lodge.problems()[1],
@@ -100,10 +100,10 @@ def test_waiting_lists_flagged() -> None:
     )
     listed = wired(
         MemoryStore(area(order=("s-aaaaaa",)), entry(id="s-aaaaaa"), FIRST, agent)
-    ).waiting()
+    ).waiting_all()[0]
     assert [v.id for v in listed.items] == ["d-cccccc"]
     assert "awaiting the author" in listed.items[0].flags
-    assert wired(project()).waiting().items == ()
+    assert wired(project()).waiting_all()[0].items == ()
 
 
 def test_timeline_newest_first_and_limited() -> None:

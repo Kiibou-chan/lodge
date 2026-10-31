@@ -4,7 +4,8 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 from enum import StrEnum
 
-from lodge.core import CheckResult, Feedback, Level1, Level3, Problem
+from lodge.app.ports import Committed
+from lodge.core import Branch, CheckResult, Feedback, Level1, Level3, Problem, Thread
 
 
 class AddOutcome(StrEnum):
@@ -31,6 +32,10 @@ class Shown:
     level3: Level3 | None
     read: Read
     changing: tuple[Level1, ...] = ()
+    threads: tuple[Thread, ...] = ()
+    confirmable: bool = False
+    rests_on: tuple[Branch, ...] = ()
+    supports: tuple[Level1, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -48,3 +53,41 @@ class Added:
     outcome: AddOutcome
     freshness: str | None = None
     minted: tuple[str, ...] = ()
+    paths: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
+class Written:
+    ids: tuple[str, ...]
+    outcome: AddOutcome
+    check: CheckResult
+    committed: Committed | None = None
+    about: str | None = None
+
+
+@dataclass(frozen=True)
+class ThreadList:
+    items: tuple[Thread, ...]
+    titles: Mapping[str, str]
+    read: Read
+
+
+@dataclass(frozen=True)
+class ThreadShown:
+    thread: Thread
+    about: Level1 | None
+    read: Read
+
+
+@dataclass(frozen=True)
+class ThreadsWaiting:
+    for_agent: tuple[Thread, ...]
+    for_author: tuple[Thread, ...]
+    titles: Mapping[str, str]
+    read: Read
+
+
+@dataclass(frozen=True)
+class Behind:
+    decision: Level1
+    entries: tuple[tuple[str, str], ...]

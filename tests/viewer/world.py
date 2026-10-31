@@ -1,5 +1,7 @@
 """A made-up project for the viewer tests: one author decision, an agent edit awaiting her."""
 
+from collections.abc import Callable
+
 from builders import area, at, decision, entry
 from fakes import MemoryStore
 from support import FIRST, wired
@@ -34,3 +36,8 @@ def world(broken: bool = False) -> Lodge:
     if broken:
         store.files[BAD] = "no header here\n"
     return wired(store)
+
+
+def staged_world() -> tuple[Callable[[], Lodge], MemoryStore]:
+    store = MemoryStore(area(order=("s-aaaaaa",)), ENTRY, FIRST, AGENT, SCRIPT, staged=True)
+    return lambda: wired(store), store

@@ -9,7 +9,7 @@ import pytest
 
 from lodge.app import Lodge, LodgeError
 from lodge.viewer import server
-from viewer.world import BAD, world
+from viewer.world import BAD, staged_world, world
 
 ROUTES = ["/", "/?q=keep&kind=decision", "/r/d-aaaaaa", "/r/ITEM-1", "/spec", "/timeline"]
 ROUTES += ["/waiting", "/problems", "/style.css"]
@@ -17,7 +17,7 @@ ROUTES += ["/waiting", "/problems", "/style.css"]
 
 @contextmanager
 def running(make_lodge: Callable[[], Lodge]) -> Iterator[int]:
-    httpd = server.make_server(make_lodge, 0)
+    httpd = server.make_server(make_lodge, 0, token="a" * 32)
     thread = threading.Thread(target=httpd.serve_forever)
     thread.start()
     try:
@@ -115,9 +115,9 @@ def test_unreadable_file_banner_reaches_the_browser() -> None:
         assert BAD in body and 'href="/problems"' in body
 
 
-def test_only_reads_are_served() -> None:
+def test_post_without_origin_and_other_methods_refused() -> None:
     with running(world) as port:
-        assert get(port, "/", method="POST")[0] == 405
+        assert get(port, "/", method="POST")[0] == 403
         assert get(port, "/", method="DELETE")[0] == 405
         status, _, body = get(port, "/", method="HEAD")
         assert status == 200 and body == ""
@@ -132,7 +132,7 @@ def test_response_headers_lock_the_page_down() -> None:
 
 
 def test_bound_to_loopback_only() -> None:
-    httpd = server.make_server(world, 0)
+    httpd = server.make_server(world, 0, token="a" * 32)
     try:
         assert httpd.server_address[0] == "127.0.0.1"
     finally:
@@ -145,7 +145,7 @@ def test_serve_reports_a_port_in_use_as_one_sentence() -> None:
         held.listen()
         port = held.getsockname()[1]
         with pytest.raises(LodgeError, match=f"cannot listen on port {port}.*--port"):
-            server.serve(world, port)
+            server.serve(world, port, (), "a" * 32)
 
 
 def test_serve_announces_the_address_and_stops_on_interrupt(
@@ -155,7 +155,7 @@ def test_serve_announces_the_address_and_stops_on_interrupt(
         raise KeyboardInterrupt
 
     monkeypatch.setattr(ThreadingHTTPServer, "serve_forever", interrupt)
-    assert server.serve(world, 0) == 0
+    assert server.serve(world, 0, (), "a" * 32) == 0
     assert "http://127.0.0.1:" in capsys.readouterr().out
 
 
@@ -167,7 +167,7 @@ def test_closing_the_server_waits_for_a_request_that_is_running() -> None:
         release.wait(10)
         return world()
 
-    httpd = server.make_server(slow, 0)
+    httpd = server.make_server(slow, 0, token="a" * 32)
     port = httpd.server_address[1]
     serving = threading.Thread(target=httpd.serve_forever)
     serving.start()
@@ -184,3 +184,61 @@ def test_closing_the_server_waits_for_a_request_that_is_running() -> None:
     closing.join(10)
     asking.join(10)
     assert waiting and not closing.is_alive()
+
+
+def test_post_through_the_socket_redirects() -> None:
+    make, _ = staged_world()
+    with running(make) as port:
+        status, headers = post_request(port, "token=" + "a" * 32 + "&id=d-cccccc&words=Yes")
+        assert status == 303
+        assert headers["location"] == "/r/d-cccccc?done=committed"
+
+
+def test_put_answers_405_allowing_post() -> None:
+    with running(world) as port:
+        status, headers, body = get(port, "/", method="PUT")
+        assert status == 405
+        assert headers["allow"] == "GET, HEAD, POST"
+        assert "this address takes no such request" in body
+
+
+def test_allow_host_is_served() -> None:
+    httpd = server.make_server(world, 0, token="a" * 32, allow_hosts=("proxy.example:443",))
+    thread = threading.Thread(target=httpd.serve_forever)
+    thread.start()
+    try:
+        assert get(httpd.server_address[1], "/", host="PROXY.example:443")[0] == 200
+        assert get(httpd.server_address[1], "/", host="proxy.example")[0] == 403
+    finally:
+        httpd.shutdown()
+        thread.join()
+        httpd.server_close()
+
+
+def test_post_without_length_411() -> None:
+    with running(world) as port:
+        assert post_request(port, None)[0] == 411
+
+
+def test_negative_length_400() -> None:
+    with running(world) as port:
+        assert post_request(port, None, "-1")[0] == 400
+
+
+def post_request(
+    port: int, body: str | None, length: str | None = None
+) -> tuple[int, dict[str, str]]:
+    connection = http.client.HTTPConnection("127.0.0.1", port, timeout=10)
+    connection.putrequest("POST", "/confirm")
+    connection.putheader("Origin", f"http://127.0.0.1:{port}")
+    connection.putheader("Content-Type", "application/x-www-form-urlencoded")
+    if body is not None or length is not None:
+        connection.putheader(
+            "Content-Length", length if length is not None else str(len(body or ""))
+        )
+    connection.endheaders(None if body is None else body.encode())
+    response = connection.getresponse()
+    response.read()
+    result = response.status, {k.lower(): v for k, v in response.getheaders()}
+    connection.close()
+    return result

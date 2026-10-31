@@ -1,10 +1,10 @@
 """The store on a branch of its own: reads the remote-tracking ref, commits, pushes."""
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from datetime import datetime
 from pathlib import Path
 
-from lodge.app import Clock, Gate, LodgeError, PublishOutcome
+from lodge.app import Clock, Committed, Gate, LodgeError, PublishOutcome
 from lodge.core import Tree
 from lodge.gitstore.accepted import ACCEPTED, ACKNOWLEDGE, accept, rewritten
 from lodge.gitstore.errors import NOT_INITIALISED, NotInitialised
@@ -37,6 +37,9 @@ class BranchStore:
         self._failure: str | None = None
         self._held: LockHeld | None = None
         self._rev: str | None = None
+
+    def commit(self, paths: Sequence[str], message: str) -> Committed:
+        raise LodgeError("branch mode commits when it publishes")
 
     def trees(self) -> tuple[Tree, Tree]:
         """The branch's tree, twice; fetched first when the last fetch is old or the store stale.

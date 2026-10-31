@@ -2,11 +2,12 @@
 
 import os
 import stat
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable, Mapping, Sequence
 from pathlib import Path
 
-from lodge.app import Gate, LodgeError, PublishOutcome
+from lodge.app import Committed, Gate, LodgeError, PublishOutcome
 from lodge.core import ATTACHMENTS, Tree
+from lodge.gitstore.commit import commit_paths
 from lodge.gitstore.errors import NOT_INITIALISED, NotInitialised
 from lodge.gitstore.git import run
 from lodge.gitstore.lock import locked
@@ -20,13 +21,22 @@ _TEMPORARY_SUFFIX = ".lodge-tmp"
 
 class CheckoutStore:
     def __init__(
-        self, root: Path, settings: StoreSettings, common_dir: Path, lock_wait_seconds: float
+        self,
+        root: Path,
+        settings: StoreSettings,
+        common_dir: Path,
+        lock_wait_seconds: float,
+        index_retry_seconds: float = 1.0,
     ) -> None:
+        self._retry = index_retry_seconds
         self._root = root
         self._settings = settings
         self._common = common_dir
         self._wait = lock_wait_seconds
         self._published: Published | None = None
+
+    def commit(self, paths: Sequence[str], message: str) -> Committed:
+        return commit_paths(self._root, self._settings.base, paths, message, self._retry)
 
     def trees(self) -> tuple[Tree, Tree]:
         """The working tree, and the tree at the merge base of `HEAD` with the base branch."""

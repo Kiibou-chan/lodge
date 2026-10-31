@@ -13,6 +13,7 @@ class Action(StrEnum):
     CREATE = "create"
     EDIT = "edit"
     RETIRE = "retire"
+    LINK = "link"
 
 
 @dataclass(frozen=True)
@@ -69,6 +70,7 @@ class SpecEntry:
     statement: str
     code: str | None = None
     imported_from: Imported | None = None
+    rests_on: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -77,6 +79,7 @@ class Area:
     title: str
     intro: str
     order: tuple[str, ...]
+    rank: int | None = None
 
 
 Record = Decision | SpecEntry
@@ -88,3 +91,31 @@ class Problem:
     check: int
     message: str
     line: int | None = None
+
+
+class Raises(StrEnum):
+    DOUBT = "doubt"
+    QUESTION = "question"
+
+
+class ThreadState(StrEnum):
+    OPEN = "open"
+    CLOSED = "closed"
+
+
+@dataclass(frozen=True)
+class Message:
+    by: str
+    when: str
+    text: str
+    where: str | None = None
+
+
+@dataclass(frozen=True)
+class Thread:
+    id: str
+    about: str
+    raises: Raises
+    state: ThreadState
+    opened: str
+    messages: tuple[Message, ...]

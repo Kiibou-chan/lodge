@@ -2,6 +2,7 @@
 id: s-hfjr1m
 kind: spec
 title: "Write feedback advises and does not refuse"
+rests_on: [s-edgt71, s-fehz74, s-f859z1, s-0s9m2d]
 ---
 
 Feedback at write time is advice and never a refusal.

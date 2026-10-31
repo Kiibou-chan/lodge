@@ -56,6 +56,8 @@ def write_record(record: Record) -> str:
 
 def write_area(area: Area) -> str:
     header = ["kind: area", f"title: {_quoted('title', area.title)}"]
+    if area.rank is not None:
+        header.append(f"rank: {area.rank}")
     if area.order:
         header.append(f"order: [{', '.join(area.order)}]")
     text = assemble(header, area.intro)
@@ -163,5 +165,7 @@ def _spec_header(entry: SpecEntry) -> list[str]:
     header = [f"id: {entry.id}", "kind: spec"]
     header += [f"code: {entry.code}"] if entry.code is not None else []
     header.append(f"title: {_quoted('title', entry.title)}")
+    if entry.rests_on:
+        header.append(f"rests_on: [{', '.join(entry.rests_on)}]")
     header += [_imported_line(entry.imported_from)] if entry.imported_from is not None else []
     return header

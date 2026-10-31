@@ -2,6 +2,7 @@
 id: s-q10vh5
 kind: spec
 title: "An entry is current or retired, derived from decisions"
+rests_on: [s-0yzshh]
 ---
 
 An entry's status is current or retired, and is derived rather than stored.

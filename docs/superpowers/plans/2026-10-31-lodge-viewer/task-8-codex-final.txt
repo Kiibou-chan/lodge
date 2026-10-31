@@ -1,0 +1,6 @@
+BLOCKED
+
+First dry run failed check 4; no adds or tests ran.
+Existing entries were treated as new, conflicting with the required `link` action.
+
+[Report](docs/superpowers/plans/2026-10-31-lodge-viewer/task-8-report.md) written; drafts retained under `.drafts/`.

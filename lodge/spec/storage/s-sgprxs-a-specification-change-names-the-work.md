@@ -2,6 +2,7 @@
 id: s-sgprxs
 kind: spec
 title: "A specification change names the work branch in work_item"
+rests_on: [s-aq3a5k]
 ---
 
 A specification change does not travel on the work branch that implements it.

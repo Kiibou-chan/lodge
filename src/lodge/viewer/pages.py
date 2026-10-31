@@ -1,8 +1,9 @@
 """The viewer's pages, each built from what the application returned."""
 
-from lodge.app import Listed, Read, Shown
-from lodge.core import CheckResult, Filters, Level1, Level3, Scope, SpecArea, attachment_path
-from lodge.viewer.html import e, level1_body, link, linked, page, paragraphs, where
+from lodge.app import Listed, Read, Shown, ThreadsWaiting
+from lodge.core import Branch, CheckResult, Filters, Level1, Level3, Scope, Thread, attachment_path
+from lodge.viewer.forms import confirm_form, record_forms, thread_head, threads_body
+from lodge.viewer.html import e, level1_body, link, page, paragraphs, where
 
 KINDS = ("decision", "spec")
 STATUSES = ("current", "replaced", "retired", "any")
@@ -10,15 +11,15 @@ _SCOPES = tuple(scope.value for scope in Scope)
 _NONE = Read(None, ())
 
 
-def search_page(listed: Listed, query: str, filters: Filters) -> str:
+def search_page(listed: Listed, query: str, filters: Filters, notice: str | None = None) -> str:
     form = _search_form(query, filters)
     results = _results(listed.items, "No matches.", listed.read)
     shown, total = len(listed.items), len(listed.items) + listed.more
     cut = f"<p>{shown} of {total} shown; narrow the query.</p>" if listed.more else ""
-    return page("Search", f"<h1>Search</h1>{form}{results}{cut}", listed.read)
+    return page("Search", f"<h1>Search</h1>{form}{results}{cut}", listed.read, notice)
 
 
-def record_page(shown: Shown) -> str:
+def record_page(shown: Shown, token: str, notice: str | None = None) -> str:
     v = shown.level1
     known = {v.id: v.status}
     if shown.level3 is not None:
@@ -36,27 +37,68 @@ def record_page(shown: Shown) -> str:
     body = (
         f'<article class="record"><h1>{e(v.title)}</h1>{level1_body(v, known)}{sections}</article>'
     )
-    return page(v.title, body, shown.read)
+    if v.kind == "spec":
+        body += "<h2>Rests on</h2>" + (_branches(shown.rests_on) or "<p>Nothing.</p>")
+        body += "<h2>Rests on it</h2>"
+        body += (
+            "<ul>"
+            + "".join(
+                f"<li>{link(item.id, item.title)} {e(item.status)}</li>" for item in shown.supports
+            )
+            + "</ul>"
+            if shown.supports
+            else "<p>Nothing.</p>"
+        )
+    if shown.confirmable:
+        body += confirm_form((v.id,), token)
+    body += threads_body(shown.threads, token) + record_forms(v.id, token)
+    return page(v.title, body, shown.read, notice)
 
 
-def spec_page(areas: tuple[SpecArea, ...], read: Read) -> str:
-    body = "".join(_spec_area(held, read) for held in areas)
-    return page("Specification", body or "<p>Nothing is recorded yet.</p>", read)
-
-
-def timeline_page(listed: Listed) -> str:
+def timeline_page(listed: Listed, notice: str | None = None) -> str:
     body = _results(listed.items, "No decisions yet.", listed.read)
     total = len(listed.items) + listed.more
     cut = f"<p>{len(listed.items)} of {total} shown.</p>" if listed.more else ""
-    return page("Timeline", f"<h1>Timeline</h1>{body}{cut}", listed.read)
+    return page("Timeline", f"<h1>Timeline</h1>{body}{cut}", listed.read, notice)
 
 
-def waiting_page(listed: Listed) -> str:
-    body = _results(listed.items, "Nothing waits for the author.", listed.read)
-    return page("Waiting for the author", f"<h1>Waiting for the author</h1>{body}", listed.read)
+def waiting_page(listed: Listed, waiting: ThreadsWaiting, notice: str | None = None) -> str:
+    def threads(items: tuple[Thread, ...]) -> str:
+        rows = "".join(
+            f'<li><a href="/r/{e(t.about)}#{e(t.id)}">'
+            f"{thread_head(t)}: "
+            f"{e(waiting.titles.get(t.about, t.about))}</a> "
+            f"&middot; {e(t.state.value)} &middot; about {e(t.about)} &middot; {len(t.messages)} "
+            f"message{'s' if len(t.messages) != 1 else ''} "
+            f"&middot; last by {e(t.messages[-1].by)}</li>"
+            for t in items
+        )
+        return f"<ul>{rows}</ul>"
+
+    body = "<h1>Waiting</h1><h2>Waiting for an agent</h2>" + threads(waiting.for_agent)
+    body += "<h2>Waiting for the author</h2>"
+    if listed.items or not waiting.for_author:
+        body += _results(listed.items, "Nothing waits for the author.", listed.read)
+    body += threads(waiting.for_author)
+    return page("Waiting", body, listed.read, notice)
 
 
-def problems_page(result: CheckResult, read: Read) -> str:
+def _branches(branches: tuple[Branch, ...]) -> str:
+    seen: set[str] = set()
+
+    def render(items: tuple[Branch, ...]) -> str:
+        rows = []
+        for item in items:
+            repeated = item.id in seen
+            seen.add(item.id)
+            detail = " (see above)" if repeated else render(item.children)
+            rows.append(f"<li>{link(item.id, item.title)} {e(item.status)}{detail}</li>")
+        return "<ul>" + "".join(rows) + "</ul>" if rows else ""
+
+    return render(branches)
+
+
+def problems_page(result: CheckResult, read: Read, notice: str | None = None) -> str:
     body = "<h1>Problems</h1>"
     if result.ok:
         body += "<p>ok</p>"
@@ -70,12 +112,13 @@ def problems_page(result: CheckResult, read: Read) -> str:
     if result.notes:
         notes = "".join(f"<li>{e(note)}</li>" for note in result.notes)
         body += f"<h2>Notes</h2><ul>{notes}</ul>"
-    return page("Problems", body, read)
+    return page("Problems", body, read, notice)
 
 
-def error_page(message: str) -> str:
+def error_page(message: str, back: str | None = None) -> str:
+    link = f'<a href="{e(back)}">Back to the form</a>' if back is not None else ""
     return page(
-        "Cannot show this page", f"<h1>Cannot show this page</h1><p>{e(message)}</p>", _NONE
+        "Cannot show this page", f"<h1>Cannot show this page</h1><p>{e(message)}</p>{link}", _NONE
     )
 
 
@@ -111,17 +154,6 @@ def _provenance(v3: Level3, v: Level1) -> str:
         for relation, target, status in v3.links
     ]
     return "<ul>" + "".join(f"<li>{row}</li>" for row in rows) + "</ul>" if rows else ""
-
-
-def _spec_area(held: SpecArea, read: Read) -> str:
-    return f"<h1>{e(held.title)}</h1>{paragraphs(held.intro)}" + "".join(
-        _spec_entry(v, read) for v in held.entries
-    )
-
-
-def _spec_entry(v: Level1, read: Read) -> str:
-    marks = "".join(f" &middot; {linked(flag, read.statuses)}" for flag in v.flags)
-    return f"<h2>{e(v.title)} ({link(v.id)}{marks})</h2>{paragraphs(v.statement)}"
 
 
 def _search_form(query: str, filters: Filters) -> str:
