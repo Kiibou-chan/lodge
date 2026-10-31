@@ -111,3 +111,9 @@ details ul { padding-left: 1.25rem; }
 form p { flex-basis: 100%; margin: 0; }
 textarea { font: inherit; color: var(--fg); background: var(--card); border: 1px solid var(--line); border-radius: 4px; padding: 0.5rem; min-height: 6rem; width: min(36rem, 100%); }
 form label:has(textarea) { flex-basis: 100%; }
+details.area { margin: 0; padding: 0; border: 0; background: none; }
+details.area > summary h1 { display: inline; }
+.outline { display: block; }
+.outline ol { margin: 0.25rem 0; padding-left: 1.5rem; }
+.outline details { margin: 0.25rem 0; padding: 0.25rem 0.75rem; }
+.outline li > details > summary { font-weight: 400; }

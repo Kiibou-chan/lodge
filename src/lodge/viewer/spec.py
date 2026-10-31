@@ -31,18 +31,44 @@ def spec_page(
             entries = ", ".join(f"{link(i)} ({e(a)})" for i, a in held.entries)
             body += f"<li>{link(held.decision.id, held.decision.title)}: {entries}</li>"
         body += "</ul>" + confirm_form(tuple(h.decision.id for h in behind), token, area)
+    if areas:
+        body += _outline(areas, order)
     for held_area in areas:
         href = "/spec?" + urlencode({"area": held_area.name})
         body += (
-            f'<h1><a href="{e(href)}">{e(held_area.title)}</a></h1>{paragraphs(held_area.intro)}'
+            f'<details class="area" id="area-{e(held_area.name)}" open><summary>'
+            f'<h1><a href="{e(href)}">{e(held_area.title)}</a></h1></summary>'
+            f"{paragraphs(held_area.intro)}"
         )
         if order == "written":
-            body += "".join(_entry(v, read) for v in held_area.entries)
+            body += "".join(
+                f'<div id="{e(v.id)}">{_entry(v, read)}</div>' for v in held_area.entries
+            )
         else:
             body += "".join(_placed(p, read) for p in held_area.placed)
+        body += "</details>"
     if not areas:
         body += "<p>Nothing is recorded yet.</p>"
     return page("Specification", body, read, notice)
+
+
+def _ordered(held_area: SpecArea, order: Literal["dependency", "written"]) -> tuple[Level1, ...]:
+    if order == "written":
+        return held_area.entries
+    return tuple(p.entry for p in held_area.placed)
+
+
+def _outline(areas: tuple[SpecArea, ...], order: Literal["dependency", "written"]) -> str:
+    body = '<nav class="outline"><details open><summary>Sections</summary><ol>'
+    for held_area in areas:
+        entries = _ordered(held_area, order)
+        count = f"{len(entries)} {'entry' if len(entries) == 1 else 'entries'}"
+        items = "".join(f'<li><a href="#{e(v.id)}">{e(v.title)}</a></li>' for v in entries)
+        body += (
+            f'<li><details><summary><a href="#area-{e(held_area.name)}">{e(held_area.title)}</a>'
+            f" &middot; {count}</summary><ol>{items}</ol></details></li>"
+        )
+    return body + "</ol></details></nav>"
 
 
 def _entry(v: Level1, read: Read) -> str:
@@ -56,4 +82,4 @@ def _placed(p: Placed, read: Read) -> str:
     if extra:
         body += "<p>also rests on " + ", ".join(link(i) for i in extra) + "</p>"
     body += "".join(f"<p>rests on {link(i)} ({e(a)})</p>" for i, a in p.across)
-    return f'<div class="depth-{min(p.depth, 5)}">{body}</div>'
+    return f'<div id="{e(p.entry.id)}"><div class="depth-{min(p.depth, 5)}">{body}</div></div>'
