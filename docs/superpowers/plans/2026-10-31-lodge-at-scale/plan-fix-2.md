@@ -41,7 +41,7 @@ The sweep applied them wherever the plan writes to the index:
 | F1, identity depends on representation | One-way contract; the build's identical-state shortcut compares listings, so edit-then-commit, attachment-only commits, and a revert to the published contents still skip the change check; tests for each | d-c0q20c |
 | F3, an attributes file only in git's index | `.gitattributes` entries in git's index count as sources (from the flags call); `test_root_attributes_only_in_the_index` with a content-changing filter | d-9r24jc |
 | F5, the viewer still recurses | Task 2 makes the viewer's `_branches` iterative, and the deep-chain test renders the viewer's record page | none needed |
-| F6, broad searches still open | The stop after Task 11 covers broad searches until the coordinator rules otherwise; they are still reported apart | d-gd00c6 |
+| F6, broad searches still open | Broad searches are reported apart with their own stop at 1.0 s warm; the 0.3 s stop covers the point reads and searches with at most 5,000 candidates | d-gd00c6, d-hxmdkz |
 | R1, states searchable before their words | Invariants 1 and 2: words are part of the parse units a state's transaction writes; fault-injection, concurrent, and locked-write tests | d-6hb3yd, d-aej8rs |
 | R2, no bounded path for citers | As N4; Task 1 adds a record coded `A`, and `show A` is benchmarked | d-aej8rs |
 | R3, `git var` with two variables exits 129 | One call per variable; a failure converts every path; the cache key and a warm-change test are in Task 8b | d-9r24jc |
