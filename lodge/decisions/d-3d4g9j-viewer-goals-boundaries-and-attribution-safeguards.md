@@ -26,7 +26,7 @@ Existing must-nots continue to hold.
 
 ## Reasoning
 
-The approved implementation now provides the interaction previously available only through a session, as motivated by the design's opening context.
+The built implementation now provides the interaction previously available only through a session, as motivated by the design's opening context.
 The author decisions d-9dqycj, d-g7xvwm, d-s64jyh, d-1bnqj5, d-cvtrj6, and d-rnjh2s settle the quoted intent; d-dyrpc6 supplies confirmation intent, and d-2hcgav leaves editing for later.
 The specific goals, the exclusion of live agent execution, the decision-link boundary, the configured-address boundary, and the operational safeguards are coordinator calls drawn from the design.
 A live agent launched by a web page needs a separate security change; retaining the thread format avoids a later record migration.

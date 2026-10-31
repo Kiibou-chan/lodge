@@ -1,0 +1,9 @@
+DONE_WITH_CONCERNS
+
+All requested findings fixed. No commit made.
+
+Sandbox gate green: 1,369 passed, 1 skipped. Changed-since marks: 0. Waiting: empty.
+
+Full gate needs an outside-sandbox rerun: 19 socket tests failed because sockets are prohibited.
+
+[Fix wave report](docs/superpowers/plans/2026-10-31-lodge-viewer/fix-wave-report.md)

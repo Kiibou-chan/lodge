@@ -2,6 +2,7 @@
 id: s-j5ttw1
 kind: spec
 title: "lodge trusts the author label and shows its quote"
+rests_on: [s-aq3a5k]
 ---
 
 lodge trusts `decided_by: author` as written (LODGE-2).

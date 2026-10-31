@@ -42,3 +42,6 @@ s-fehz74: Length guidance still holds because the new marks do not change the co
 s-dm37qr: The read-only sentence no longer holds after confirming and threads; the viewer writes those author records, while its listed reads remain available.
 s-j9jc4y: Confirmation attribution still holds because doubt and question marks do not change the writer or confirmation label.
 s-hfjr1m: Feedback remains advice because the two waiting groups do not change the distinction between feedback and failing checks.
+
+Only entries may be rested on: entries state what holds now, whereas decisions record changes and can be replaced or narrowed.
+A link is not a fresh claim about the entry, so adding links neither floods lodge waiting nor clears the changed-since warning the links exist to expose.

@@ -25,7 +25,12 @@ def confirm_form(ids: tuple[str, ...], token: str, area: str | None = None) -> s
     if area is not None:
         fields += _hidden("area", area)
     fields += '<label>Your words<textarea name="words" required></textarea></label>'
-    fields += f'<p class="notice">{e(_NOTE)}</p>'
+    note = (
+        _NOTE
+        if len(ids) == 1
+        else _NOTE.replace("The decision stays the agent's", "The decisions stay the agents'")
+    )
+    fields += f'<p class="notice">{e(note)}</p>'
     return _form("/confirm", token, fields, "Confirm")
 
 

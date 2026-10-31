@@ -36,3 +36,6 @@ The closing-message entry follows d-a3h9f3: an empty closing text preserves who 
 For the advisor claims, d-7w5aq0 supplies decision-or-entry targets, check 5 immutability, author-message time provenance, the two waiting groups, the search boundary, and checks 1 and 5 for threads.
 Thread storage, append-only messages, agent thread commands, viewer provenance, decision-doubt propagation, and acting through decisions are coordinator calls.
 The other related decisions stay current; none is superseded.
+
+Messages are never edited, so a thread records what was said rather than a revised account.
+A doubt on a decision must show on the specification because the author reads there; marking only the decision would hide the doubt from that read.

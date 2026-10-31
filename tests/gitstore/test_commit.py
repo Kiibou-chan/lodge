@@ -91,9 +91,10 @@ def test_no_commit_during_a_revert(tmp_path: Path) -> None:
     assert (repo / git(repo, "rev-parse", "--git-path", "REVERT_HEAD")).exists()
 
 
-def test_no_commit_during_a_rebase(tmp_path: Path) -> None:
+@pytest.mark.parametrize("marker", ["rebase-merge", "rebase-apply", "sequencer"])
+def test_no_commit_during_a_rebase(tmp_path: Path, marker: str) -> None:
     repo = work(tmp_path)
-    (repo / git(repo, "rev-parse", "--git-path", "rebase-merge")).mkdir()
+    (repo / git(repo, "rev-parse", "--git-path", marker)).mkdir()
     assert perform(repo).outcome is CommitOutcome.IN_PROGRESS
 
 

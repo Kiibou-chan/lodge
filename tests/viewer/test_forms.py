@@ -6,7 +6,7 @@ from fakes import MemoryStore
 from support import wired
 
 from lodge.core import Raises
-from lodge.viewer import pages, spec, writes
+from lodge.viewer import forms, pages, spec, writes
 from viewer.test_post_gate import HEADERS, TOKEN
 from viewer.world import AGENT, staged_world, world
 
@@ -127,3 +127,12 @@ def test_rendered_forms_post_through_handle_post() -> None:
                 urlencode(fields).encode(),
             )
             assert reply.status == 303, reply.text
+
+
+def test_confirm_note_matches_number_of_decisions() -> None:
+    for ids in (("d-aaaaaa",), ("d-aaaaaa", "d-bbbbbb")):
+        text = forms.confirm_form(ids, TOKEN, "storage")
+        expected = (
+            "The decision stays the agent" if len(ids) == 1 else "The decisions stay the agents"
+        )
+        assert expected in text
