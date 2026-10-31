@@ -25,3 +25,9 @@ Written as the work goes; the probes are in `probes/`, run from the worktree roo
 - Brief lines on the synthetic store: ` · current` is 10 % of the characters of 200 lines under the default filter.
 - `git check-attr --stdin` for text, eol, filter, ident, and working-tree-encoding over all 159,716 paths: 224 to 232 ms; `git ls-files --eol`: 1.43 s; `git config --get-regexp`: 2 ms.
 - The coordinator's constraint: a read in a read-only sandbox, or with the database locked, never fails and never changes its output.
+
+## Outcome
+
+- Plan: `docs/superpowers/plans/2026-10-31-lodge-at-scale.md`, 12 tasks; ledger `-progress.md`; SCALE-1 (index disk space) in `questions.md`.
+- Recorded: the coordinator's five rulings and fifteen planner calls as process decisions (IDs in the ledger); `lodge check --gate` ok.
+- Concerns: the read after one changed record at 160,000 files is estimated at about 3 s, right at the target, so Task 10 measures it and stops for the coordinator if it misses; Tasks 8 to 10 are the largest and a reviewer may want them split; the synthetic stores' 60-word vocabulary makes every word match most records, a worst case for search timings.
