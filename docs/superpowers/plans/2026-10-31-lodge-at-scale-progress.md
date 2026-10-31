@@ -27,3 +27,8 @@ Rechecked a third time: `plan-recheck-3.md` (R1 Blocking, R2 and R4 Important, R
 Fix round 4 (`plan-fix-4.md`): every finding taken, none parked; generations dropped for one file per build, cleared in place.
 The coordinator's ruling for fix round 4, recorded: d-e3stjn (replaces the generations of d-gvz66f).
 The planner's call for fix round 4, recorded: d-c6cegr.
+SCALE-1 answered by the author: A (d-4pbeax).
+Rechecked a fourth time: `plan-recheck-4.md` (W1, W3, W4 Important; seven Minor).
+Fix round 5 (`plan-fix-5.md`): W1 to W5 and W7 to W10 taken, W6 taken as measurements.
+The planner's calls for fix round 5, recorded: d-a8gkrh, d-bzp30x.
+Parked: W6's eviction of facts rows no remaining state names, until Task 10c's and Task 12's measurements say how often clears come.
