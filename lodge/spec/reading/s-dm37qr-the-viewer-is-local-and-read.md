@@ -2,6 +2,7 @@
 id: s-dm37qr
 kind: spec
 title: "The viewer is local and read-only"
+rests_on: [s-3n0ndk, s-wcv4en, s-0s9m2d]
 ---
 
 The viewer is local, read-only, and started from the command line.

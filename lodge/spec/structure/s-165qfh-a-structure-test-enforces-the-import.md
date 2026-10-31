@@ -2,6 +2,7 @@
 id: s-165qfh
 kind: spec
 title: "A structure test enforces the import and size rules"
+rests_on: [s-ctywm6, s-t9zd7a]
 ---
 
 A structure test, written with the standard library's `ast`, enforces the rules from the first commit.

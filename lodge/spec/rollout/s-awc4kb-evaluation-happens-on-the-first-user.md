@@ -2,6 +2,7 @@
 id: s-awc4kb
 kind: spec
 title: "Evaluation happens on the first user's past in a scratch copy"
+rests_on: [s-3ht96p, s-ph9z0t]
 ---
 
 Evaluation on the first user's past happens in a scratch copy.

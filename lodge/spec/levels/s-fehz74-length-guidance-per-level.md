@@ -2,6 +2,7 @@
 id: s-fehz74
 kind: spec
 title: "Length guidance per level"
+rests_on: [s-wcv4en]
 ---
 
 Length guidance is soft, set in project configuration, and tuned in the pilot.

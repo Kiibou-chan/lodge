@@ -2,6 +2,7 @@
 id: s-m83kjq
 kind: spec
 title: "Decisions and entries are short, searchable, and layered"
+rests_on: [s-3ht96p]
 ---
 
 Decisions and specification entries are short and searchable.
