@@ -46,6 +46,7 @@ def show(w: Wiring, ref: str, reasoning: bool, provenance: bool) -> Shown:
         state.read,
         level2_views(s, d, record_id, state.failing) if reasoning else (),
         newest_last(t for t in s.threads.values() if t.about == record_id),
+        record_id in core.confirmable_ids(s, d),
     )
 
 

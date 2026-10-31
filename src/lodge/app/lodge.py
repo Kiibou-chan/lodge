@@ -3,10 +3,11 @@
 from collections.abc import Sequence
 from typing import Literal
 
-from lodge.app import reads, threads, writes
+from lodge.app import confirm, reads, threads, writes
 from lodge.app.ports import Clock, IdSource, Store
 from lodge.app.results import (
     Added,
+    Behind,
     Listed,
     Read,
     Shown,
@@ -104,3 +105,15 @@ class Lodge:
 
     def threads_waiting(self) -> ThreadsWaiting:
         return threads.waiting(self._w)
+
+    def confirm(
+        self,
+        ids: Sequence[str],
+        words: str,
+        area: str | None = None,
+        commit: bool = False,
+    ) -> Written:
+        return confirm.confirm(self._w, ids, words, area, commit)
+
+    def behind_area(self, name: str) -> tuple[Behind, ...]:
+        return confirm.behind_area(self._w, name)

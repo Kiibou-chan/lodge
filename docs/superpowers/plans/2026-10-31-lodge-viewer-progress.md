@@ -11,3 +11,6 @@ Task 2: complete; the fix round is rechecked by the final review.
 Task 3: review 0 Blocking, 3 Important, 7 Minor (`task-3-review.md`); fix round 1 by Codex, all fixed with failing-first evidence in the report, the CR rule kept once in core and called by Task 4's code; gate green.
 Task 3: complete; the fix round is rechecked by the final review.
 Task 4: built by Codex (a64c88e).
+Task 4: review 0 Blocking, 1 Important, 10 Minor (`task-4-review.md`); the git layer passed every probe in scratch repositories.
+Ruling d-wez56g: a thread whose subject no longer resolves is shown, not refused (`ThreadShown.about` is `Level1 | None`), fixed with Task 5's `thread_head` in one round.
+Task 6a: built by Codex; the builder notes the stale-list check is not atomic with publication, which Task 6b's write lock covers.

@@ -33,6 +33,7 @@ class Shown:
     read: Read
     changing: tuple[Level1, ...] = ()
     threads: tuple[Thread, ...] = ()
+    confirmable: bool = False
 
 
 @dataclass(frozen=True)
@@ -82,3 +83,9 @@ class ThreadsWaiting:
     for_author: tuple[Thread, ...]
     titles: Mapping[str, str]
     read: Read
+
+
+@dataclass(frozen=True)
+class Behind:
+    decision: Level1
+    entries: tuple[tuple[str, str], ...]

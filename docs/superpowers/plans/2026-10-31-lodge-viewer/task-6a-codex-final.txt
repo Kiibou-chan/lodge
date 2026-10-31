@@ -1,0 +1,7 @@
+DONE_WITH_CONCERNS
+
+Builder gate passed: 1,249 tests; separate viewer port test passed.
+Report: [task-6a-report.md](docs/superpowers/plans/2026-10-31-lodge-viewer/task-6a-report.md).
+
+Concerns: stale-list validation is not atomic with publication; socket-bound tests await the coordinator.
+No commit or push made.
