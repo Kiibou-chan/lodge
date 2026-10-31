@@ -140,5 +140,5 @@ def test_derive_once_per_checked_read(monkeypatch: pytest.MonkeyPatch) -> None:
         if hasattr(module, "derive"):
             monkeypatch.setattr(module, "derive", counted)
     read_checked(Wiring(store, FixedClock(), CountingIds(), CoreSettings()))
-    assert sum(calls.values()) == 2
-    assert sorted(calls.values()) == [1, 1]
+    assert sum(calls.values()) == 1
+    assert sorted(calls.values()) == [1]
