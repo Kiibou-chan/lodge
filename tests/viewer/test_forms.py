@@ -6,7 +6,7 @@ from fakes import MemoryStore
 from support import wired
 
 from lodge.core import Raises
-from lodge.viewer import pages, writes
+from lodge.viewer import pages, spec, writes
 from viewer.test_post_gate import HEADERS, TOKEN
 from viewer.world import AGENT, staged_world, world
 
@@ -99,7 +99,7 @@ def test_rendered_forms_post_through_handle_post() -> None:
             lodge.ask("s-aaaaaa", Raises.QUESTION, "author", "Why?", where="viewer")
         if which == "area":
             _, read, areas = lodge.spec("storage")
-            text = pages.spec_page(
+            text = spec.spec_page(
                 areas, read, TOKEN, "dependency", "storage", lodge.behind_area("storage")
             )
         else:

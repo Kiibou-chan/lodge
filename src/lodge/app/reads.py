@@ -53,11 +53,6 @@ def show(w: Wiring, ref: str, reasoning: bool, provenance: bool) -> Shown:
     )
 
 
-def waiting(w: Wiring) -> Listed:
-    state = read_checked(w)
-    return Listed(_newest_first(state, state.derived.awaiting_author), state.read)
-
-
 def waiting_all(w: Wiring) -> tuple[Listed, ThreadsWaiting]:
     state = read_checked(w)
     listed = Listed(_newest_first(state, state.derived.awaiting_author), state.read)

@@ -45,10 +45,10 @@ def test_confirmed_decision_keeps_decided_by_and_clears_its_flag() -> None:
     agent = replace(AGENT, date=at(1), narrows=(author.id,))
     store = MemoryStore(area(), entry(id="s-aaaaaa"), author, agent)
     lodge = wired(store)
-    assert lodge.waiting().items
+    assert lodge.waiting_all()[0].items
     lodge.confirm([agent.id], "Read.")
     assert load(Tree(None, store.files)).decisions[agent.id].decided_by == agent.decided_by
-    assert lodge.waiting().items == ()
+    assert lodge.waiting_all()[0].items == ()
 
 
 def test_scope_product_when_any_listed_is_product() -> None:

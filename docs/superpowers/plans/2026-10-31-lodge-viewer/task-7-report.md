@@ -140,3 +140,70 @@ note: area writing: added
 
 Vulture produced no output and exited 0.
 The area notes above are informational output from the existing repository state.
+
+## Fix round 1
+
+Fixed I1 and M1 to M6 without staging, committing, or pushing.
+I2 was already fixed by the committed callback allow-list line; vulture passes with no further allow-list change.
+No review finding remains unfixed.
+
+### Changes
+
+- `core/order.py` now keeps one expanded-ID set for the entire dependency traversal, preserving ancestor-cycle and missing-target handling.
+  Shared dependencies become leaf references rather than expanding again for every path.
+- `viewer/pages.py` renders later occurrences as one-line links marked "see above", and both empty dependency sections as `<p>Nothing.</p>`.
+  `_branches(())` returns an empty string.
+- `viewer/forms.py` owns the shared `thread_head(thread)` using `Raises.DOUBT`, makes `hidden` private, and leaves chronological sorting to `reads.show`.
+  The waiting page uses the same thread head.
+- `viewer/server.py`, `tests/viewer/test_pages.py`, and `tests/viewer/test_forms.py` import the specification renderer directly from `viewer.spec`, removing the page re-export.
+  The specification and waiting pages use `&middot;` consistently.
+- `app/lodge.py` and `app/reads.py` remove the obsolete `waiting` read.
+  Its callers in `tests/app/test_reads.py`, `tests/app/test_confirm.py`, `tests/app/test_thread_fix_paths.py`, and `tests/viewer/test_pages.py` use `waiting_all()[0]`.
+- New regression tests live in `tests/viewer/test_pages_fix_round.py`, keeping existing near-limit test modules small.
+
+### Test-first and mutation evidence
+
+Before implementation, the regression run reported `3 failed, 6 passed in 1.27s`.
+The three failures exercise the original buggy implementation, equivalent to mutations restoring per-path expansion and empty lists.
+An earlier empty-list run used an automatically generated fixture ID and failed at lookup; the corrected explicit-ID fixture was rerun and failed on the intended HTML assertion before implementation.
+
+| New test | First relevant failing output |
+| --- | --- |
+| `test_rests_on_tree_expands_a_shared_dependency_once` | `assert tree[1].children[0].children == ()`, actual one root `Branch` remained |
+| `test_shared_dependency_page_stays_small` | `assert 17977632 < 20000`, for 26 entries, each resting on the preceding two where available |
+| `test_empty_dependency_lists` | `AssertionError`: `<h2>Rests on</h2><p>Nothing.</p>` absent |
+
+For each already-correct behaviour below, applied the review's mutation to the source, ran the new test, observed failure, and restored the source immediately in a `finally` block.
+All seven mutant runs exited 1 before the source clean-ups.
+
+| New test or parameter | Mutation | First failing output |
+| --- | --- | --- |
+| `test_spec_depth_cap_and_under_links` | `min(p.depth, 5)` becomes `p.depth` | `1 failed in 0.25s`, section 6 lacks the required `depth-5` class |
+| `test_spec_depth_cap_and_under_links` | Disable the deep `under` link | `1 failed in 0.24s`, required `also rests on` parent link absent |
+| `test_dependency_link_keeps_area` | Dependency href becomes `/spec` | `1 failed in 0.24s`, exact area-preserving navigation link absent |
+| `test_record_values_are_escaped[by]` | Remove `e(by)` | `1 failed in 0.27s`, raw `<b>synthetic</b>` present |
+| `test_record_values_are_escaped[where]` | Remove `e(message.where)` | `1 failed in 0.26s`, raw `<b>synthetic</b>` present |
+| `test_record_values_are_escaped[entry_title]` | Remove escaping of the waiting-page record title | `1 failed in 0.27s`, raw `<b>synthetic</b>` present |
+| `test_record_values_are_escaped[area_title]` | Remove escaping of the area title | `1 failed in 0.25s`, raw `<b>synthetic</b>` present |
+
+The nine-entry chain test checks every depth class, requires the parent link at depths 6 to 8, and excludes "also rests on" at depths 0 to 5.
+The area navigation test requires the complete anchor including "By dependency", so an area-heading link cannot satisfy it.
+The 26-entry test requires a page smaller than 20,000 characters and exactly 24 reference markers.
+The first implementation run passed the size assertion but exposed an off-by-one expected marker count (23); corrected the expected count to 24.
+The final focused run reports `9 passed in 0.19s`.
+
+### Verification
+
+- `uv run ruff format --check`: `434 files already formatted`.
+- `uv run ruff check`: `All checks passed!`.
+- `uv run mypy`: `Success: no issues found in 194 source files`.
+- `uv run vulture`: no output, exit 0.
+- The six socket-free cases selected from `tests/e2e/test_view.py`: `6 passed, 1 deselected in 0.36s`.
+- `uv run lodge check --gate`: `ok`, followed by the existing informational area notes.
+- `git diff --check`: no output, exit 0.
+
+Socket-bound `tests/viewer/test_server.py` and `tests/e2e/test_view.py::test_view_serves_the_project_until_interrupted` remain coordinator checks as required by the brief.
+No browser verification is claimed.
+
+Full non-socket suite: `uv run pytest -q --ignore=tests/viewer/test_server.py --ignore=tests/e2e/test_view.py` completed with `1362 passed in 35.57s`.
+All builder checks passed.

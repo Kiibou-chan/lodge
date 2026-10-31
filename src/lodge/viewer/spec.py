@@ -22,7 +22,7 @@ def spec_page(
     dependency = "/spec" + ("?" + urlencode(query) if query else "")
     written = "/spec?" + urlencode(query | {"order": "written"})
     body = (
-        f'<p><a href="{e(dependency)}">By dependency</a> · '
+        f'<p><a href="{e(dependency)}">By dependency</a> &middot; '
         f'<a href="{e(written)}">As written</a></p>'
     )
     if behind and area is not None:

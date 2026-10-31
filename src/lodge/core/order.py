@@ -75,19 +75,25 @@ class Branch:
 
 
 def rests_on_tree(s: Snapshot, d: Derived, entry_id: str) -> tuple[Branch, ...]:
-    """Walk dependencies down to roots, omitting missing targets and ancestor cycles."""
+    """Expand each dependency once, retaining shared targets as leaf references."""
+    expanded = {entry_id}
+
+    def branch(target: str, ancestors: frozenset[str]) -> Branch:
+        seen = target in expanded
+        expanded.add(target)
+        return Branch(
+            target,
+            s.entries[target].title,
+            d.status[target],
+            () if seen else children(target, ancestors | {target}),
+        )
 
     def children(ident: str, ancestors: frozenset[str]) -> tuple[Branch, ...]:
         entry = s.entries.get(ident)
         if entry is None:
             return ()
         return tuple(
-            Branch(
-                target,
-                s.entries[target].title,
-                d.status[target],
-                children(target, ancestors | {target}),
-            )
+            branch(target, ancestors)
             for target in dict.fromkeys(entry.rests_on)
             if target in s.entries and target not in ancestors
         )

@@ -5,7 +5,7 @@ from support import FIRST, wired
 
 from lodge.app import Listed, Read, ThreadsWaiting
 from lodge.core import CheckResult, Filters, Problem, Quote, Scope
-from lodge.viewer import pages
+from lodge.viewer import pages, spec
 from viewer.world import AGENT, BAD, ENTRY, FRESH, world
 
 EMPTY_WAITING = ThreadsWaiting((), (), {}, Read(None, ()))
@@ -127,7 +127,7 @@ def test_timeline_page_says_how_many_are_shown() -> None:
 
 def test_waiting_page() -> None:
     lodge = world()
-    page = pages.waiting_page(lodge.waiting(), EMPTY_WAITING)
+    page = pages.waiting_page(lodge.waiting_all()[0], EMPTY_WAITING)
     assert '<a href="/r/d-cccccc">' in page and "awaiting the author" in page
     assert "d-aaaaaa" not in page
     empty = pages.waiting_page(Listed((), Read(None, ())), EMPTY_WAITING)
@@ -136,7 +136,7 @@ def test_waiting_page() -> None:
 
 def test_spec_page_has_headings_paragraphs_and_linked_ids() -> None:
     _, read, areas = world().spec()
-    page = pages.spec_page(areas, read, "T" * 32, "dependency", None, ())
+    page = spec.spec_page(areas, read, "T" * 32, "dependency", None, ())
     assert '<h1><a href="/spec?area=storage">Storage</a></h1>' in page
     assert '<h2>Transcripts are kept (<a href="/r/s-aaaaaa">s-aaaaaa</a>' in page
     assert "<p>Held.</p>" in page
@@ -150,14 +150,14 @@ def test_spec_page_builds_headings_from_fields_never_from_text() -> None:
     )
     store = MemoryStore(area(intro="# Spoof\n\nSecond.", order=("s-aaaaaa",)), held, FIRST, AGENT)
     _, read, areas = wired(store).spec()
-    page = pages.spec_page(areas, read, "T" * 32, "dependency", None, ())
+    page = spec.spec_page(areas, read, "T" * 32, "dependency", None, ())
     assert page.count("<h1>") == 1 and page.count("<h2>") == 1
     assert "<h2><b>" not in page and "&lt;b&gt;T&lt;/b&gt;" in page
     assert "awaiting the author on" in page.split("</h2>")[0]
     assert "<p># Spoof</p>" in page and "<p>Second.</p>" in page
     assert "<p>## A clean looking entry (s-zzzzzz)</p>" in page
     assert "<script>" not in page and "s-zzzzzz</a>" not in page
-    assert "<p>Nothing is recorded yet.</p>" in pages.spec_page(
+    assert "<p>Nothing is recorded yet.</p>" in spec.spec_page(
         (), read, "T" * 32, "dependency", None, ()
     )
 
@@ -178,9 +178,9 @@ def test_every_page_shows_freshness_and_problem_banner() -> None:
     rendered = [
         pages.search_page(lodge.search("", Filters()), "", Filters()),
         pages.record_page(lodge.show("d-aaaaaa", True, True), "T" * 32),
-        pages.spec_page(areas, read, "T" * 32, "dependency", None, ()),
+        spec.spec_page(areas, read, "T" * 32, "dependency", None, ()),
         pages.timeline_page(lodge.timeline()),
-        pages.waiting_page(lodge.waiting(), EMPTY_WAITING),
+        pages.waiting_page(lodge.waiting_all()[0], EMPTY_WAITING),
         pages.problems_page(result, read),
     ]
     for page in rendered:
@@ -204,9 +204,9 @@ def test_broken_file_named_above_page_content(name: str) -> None:
     built = {
         "search": lambda: pages.search_page(lodge.search("", Filters()), "", Filters()),
         "record": lambda: pages.record_page(lodge.show("d-aaaaaa", True, True), "T" * 32),
-        "spec": lambda: pages.spec_page(areas, read, "T" * 32, "dependency", None, ()),
+        "spec": lambda: spec.spec_page(areas, read, "T" * 32, "dependency", None, ()),
         "timeline": lambda: pages.timeline_page(lodge.timeline()),
-        "waiting": lambda: pages.waiting_page(lodge.waiting(), EMPTY_WAITING),
+        "waiting": lambda: pages.waiting_page(lodge.waiting_all()[0], EMPTY_WAITING),
         "problems": lambda: pages.problems_page(result, read),
     }
     page = built[name]()
@@ -232,7 +232,7 @@ def test_flag_ids_on_list_and_spec_rows_are_links_with_their_status() -> None:
     )
     assert linked in pages.search_page(lodge.search("", Filters()), "", Filters())
     assert linked in pages.timeline_page(lodge.timeline())
-    assert linked in pages.spec_page(areas, read, "T" * 32, "dependency", None, ())
+    assert linked in spec.spec_page(areas, read, "T" * 32, "dependency", None, ())
 
 
 def test_hand_edited_published_decision_fails_on_its_page_and_in_problems() -> None:

@@ -30,9 +30,6 @@ class Lodge:
     def show(self, ref: str, reasoning: bool = False, provenance: bool = False) -> Shown:
         return reads.show(self._w, ref, reasoning, provenance)
 
-    def waiting(self) -> Listed:
-        return reads.waiting(self._w)
-
     def waiting_all(self) -> tuple[Listed, ThreadsWaiting]:
         """Decisions and threads waiting, checked in the same snapshot."""
         return reads.waiting_all(self._w)

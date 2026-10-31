@@ -1,0 +1,5 @@
+DONE
+
+Tests: 1,362 non-socket tests and six CLI cases passed; all builder checks green, failing-test evidence recorded.
+
+All findings addressed; “Fix round 1” appended to the report. No commit made. Socket and browser checks remain for the coordinator, as required by the brief.

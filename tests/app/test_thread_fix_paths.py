@@ -29,7 +29,9 @@ def test_orphaned_thread_outputs(capsys: pytest.CaptureFixture[str]) -> None:
         assert run_thread(command, lodge) == 0
         out = capsys.readouterr().out
         assert "about s-zzzzzz, not found" in out.splitlines()
-    assert "about s-zzzzzz, not found" in waiting_text(lodge.waiting(), lodge.threads_waiting())
+    assert "about s-zzzzzz, not found" in waiting_text(
+        lodge.waiting_all()[0], lodge.threads_waiting()
+    )
 
 
 @pytest.mark.parametrize("outcome,code", [(AddOutcome.PUBLISHED, 0), (AddOutcome.CHECK_FAILED, 1)])

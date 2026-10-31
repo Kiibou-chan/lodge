@@ -11,7 +11,7 @@ from urllib.parse import SplitResult, parse_qs, unquote, urlsplit
 
 from lodge.app import Lodge, LodgeError, NotFound
 from lodge.core import Filters, Scope
-from lodge.viewer import pages, writes
+from lodge.viewer import pages, spec, writes
 
 HTML = "text/html; charset=utf-8"
 CSS = "text/css; charset=utf-8"
@@ -198,7 +198,7 @@ def _page(lodge: Lodge, path: str, ref: str | None, query: Query, token: str) ->
                 "written" if _first(query, "order") == "written" else "dependency"
             )
             behind = lodge.behind_area(area) if area is not None else ()
-            return pages.spec_page(areas, read, token, order, area, behind, notice)
+            return spec.spec_page(areas, read, token, order, area, behind, notice)
         case "/timeline":
             return pages.timeline_page(lodge.timeline(), notice)
         case "/waiting":
