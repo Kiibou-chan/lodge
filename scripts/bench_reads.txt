@@ -1,0 +1,12 @@
+show {code}
+show {entry} --reasoning --provenance
+show {decision}
+search berth --brief
+search "berth crane" --brief
+search {code} --brief
+search berth
+waiting
+threads
+spec --area area-001
+check
+check --gate

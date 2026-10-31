@@ -2,9 +2,10 @@
 
   uv run python scripts/bench_store.py DIR --decisions N [--seed S]
 
-Writes a git repository at DIR in checkout mode, every record through lodge's own writer, committed once.
+Writes a git repository at DIR in checkout mode, through lodge's own writer, committed once.
 The project is made up: a harbour's cargo scheduling, so no real project's records appear.
-About one decision in four edits an existing entry; the rest create one, so entries come to about three quarters of N.
+About one decision in four edits an existing entry; the rest create one.
+Entries come to about three quarters of N.
 """
 
 import argparse
@@ -16,12 +17,59 @@ from lodge.core import Action, Area, Change, Decision, Scope, SpecEntry
 from lodge.core.fileformat import area_path, new_record_path, write_area, write_record
 from lodge.core.ids import mint_id
 
-WORDS = (
-    "berth crane manifest pallet tide pilot quay ledger hold draught tug lock gantry convoy "
-    "reefer bunker lashing stow sling hatch winch bollard fender dredge buoy channel mooring "
-    "customs tally weighbridge forklift straddle carrier yard gate slot window shift crew "
-    "roster tariff invoice claim damage survey seal container chassis rail barge feeder"
-).split()
+WORDS = [
+    "berth",
+    "crane",
+    "manifest",
+    "pallet",
+    "tide",
+    "pilot",
+    "quay",
+    "ledger",
+    "hold",
+    "draught",
+    "tug",
+    "lock",
+    "gantry",
+    "convoy",
+    "reefer",
+    "bunker",
+    "lashing",
+    "stow",
+    "sling",
+    "hatch",
+    "winch",
+    "bollard",
+    "fender",
+    "dredge",
+    "buoy",
+    "channel",
+    "mooring",
+    "customs",
+    "tally",
+    "weighbridge",
+    "forklift",
+    "straddle",
+    "carrier",
+    "yard",
+    "gate",
+    "slot",
+    "window",
+    "shift",
+    "crew",
+    "roster",
+    "tariff",
+    "invoice",
+    "claim",
+    "damage",
+    "survey",
+    "seal",
+    "container",
+    "chassis",
+    "rail",
+    "barge",
+    "feeder",
+]
 AREAS_PER_THOUSAND = 25
 
 
@@ -45,8 +93,12 @@ def build(root: Path, decisions: int, seed: int) -> None:
     entries: dict[str, SpecEntry] = {}
     order: dict[str, list[str]] = {a: [] for a in areas}
     files: dict[str, str] = {}
+    coded: list[Decision] = []
     for n in range(decisions):
-        date = f"2026-{1 + n * 12 // decisions:02d}-{1 + n % 28:02d}T12:{n % 60:02d}:{(n // 60) % 60:02d}+00:00"
+        date = (
+            f"2026-{1 + n * 12 // decisions:02d}-{1 + n % 28:02d}"
+            f"T12:{n % 60:02d}:{(n // 60) % 60:02d}+00:00"
+        )
         if entries and rng.random() < 0.25:
             old = entries[rng.choice(list(entries))]
             entry = SpecEntry(
@@ -84,6 +136,40 @@ def build(root: Path, decisions: int, seed: int) -> None:
             changes=(Change(entry.id, action),),
         )
         files[new_record_path(d)] = write_record(d)
+        if d.code is not None:
+            coded.append(d)
+    for d in coded[::50]:
+        entry = SpecEntry(
+            fresh(rng, "s", used), areas[0], "Berth scheduling rationale", f"See {d.code}."
+        )
+        sibling = Decision(
+            fresh(rng, "d", used),
+            "Why the berth schedule holds",
+            Scope.PRODUCT,
+            "coordinator",
+            d.date,
+            "A crane follows the berth schedule.",
+            code=f"{d.code}.why",
+            changes=(Change(entry.id, Action.CREATE),),
+        )
+        entries[entry.id] = entry
+        order[entry.area].append(entry.id)
+        files[new_record_path(sibling)] = write_record(sibling)
+    entry = SpecEntry(
+        fresh(rng, "s", used), areas[0], "A berth schedule", "A berth has a crane.", "A"
+    )
+    entries[entry.id] = entry
+    order[entry.area].append(entry.id)
+    source = Decision(
+        fresh(rng, "d", used),
+        "Create a berth schedule",
+        Scope.PRODUCT,
+        "coordinator",
+        "2026-01-01T00:00:00+00:00",
+        "A berth has a crane.",
+        changes=(Change(entry.id, Action.CREATE),),
+    )
+    files[new_record_path(source)] = write_record(source)
     for entry in entries.values():
         files[new_record_path(entry)] = write_record(entry)
     for i, a in enumerate(areas):
