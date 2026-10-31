@@ -1,6 +1,6 @@
 # Questions for the author: lodge at scale
 
-**SCALE-1 · Disk space for the index**
+**SCALE-1 · Disk space for the index** (answered: A, 2026-10-31 23:43; recorded as SCALE-1)
 
 Question: how much disk may lodge's index take in a repository's git folder?
 
