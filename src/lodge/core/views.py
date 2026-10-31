@@ -220,7 +220,7 @@ def _rests_on_flags(s: Snapshot, d: Derived, record: SpecEntry, who: Decision | 
             flags.append(f"rests on {target}, retired")
         elif who and (changes := d.changed_by.get(target)):
             latest = s.decisions[changes[0]]
-            if order_key(latest) > order_key(who):
+            if order_key(latest)[0] > order_key(who)[0]:
                 flags.append(f"rests on {target}, changed since")
     return flags
 

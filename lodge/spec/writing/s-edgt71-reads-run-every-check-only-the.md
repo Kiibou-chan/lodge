@@ -2,7 +2,7 @@
 id: s-edgt71
 kind: spec
 title: "Reads run every check; only the gate and add refuse"
-rests_on: [s-j70a0k, s-zv83s7]
+rests_on: [s-j70a0k, s-zv83s7, s-q23m04]
 ---
 
 Checks 4, 5, and 6 (entry without a decision, altered decision, and new link to a superseded record) compare the published state with the state about to be published.

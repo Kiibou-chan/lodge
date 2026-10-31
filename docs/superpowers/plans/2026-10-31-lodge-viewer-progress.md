@@ -33,3 +33,9 @@ Task 8: first run blocked on check 4 before the merge; rerun after it.
 Task 8: built by Codex after the merge: 27 links on 20 entries in 7 link decisions, 14 proposals dropped as mentions; `lodge waiting` unchanged.
 Task 8: review 0 Blocking, 2 Important, 3 Minor (`task-8-review.md`): a false 'changed since' from a timestamp tie broken by ID, and about nine missed links.
 Task 9a: built by Codex: six author decisions with her quotes at their minutes (37 author records, reasoning equal to quote in all), two coordinator decisions, 22 entries; 'changed since' 1 to 0.
+Task 8 fix round 1: glossary-level terms (the first user and the pilot) do not alone make a rests-on link; a field, rule, or reading-level definition used by an entry does (M2).
+Task 8 fix round 1: I1 fixed with a failing-first same-second test; ten links added in six link decisions, and d-76nt3b acknowledges unchanged check statements to keep 'changed since' at 0.
+Task 8 fix round 1: I2 remains open only for s-j5ttw1 to s-aq3a5k: check 4 rejects a link-only action because Task 9a's committed statement edit is newer than the published baseline; retry after that baseline includes Task 9a.
+Task 8: fix round 1 by Codex: 'changed since' needs a strictly later change (failing test first); 10 more links in six link decisions; d-76nt3b records unchanged-text edits that clear marks; the link s-j5ttw1 to s-aq3a5k waits until Task 9a's entries are published; 'changed since' 0; gate green.
+Task 8: complete, with that one link left for after the merge.
+Task 9a: review 0 Blocking, 1 Important, 4 Minor (`task-9a-review.md`).

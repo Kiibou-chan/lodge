@@ -2,7 +2,7 @@
 id: s-0s9m2d
 kind: spec
 title: "The review flag is derived and clears on confirmation"
-rests_on: [s-01k42c]
+rests_on: [s-01k42c, s-0yzshh]
 ---
 
 The review flag is derived and never typed, so it cannot be forgotten.

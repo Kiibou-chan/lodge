@@ -30,6 +30,15 @@ def test_rests_on_changed_since_mark() -> None:
     assert "rests on s-bbbbbb, changed since" in views()[0].flags
 
 
+def test_same_second_change_does_not_mark_changed_since() -> None:
+    a = entry(id="s-aaaaaa", rests_on=("s-bbbbbb",))
+    b = entry(id="s-bbbbbb")
+    own = decision(id="d-aaaaaa", date=at(10), changes=(Change(a.id, Action.EDIT),))
+    target = decision(id="d-bbbbbb", date=at(10), changes=(Change(b.id, Action.EDIT),))
+    s = snapshot_of(area(), a, b, own, target)
+    assert "rests on s-bbbbbb, changed since" not in level1(s, derive(s), a.id, frozenset()).flags
+
+
 def test_edit_with_unchanged_text_clears_changed_since() -> None:
     assert "rests on s-bbbbbb, changed since" not in views(later=Action.EDIT)[0].flags
 
