@@ -28,3 +28,5 @@ Task 6b: complete; the fix round is rechecked by the final review.
 Task 7: review 0 Blocking, 2 Important, 6 Minor (`task-7-review.md`); I2 was a `vulture_allow.py` line left out of the Task 7 commit, committed with the 6b fix.
 Task 7: fix round 1 by Codex: the entry tree shows each entry once, with a later occurrence as a reference, tested on 26 entries each resting on the two before it; the Minors fixed with failing-first evidence; gate green.
 Task 7: complete; the fix round is rechecked by the final review.
+Ruling d-mkstz5: `lodge-on-itself` merged into `main` (f28eb5c, gate green there) so the entries are published and Task 8's `link` changes pass check 4; its final review folds into this plan's final review.
+Task 8: first run blocked on check 4 before the merge; rerun after it.
