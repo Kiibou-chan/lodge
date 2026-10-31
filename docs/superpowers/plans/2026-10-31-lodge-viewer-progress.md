@@ -2,3 +2,7 @@
 Plan: written by the planner (3311c74); reviews correctness 2B/14I/16M and practice 3B/11I/10M (4f07618); advisor d-a3h9f3 on three findings held for the author; fix round 1 (61d91d1); recheck 1: 32 closed, 0 open, N1 Important and five Minors (`plan-recheck-1.md`).
 Plan: N1 closed by the coordinator: 09:37 is right (her message of 2026-10-30 is stamped 09:37), so the design's range is corrected to 09:34 to 09:47; M-a and M-b fixed in the plan; M-c, M-d, and M-e passed to the builders of Tasks 4 and 9 as notes.
 Preflight: the recheck's "Produces and Consumes after the splits" table (`plan-recheck-1.md`) is the scan; it found no mismatch.
+Task 1: built by Codex (a3b7ebd); review 0 Blocking, 2 Important, 9 Minor (`task-1-review.md`); fix round 1 by Codex, each new or stronger test shown failing against the variant the review named (report, "Fix round 1"); gate green.
+Task 1: complete; the fix round is rechecked by the final review, since each fix is a test with its recorded failing run.
+Task 2: built by Codex (f23dd1d); review 0 Blocking, 1 Important, 8 Minor (`task-2-review.md`).
+Task 3: built by Codex (68c4572).

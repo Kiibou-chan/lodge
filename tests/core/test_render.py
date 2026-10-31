@@ -165,3 +165,47 @@ def test_cross_area_target_is_across_not_also() -> None:
     )
     p = spec_view(s, derive(s), NONE, "storage")[0].placed[1]
     assert (p.under, p.also, p.across) == ("s-aaaaaa", (), (("s-bbbbbb", "other"),))
+
+
+def test_retired_same_area_target_is_not_also() -> None:
+    s = snapshot_of(
+        entry(id="s-aaaaaa"),
+        entry(id="s-bbbbbb"),
+        entry(id="s-cccccc", rests_on=("s-aaaaaa", "s-bbbbbb")),
+        decision(changes=(Change("s-bbbbbb", Action.RETIRE),)),
+    )
+    p = spec_view(s, derive(s), NONE)[0].placed[1]
+    assert (p.under, p.also) == ("s-aaaaaa", ())
+
+
+def test_retired_cross_area_target_remains_across() -> None:
+    s = snapshot_of(
+        entry(id="s-aaaaaa", rests_on=("s-bbbbbb",)),
+        entry(id="s-bbbbbb", area="other"),
+        decision(changes=(Change("s-bbbbbb", Action.RETIRE),)),
+    )
+    p = spec_view(s, derive(s), NONE, "storage")[0].placed[0]
+    assert p.across == (("s-bbbbbb", "other"),)
+    assert "rests on s-bbbbbb (other)" in render_spec(s, derive(s), NONE)
+
+
+def test_duplicate_targets_are_shown_once() -> None:
+    s = snapshot_of(
+        area(order=("s-aaaaaa", "s-bbbbbb", "s-cccccc")),
+        entry(id="s-aaaaaa"),
+        entry(id="s-bbbbbb"),
+        entry(id="s-dddddd", area="other"),
+        entry(
+            id="s-cccccc",
+            rests_on=(
+                "s-aaaaaa",
+                "s-aaaaaa",
+                "s-bbbbbb",
+                "s-dddddd",
+                "s-dddddd",
+            ),
+        ),
+    )
+    p = spec_view(s, derive(s), NONE, "storage")[0].placed[2]
+    assert p.also == ("s-aaaaaa",)
+    assert p.across == (("s-dddddd", "other"),)

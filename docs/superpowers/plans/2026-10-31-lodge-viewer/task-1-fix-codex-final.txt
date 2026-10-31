@@ -1,0 +1,8 @@
+DONE_WITH_CONCERNS
+
+Tests: 1,159 passed, plus 2 viewer tests; static checks green; all six regression variants failed as recorded.
+
+M3 uses the suggested comment; large chains remain recursion-limited.
+Design notes left unchanged.
+Socket tests excluded per brief.
+Report appended; no commit.

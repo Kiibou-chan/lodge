@@ -13,6 +13,8 @@ _HEADING_LINE = re.compile(r"^( {0,3})(#|=+[ \t]*$|-+[ \t]*$)", re.MULTILINE)
 
 @dataclass(frozen=True)
 class Placed:
+    """A displayed entry with dependency placement and additional links."""
+
     entry: Level1
     depth: int
     under: str | None
@@ -22,7 +24,7 @@ class Placed:
 
 @dataclass(frozen=True)
 class SpecArea:
-    """One area of the specification: its title, intro, and current entries in order."""
+    """One area with its title, intro, written entries, and derived placements."""
 
     name: str
     title: str
@@ -51,17 +53,18 @@ def render_spec(s: Snapshot, d: Derived, failing: frozenset[str], area: str | No
         if held.intro:
             blocks.append(_escaped(held.intro))
         for p in held.placed:
-            links = "".join(f"\nrests on {target} ({area})" for target, area in p.across)
+            links = "".join(f"\nrests on {target} ({other})" for target, other in p.across)
             blocks.append(_entry_block(p.entry) + links)
     return "".join(f"{block}\n\n" for block in blocks).removesuffix("\n")
 
 
 def _area(s: Snapshot, d: Derived, failing: frozenset[str], name: str) -> SpecArea:
     held = s.areas.get(name)
-    entries = tuple(level1(s, d, i, failing) for i in written_order(s, d, name))
+    shown = {i: level1(s, d, i, failing) for i in written_order(s, d, name)}
+    entries = tuple(shown.values())
     placed = []
     for p in derived_order(s, d, name):
-        targets = s.entries[p.id].rests_on
+        targets = tuple(dict.fromkeys(s.entries[p.id].rests_on))
         also = tuple(
             t
             for t in targets
@@ -73,7 +76,7 @@ def _area(s: Snapshot, d: Derived, failing: frozenset[str], name: str) -> SpecAr
         across = tuple(
             (t, s.entries[t].area) for t in targets if t in s.entries and s.entries[t].area != name
         )
-        placed.append(Placed(level1(s, d, p.id, failing), p.depth, p.under, also, across))
+        placed.append(Placed(shown[p.id], p.depth, p.under, also, across))
     return SpecArea(
         name, held.title if held else name, held.intro if held else "", entries, tuple(placed)
     )

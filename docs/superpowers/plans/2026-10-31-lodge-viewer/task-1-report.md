@@ -106,3 +106,64 @@ The builder gate excludes the socket-bound server tests in `tests/viewer/test_se
 The non-socket port-routing test was run separately as required.
 The other test in the ignored end-to-end file, `test_view_outside_a_repository_is_one_sentence`, is excluded by the prescribed command but does not require a socket, so it was also run separately and passed.
 The coordinator must run `sh scripts/check.sh` outside the sandbox before staging, committing, and pushing.
+
+## Fix round 1
+
+Addressed both Important findings and all nine Minor findings using the stated cheap fixes.
+Design notes D1 to D3 are unchanged, as requested.
+No staging, commits, pushes, or record writes were performed.
+
+### Findings and changes
+
+- I1: added `test_dependants_follow_depth_first` with written A, B, C, D, B and C resting on A, and D resting on B, asserting A, B, D, C and every depth and parent.
+  Added `test_diamond_uses_last_placed_target_at_depth_two`, asserting D is at depth 2 under C when it rests on B and C.
+- I2: strengthened `test_retired_target_does_not_hold_an_entry_back` with unrelated live C, written A, C, and assertions for both order and A's root placement.
+- M1: added `test_retired_same_area_target_is_not_also`, with live A, retired B, and C resting on both.
+- M2: retained the brief's explicit inclusion of each cross-area entry target, including retired entries, and pinned that decision with `test_retired_cross_area_target_remains_across`.
+  The test checks both the structured link and the rendered line.
+- M3: took the review's cheap documentation option, adding a comment that recursion depth is bounded by the number of current entries in an area.
+  The traversal remains recursive; very large chains can still exceed Python's recursion limit.
+- M4: deduplicated targets in `_area` with `dict.fromkeys`, preserving their original order for both `also` and `across`.
+  Added `test_duplicate_targets_are_shown_once` covering both link collections.
+  Parsing remains unchanged, as the review explicitly offers display deduplication as an alternative.
+- M5: documented `Placement`, `Placed`, `area_names`, `written_order`, and `derived_order`, and corrected `SpecArea` to distinguish written entries from derived placements.
+- M6: renamed the cross-area generator variable to `other`.
+- M7: renamed `visit`'s parameter to `under` and removed the alias.
+- M8: built a single `shown` dictionary of level-one entries and reused its values for written entries and derived placements.
+- M9: removed empty lines immediately after test signatures in `test_order.py`, `test_area_feedback.py`, and the shared-rank application test.
+
+### Regression failures before restoring or fixing the code
+
+Each row was run individually with `uv run pytest FILE::TEST -q` against its stated faulty variant, before restoring production code.
+Every run below exited 1 with `1 failed`; these were assertion failures, not collection or environment errors.
+The duplicate-link test failed against the original faulty rendering code before its fix.
+Full output is retained in ignored `.drafts/task1-fix-*.txt` files; the decisive failing output is recorded here.
+
+| Finding and test | Faulty variant | Failing output |
+| --- | --- | --- |
+| I1: `test_dependants_follow_depth_first` | Queue-based breadth-first traversal | `At index 2 diff: 's-cccccc' != 's-dddddd'`; `1 failed in 0.24s` |
+| I1: `test_diamond_uses_last_placed_target_at_depth_two` | Parent selected as first placed dependency rather than last | `At index 3 diff: (2, 's-bbbbbb') != (2, 's-cccccc')`; `1 failed in 0.18s` |
+| I2: `test_retired_target_does_not_hold_an_entry_back` | Removed `if t in ordered` target filter | `assert ('s-cccccc', 's-aaaaaa') == ('s-aaaaaa', 's-cccccc')`; `1 failed in 0.18s` |
+| M1: `test_retired_same_area_target_is_not_also` | Removed `d.status.get(t) == "current"` from `also` | `At index 1 diff: ('s-bbbbbb',) != ()`; `1 failed in 0.19s` |
+| M2: `test_retired_cross_area_target_remains_across` | Added current-status filter to `across` | `assert () == (('s-bbbbbb', 'other'),)`; `1 failed in 0.19s` |
+| M4: `test_duplicate_targets_are_shown_once` | Original renderer without deduplication | `assert ('s-aaaaaa', 's-aaaaaa') == ('s-aaaaaa',)`; `1 failed in 0.19s` |
+
+An initial attempted breadth-first mutant still visited grandchildren before siblings and passed the new test.
+It was replaced by an actual queue-based breadth-first traversal, producing the I1 failure above.
+All temporary production mutations were restored with `finally` blocks before applying the fixes.
+No additional tests were added or strengthened for the documentation, variable naming, blank-line, or level-one reuse changes.
+
+### Validation
+
+- `uv run pytest tests/core/test_order.py tests/core/test_render.py -q`: `24 passed in 0.10s` after restoration and fixes.
+- `uv run ruff format --check`: `411 files already formatted`.
+- `uv run ruff check`: `All checks passed!`.
+- `uv run mypy`: `Success: no issues found in 172 source files`.
+- `uv run vulture`: exit 0, no output.
+- `uv run lodge check --gate`: `ok`, followed by the existing area-added notes.
+- `uv run pytest tests/e2e/test_view.py -q -k 'test_view_passes_the_port_to_the_viewer or test_view_outside_a_repository_is_one_sentence'`: `2 passed, 1 deselected in 0.30s`.
+- `uv run pytest -q --ignore=tests/viewer/test_server.py --ignore=tests/e2e/test_view.py`: `1159 passed in 31.31s`, including the committed Task 2 and Task 3 tests.
+- `git diff --check`: exit 0, no output.
+
+The socket-bound `tests/viewer/test_server.py` and `tests/e2e/test_view.py::test_view_serves_the_project_until_interrupted` remain excluded by the sandbox gate prescribed in the brief.
+The coordinator's full socket-capable gate remains outstanding.

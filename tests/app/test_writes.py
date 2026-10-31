@@ -172,7 +172,6 @@ def test_only_changed_files_are_published() -> None:
 
 
 def test_add_area_sharing_a_rank_gives_feedback() -> None:
-
     store = MemoryStore()
     lodge = wired(store)
     lodge.add([("a.md", area_text("name: other", "rank: 1"))])
