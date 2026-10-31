@@ -31,3 +31,5 @@ Task 7: complete; the fix round is rechecked by the final review.
 Ruling d-mkstz5: `lodge-on-itself` merged into `main` (f28eb5c, gate green there) so the entries are published and Task 8's `link` changes pass check 4; its final review folds into this plan's final review.
 Task 8: first run blocked on check 4 before the merge; rerun after it.
 Task 8: built by Codex after the merge: 27 links on 20 entries in 7 link decisions, 14 proposals dropped as mentions; `lodge waiting` unchanged.
+Task 8: review 0 Blocking, 2 Important, 3 Minor (`task-8-review.md`): a false 'changed since' from a timestamp tie broken by ID, and about nine missed links.
+Task 9a: built by Codex: six author decisions with her quotes at their minutes (37 author records, reasoning equal to quote in all), two coordinator decisions, 22 entries; 'changed since' 1 to 0.
