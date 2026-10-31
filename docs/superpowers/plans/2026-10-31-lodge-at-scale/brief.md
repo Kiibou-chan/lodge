@@ -6,7 +6,7 @@ The author asked (2026-10-31 21:43 and 21:47): make an agent's knowledge reads t
 
 A measured comparison had an agent answer design questions from a store of 1,516 record files read through lodge, against the same knowledge as Markdown files.
 With `search --brief` (this branch's base, d-fqymzm) lodge cost less than Markdown, but its wall-clock was 2.5 times Markdown's, all of it lodge's own run time: each call takes 1.3 to 1.7 s, and agents loop over 5 to 11 refs per shell call.
-Two independent advisors analysed the transcripts and lodge's code; their reports are private (`/home/kiibou/cloud/projects/coding-agent-eval/lodge-trial/round3/ideas-claude.md`, `ideas-codex.md`; read them, but never copy a record's name, code, or text from them into this repository).
+Two independent advisors analysed the transcripts and lodge's code; their reports are private (outside this repository; read them, but never copy a record's name, code, or text from them into this repository).
 
 Timings (this machine; `/home` is NTFS through FUSE, `/var/tmp` and `/` are native ext4; measure on native disk unless a step says otherwise):
 
@@ -32,6 +32,6 @@ Timings (this machine; `/home` is NTFS through FUSE, `/var/tmp` and `/` are nati
 
 ## Process
 
-Plan in this worktree (`/home/kiibou/.cache/lodge-work/read-speed`, branch `read-speed`, based on `search-brief`), at `docs/superpowers/plans/2026-10-31-lodge-at-scale.md` with its ledger `-progress.md` and this folder; format as the newest plan under `docs/superpowers/plans/`.
+Plan in this worktree (branch `read-speed`, based on `search-brief`), at `docs/superpowers/plans/2026-10-31-lodge-at-scale.md` with its ledger `-progress.md` and this folder; format as the newest plan under `docs/superpowers/plans/`.
 Each task names its tests (test-first), its Produces and Consumes, its files, and its timing check where it has one.
 The plan is reviewed (two angles), fixed, and rechecked before any build; tasks are built in order on this branch.

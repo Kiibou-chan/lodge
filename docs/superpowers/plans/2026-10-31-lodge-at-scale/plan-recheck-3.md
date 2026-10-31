@@ -106,7 +106,7 @@ Keep the generic I/O-error fallback and exercise the index's WAL tests on suppor
 ## Verification
 
 The worktree began clean at `a3f8eeb6ac19867bd2aba2d915c520a578b3c83d`.
-`findmnt -T /var/tmp` identified `/dev/nvme0n1p3`, ext4, and `findmnt -T /home/kiibou/.cache/lodge-work` identified `/dev/nvme0n1p4`, fuseblk.
+`findmnt -T /var/tmp` identified `/dev/nvme0n1p3`, ext4, and `findmnt -T` of the worktree's folder identified `/dev/nvme0n1p4`, fuseblk.
 The probes used Python 3.14.7 and SQLite 3.53.4 on scratch databases only.
 The coordinator's ruling was read with the exact command in the brief, and no index code exists yet to run as a lodge integration test.
 
@@ -118,7 +118,7 @@ The coordinator's ruling was read with the exact command in the brief, and no in
 | `python /var/tmp/lodge-recheck3/cache_key.py` | `cache_key.json`: an attributes-change-and-restore sequence accepts an incorrect conversion cache entry with unchanged index stats and different disk and blob text. |
 | `python /var/tmp/lodge-recheck3/rebuild_facts.py` | `rebuild_facts.json`: a small model of the permitted keep_state payload omits a cached published-facts row from the new generation. |
 
-The single NTFS probe directory was created under `/home/kiibou/.cache/lodge-work/recheck3-ntfs-jyxem4sb/` and removed in a finally block, with its removal recorded in `filesystems.jsonl`.
+The single NTFS probe directory was created beside the worktree on the FUSE mount and removed in a finally block, with its removal recorded in `filesystems.jsonl`.
 The remaining scripts, fixture repositories, and databases are under `/var/tmp/lodge-recheck3/`.
 No network, `lodge add`, commit, push, or benchmark against a real store was used.
 This report is the only worktree change.
