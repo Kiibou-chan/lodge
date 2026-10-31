@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 
 from lodge.app.ports import Committed
-from lodge.core import CheckResult, Feedback, Level1, Level3, Problem, Thread
+from lodge.core import Branch, CheckResult, Feedback, Level1, Level3, Problem, Thread
 
 
 class AddOutcome(StrEnum):
@@ -34,6 +34,8 @@ class Shown:
     changing: tuple[Level1, ...] = ()
     threads: tuple[Thread, ...] = ()
     confirmable: bool = False
+    rests_on: tuple[Branch, ...] = ()
+    supports: tuple[Level1, ...] = ()
 
 
 @dataclass(frozen=True)

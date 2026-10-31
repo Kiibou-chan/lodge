@@ -28,7 +28,8 @@ def test_confirm_redirects_with_done_code() -> None:
 def test_get_with_done_shows_notice() -> None:
     make, _ = staged_world()
     assert (
-        "Written and committed." in server.render(make, urlsplit("/r/d-aaaaaa?done=committed"))[1]
+        "Written and committed."
+        in server.render(make, urlsplit("/r/d-aaaaaa?done=committed"), TOKEN)[1]
     )
 
 

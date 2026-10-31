@@ -99,3 +99,15 @@ summary { cursor: pointer; font-weight: 600; }
 details ul { padding-left: 1.25rem; }
 
 .check { font-weight: 600; }
+
+.depth-1 { margin-left: 1rem; }
+.depth-2 { margin-left: 2rem; }
+.depth-3 { margin-left: 3rem; }
+.depth-4 { margin-left: 4rem; }
+.depth-5 { margin-left: 5rem; }
+.thread { margin-block: 1.5rem; padding: 1rem; border: 1px solid var(--line); border-radius: 6px; }
+.thread p { white-space: pre-wrap; }
+.notice { padding: 0.5rem; background: var(--flag-bg); color: var(--flag-fg); }
+form p { flex-basis: 100%; margin: 0; }
+textarea { font: inherit; color: var(--fg); background: var(--card); border: 1px solid var(--line); border-radius: 4px; padding: 0.5rem; min-height: 6rem; width: min(36rem, 100%); }
+form label:has(textarea) { flex-basis: 100%; }

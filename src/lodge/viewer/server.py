@@ -78,7 +78,9 @@ class _Handler(BaseHTTPRequestHandler):
         if self.headers.get("Host", "").lower() not in self.server.gate.hosts:
             self._send(HTTPStatus.FORBIDDEN, pages.error_page("this address is not served"))
             return
-        status, text, kind = render(self.server.make_lodge, urlsplit(self.path))
+        status, text, kind = render(
+            self.server.make_lodge, urlsplit(self.path), self.server.gate.token
+        )
         self._send(status, text, kind)
 
     def _send(
@@ -130,7 +132,9 @@ def serve(
     return 0
 
 
-def render(make_lodge: Callable[[], Lodge], url: SplitResult) -> tuple[HTTPStatus, str, str]:
+def render(
+    make_lodge: Callable[[], Lodge], url: SplitResult, token: str
+) -> tuple[HTTPStatus, str, str]:
     path = url.path
     if path == "/style.css":
         css = files("lodge.viewer").joinpath("style.css").read_text(encoding="utf-8")
@@ -139,7 +143,7 @@ def render(make_lodge: Callable[[], Lodge], url: SplitResult) -> tuple[HTTPStatu
     if path not in {"/", "/spec", "/timeline", "/waiting", "/problems"} and ref is None:
         return HTTPStatus.NOT_FOUND, pages.error_page("there is nothing at this address"), HTML
     try:
-        return HTTPStatus.OK, _page(make_lodge(), path, ref, parse_qs(url.query)), HTML
+        return HTTPStatus.OK, _page(make_lodge(), path, ref, parse_qs(url.query), token), HTML
     except NotFound as error:
         return HTTPStatus.NOT_FOUND, pages.error_page(str(error)), HTML
     except LodgeError as error:
@@ -156,22 +160,27 @@ def _record_ref(path: str) -> str | None:
     return unquote(rest)
 
 
-def _page(lodge: Lodge, path: str, ref: str | None, query: Query) -> str:
+def _page(lodge: Lodge, path: str, ref: str | None, query: Query, token: str) -> str:
     notice = writes.NOTICES.get(_first(query, "done") or "")
     if ref is not None:
-        return pages.record_page(lodge.show(ref, reasoning=True, provenance=True), notice)
+        return pages.record_page(lodge.show(ref, reasoning=True, provenance=True), token, notice)
     match path:
         case "/":
             filters = _filters(query)
             text = _first(query, "q") or ""
             return pages.search_page(lodge.search(text, filters), text, filters, notice)
         case "/spec":
-            _, read, areas = lodge.spec(_first(query, "area"))
-            return pages.spec_page(areas, read, notice)
+            area = _first(query, "area")
+            _, read, areas = lodge.spec(area)
+            order: Literal["dependency", "written"] = (
+                "written" if _first(query, "order") == "written" else "dependency"
+            )
+            behind = lodge.behind_area(area) if area is not None else ()
+            return pages.spec_page(areas, read, token, order, area, behind, notice)
         case "/timeline":
             return pages.timeline_page(lodge.timeline(), notice)
         case "/waiting":
-            return pages.waiting_page(lodge.waiting(), notice)
+            return pages.waiting_page(*lodge.waiting_all(), notice)
         case _:
             result, read = lodge.problems()
             return pages.problems_page(result, read, notice)

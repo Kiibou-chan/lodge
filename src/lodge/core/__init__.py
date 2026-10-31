@@ -41,7 +41,14 @@ from lodge.core.model import (
     Thread,
     ThreadState,
 )
-from lodge.core.order import Placement, area_names, derived_order, written_order
+from lodge.core.order import (
+    Branch,
+    Placement,
+    area_names,
+    derived_order,
+    rests_on_tree,
+    written_order,
+)
 from lodge.core.render import Placed, SpecArea, render_spec, spec_view
 from lodge.core.search import AmbiguousRef, Filters, related, resolve, search, search_counted
 from lodge.core.settings import CoreSettings, LengthGuidance, SettingsError, parse_core_settings
@@ -79,6 +86,7 @@ __all__ = [
     "AmbiguousRef",
     "Applied",
     "Area",
+    "Branch",
     "Change",
     "CheckResult",
     "CoreSettings",
@@ -150,6 +158,7 @@ __all__ = [
     "related",
     "render_spec",
     "resolve",
+    "rests_on_tree",
     "search",
     "search_counted",
     "slug",

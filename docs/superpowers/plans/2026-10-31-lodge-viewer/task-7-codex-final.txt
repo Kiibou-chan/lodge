@@ -1,0 +1,7 @@
+DONE
+
+Builder gate passed: 1,327 tests, plus six socket-free CLI cases.
+Report: [task-7-report.md](docs/superpowers/plans/2026-10-31-lodge-viewer/task-7-report.md).
+
+Socket tests and browser review remain for the coordinator.
+No commits or pushes.

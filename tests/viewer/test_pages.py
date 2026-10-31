@@ -3,28 +3,29 @@ from builders import area, decision, entry
 from fakes import MemoryStore
 from support import FIRST, wired
 
-from lodge.app import Listed, Read
+from lodge.app import Listed, Read, ThreadsWaiting
 from lodge.core import CheckResult, Filters, Problem, Quote, Scope
 from lodge.viewer import pages
 from viewer.world import AGENT, BAD, ENTRY, FRESH, world
 
+EMPTY_WAITING = ThreadsWaiting((), (), {}, Read(None, ()))
 PROBLEM = Problem(BAD, 1, "no header here", 1)
 
 
 def test_record_page_escapes_html() -> None:
-    page = pages.record_page(world().show("d-dddddd", True, True))
+    page = pages.record_page(world().show("d-dddddd", True, True), "T" * 32)
     assert "<script>" not in page and "<b>bold</b>" not in page and "<i>Yes</i>" not in page
     assert "&lt;script&gt;alert(1)&lt;/script&gt;" in page
     assert "&lt;i&gt;Yes&lt;/i&gt;" in page and "a &lt;session&gt;" in page
 
 
 def test_record_page_shows_the_quote_outside_the_details() -> None:
-    page = pages.record_page(world().show("d-dddddd", True, True))
+    page = pages.record_page(world().show("d-dddddd", True, True), "T" * 32)
     assert page.index("&lt;i&gt;Yes&lt;/i&gt;") < page.index("<details")
 
 
 def test_record_page_keeps_reasoning_and_provenance_in_details() -> None:
-    page = pages.record_page(world().show("d-cccccc", True, True))
+    page = pages.record_page(world().show("d-cccccc", True, True), "T" * 32)
     assert page.count("<details") == 2
     opened = page.index("<details")
     assert "Second &lt;b&gt;paragraph&lt;/b&gt;." in page[opened:]
@@ -33,7 +34,7 @@ def test_record_page_keeps_reasoning_and_provenance_in_details() -> None:
 
 def test_record_page_flags_and_both_link_directions() -> None:
     lodge = world()
-    entry_page = pages.record_page(lodge.show("s-aaaaaa", True, True))
+    entry_page = pages.record_page(lodge.show("s-aaaaaa", True, True), "T" * 32)
     own = entry_page.split("<details")[0]
     assert '<span class="flag">awaiting the author on d-cccccc</span>' not in own
     assert (
@@ -41,14 +42,14 @@ def test_record_page_flags_and_both_link_directions() -> None:
         '<span class="status">current</span>'
     ) in own
     assert '<a href="/r/d-aaaaaa">d-aaaaaa</a> <span class="status">current</span>' in entry_page
-    decision_page = pages.record_page(lodge.show("d-cccccc", True, True))
+    decision_page = pages.record_page(lodge.show("d-cccccc", True, True), "T" * 32)
     assert "changes (edit)" in decision_page
     assert '<a href="/r/s-aaaaaa">s-aaaaaa</a> <span class="status">current</span>' in decision_page
     assert '<span class="flag">awaiting the author</span>' in decision_page
 
 
 def test_entry_reasoning_renders_the_deciding_decisions_as_results() -> None:
-    page = pages.record_page(world().show("s-aaaaaa", True, False))
+    page = pages.record_page(world().show("s-aaaaaa", True, False), "T" * 32)
     reasoning = page.split("<summary>Reasoning</summary>")[1].split("</details>")[0]
     assert '<li class="result"><h2><a href="/r/d-cccccc">Reword transcripts</a></h2>' in reasoning
     assert 'class="meta"' in reasoning and "&middot; coordinator" in reasoning
@@ -69,7 +70,9 @@ def test_record_page_links_only_ids_whose_status_is_known() -> None:
     shown = wired(MemoryStore(area(order=("s-aaaaaa",)), ENTRY, FIRST, narrower)).show(
         "d-ffffff", True, True
     )
-    reasoning = pages.record_page(shown).split("<summary>Reasoning</summary>")[1].split("</p>")[0]
+    reasoning = (
+        pages.record_page(shown, "T" * 32).split("<summary>Reasoning</summary>")[1].split("</p>")[0]
+    )
     assert (
         'Like <a href="/r/d-aaaaaa">d-aaaaaa</a> <span class="status">current</span>,' in reasoning
     )
@@ -77,7 +80,9 @@ def test_record_page_links_only_ids_whose_status_is_known() -> None:
 
 
 def test_record_page_lists_attachments_by_path() -> None:
-    assert "lodge/attachments/" not in pages.record_page(world().show("d-aaaaaa", True, True))
+    assert "lodge/attachments/" not in pages.record_page(
+        world().show("d-aaaaaa", True, True), "T" * 32
+    )
     held = decision(
         id="d-eeeeee",
         decided_by="author",
@@ -85,7 +90,7 @@ def test_record_page_lists_attachments_by_path() -> None:
         attachments=("log.txt",),
     )
     shown = wired(MemoryStore(held)).show("d-eeeeee", True, True)
-    assert "lodge/attachments/d-eeeeee/log.txt" in pages.record_page(shown)
+    assert "lodge/attachments/d-eeeeee/log.txt" in pages.record_page(shown, "T" * 32)
 
 
 def test_search_page_keeps_filters() -> None:
@@ -122,17 +127,17 @@ def test_timeline_page_says_how_many_are_shown() -> None:
 
 def test_waiting_page() -> None:
     lodge = world()
-    page = pages.waiting_page(lodge.waiting())
+    page = pages.waiting_page(lodge.waiting(), EMPTY_WAITING)
     assert '<a href="/r/d-cccccc">' in page and "awaiting the author" in page
     assert "d-aaaaaa" not in page
-    empty = pages.waiting_page(Listed((), Read(None, ())))
+    empty = pages.waiting_page(Listed((), Read(None, ())), EMPTY_WAITING)
     assert "Nothing waits for the author." in empty
 
 
 def test_spec_page_has_headings_paragraphs_and_linked_ids() -> None:
     _, read, areas = world().spec()
-    page = pages.spec_page(areas, read)
-    assert "<h1>Storage</h1>" in page
+    page = pages.spec_page(areas, read, "T" * 32, "dependency", None, ())
+    assert '<h1><a href="/spec?area=storage">Storage</a></h1>' in page
     assert '<h2>Transcripts are kept (<a href="/r/s-aaaaaa">s-aaaaaa</a>' in page
     assert "<p>Held.</p>" in page
 
@@ -145,14 +150,16 @@ def test_spec_page_builds_headings_from_fields_never_from_text() -> None:
     )
     store = MemoryStore(area(intro="# Spoof\n\nSecond.", order=("s-aaaaaa",)), held, FIRST, AGENT)
     _, read, areas = wired(store).spec()
-    page = pages.spec_page(areas, read)
+    page = pages.spec_page(areas, read, "T" * 32, "dependency", None, ())
     assert page.count("<h1>") == 1 and page.count("<h2>") == 1
     assert "<h2><b>" not in page and "&lt;b&gt;T&lt;/b&gt;" in page
     assert "awaiting the author on" in page.split("</h2>")[0]
     assert "<p># Spoof</p>" in page and "<p>Second.</p>" in page
     assert "<p>## A clean looking entry (s-zzzzzz)</p>" in page
     assert "<script>" not in page and "s-zzzzzz</a>" not in page
-    assert "<p>Nothing is recorded yet.</p>" in pages.spec_page((), read)
+    assert "<p>Nothing is recorded yet.</p>" in pages.spec_page(
+        (), read, "T" * 32, "dependency", None, ()
+    )
 
 
 def test_problems_page() -> None:
@@ -170,10 +177,10 @@ def test_every_page_shows_freshness_and_problem_banner() -> None:
     _, _, areas = lodge.spec()
     rendered = [
         pages.search_page(lodge.search("", Filters()), "", Filters()),
-        pages.record_page(lodge.show("d-aaaaaa", True, True)),
-        pages.spec_page(areas, read),
+        pages.record_page(lodge.show("d-aaaaaa", True, True), "T" * 32),
+        pages.spec_page(areas, read, "T" * 32, "dependency", None, ()),
         pages.timeline_page(lodge.timeline()),
-        pages.waiting_page(lodge.waiting()),
+        pages.waiting_page(lodge.waiting(), EMPTY_WAITING),
         pages.problems_page(result, read),
     ]
     for page in rendered:
@@ -183,10 +190,10 @@ def test_every_page_shows_freshness_and_problem_banner() -> None:
 
 
 def test_banner_counts_each_problem_and_is_absent_without_any() -> None:
-    clean = pages.waiting_page(Listed((), Read(FRESH, ())))
+    clean = pages.waiting_page(Listed((), Read(FRESH, ())), EMPTY_WAITING)
     assert "/problems" not in clean.replace('href="/problems">Problems', "")
     two = Read(None, (PROBLEM, Problem("lodge/x.md", 1, "bad")))
-    assert "2 files lodge cannot read" in pages.waiting_page(Listed((), two))
+    assert "2 files lodge cannot read" in pages.waiting_page(Listed((), two), EMPTY_WAITING)
 
 
 @pytest.mark.parametrize("name", ["search", "record", "spec", "timeline", "waiting", "problems"])
@@ -196,10 +203,10 @@ def test_broken_file_named_above_page_content(name: str) -> None:
     _, _, areas = lodge.spec()
     built = {
         "search": lambda: pages.search_page(lodge.search("", Filters()), "", Filters()),
-        "record": lambda: pages.record_page(lodge.show("d-aaaaaa", True, True)),
-        "spec": lambda: pages.spec_page(areas, read),
+        "record": lambda: pages.record_page(lodge.show("d-aaaaaa", True, True), "T" * 32),
+        "spec": lambda: pages.spec_page(areas, read, "T" * 32, "dependency", None, ()),
         "timeline": lambda: pages.timeline_page(lodge.timeline()),
-        "waiting": lambda: pages.waiting_page(lodge.waiting()),
+        "waiting": lambda: pages.waiting_page(lodge.waiting(), EMPTY_WAITING),
         "problems": lambda: pages.problems_page(result, read),
     }
     page = built[name]()
@@ -225,7 +232,7 @@ def test_flag_ids_on_list_and_spec_rows_are_links_with_their_status() -> None:
     )
     assert linked in pages.search_page(lodge.search("", Filters()), "", Filters())
     assert linked in pages.timeline_page(lodge.timeline())
-    assert linked in pages.spec_page(areas, read)
+    assert linked in pages.spec_page(areas, read, "T" * 32, "dependency", None, ())
 
 
 def test_hand_edited_published_decision_fails_on_its_page_and_in_problems() -> None:
@@ -233,7 +240,7 @@ def test_hand_edited_published_decision_fails_on_its_page_and_in_problems() -> N
     path = next(p for p in store.files if "d-aaaaaa" in p)
     store.files[path] = store.files[path].replace(FIRST.statement, "Deleted after a day.")
     lodge = wired(store)
-    assert "fails check" in pages.record_page(lodge.show("d-aaaaaa", True, True))
+    assert "fails check" in pages.record_page(lodge.show("d-aaaaaa", True, True), "T" * 32)
     result, read = lodge.problems()
     page = pages.problems_page(result, read)
     assert "check 5" in page and "statement of a published decision was changed" in page

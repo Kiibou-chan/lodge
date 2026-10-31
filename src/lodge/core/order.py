@@ -62,3 +62,34 @@ def derived_order(s: Snapshot, d: Derived, area: str) -> tuple[Placement, ...]:
         ready = next((i for i in remaining if all(t in placed for t in targets[i])), remaining[0])
         visit(ready)
     return tuple(result)
+
+
+@dataclass(frozen=True)
+class Branch:
+    """An entry in a dependency tree, with its current derived status."""
+
+    id: str
+    title: str
+    status: str
+    children: tuple["Branch", ...]
+
+
+def rests_on_tree(s: Snapshot, d: Derived, entry_id: str) -> tuple[Branch, ...]:
+    """Walk dependencies down to roots, omitting missing targets and ancestor cycles."""
+
+    def children(ident: str, ancestors: frozenset[str]) -> tuple[Branch, ...]:
+        entry = s.entries.get(ident)
+        if entry is None:
+            return ()
+        return tuple(
+            Branch(
+                target,
+                s.entries[target].title,
+                d.status[target],
+                children(target, ancestors | {target}),
+            )
+            for target in dict.fromkeys(entry.rests_on)
+            if target in s.entries and target not in ancestors
+        )
+
+    return children(entry_id, frozenset({entry_id}))

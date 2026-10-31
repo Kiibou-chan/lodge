@@ -48,6 +48,8 @@ def show(w: Wiring, ref: str, reasoning: bool, provenance: bool) -> Shown:
         level2_views(s, d, record_id, state.failing) if reasoning else (),
         newest_last(t for t in s.threads.values() if t.about == record_id),
         record_id in core.confirmable_ids(s, d),
+        core.rests_on_tree(s, d, record_id),
+        _views(state, d.supports.get(record_id, ())),
     )
 
 

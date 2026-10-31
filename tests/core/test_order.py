@@ -1,6 +1,14 @@
 from builders import area, decision, entry, snapshot_of
 
-from lodge.core import Action, Change, area_names, derive, derived_order, written_order
+from lodge.core import (
+    Action,
+    Change,
+    area_names,
+    derive,
+    derived_order,
+    rests_on_tree,
+    written_order,
+)
 
 A, B, C, D = "s-aaaaaa", "s-bbbbbb", "s-cccccc", "s-dddddd"
 
@@ -89,3 +97,17 @@ def test_diamond_uses_last_placed_target_at_depth_two() -> None:
     got = derived_order(s, derive(s), "storage")
     assert tuple(p.id for p in got) == (A, B, C, D)
     assert tuple((p.depth, p.under) for p in got) == ((0, None), (1, A), (1, A), (2, C))
+
+
+def test_rests_on_tree_reaches_the_roots() -> None:
+    s = snapshot_of(entry(id=A), entry(id=B, rests_on=(A,)), entry(id=C, rests_on=(B,)))
+    tree = rests_on_tree(s, derive(s), C)
+    assert tree[0].id == B and tree[0].children[0].id == A
+    assert tree[0].children[0].children == ()
+    assert tree[0].title == s.entries[B].title and tree[0].status == "current"
+
+
+def test_rests_on_tree_stops_on_a_cycle() -> None:
+    s = snapshot_of(entry(id=A, rests_on=(B,)), entry(id=B, rests_on=(A,)))
+    tree = rests_on_tree(s, derive(s), A)
+    assert tree[0].id == B and tree[0].children == ()
