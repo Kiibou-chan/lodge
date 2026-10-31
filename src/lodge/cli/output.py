@@ -4,7 +4,7 @@ import re
 from collections.abc import Collection, Sequence
 
 from lodge.app import Added, AddOutcome, Listed, Read, Shown
-from lodge.core import CheckResult, Level1, Problem, format_level1, format_level3
+from lodge.core import CheckResult, Level1, Problem, format_brief, format_level1, format_level3
 
 NO_MATCHES = "no matches"
 NOTHING_RECORDED = "Nothing is recorded yet."
@@ -25,8 +25,10 @@ def read_lines(read: Read) -> list[str]:
     return [*first, *(f"problem: {_where(p)}: {p.message}" for p in read.unrecorded)]
 
 
-def listed_text(listed: Listed, empty: str) -> str:
-    lines = [*read_lines(listed.read), _blocks(listed.items, empty)]
+def listed_text(listed: Listed, empty: str, brief: bool = False) -> str:
+    """Each record at level 1, or as one line when `brief`, then what was left out."""
+    body = _lines(listed.items, empty) if brief else _blocks(listed.items, empty)
+    lines = [*read_lines(listed.read), body]
     if listed.more:
         total = len(listed.items) + listed.more
         lines.append(
@@ -86,6 +88,10 @@ def _marked(text: str, provisional: set[str]) -> str:
 
 def _blocks(items: Sequence[Level1], empty: str) -> str:
     return "\n\n".join(format_level1(item) for item in items) if items else empty
+
+
+def _lines(items: Sequence[Level1], empty: str) -> str:
+    return "\n".join(format_brief(item) for item in items) if items else empty
 
 
 def _section(heading: str, text: str) -> str:

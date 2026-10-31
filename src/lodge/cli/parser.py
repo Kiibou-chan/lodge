@@ -27,6 +27,7 @@ class Search:
     query: str
     filters: Filters
     limit: int = 20
+    brief: bool = False
 
 
 @dataclass(frozen=True)
@@ -170,6 +171,9 @@ def _search(sub: argparse.ArgumentParser) -> None:
     sub.add_argument("--area", help="an area; a decision's areas are those of its entries")
     sub.add_argument("--by", help="who decided, such as author or an agent role")
     sub.add_argument("--limit", type=_positive, default=20, help="records to list; default 20")
+    sub.add_argument(
+        "--brief", action="store_true", help="one line per record: its header and title"
+    )
 
 
 def _show(sub: argparse.ArgumentParser) -> None:
@@ -205,7 +209,7 @@ def _search_of(args: argparse.Namespace) -> Command:
         area=args.area,
         decided_by=args.by,
     )
-    return Search(args.query, filters, args.limit)
+    return Search(args.query, filters, args.limit, args.brief)
 
 
 def _show_of(args: argparse.Namespace) -> Command:

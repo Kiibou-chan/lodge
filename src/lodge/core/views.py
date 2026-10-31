@@ -141,6 +141,11 @@ def format_level1(v: Level1) -> str:
     return text
 
 
+def format_brief(v: Level1) -> str:
+    """The header line and the title on one line, without the statement."""
+    return _head(v).replace("\n", " · ", 1)
+
+
 def format_level3(v: Level3) -> str:
     lines: list[str] = []
     if v.quote:

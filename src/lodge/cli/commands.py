@@ -59,8 +59,8 @@ def run(
             print("next: lodge guide")
         case NewId(prefix):
             print(make_lodge().mint(prefix))
-        case Search(query, filters, limit):
-            print(listed_text(make_lodge().search(query, filters, limit), NO_MATCHES))
+        case Search(query, filters, limit, brief):
+            print(listed_text(make_lodge().search(query, filters, limit), NO_MATCHES, brief))
         case Show(ref, reasoning, provenance):
             print(shown_text(make_lodge().show(ref, reasoning, provenance)))
         case Draft(ref):

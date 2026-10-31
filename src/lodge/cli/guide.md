@@ -11,7 +11,7 @@ Read through lodge, never by opening record files.
 Run `lodge waiting` at the start of a session, and answer what waits for an agent first.
 `lodge threads` lists the open doubts and questions, and `lodge thread Q` shows one.
 `lodge search WORDS`, `lodge show REF`, `lodge spec [--area A]`, and `lodge waiting` read.
-A REF is an ID or a code such as ITEM-1.
+A REF is an ID or a code such as ITEM-1; search broadly with `lodge search WORDS --brief`, one line per record, then `show` the records you need.
 `show` gives level 1: the statement, status, who decided, the date, and flags.
 `--reasoning` adds level 2, the why; for an entry it lists the decisions that changed it, so show one of them with `--reasoning` for its why.
 `--provenance` adds level 3: the author's quote, numbers, work item, attachments, and links both ways; ask for levels 2 and 3 only when the task needs them.
