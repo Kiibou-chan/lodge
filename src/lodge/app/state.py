@@ -43,8 +43,8 @@ def read_state(store: Store) -> State:
     """The current state read once, with the one-state checks run on it."""
     current, published = store.trees()
     snapshot = load(current)
-    result = core.check_state(snapshot)
     derived = core.derive(snapshot)
+    result = core.check_state(snapshot, derived=derived)
     return State(
         current,
         published,
@@ -63,7 +63,18 @@ def read_checked(w: Wiring) -> State:
     published tree the store returned, so a rewritten branch is compared with its accepted tip.
     """
     state = read_state(w.store)
-    change = core.check_change(load(state.published), state.snapshot, w.settings, w.clock.now())
+    published = load(state.published)
+    before = core.derive(published)
+    facts = core.ChangeFacts(
+        before.status,
+        frozenset(
+            (p.path, p.check, p.message)
+            for p in core.check_state(published, derived=before).problems
+        ),
+        state.derived,
+        state.result.problems,
+    )
+    change = core.check_change(published, state.snapshot, w.settings, w.clock.now(), facts=facts)
     known = set(state.result.problems)
     problems = (*state.result.problems, *(p for p in change.problems if p not in known))
     result = CheckResult(

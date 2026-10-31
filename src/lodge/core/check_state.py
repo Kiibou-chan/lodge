@@ -5,7 +5,7 @@ from dataclasses import dataclass
 
 from lodge.core.check_areas import check_areas
 from lodge.core.check_cycles import check_cycles
-from lodge.core.derive import is_author
+from lodge.core.derive import Derived, derive, is_author
 from lodge.core.model import Decision, Problem, Record
 from lodge.core.snapshot import Snapshot, attachment_path
 
@@ -22,7 +22,8 @@ class CheckResult:
         return not self.problems
 
 
-def check_state(s: Snapshot) -> CheckResult:
+def check_state(s: Snapshot, *, derived: Derived | None = None) -> CheckResult:
+    derived = derive(s) if derived is None else derived
     found = [
         *s.problems,
         *_file_names(s),
@@ -31,7 +32,7 @@ def check_state(s: Snapshot) -> CheckResult:
         *_attachments(s),
         *_quotes(s),
         *_confirmations(s),
-        *check_areas(s),
+        *check_areas(s, derived.status),
         *check_cycles(s),
     ]
     return CheckResult(tuple(sorted(found, key=sort_key)), ())

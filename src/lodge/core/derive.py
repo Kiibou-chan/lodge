@@ -1,6 +1,6 @@
 """Facts derived from a snapshot: statuses, reverse links, and the review flag."""
 
-from collections.abc import Callable, Iterable, Mapping
+from collections.abc import Callable, Collection, Iterable, Mapping
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Literal
@@ -66,14 +66,14 @@ def derive(s: Snapshot) -> Derived:
             changes.setdefault(entry, []).append(d)
     hers = _confirmed_by_her(oldest_first)
     flagged = _flagged(s, oldest_first, touches, changes, hers)
+    standing = _previous(changes, replaced_by)
+    known_ids = s.decisions.keys() | s.entries.keys()
     touched: dict[str, list[str]] = {}
     for d in newest_first:
         if d.id in flagged:
-            behind = _behind_entry_edits(
-                d, touches[d.id], changes, _counts_for(d, hers), replaced_by
-            )
+            behind = _behind_entry_edits(d, touches[d.id], standing, _counts_for(d, hers))
             targets = {*d.replaces, *d.narrows, *touches[d.id], *behind}
-            for target in sorted(targets & (s.decisions.keys() | s.entries.keys())):
+            for target in sorted(targets & known_ids):
                 touched.setdefault(target, []).append(d.id)
     linked = _reverse(
         newest_first, lambda d: (c.entry for c in d.changes if c.action is Action.LINK), s.entries
@@ -152,16 +152,15 @@ def _reverse(
 def _behind_entry_edits(
     d: Decision,
     entries: Iterable[str],
-    changes: Mapping[str, list[Decision]],
+    changes: Mapping[str, Mapping[str, Decision]],
     counts: Callable[[Decision], bool],
-    replaced_by: Links,
 ) -> list[str]:
     """The decisions behind the previous standing change of each entry `d` changes, when hers."""
     behind: list[str] = []
     for entry in entries:
-        standing = [c for c in changes[entry][: changes[entry].index(d)] if c.id not in replaced_by]
-        if standing and counts(standing[-1]):
-            behind.append(standing[-1].id)
+        standing = changes[entry].get(d.id)
+        if standing is not None and counts(standing):
+            behind.append(standing.id)
     return behind
 
 
@@ -181,6 +180,7 @@ def _flagged(
         for t in later.replaces
         if t in s.decisions and not is_author(s.decisions[t]) and t not in hers
     }
+    previous = _previous(changes, undone)
     flagged: set[str] = set()
     for d in oldest_first:
         if d.id in cleared or (is_author(d) and d.imported_from is None):
@@ -190,7 +190,7 @@ def _flagged(
             t in s.decisions and counts(s.decisions[t]) for t in (*d.replaces, *d.narrows)
         )
         follows_author_change = any(
-            _follows_author_change(d, counts, changes[entry], undone) for entry in touches[d.id]
+            _follows_author_change(d, counts, previous[entry]) for entry in touches[d.id]
         )
         if touches_author_decision or follows_author_change:
             flagged.add(d.id)
@@ -232,12 +232,28 @@ def _counts_for(d: Decision, hers: set[str]) -> Callable[[Decision], bool]:
 
 
 def _follows_author_change(
-    d: Decision, counts: Callable[[Decision], bool], changed_entry: list[Decision], undone: set[str]
+    d: Decision, counts: Callable[[Decision], bool], changed_entry: Mapping[str, Decision]
 ) -> bool:
     """Whether the latest change to an entry before `d`'s, by date, is one that raises a flag.
 
     A change is skipped when a non-imported author decision replaces its decision and it is not
     hers.
     """
-    before = [c for c in changed_entry[: changed_entry.index(d)] if c.id not in undone]
-    return bool(before) and counts(before[-1])
+    before = changed_entry.get(d.id)
+    return before is not None and counts(before)
+
+
+def _previous(
+    changes: Mapping[str, list[Decision]], skipped: Collection[str]
+) -> dict[str, dict[str, Decision]]:
+    found: dict[str, dict[str, Decision]] = {}
+    for entry, decisions in changes.items():
+        previous: dict[str, Decision] = {}
+        last = None
+        for d in decisions:
+            if last is not None:
+                previous[d.id] = last
+            if d.id not in skipped:
+                last = d
+        found[entry] = previous
+    return found
