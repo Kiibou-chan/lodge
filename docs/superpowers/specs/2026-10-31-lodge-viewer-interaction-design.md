@@ -7,7 +7,7 @@ It adds to the specification in lodge (`lodge spec`) and changes it only where i
 
 ## Intent
 
-Her words (2026-10-30, 09:41 to 09:47):
+Her words (2026-10-30, 09:34 to 09:47, local time, as stamped on each of her messages in the session):
 
 - "And I think would like to have the option to interact with knowledge through the viewer now. Does not need to be editing. But confirming them would be nice." (recorded as d-dyrpc6)
 - "Also, what do I do with an entry I have doubts/a question about? A chat on it would be ideal that can then directly interact with it for example."
