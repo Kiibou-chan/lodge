@@ -1,0 +1,7 @@
+DONE_WITH_CONCERNS
+
+Tests: 1,367 passed, plus six socket-free viewer tests; sandbox gate passed.
+
+Concern: lodge reported order-change notes for five areas despite unchanged draft order lines.
+Details in [the report](docs/superpowers/plans/2026-10-31-lodge-viewer/task-11-report.md).
+No commit or push.

@@ -1,6 +1,7 @@
 ---
 kind: area
 title: "A hook against writing elsewhere"
+rank: 7
 order: [s-4nq741, s-h12s8w]
 ---
 
