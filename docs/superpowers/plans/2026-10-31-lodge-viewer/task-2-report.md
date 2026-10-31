@@ -93,3 +93,165 @@ Five new tests already passed against Task 1, as documented above.
 Socket-bound files `tests/viewer/test_server.py` and `tests/e2e/test_view.py` were excluded from the builder gate as instructed, apart from the separately passing port test.
 The coordinator must run `sh scripts/check.sh` outside the sandbox, stage explicit paths, commit, and push.
 The untracked task brief was present before work began and was left unchanged.
+
+
+## Fix round 1
+
+Fixed I1 and all eight Minors without staging, committing, pushing, or changing records.
+The earlier label interpretation in this report is superseded by I1 below.
+Task 1 and Task 3 changes remain in place, including Task 3's doubt flags and question-ID regex.
+
+| Finding | Change and test evidence |
+| --- | --- |
+| I1 | Changed the level 3 reverse relation to `supports` and corrected its test assertion; the test failed against `supported by` before the source change. |
+| M1 | Suppressed check 8 for self-loops without other members; the strengthened self-reference test failed on the duplicate check 8 before the fix. |
+| M2 | Added check 8 to the state/change docstrings and documented the new retired-dependency clause; documentation only. |
+| M3 | Extended the three-member cycle fixture with an incoming non-member and an outgoing non-member; its exact three messages exclude both, and the review's temporary reachability mutation failed before being reverted. |
+| M4 | Extracted `_only_rests_on_differs`, computing it once per entry before the action loop and reusing it for link validation; existing check 4 tests cover the refactor. |
+| M5 | Renamed `_order` to `order_key` throughout derive and extracted `_rests_on_flags`, using the shared comparison and retaining Task 3's flag order; existing view tests cover the refactor. |
+| M6 | Added compiled `_ENTRY_ID` alongside `_ID` and extracted `_entry_messages`; retained Task 3's `[dsq]` regex and existing feedback coverage. |
+| M7 | Restored both blank lines around the example and combined related add/draft guidance into single sentences to retain 60 lines; each new spacing assertion failed before its fix. |
+| M8 | Used `Action.LINK` and typed Action parameters instead of converting strings in test helpers; strengthened the same-add retirement assertion to require its exact message, and removed the unused public `check_cycles` export after checking consumers. |
+
+No new test functions were needed.
+Behavioural assertion changes were exercised red first, with the outputs below.
+The Action enum substitutions are cosmetic changes to existing tests, and retain their assertions; they were verified green rather than manufactured failures.
+M3 and the M8 message assertion already passed against correct source, so temporary mutations demonstrated that their stronger assertions detect the specific regressions before the final source refactors.
+Both mutations were reverted immediately after the failing run.
+
+### Failing output before fixes
+
+The first run was `uv run pytest tests/core/test_views_links.py tests/core/test_check_links.py -q`.
+
+```text
+.....F......F....                                                        [100%]
+=================================== FAILURES ===================================
+______________ test_level3_lists_rests_on_supports_and_linked_by _______________
+
+    def test_level3_lists_rests_on_supports_and_linked_by() -> None:
+        _, own, target = views(later=Action.LINK)
+        assert own.links == (
+            ("changed by", "d-aaaaaa", "current"),
+            ("rests on", "s-bbbbbb", "current"),
+            ("linked by", "d-cccccc", "current"),
+        )
+>       assert ("supports", "s-aaaaaa", "current") in target.links
+E       AssertionError: assert ('supports', 's-aaaaaa', 'current') in (('changed by', 'd-bbbbbb', 'current'), ('supported by', 's-aaaaaa', 'current'))
+E        +  where (('changed by', 'd-bbbbbb', 'current'), ('supported by', 's-aaaaaa', 'current')) = Level3(quote=None, numbers=(), work_item=None, attachments=(), imported_from=None, links=(('changed by', 'd-bbbbbb', 'current'), ('supported by', 's-aaaaaa', 'current'))).links
+
+tests/core/test_views_links.py:52: AssertionError
+______________________ test_rests_on_itself_fails_check_2 ______________________
+
+    def test_rests_on_itself_fails_check_2() -> None:
+        found = check_state(snapshot_of(area(), replace(A, rests_on=(A.id,)))).problems
+        assert any(p.check == 2 and p.message == "s-aaaaaa: rests_on itself" for p in found)
+>       assert not any(p.check == 8 for p in found)
+E       assert not True
+E        +  where True = any(<generator object test_rests_on_itself_fails_check_2.<locals>.<genexpr> at 0x7fb525883ac0>)
+
+tests/core/test_check_links.py:73: AssertionError
+=========================== short test summary info ============================
+FAILED tests/core/test_views_links.py::test_level3_lists_rests_on_supports_and_linked_by
+FAILED tests/core/test_check_links.py::test_rests_on_itself_fails_check_2 - a...
+2 failed, 15 passed in 0.21s
+```
+
+The mutation/spacing run was `uv run pytest tests/core/test_check_links.py::test_three_entry_cycle_names_the_other_two tests/app/test_writes.py::test_rest_on_entry_retired_in_the_same_add_is_refused tests/e2e/test_guide.py::test_guide_names_rests_on_and_link -q`.
+For M3, the temporary mutation removed the mutual-reachability condition.
+For M8, the temporary mutation shortened the emitted message to `rests on {target}, retired`.
+The guide was still unchanged.
+
+```text
+FFF                                                                      [100%]
+=================================== FAILURES ===================================
+__________________ test_three_entry_cycle_names_the_other_two __________________
+
+    def test_three_entry_cycle_names_the_other_two() -> None:
+        c = entry(id="s-cccccc", rests_on=(A.id,))
+        d = entry(id="s-dddddd", rests_on=(A.id,))
+        e = entry(id="s-eeeeee")
+        s = snapshot_of(
+            area(), replace(A, rests_on=(B.id, e.id)), replace(B, rests_on=(c.id,)), c, d, e
+        )
+        found = [p for p in check_state(s).problems if p.check == 8]
+>       assert [p.message for p in found] == [
+            f"{i}: is in a cycle of rests_on links with "
+            + ", ".join(t for t in (A.id, B.id, c.id) if t != i)
+            for i in (A.id, B.id, c.id)
+        ]
+E       AssertionError: assert ['s-aaaaaa: i...bb, s-eeeeee'] == ['s-aaaaaa: i...aa, s-bbbbbb']
+E
+E         At index 0 diff: 's-aaaaaa: is in a cycle of rests_on links with s-bbbbbb, s-cccccc, s-eeeeee' != 's-aaaaaa: is in a cycle of rests_on links with s-bbbbbb, s-cccccc'
+E         Use -v to get more diff
+
+tests/core/test_check_links.py:93: AssertionError
+____________ test_rest_on_entry_retired_in_the_same_add_is_refused _____________
+
+    def test_rest_on_entry_retired_in_the_same_add_is_refused() -> None:
+        store = project()
+        b = spec_text("id: s-bbbbbb", "area: storage", "rests_on: [s-aaaaaa]")
+        d = decision_text(
+            "changes: [{entry: s-aaaaaa, action: retire}, {entry: s-bbbbbb, action: create}]"
+        )
+        added = wired(store).add([("b.md", b), ("d.md", d)])
+        assert added.outcome is AddOutcome.CHECK_FAILED
+>       assert any(
+            p.check == 6 and p.message == "s-bbbbbb: rests on s-aaaaaa, which is retired"
+            for p in added.check.problems
+        )
+E       assert False
+E        +  where False = any(<generator object test_rest_on_entry_retired_in_the_same_add_is_refused.<locals>.<genexpr> at 0x7f0801dc9970>)
+
+tests/app/test_writes.py:209: AssertionError
+______________________ test_guide_names_rests_on_and_link ______________________
+
+project = <e2e.conftest.Project object at 0x7f0801e11010>
+
+    def test_guide_names_rests_on_and_link(project: Project) -> None:
+        out = project.run("guide").out
+        assert "rests_on" in out and "action `link`" in out
+>       assert "\n\n```\n---" in out
+E       assert '\n\n```\n---' in "# lodge: the guide for agents\n\nlodge holds a project's decisions and specification entries.\nA decision records a c...-xxxxxx]`.\n\nExit codes: 0 done, 1 check failed or the store changed under you (add again), 2 usage or environment.\n"
+
+tests/e2e/test_guide.py:42: AssertionError
+=========================== short test summary info ============================
+FAILED tests/core/test_check_links.py::test_three_entry_cycle_names_the_other_two
+FAILED tests/app/test_writes.py::test_rest_on_entry_retired_in_the_same_add_is_refused
+FAILED tests/e2e/test_guide.py::test_guide_names_rests_on_and_link - assert '...
+3 failed in 0.23s
+```
+
+After restoring only the opening blank line, `uv run pytest tests/e2e/test_guide.py::test_guide_names_rests_on_and_link -q` exposed the closing blank line assertion too.
+
+```text
+F                                                                        [100%]
+=================================== FAILURES ===================================
+______________________ test_guide_names_rests_on_and_link ______________________
+
+project = <e2e.conftest.Project object at 0x7f9db67774d0>
+
+    def test_guide_names_rests_on_and_link(project: Project) -> None:
+        out = project.run("guide").out
+        assert "rests_on" in out and "action `link`" in out
+        assert "\n\n```\n---" in out
+>       assert "Transcripts are kept whole.\n```\n\n" in out
+E       assert 'Transcripts are kept whole.\n```\n\n' in "# lodge: the guide for agents\n\nlodge holds a project's decisions and specification entries.\nA decision records a c...-xxxxxx]`.\n\nExit codes: 0 done, 1 check failed or the store changed under you (add again), 2 usage or environment.\n"
+
+tests/e2e/test_guide.py:43: AssertionError
+=========================== short test summary info ============================
+FAILED tests/e2e/test_guide.py::test_guide_names_rests_on_and_link - assert '...
+1 failed in 0.19s
+```
+
+### Verification and remaining coordinator work
+
+- Focused Task 2 suite: `46 passed in 0.51s`.
+- Port forwarding test: `1 passed, 2 deselected in 0.03s`.
+- `git diff --check`: clean.
+- No review finding was left unfixed in code.
+The design line 114 contradiction mentioned separately under I1 remains for the coordinator/author, as the review explicitly excludes that design-text change from the builder's scope.
+The socket-bound files remain excluded as required by the brief; the coordinator runs the whole gate outside the sandbox.
+
+Full builder gate passed: `411 files already formatted`, `All checks passed!`, `Success: no issues found in 172 source files`, vulture exit 0, `1159 passed in 31.06s`, and `lodge check --gate` returned `ok`.
+The gate excluded `tests/viewer/test_server.py` and `tests/e2e/test_view.py`, with the port test run separately above.
+The final documentation-only docstring wording correction was followed by passing format, lint, typing, and vulture checks.

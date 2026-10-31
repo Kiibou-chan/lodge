@@ -1,10 +1,9 @@
 """The three reading levels of a record, and which records fail the check."""
 
 from dataclasses import dataclass
-from datetime import datetime
 
 from lodge.core.check_state import CheckResult
-from lodge.core.derive import Derived, is_author
+from lodge.core.derive import Derived, is_author, order_key
 from lodge.core.model import (
     Action,
     Decision,
@@ -130,7 +129,7 @@ def level3(s: Snapshot, d: Derived, record_id: str) -> Level3:
         )
     add("changed by", d.changed_by.get(record_id, ()))
     add("rests on", s.entries[record_id].rests_on)
-    add("supported by", d.supports.get(record_id, ()))
+    add("supports", d.supports.get(record_id, ()))
     add("linked by", d.linked_by.get(record_id, ()))
     return Level3(None, (), None, (), s.entries[record_id].imported_from, tuple(links))
 
@@ -202,16 +201,7 @@ def _flags(
         flags.append("confirmed by the author (" + ", ".join(confirmed) + ")")
     flags.extend(d.doubts.get(i, ()))
     if isinstance(record, SpecEntry):
-        for target in record.rests_on:
-            if d.status.get(target) == "retired":
-                flags.append(f"rests on {target}, retired")
-            elif who and (changes := d.changed_by.get(target)):
-                latest = s.decisions[changes[0]]
-                if (datetime.fromisoformat(latest.date), latest.id) > (
-                    datetime.fromisoformat(who.date),
-                    who.id,
-                ):
-                    flags.append(f"rests on {target}, changed since")
+        flags.extend(_rests_on_flags(s, d, record, who))
     if record.imported_from is not None:
         flags.append("imported")
         if isinstance(record, Decision) and record.decided_by == "author" and record.quote is None:
@@ -221,6 +211,18 @@ def _flags(
     if isinstance(record, SpecEntry) and who and who.id in failing:
         flags.append("decision fails check")
     return tuple(flags)
+
+
+def _rests_on_flags(s: Snapshot, d: Derived, record: SpecEntry, who: Decision | None) -> list[str]:
+    flags: list[str] = []
+    for target in record.rests_on:
+        if d.status.get(target) == "retired":
+            flags.append(f"rests on {target}, retired")
+        elif who and (changes := d.changed_by.get(target)):
+            latest = s.decisions[changes[0]]
+            if order_key(latest) > order_key(who):
+                flags.append(f"rests on {target}, changed since")
+    return flags
 
 
 def _retiring(s: Snapshot, d: Derived, entry_id: str) -> str | None:

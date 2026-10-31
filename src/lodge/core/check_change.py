@@ -25,7 +25,7 @@ def check_change(
     now: datetime,
     current: Snapshot | None = None,
 ) -> CheckResult:
-    """Every problem of 4, 5, and 6, and those of 1, 2, 3, and 7 that `after` alone has.
+    """Every problem of 4, 5, and 6, and those of 1, 2, 3, 7, and 8 that `after` alone has.
 
     A problem of `after` that `published` has too, by path, check, and message, is a note.
     `current` is the state this change starts from when it is not the published one: a decision
@@ -102,7 +102,8 @@ def _imports_over_live(published: Snapshot, after: Snapshot) -> Iterator[Problem
 
 
 def _links_to_dead(published: Snapshot, after: Snapshot) -> Iterator[Problem]:
-    """Check 6: a new decision narrows or confirms a replaced decision, or edits a retired entry.
+    """Check 6: a new decision narrows or confirms a replaced decision, or edits a retired entry,
+    or an entry newly rests on a retired entry.
 
     An entry counts as retired when it is retired both before and after the change, so a decision
     that replaces the last standing retirement may edit the entry.

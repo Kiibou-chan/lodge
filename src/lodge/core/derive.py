@@ -41,7 +41,7 @@ def is_author(d: Decision) -> bool:
 
 
 def derive(s: Snapshot) -> Derived:
-    oldest_first = sorted(s.decisions.values(), key=_order)
+    oldest_first = sorted(s.decisions.values(), key=order_key)
     newest_first = oldest_first[::-1]
     replaced_by = _reverse(newest_first, lambda d: d.replaces, s.decisions)
     narrowed_by = _reverse(newest_first, lambda d: d.narrows, s.decisions)
@@ -98,7 +98,7 @@ def derive(s: Snapshot) -> Derived:
     )
 
 
-def _order(d: Decision) -> tuple[datetime, str]:
+def order_key(d: Decision) -> tuple[datetime, str]:
     return datetime.fromisoformat(d.date), d.id
 
 
@@ -114,7 +114,7 @@ def _revived(oldest_first: list[Decision], replaced_by: Links) -> dict[str, list
     for d in oldest_first:
         for entry in dict.fromkeys(c.entry for c in d.changes if c.action is Action.RETIRE):
             retirements.setdefault(entry, []).append(d.id)
-    order = {d.id: _order(d) for d in oldest_first}
+    order = {d.id: order_key(d) for d in oldest_first}
 
     def first(retirement: str) -> tuple[datetime, str] | None:
         return min((order[r] for r in replaced_by.get(retirement, ())), default=None)
@@ -203,7 +203,7 @@ def _cleared(s: Snapshot, oldest_first: list[Decision]) -> set[str]:
     for later in oldest_first:
         if is_author(later) and later.imported_from is None:
             for target in (*later.confirms, *later.replaces):
-                if target in s.decisions and _order(s.decisions[target]) < _order(later):
+                if target in s.decisions and order_key(s.decisions[target]) < order_key(later):
                     cleared.add(target)
     return cleared
 

@@ -5,7 +5,7 @@ from dataclasses import replace
 
 from lodge.core.check_state import new_decisions, problem_at
 from lodge.core.derive import derive
-from lodge.core.model import Action, Problem, Record
+from lodge.core.model import Action, Problem, Record, SpecEntry
 from lodge.core.settings import CoreSettings
 from lodge.core.snapshot import Snapshot
 
@@ -28,8 +28,8 @@ def check_entries(
         if now[entry_id] == "retired" and was.get(entry_id) != "retired":
             wanted.append((Action.RETIRE, "retired"))
         exempt = before is None and entry.imported_from is not None
+        links_only = _only_rests_on_differs(before, entry)
         for action, verb in wanted:
-            links_only = before is not None and replace(before, rests_on=entry.rests_on) == entry
             linked = links_only and action is Action.EDIT and (entry_id, Action.LINK) in listed
             if not exempt and not linked and (entry_id, action) not in listed:
                 label = "edit or link" if links_only and action is Action.EDIT else str(action)
@@ -46,7 +46,7 @@ def check_entries(
                 reason = ""
                 if before is None:
                     reason = "is new; list it with action create"
-                elif replace(before, rests_on=entry.rests_on) != entry:
+                elif not _only_rests_on_differs(before, entry):
                     reason = "changes more than rests_on; list it with action edit"
                 if reason:
                     yield problem_at(
@@ -70,3 +70,7 @@ def _unlisted_sources(
         if source is not None and source.file not in settings.import_sources:
             message = f"imported from {source.file}, which is not listed in [import] sources"
             yield problem_at(after, record.id, 4, message)
+
+
+def _only_rests_on_differs(before: SpecEntry | None, entry: SpecEntry) -> bool:
+    return before is not None and replace(before, rests_on=entry.rests_on) == entry

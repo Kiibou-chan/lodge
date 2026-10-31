@@ -1,0 +1,5 @@
+DONE_WITH_CONCERNS
+
+Tests: 1159 passed, plus the port test; sandbox gate green. Socket-bound suites excluded.
+
+I1 and M1–M8 fixed; failing outputs recorded under “Fix round 1”. Cosmetic test edits were verified green without manufactured failures. Design-text correction remains for the coordinator, as requested by the review. No commit.

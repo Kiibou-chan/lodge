@@ -3,7 +3,7 @@ from builders import area, at, decision, entry, snapshot_of
 from lodge.core import Action, Change, Level1, Level3, derive, level1, level3
 
 
-def views(*, retire: bool = False, later: str | None = None) -> tuple[Level1, Level3, Level3]:
+def views(*, retire: bool = False, later: Action | None = None) -> tuple[Level1, Level3, Level3]:
     a = entry(id="s-aaaaaa", rests_on=("s-bbbbbb",))
     b = entry(id="s-bbbbbb")
     own = decision(id="d-aaaaaa", decided_by="author", changes=(Change(a.id, Action.CREATE),))
@@ -15,7 +15,7 @@ def views(*, retire: bool = False, later: str | None = None) -> tuple[Level1, Le
     extra = (
         ()
         if later is None
-        else (decision(id="d-cccccc", date=at(20), changes=(Change(a.id, Action(later)),)),)
+        else (decision(id="d-cccccc", date=at(20), changes=(Change(a.id, later),)),)
     )
     s = snapshot_of(area(), a, b, own, target, *extra)
     d = derive(s)
@@ -31,22 +31,22 @@ def test_rests_on_changed_since_mark() -> None:
 
 
 def test_edit_with_unchanged_text_clears_changed_since() -> None:
-    assert "rests on s-bbbbbb, changed since" not in views(later="edit")[0].flags
+    assert "rests on s-bbbbbb, changed since" not in views(later=Action.EDIT)[0].flags
 
 
 def test_link_after_the_change_keeps_changed_since() -> None:
-    assert "rests on s-bbbbbb, changed since" in views(later="link")[0].flags
+    assert "rests on s-bbbbbb, changed since" in views(later=Action.LINK)[0].flags
 
 
 def test_entry_level1_keeps_the_author_after_a_link() -> None:
-    assert views(later="link")[0].decided_by == "author"
+    assert views(later=Action.LINK)[0].decided_by == "author"
 
 
 def test_level3_lists_rests_on_supports_and_linked_by() -> None:
-    _, own, target = views(later="link")
+    _, own, target = views(later=Action.LINK)
     assert own.links == (
         ("changed by", "d-aaaaaa", "current"),
         ("rests on", "s-bbbbbb", "current"),
         ("linked by", "d-cccccc", "current"),
     )
-    assert ("supported by", "s-aaaaaa", "current") in target.links
+    assert ("supports", "s-aaaaaa", "current") in target.links

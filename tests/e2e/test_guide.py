@@ -39,3 +39,5 @@ def test_guide_names_the_author_not_a_person(project: Project) -> None:
 def test_guide_names_rests_on_and_link(project: Project) -> None:
     out = project.run("guide").out
     assert "rests_on" in out and "action `link`" in out
+    assert "\n\n```\n---" in out
+    assert "Transcripts are kept whole.\n```\n\n" in out

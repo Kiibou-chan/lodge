@@ -9,19 +9,19 @@ A = entry(id="s-aaaaaa")
 B = entry(id="s-bbbbbb")
 
 
-def trial(action: str | None, *, statement: str = A.statement, new: bool = False) -> CheckResult:
+def trial(action: Action | None, *, statement: str = A.statement, new: bool = False) -> CheckResult:
     before = snapshot_of(area(), B, *(() if new else (A,)))
     changed = replace(A, rests_on=(B.id,), statement=statement)
     decisions = (
         ()
         if action is None
-        else (decision(id="d-cccccc", date=at(30), changes=(Change(A.id, Action(action)),)),)
+        else (decision(id="d-cccccc", date=at(30), changes=(Change(A.id, action),)),)
     )
     return check(before, snapshot_of(area(), B, changed, *decisions))
 
 
 def test_link_changing_rests_on_only_passes() -> None:
-    assert trial("link").ok
+    assert trial(Action.LINK).ok
 
 
 def test_rests_on_change_without_decision_fails_check_4() -> None:
@@ -35,7 +35,7 @@ def test_rests_on_change_without_decision_fails_check_4() -> None:
 
 
 def test_edit_may_change_rests_on() -> None:
-    assert trial("edit").ok
+    assert trial(Action.EDIT).ok
 
 
 def test_link_changing_the_statement_fails_check_4() -> None:
@@ -46,7 +46,7 @@ def test_link_changing_the_statement_fails_check_4() -> None:
             "d-cccccc: lists link for s-aaaaaa, which changes more than rests_on; "
             "list it with action edit"
         )
-        for p in trial("link", statement="Changed.").problems
+        for p in trial(Action.LINK, statement="Changed.").problems
     )
 
 
@@ -55,7 +55,7 @@ def test_link_for_a_new_entry_fails_check_4() -> None:
         p.check == 4
         and p.message
         == "d-cccccc: lists link for s-aaaaaa, which is new; list it with action create"
-        for p in trial("link", new=True).problems
+        for p in trial(Action.LINK, new=True).problems
     )
 
 
@@ -70,6 +70,7 @@ def test_unknown_rests_on_fails_check_2() -> None:
 def test_rests_on_itself_fails_check_2() -> None:
     found = check_state(snapshot_of(area(), replace(A, rests_on=(A.id,)))).problems
     assert any(p.check == 2 and p.message == "s-aaaaaa: rests_on itself" for p in found)
+    assert not any(p.check == 8 for p in found)
 
 
 def test_two_entry_cycle_fails_check_8_on_both() -> None:
@@ -83,7 +84,11 @@ def test_two_entry_cycle_fails_check_8_on_both() -> None:
 
 def test_three_entry_cycle_names_the_other_two() -> None:
     c = entry(id="s-cccccc", rests_on=(A.id,))
-    s = snapshot_of(area(), replace(A, rests_on=(B.id,)), replace(B, rests_on=(c.id,)), c)
+    d = entry(id="s-dddddd", rests_on=(A.id,))
+    e = entry(id="s-eeeeee")
+    s = snapshot_of(
+        area(), replace(A, rests_on=(B.id, e.id)), replace(B, rests_on=(c.id,)), c, d, e
+    )
     found = [p for p in check_state(s).problems if p.check == 8]
     assert [p.message for p in found] == [
         f"{i}: is in a cycle of rests_on links with "

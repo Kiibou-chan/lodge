@@ -1,4 +1,4 @@
-"""The checks that one state of the store answers alone: 1, 2, 3, and 7."""
+"""The checks that one state of the store answers alone: 1, 2, 3, 7, and 8."""
 
 from collections.abc import Iterator
 from dataclasses import dataclass

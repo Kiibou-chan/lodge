@@ -6,13 +6,14 @@ from dataclasses import dataclass
 
 from lodge.core.derive import Derived, is_author
 from lodge.core.fileformat import area_path
-from lodge.core.model import Action, Decision, Record
+from lodge.core.model import Action, Decision, Record, SpecEntry
 from lodge.core.search import related
 from lodge.core.settings import LengthGuidance
 from lodge.core.snapshot import Snapshot
 
 _CODE_SPAN = re.compile(r"```.*?```|`[^`\n]*`", re.DOTALL)
 _ID = re.compile(r"\b[dsq]-[0-9a-hjkmnp-tv-z]{6}\b")
+_ENTRY_ID = re.compile(r"\bs-[0-9a-hjkmnp-tv-z]{6}\b")
 _CODE = re.compile(r"\b[A-Za-z][A-Za-z0-9]*-\d+\b")
 _DATE = re.compile(r"\b\d{4}-\d{2}-\d{2}(?:T[0-9:.]+(?:Z|[+-][0-9:]+)?)?")
 _TEXT = (Action.CREATE, Action.EDIT)
@@ -45,18 +46,22 @@ def _messages(record: Record, after: Snapshot, d: Derived, length: LengthGuidanc
     if isinstance(record, Decision):
         yield from _decision_messages(record, after, d, length)
     else:
-        for target in dict.fromkeys(re.findall(r"\bs-[0-9a-hjkmnp-tv-z]{6}\b", record.statement)):
-            if target in after.entries and target != record.id and target not in record.rests_on:
-                yield (
-                    f"the statement names {target}, but rests_on does not list it; "
-                    f"does {record.id} rest on {target}? If so, add it to rests_on"
-                )
-        words, limit = len(record.statement.split()), length.spec_statement_words
-        if words > limit:
+        yield from _entry_messages(record, after, length)
+
+
+def _entry_messages(record: SpecEntry, after: Snapshot, length: LengthGuidance) -> Iterator[str]:
+    for target in dict.fromkeys(_ENTRY_ID.findall(record.statement)):
+        if target in after.entries and target != record.id and target not in record.rests_on:
             yield (
-                f"the statement is {words} words; "
-                f"guidance is {limit} or fewer for a specification entry"
+                f"the statement names {target}, but rests_on does not list it; "
+                f"does {record.id} rest on {target}? If so, add it to rests_on"
             )
+    words, limit = len(record.statement.split()), length.spec_statement_words
+    if words > limit:
+        yield (
+            f"the statement is {words} words; "
+            f"guidance is {limit} or fewer for a specification entry"
+        )
 
 
 def _decision_messages(

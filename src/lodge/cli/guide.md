@@ -26,8 +26,8 @@ Never edit record files by hand.
 4. Run `lodge add --dry-run FILE...` first: feedback can only be acted on before publishing, since a published decision is immutable.
 5. Run `lodge add FILE...` with the decision and every entry it changes together; lodge fills `id` and `date`.
 In checkout mode `add` stages the files, so commit them with your work; in branch mode it publishes them.
-The gate on a branch runs inside `lodge add`, so a push to the branch by hand skips it.
-A dry run marks new IDs `(provisional)`: the real add mints new ones, so never write them into another draft.
+The gate on a branch runs inside `lodge add`, so a push to the branch by hand skips it; a dry run marks new IDs `(provisional)`: the real add mints new ones, so never write them into another draft.
+
 ```
 ---
 kind: decision
@@ -38,8 +38,8 @@ changes: [{entry: s-4kq1zm, action: create}]
 ---
 Transcripts are kept whole.
 ```
-An entry draft has `kind: spec`, `id`, `area`, and `title`; an area draft has `kind: area`, `name`, `title`, and `order`.
-A new entry needs its area, and a new area needs an area draft in the same add.
+
+An entry draft has `kind: spec`, `id`, `area`, and `title`; an area draft has `kind: area`, `name`, `title`, and `order`; a new entry needs its area, and a new area needs an area draft in the same add.
 Actions in `changes` are `create`, `edit`, `link`, and `retire`.
 An entry lists the entries it would not hold without in `rests_on: [s-…]`; a decision that changes only `rests_on` lists the entry with action `link`.
 When an entry still holds after an entry it rests on changed, say so with a decision that lists it with `edit`, its text unchanged, and why in the reasoning.

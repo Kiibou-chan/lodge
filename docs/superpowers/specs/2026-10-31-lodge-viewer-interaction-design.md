@@ -111,7 +111,7 @@ Feedback, never a refusal: an entry whose statement names another entry's ID wit
 
 Reads derive the reverse ("supports"), and show at level 1, on an entry, any entry it rests on that is in doubt, retired, or changed after the entry's own last change ("rests on s-xxxxxx, changed since") **[my call]**.
 An entry that still holds after what it rests on changed is said to hold by a decision that lists it with `edit`, its text unchanged, and says why in its reasoning; that is its new last change, and check 4 already allows it **[advisor]**.
-Level 3 lists `rests_on` and "supported by" both ways.
+Level 3 lists `rests_on` and its reverse, "supports", both ways.
 
 ## Arrangement
 

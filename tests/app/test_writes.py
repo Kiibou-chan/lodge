@@ -206,5 +206,8 @@ def test_rest_on_entry_retired_in_the_same_add_is_refused() -> None:
     )
     added = wired(store).add([("b.md", b), ("d.md", d)])
     assert added.outcome is AddOutcome.CHECK_FAILED
-    assert any(p.check == 6 for p in added.check.problems)
+    assert any(
+        p.check == 6 and p.message == "s-bbbbbb: rests on s-aaaaaa, which is retired"
+        for p in added.check.problems
+    )
     assert store.publishes == []

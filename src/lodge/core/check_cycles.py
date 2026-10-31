@@ -20,8 +20,7 @@ def check_cycles(s: Snapshot) -> Iterator[Problem]:
 
     reach = {i: reachable(i) for i in s.entries}
     for i in sorted(reach):
-        if i in reach[i]:
-            others = sorted(t for t in reach[i] if t != i and i in reach[t])
+        if i in reach[i] and (others := sorted(t for t in reach[i] if t != i and i in reach[t])):
             yield Problem(
                 s.paths.get(i, ""),
                 8,
