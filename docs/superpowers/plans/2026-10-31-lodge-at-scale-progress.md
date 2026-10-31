@@ -27,3 +27,32 @@ Rechecked a third time: `plan-recheck-3.md` (R1 Blocking, R2 and R4 Important, R
 Fix round 4 (`plan-fix-4.md`): every finding taken, none parked; generations dropped for one file per build, cleared in place.
 The coordinator's ruling for fix round 4, recorded: d-e3stjn (replaces the generations of d-gvz66f).
 The planner's call for fix round 4, recorded: d-c6cegr.
+SCALE-1 answered by the author: A (d-4pbeax).
+Rechecked a fourth time: `plan-recheck-4.md` (W1, W3, W4 Important; seven Minor).
+Fix round 5 (`plan-fix-5.md`): W1 to W5 and W7 to W10 taken, W6 taken as measurements.
+The planner's calls for fix round 5, recorded: d-a8gkrh, d-bzp30x.
+Parked: W6's eviction of facts rows no remaining state names, until Task 10c's and Task 12's measurements say how often clears come.
+Plan accepted for build by the coordinator after fix round 5.
+Tasks 1 and 2 are built from 2dffc85 on branch `read-speed-build`; their plan text is unchanged since 2dffc85 (`diff` of the two sections, empty).
+
+## Preflight scan
+
+Each task's Produces against the later tasks' Consumes and their use in the task text; mismatches fixed in the plan in this commit:
+
+| Task | Consumes, as now written | Finding | Fix |
+|---|---|---|---|
+| 4 | Task 2's `facts` | matches `check_change(..., facts=)` and `ChangeFacts` | none |
+| 5 | Task 4's `read_checked` | matches | none |
+| 6 | Task 5's `is_code_token`, `family`, `cites`, `citers` | `rank` takes `citing`, which `citers` gives; `citers` was not named | named |
+| 7 | Tasks 5 and 6 | matches (`show_many`, `--phrase`, `search_many`) | none |
+| 8a | nothing beyond Task 4 | matches | none |
+| 8b | Task 8a's `Listing`, `blob_id`, exact trees | matches | none |
+| 9 | Task 8a's `parse_file`, `assemble`, `Parsed`, `Tree.blobs` | `Index.parses` returns `Parsed`, which was not named | named |
+| 10a | Task 8b's `identities`, `listings`, `texts`; Task 9's `Index` (with `epoch`), codec, failure modes; Task 4's shortcut; Task 5's `family`, `code_tokens`, `show_many`, `Shown` fields | indexed `show` prints through Task 5's `ShownMany`, not named | named |
+| 10b | Task 6's `rank`, `Candidate`, `parse_query`, `needs_memory`, `Filters`, `search_many`; Task 5's `family`; Task 9's `keep_parses`; Task 10a's states, `rows`, `all_rows`, `codes`, `citing`, `keep_state` | words passed to `keep_parses` and `keep_state` changed both signatures, breaking the Task 9 and 10a tests that call them, which the Files list omitted | `gitstore` computes words with `core.parse_words` (an allowed `gitstore` to `core` import, `tests/structure_tables.py`), so both signatures stay; consumed names completed |
+| 10c | Task 2's `ChangeFacts`, `check_change(..., facts=)`; Task 10a's `StateFacts`, `facts`, `keep_state` | `facts=` keyword not named | named |
+| 11 | Task 8b's identity and walk; Task 9's `open_index`, settings, failure modes | matches; `main.py` hands the store the index | named |
+| 12 | every task | the clears per hundred changed reads need runs without restoring the saved index, which Task 1's `changed` mode does | Task 12 adds `--mode chained` to `scripts/bench_reads.py` |
+
+No mismatch is left open.
+
