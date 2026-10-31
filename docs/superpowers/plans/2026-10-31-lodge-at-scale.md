@@ -270,7 +270,7 @@ The changed-record row is at its target; Task 10c measures it, and Task 12 appli
 - Test: `tests/core/test_ranking.py` (new), `tests/app/test_search_many.py` (new), `tests/e2e/test_search_many.py` (new)
 
 **Interfaces:**
-- Consumes: Task 5's `is_code_token`, `family`, `cites`.
+- Consumes: Task 5's `is_code_token`, `family`, `cites`, `citers`.
 - Produces:
   ```python
   @dataclass(frozen=True)
@@ -413,7 +413,7 @@ The changed-record row is at its target; Task 10c measures it, and Task 12 appli
 - Test: `tests/core/test_codec.py` (new), `tests/gitstore/test_index_db.py` (new), `tests/gitstore/test_index_failures.py` (new), `tests/gitstore/test_index_parses.py` (new), `tests/app/test_parse_cache.py` (new), `tests/e2e/test_index_off_same_output.py` (new)
 
 **Interfaces:**
-- Consumes: Task 8a's `parse_file`, `assemble`, and `Tree.blobs`.
+- Consumes: Task 8a's `parse_file`, `assemble`, `Parsed`, and `Tree.blobs`.
 - Produces:
   ```python
   # core/codec.py: pure, no marshal
@@ -467,7 +467,7 @@ The changed-record row is at its target; Task 10c measures it, and Task 12 appli
 - Test: `tests/app/test_read_model.py` (new), `tests/app/test_indexed_reads.py` (new), `tests/gitstore/test_index_states.py` (new), `tests/gitstore/test_index_concurrency.py` (new), `tests/e2e/test_indexed_reads.py` (new)
 
 **Interfaces:**
-- Consumes: Task 8b's `identities`, `listings`, `texts`; Task 9's `Index`, codec, and failure modes; Task 4's shortcut; Task 5's `family` and `code_tokens`.
+- Consumes: Task 8b's `identities`, `listings`, `texts`; Task 9's `Index`, codec, and failure modes; Task 4's shortcut; Task 5's `family`, `code_tokens`, `show_many`, and the `Shown` fields it adds.
 - Produces:
   ```python
   # app/index_types.py
@@ -538,16 +538,16 @@ The changed-record row is at its target; Task 10c measures it, and Task 12 appli
 
 **Files:**
 - Create: `src/lodge/gitstore/index_words.py` (FTS5 candidates and word sets)
-- Modify: `src/lodge/app/indexed.py` (search), `src/lodge/core/words.py` (`parse_words(parsed) -> tuple[str, str]`, the title's and statement's words space-joined, a pure function in `core` so `app/state.py` and `app/read_model.py` need not import each other; the second recheck's V8), `src/lodge/core/__init__.py`, `src/lodge/app/state.py` and `tests/app/fakes.py` (the callers and the fake of the changed `keep_parses`), `src/lodge/app/ports.py` (`Index` gains the method below, and `keep_parses` and `keep_state` take each parse unit's words), `src/lodge/gitstore/index_parses.py` (words written with their parse unit), `src/lodge/gitstore/index_db.py` (the schema number rises, so Task 9's files are another build's)
+- Modify: `src/lodge/app/indexed.py` (search), `src/lodge/core/words.py` (`parse_words(parsed) -> tuple[str, str]`, the title's and statement's words space-joined, a pure function in `core`, which `gitstore` may import, so no `app` module computes words and `app/state.py` and `app/read_model.py` need not import each other; the second recheck's V8), `src/lodge/core/__init__.py`, `tests/app/fakes.py` (the fake index's `candidates`), `src/lodge/app/ports.py` (`Index` gains the method below; `keep_parses` and `keep_state` keep their signatures, so no caller or earlier test changes), `src/lodge/gitstore/index_parses.py` and `src/lodge/gitstore/index_states.py` (words written with their parse unit), `src/lodge/gitstore/index_db.py` (the schema number rises, so Task 9's files are another build's)
 - Test: `tests/gitstore/test_index_words.py` (new), `tests/gitstore/test_index_words_faults.py` (new), `tests/app/test_indexed_search.py` (new), `tests/e2e/test_index_property.py` (new)
 
 **Interfaces:**
-- Consumes: Task 6's `rank`, `Candidate`, `parse_query`, `needs_memory`; Task 5's `family`; Task 10a's states, `codes`, and `citing`.
+- Consumes: Task 6's `rank`, `Candidate`, `parse_query`, `needs_memory`, `Filters`, and `search_many`; Task 5's `family`; Task 9's `keep_parses`; Task 10a's states, `rows`, `all_rows`, `codes`, `citing`, and `keep_state`.
 - Produces:
   ```python
   class Index(Protocol):                       # in addition to Task 10a's
-      # keep_parses(parsed, words) and keep_state(state, rows, answers, citing, facts, parses, misses, epoch, words):
-      # words[key] = core.parse_words(parsed[key]),
+      # keep_parses(parsed) and keep_state(state, rows, answers, citing, facts, parses, misses, epoch), unchanged:
+      # gitstore computes words[key] = core.parse_words(parsed[key]) for each parse unit it inserts,
       # inserted with the same rowid as the parse row of that key, in its transaction, only when that row was inserted (invariant 1)
       def candidates(self, words: Collection[str], every: bool) -> dict[FileKey, tuple[frozenset[str], frozenset[str]]] | None
           # the keys with any (or every) word, with their title and statement word sets; None without FTS5
@@ -574,7 +574,7 @@ The changed-record row is at its target; Task 10c measures it, and Task 12 appli
 - Test: `tests/app/test_published_facts.py` (new)
 
 **Interfaces:**
-- Consumes: Task 2's `ChangeFacts`; Task 10a's `facts` and `keep_state`.
+- Consumes: Task 2's `ChangeFacts` and `check_change(..., facts=)`; Task 10a's `StateFacts`, `facts`, and `keep_state`.
 - Produces: building a state whose published ident has stored `StateFacts` passes `ChangeFacts(published_status, published_problems from those facts' sort keys, after_derived, after_problems)` to `check_change`, so `derive` and `check_state` run on the current snapshot only; every build stores the current snapshot's own facts under its ident, and the published snapshot's when it computed them.
   The published snapshot itself is still assembled from the parse cache, since checks 4, 5, and 6 compare records.
   This is an optimisation of the read after one changed record only; the gate never uses it (d-q0tb8r).
@@ -593,7 +593,7 @@ The changed-record row is at its target; Task 10c measures it, and Task 12 appli
 - Test: `tests/gitstore/test_folders.py` (new)
 
 **Interfaces:**
-- Consumes: Task 8b's identity; Task 9's index and failure modes.
+- Consumes: Task 8b's identity and its names-only walk; Task 9's `open_index`, settings, and failure modes.
 - Produces: the files on disk that `base` lacks come from a table `folders(path, ino, mtime_ns, ctime_ns, listed_at_ns, names, base)`, `names` being `marshal` of the folder's entries with their kind; for each folder lodge takes `stat`, then `os.scandir`, then the listing time, in that order (the correctness review's M7); a folder whose `stat` matches its row, whose row's `ctime_ns` is at least 2 s before its `listed_at_ns`, and whose `base` equals the current base tree keeps its recorded extra names; any other folder is listed again, its subfolders followed, and its row rewritten when the index is writable (d-8kq2nk); all rows of one identity are written in one `BEGIN IMMEDIATE` transaction, replacing earlier rows in place, since each row carries its own key and no state depends on it; a folder whose row is missing or undecodable is listed (invariants 5 and 6).
   Without a usable index the walk of Task 8b runs, so the output is the same.
 
@@ -607,11 +607,11 @@ The changed-record row is at its target; Task 10c measures it, and Task 12 appli
 
 **Files:**
 - Create: `docs/superpowers/plans/2026-10-31-lodge-at-scale/timings.md`
-- Modify: `README.md` (one paragraph: the index, where it lives, one file per build, cleared in place past its cap, that `rm -r` of the folder is safe at any time and reclaims all its space, `LODGE_INDEX=off`)
+- Modify: `scripts/bench_reads.py` (a `--mode chained` that runs `changed`'s distinct edits without restoring the saved index between runs, and prints the index's epoch before and after, for the clears per hundred changed reads; Task 1's `changed` restores the copy each run), `README.md` (one paragraph: the index, where it lives, one file per build, cleared in place past its cap, that `rm -r` of the folder is safe at any time and reclaims all its space, `LODGE_INDEX=off`)
 
 **Interfaces:**
 - Consumes: every task.
-- Produces: `timings.md`, for `s900`, `s9000`, and `s90000` on native disk, per line of `scripts/bench_reads.txt`: the base build of Task 1, this branch `cold`, `seen`, and `changed`, `check --gate` included, cold reads in their own column and under no stop (d-e3stjn), with Task 9's time of one clear beside them, with the output and exit-status comparison against the base build (identical, or the lines Tasks 5 to 7 changed on purpose, named); each search's candidate count, with searches over 5,000 candidates in a table of their own (d-me8vm3); the index file's size per store against d-4pbeax's figure; at `s90000`, the clears in a run of 100 consecutive `changed` reads, each a distinct edit, without restoring the saved index between them; the machine's Python, SQLite, and disk kind; where a FUSE-mounted copy of `s90000` is at hand, the same `show {code}` `seen` on it, one line, without its path.
+- Produces: `timings.md`, for `s900`, `s9000`, and `s90000` on native disk, per line of `scripts/bench_reads.txt`: the base build of Task 1, this branch `cold`, `seen`, and `changed`, `check --gate` included, cold reads in their own column and under no stop (d-e3stjn), with Task 9's time of one clear beside them, with the output and exit-status comparison against the base build (identical, or the lines Tasks 5 to 7 changed on purpose, named); each search's candidate count, with searches over 5,000 candidates in a table of their own (d-me8vm3); the index file's size per store against d-4pbeax's figure; at `s90000`, the clears in a `--mode chained` run of 100 consecutive changed reads; the machine's Python, SQLite, and disk kind; where a FUSE-mounted copy of `s90000` is at hand, the same `show {code}` `seen` on it, one line, without its path.
 - [ ] **Step 1:** run the replay; write `timings.md`.
 - [ ] **Step 2:** the stop (d-26e6zj, d-232gxs, d-hxmdkz): if at 160,000 files `show`, `waiting`, `threads`, `thread`, or a search with at most 5,000 candidates is above 0.3 s `seen`, a search with more than 5,000 candidates is above 1.0 s `seen`, or a read is above 3 s `changed`, `timings.md` gives the phase table, and the ledger records that the server question goes to the coordinator; broad searches are reported apart with their candidate counts, whatever they are.
 - [ ] **Step 3:** gate, commit, push.
