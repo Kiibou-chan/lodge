@@ -1,0 +1,5 @@
+DONE_WITH_CONCERNS
+
+Gate: 1,056 tests passed; 14 failed because sandbox socket access is denied. Separate `lodge check --gate` passed.
+
+Implemented Task 5 and wrote [the report](docs/superpowers/plans/2026-10-30-lodge-on-itself/task-5-report.md). Records need staging in the normal Git index because its metadata directory was read-only. No commits or pushes.
