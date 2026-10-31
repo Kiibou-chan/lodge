@@ -23,3 +23,7 @@ Fix round 3 (`plan-fix-3.md`): every finding taken, none parked; the index's con
 The coordinator's ruling for fix round 3, recorded: d-t3afj1 (replaces d-6hb3yd).
 The planner's calls for fix round 3, recorded: d-4j98ph (replaces d-aej8rs), d-gvz66f, d-n6tqzq.
 The index's size cap follows SCALE-1's option A through `INDEX_BYTES_PER_FILE`; her answer changes that one constant.
+Rechecked a third time: `plan-recheck-3.md` (R1 Blocking, R2 and R4 Important, R3 and R5 Minor).
+Fix round 4 (`plan-fix-4.md`): every finding taken, none parked; generations dropped for one file per build, cleared in place.
+The coordinator's ruling for fix round 4, recorded: d-e3stjn (replaces the generations of d-gvz66f).
+The planner's call for fix round 4, recorded: d-c6cegr.
