@@ -63,13 +63,16 @@ def records(s: Snapshot) -> Iterator[Record]:
 
 
 def _file_names(s: Snapshot) -> Iterator[Problem]:
-    for record in records(s):
+    for record in (*records(s), *s.threads.values()):
         name = s.paths[record.id].rsplit("/", 1)[-1]
         if name != f"{record.id}.md" and not name.startswith(f"{record.id}-"):
             yield problem_at(s, record.id, 1, f"the file name {name} does not start with the ID")
 
 
 def _unresolved(s: Snapshot) -> Iterator[Problem]:
+    for t in s.threads.values():
+        if t.about not in s.decisions and t.about not in s.entries:
+            yield problem_at(s, t.id, 2, f"about {t.about}, which does not exist")
     for e in sorted(s.entries.values(), key=lambda e: e.id):
         for target in dict.fromkeys(e.rests_on):
             if target == e.id:

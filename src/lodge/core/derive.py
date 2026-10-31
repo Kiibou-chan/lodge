@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Literal
 
+from lodge.core.doubts import doubt_marks
 from lodge.core.model import Action, Decision
 from lodge.core.snapshot import Snapshot
 
@@ -32,6 +33,7 @@ class Derived:
     revived: Links
     linked_by: Links
     supports: Links
+    doubts: Links
 
 
 def is_author(d: Decision) -> bool:
@@ -92,6 +94,7 @@ def derive(s: Snapshot) -> Derived:
         {i: known for i, entries in revived.items() if (known := _known(entries, s.entries))},
         linked,
         {t: tuple(ids) for t, ids in supports.items()},
+        doubt_marks(s, changed_by),
     )
 
 

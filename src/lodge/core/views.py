@@ -198,6 +198,9 @@ def _flags(
         flags.append("awaiting the author")
     elif waiting := d.touched_by_flagged.get(i):
         flags.append("awaiting the author on " + ", ".join(waiting))
+    if isinstance(record, Decision) and (confirmed := d.confirmed_by.get(i)):
+        flags.append("confirmed by the author (" + ", ".join(confirmed) + ")")
+    flags.extend(d.doubts.get(i, ()))
     if isinstance(record, SpecEntry):
         for target in record.rests_on:
             if d.status.get(target) == "retired":

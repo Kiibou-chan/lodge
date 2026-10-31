@@ -12,7 +12,7 @@ from lodge.core.settings import LengthGuidance
 from lodge.core.snapshot import Snapshot
 
 _CODE_SPAN = re.compile(r"```.*?```|`[^`\n]*`", re.DOTALL)
-_ID = re.compile(r"\b[ds]-[0-9a-hjkmnp-tv-z]{6}\b")
+_ID = re.compile(r"\b[dsq]-[0-9a-hjkmnp-tv-z]{6}\b")
 _CODE = re.compile(r"\b[A-Za-z][A-Za-z0-9]*-\d+\b")
 _DATE = re.compile(r"\b\d{4}-\d{2}-\d{2}(?:T[0-9:.]+(?:Z|[+-][0-9:]+)?)?")
 _TEXT = (Action.CREATE, Action.EDIT)

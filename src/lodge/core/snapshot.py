@@ -2,10 +2,11 @@
 
 import re
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from lodge.core.fileformat import parse_area, parse_record
-from lodge.core.model import Area, Decision, Problem, SpecEntry
+from lodge.core.model import Area, Decision, Problem, SpecEntry, Thread
+from lodge.core.threads import THREADS, parse_thread
 
 Files = Mapping[str, str]
 
@@ -41,10 +42,12 @@ class Snapshot:
     paths: Mapping[str, str]
     problems: tuple[Problem, ...]
     attachments: frozenset[str]
+    threads: Mapping[str, Thread] = field(default_factory=dict)
 
 
 def load(tree: Tree) -> Snapshot:
     """Every file of `tree` read; a file that does not read, or repeats an ID, is a problem."""
+    threads: dict[str, Thread] = {}
     decisions: dict[str, Decision] = {}
     entries: dict[str, SpecEntry] = {}
     areas: dict[str, Area] = {}
@@ -54,6 +57,8 @@ def load(tree: Tree) -> Snapshot:
     for path in sorted(tree.files):
         if path.startswith(ATTACHMENTS):
             attachments.add(path)
+        elif re.fullmatch(rf"{THREADS}[^/]+\.md", path):
+            _keep_thread(path, parse_thread(path, tree.files[path]), threads, paths, problems)
         elif _AREA_FILE.fullmatch(path):
             _keep_area(parse_area(path, tree.files[path]), areas, problems)
         elif _DECISION_FILE.fullmatch(path) or _SPEC_FILE.fullmatch(path):
@@ -61,7 +66,9 @@ def load(tree: Tree) -> Snapshot:
             _keep_record(path, parsed, decisions, entries, paths, problems)
         elif path.startswith("lodge/") and not path.endswith("/.gitkeep"):
             problems.append(Problem(path, 1, _STRAY))
-    return Snapshot(decisions, entries, areas, paths, tuple(problems), frozenset(attachments))
+    return Snapshot(
+        decisions, entries, areas, paths, tuple(problems), frozenset(attachments), threads
+    )
 
 
 def _keep_area(parsed: Area | Problem, areas: dict[str, Area], problems: list[Problem]) -> None:
@@ -96,3 +103,21 @@ def _keep_record(
             decisions[parsed.id] = parsed
         else:
             entries[parsed.id] = parsed
+
+
+def _keep_thread(
+    path: str,
+    parsed: Thread | Problem,
+    threads: dict[str, Thread],
+    paths: dict[str, str],
+    problems: list[Problem],
+) -> None:
+    if isinstance(parsed, Problem):
+        problems.append(parsed)
+    elif parsed.id in paths:
+        kept = paths[parsed.id]
+        message = f"the ID {parsed.id} is in both {kept} and {path}; the first is kept"
+        problems.extend([Problem(kept, 2, message), Problem(path, 2, message)])
+    else:
+        paths[parsed.id] = path
+        threads[parsed.id] = parsed

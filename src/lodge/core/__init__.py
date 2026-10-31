@@ -5,8 +5,10 @@ from lodge.core.check_change import check_change
 from lodge.core.check_cycles import check_cycles
 from lodge.core.check_state import CheckResult, check_state
 from lodge.core.derive import Derived, derive, is_author
+from lodge.core.doubts import doubt_marks
 from lodge.core.drafts import Draft, parse_draft, record_from_draft
 from lodge.core.feedback import Feedback, area_feedback, feedback
+from lodge.core.fields import read_stamp
 from lodge.core.fileformat import (
     area_path,
     content_hash,
@@ -24,18 +26,30 @@ from lodge.core.model import (
     Change,
     Decision,
     Imported,
+    Message,
     NumberHandle,
     Problem,
     Quote,
+    Raises,
     Record,
     Scope,
     SpecEntry,
+    Thread,
+    ThreadState,
 )
 from lodge.core.order import Placement, area_names, derived_order, written_order
 from lodge.core.render import Placed, SpecArea, render_spec, spec_view
 from lodge.core.search import AmbiguousRef, Filters, related, resolve, search, search_counted
 from lodge.core.settings import CoreSettings, LengthGuidance, SettingsError, parse_core_settings
 from lodge.core.snapshot import ATTACHMENTS, Files, Snapshot, Tree, attachment_path, load
+from lodge.core.threads import (
+    THREADS,
+    appended,
+    newest_last,
+    parse_thread,
+    thread_path,
+    write_thread,
+)
 from lodge.core.views import (
     Level1,
     Level3,
@@ -53,6 +67,7 @@ from lodge.core.yamlio import YamlError, load_yaml
 
 __all__ = [
     "ATTACHMENTS",
+    "THREADS",
     "Action",
     "AmbiguousRef",
     "Applied",
@@ -70,11 +85,13 @@ __all__ = [
     "LengthGuidance",
     "Level1",
     "Level3",
+    "Message",
     "NumberHandle",
     "Placed",
     "Placement",
     "Problem",
     "Quote",
+    "Raises",
     "Record",
     "Scope",
     "SettingsError",
@@ -82,8 +99,11 @@ __all__ = [
     "SpecArea",
     "SpecEntry",
     "StaleBase",
+    "Thread",
+    "ThreadState",
     "Tree",
     "YamlError",
+    "appended",
     "apply_drafts",
     "area_feedback",
     "area_names",
@@ -95,6 +115,7 @@ __all__ = [
     "content_hash",
     "derive",
     "derived_order",
+    "doubt_marks",
     "failing_ids",
     "feedback",
     "format_level1",
@@ -110,10 +131,13 @@ __all__ = [
     "load_yaml",
     "mint_id",
     "new_record_path",
+    "newest_last",
     "parse_area",
     "parse_core_settings",
     "parse_draft",
     "parse_record",
+    "parse_thread",
+    "read_stamp",
     "record_from_draft",
     "related",
     "render_spec",
@@ -122,8 +146,10 @@ __all__ = [
     "search_counted",
     "slug",
     "spec_view",
+    "thread_path",
     "unrecorded_problems",
     "write_area",
     "write_record",
+    "write_thread",
     "written_order",
 ]

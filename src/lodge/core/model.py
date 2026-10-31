@@ -91,3 +91,31 @@ class Problem:
     check: int
     message: str
     line: int | None = None
+
+
+class Raises(StrEnum):
+    DOUBT = "doubt"
+    QUESTION = "question"
+
+
+class ThreadState(StrEnum):
+    OPEN = "open"
+    CLOSED = "closed"
+
+
+@dataclass(frozen=True)
+class Message:
+    by: str
+    when: str
+    text: str
+    where: str | None = None
+
+
+@dataclass(frozen=True)
+class Thread:
+    id: str
+    about: str
+    raises: Raises
+    state: ThreadState
+    opened: str
+    messages: tuple[Message, ...]

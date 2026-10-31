@@ -53,8 +53,8 @@ def check_change(
 
 
 def _missing(published: Snapshot, after: Snapshot) -> Iterator[Problem]:
-    for record_id in sorted({*published.decisions, *published.entries}):
-        if record_id not in after.decisions and record_id not in after.entries:
+    for record_id in sorted({*published.decisions, *published.entries, *published.threads}):
+        if record_id not in after.decisions.keys() | after.entries.keys() | after.threads.keys():
             message = "was published and is missing from this state"
             yield problem_at(published, record_id, 2, message)
 
