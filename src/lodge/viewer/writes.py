@@ -10,7 +10,6 @@ from urllib.parse import parse_qs, quote
 
 from lodge.app import AddOutcome, CommitOutcome, Lodge, LodgeError, NotFound, StaleList, Written
 from lodge.core import Raises, is_id
-from lodge.viewer.html import e
 
 MAX_BODY = 65_536
 NOTICES: Mapping[str, str] = {
@@ -49,6 +48,7 @@ class Reply:
     status: HTTPStatus
     text: str
     location: str | None = None
+    back: str | None = None
 
 
 def allowed_hosts(port: int, extra: Sequence[str]) -> frozenset[str]:
@@ -170,16 +170,20 @@ def handle_post(
                     written = action(
                         ident, "author", one("text"), where="lodge viewer", commit=True
                     )
-                location = f"{back}?done={done_code(written)}#{quote(written.ids[0], safe='')}"
+                location = (
+                    f"/r/{quote(written.about or about, safe='')}"
+                    f"?done={done_code(written)}#{quote(written.ids[0], safe='')}"
+                )
             if written.outcome is AddOutcome.CHECK_FAILED:
                 raise LodgeError("; ".join(p.message for p in written.check.problems))
             return Reply(HTTPStatus.SEE_OTHER, "", location)
     except NotFound as error:
-        return Reply(HTTPStatus.NOT_FOUND, e(str(error)))
+        return Reply(HTTPStatus.NOT_FOUND, str(error), back=back)
     except LodgeError as error:
         return Reply(
             HTTPStatus.BAD_REQUEST,
-            f'<p>{e(str(error))}</p><a href="{e(back)}">Back to the form</a>',
+            str(error),
+            back=back,
         )
     except Exception as error:
         print(f"lodge: viewer: {type(error).__name__}: {error}", file=sys.stderr)

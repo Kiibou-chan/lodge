@@ -1,4 +1,4 @@
-"""The local server: the routes, the host check, and a fresh `Lodge` for each request."""
+"""The local server: the routes, the host and write gate, and a fresh `Lodge` for each request."""
 
 import re
 import sys
@@ -44,6 +44,8 @@ class _Handler(BaseHTTPRequestHandler):
         self._answer()
 
     def do_POST(self) -> None:
+        if self._repeated_headers():
+            return
         headers = {k.lower(): v for k, v in self.headers.items()}
         reply = writes.refuse_early(self.server.gate, headers)
         if reply is None:
@@ -55,14 +57,25 @@ class _Handler(BaseHTTPRequestHandler):
             elif len(length) > 10 or int(length) > writes.MAX_BODY:
                 reply = writes.Reply(HTTPStatus.REQUEST_ENTITY_TOO_LARGE, "the form is too large")
             else:
-                reply = writes.handle_post(
-                    self.server.make_lodge,
-                    self.server.gate,
-                    urlsplit(self.path).path,
-                    headers,
-                    self.rfile.read(int(length)),
-                )
-        self._send(reply.status, reply.text, location=reply.location)
+                body = self.rfile.read(int(length))
+                if len(body) != int(length):
+                    reply = writes.Reply(
+                        HTTPStatus.BAD_REQUEST, "the form arrived incomplete; nothing was written"
+                    )
+                else:
+                    reply = writes.handle_post(
+                        self.server.make_lodge,
+                        self.server.gate,
+                        urlsplit(self.path).path,
+                        headers,
+                        body,
+                    )
+        text = (
+            reply.text
+            if reply.status == HTTPStatus.SEE_OTHER
+            else pages.error_page(reply.text, reply.back)
+        )
+        self._send(reply.status, text, location=reply.location)
 
     def do_PUT(self) -> None:
         self._send(
@@ -74,7 +87,16 @@ class _Handler(BaseHTTPRequestHandler):
     def log_message(self, format: str, *args: object) -> None:
         """Requests are not logged."""
 
+    def _repeated_headers(self) -> bool:
+        for name in ("Host", "Origin", "Content-Length", "Content-Type"):
+            if len(self.headers.get_all(name) or ()) > 1:
+                self._send(HTTPStatus.BAD_REQUEST, pages.error_page(f"repeated {name} header"))
+                return True
+        return False
+
     def _answer(self) -> None:
+        if self._repeated_headers():
+            return
         if self.headers.get("Host", "").lower() not in self.server.gate.hosts:
             self._send(HTTPStatus.FORBIDDEN, pages.error_page("this address is not served"))
             return

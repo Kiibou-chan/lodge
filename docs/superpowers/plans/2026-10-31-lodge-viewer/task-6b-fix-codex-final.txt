@@ -1,0 +1,5 @@
+DONE_WITH_CONCERNS
+
+Tests: 1,353 passed, plus 5 CLI tests; static checks passed; mutation evidence recorded. Socket tests require an unrestricted run.
+
+Minor m5 remains: the routing refactor spans locking and error handling, beyond the cheap fixes. All other findings fixed. Report appended; no commit.

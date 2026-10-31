@@ -2,8 +2,8 @@ from urllib.parse import urlencode
 
 import pytest
 
-from lodge.viewer import server, writes
-from viewer.world import world
+from lodge.viewer import writes
+from viewer.world import staged_world, world
 
 TOKEN = "a" * 32
 HEADERS = {
@@ -26,7 +26,12 @@ def post(body: bytes | None = None, **headers: str) -> writes.Reply:
 
 
 def test_no_origin_refused() -> None:
-    assert post(origin="").status == 403
+    headers = {k: v for k, v in HEADERS.items() if k != "origin"}
+    reply = writes.handle_post(
+        world, writes.Gatekeeper(TOKEN, writes.allowed_hosts(8787, ())), "/confirm", headers, b""
+    )
+    assert reply.status == 403
+    assert reply.text == "a write needs an Origin header"
 
 
 def test_foreign_origin_refused() -> None:
@@ -36,6 +41,8 @@ def test_foreign_origin_refused() -> None:
 @pytest.mark.parametrize(
     "origin,status",
     [
+        ("http://127.0.0.1:8787.evil.example", 403),
+        ("http://127.0.0.1:87870", 403),
         ("ftp://127.0.0.1:8787", 403),
         ("http://127.0.0.1:8788", 403),
         ("https://localhost:8787", 303),
@@ -116,6 +123,16 @@ def test_short_token_refused_by_gatekeeper() -> None:
         writes.Gatekeeper("short", frozenset())
 
 
-def test_handler_dispatch_and_timeout() -> None:
-    assert callable(server._Handler.do_POST)
-    assert server._Handler.timeout == 10
+@pytest.mark.parametrize("ident", ["s-aaaaaa", "q-11111"])
+@pytest.mark.parametrize("action", ["reply", "close"])
+def test_bad_thread_id_refused_without_writing(ident: str, action: str) -> None:
+    make, store = staged_world()
+    result = writes.handle_post(
+        make,
+        writes.Gatekeeper(TOKEN, writes.allowed_hosts(8787, ())),
+        f"/threads/{ident}/{action}",
+        HEADERS,
+        urlencode({"token": TOKEN, "text": "Answer"}).encode(),
+    )
+    assert result.status == 400
+    assert not store.publishes

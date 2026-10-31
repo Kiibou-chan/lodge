@@ -4,7 +4,7 @@ from urllib.parse import urlencode, urlsplit
 
 import pytest
 
-from lodge.app import CommitOutcome, Committed, Lodge, PublishOutcome
+from lodge.app import CommitOutcome, Committed, Lodge, PublishOutcome, Written
 from lodge.core import Tree
 from lodge.viewer import server, writes
 from viewer.test_post_gate import HEADERS, TOKEN
@@ -60,7 +60,7 @@ def test_failed_check_answers_400_and_writes_nothing() -> None:
     store.files["lodge/decisions/d-bbbbbb-broken.md"] = "no header\n"
     result = send(make, "/confirm", id="d-cccccc", words="Yes")
     assert result.status == 400
-    assert 'href="/r/d-cccccc"' in result.text
+    assert result.back == "/r/d-cccccc"
     assert not store.publishes
 
 
@@ -89,6 +89,12 @@ def test_reply_and_close_redirect_to_the_thread() -> None:
     for action, text in (("reply", "Yes"), ("close", "")):
         result = send(make, f"/threads/q-111111/{action}", text=text)
         assert result.location == "/r/d-cccccc?done=committed#q-111111"
+        message = make().thread("q-111111").thread.messages[-1]
+        assert (message.by, message.where, message.when) == (
+            "author",
+            "lodge viewer",
+            "2026-10-29 09:30",
+        )
     assert make().thread("q-111111").thread.state.value == "closed"
 
 
@@ -164,6 +170,27 @@ def test_orphaned_thread_post_does_not_fail(action: str) -> None:
     store.files[path] = store.files[path].replace("d-cccccc", "s-zzzzzz")
     result = send(make, f"/threads/q-111111/{action}", text="Answer")
     assert result.status == 400
-    assert 'href="/r/s-zzzzzz"' in result.text
+    assert result.back == "/r/s-zzzzzz"
     assert "s-zzzzzz" in result.text
     assert len(store.publishes) == 1
+
+
+def test_ask_redirect_uses_canonical_about() -> None:
+    make, _ = staged_world()
+    result = send(make, "/threads", about="S-AAAAAA", kind="question", text="Why?")
+    assert result.location == "/r/s-aaaaaa?done=committed#q-111111"
+
+
+def test_area_redirect_quotes_area(monkeypatch: pytest.MonkeyPatch) -> None:
+    make, _ = staged_world()
+    real = Lodge.confirm
+
+    def confirm(
+        self: Lodge, ids: list[str], words: str, area: str | None, *, commit: bool
+    ) -> Written:
+        assert area == "cold & storage"
+        return real(self, ids, words, "storage", commit=commit)
+
+    monkeypatch.setattr(Lodge, "confirm", confirm)
+    result = send(make, "/confirm", id="d-cccccc", words="Yes", area="cold & storage")
+    assert result.location == "/spec?area=cold%20%26%20storage&done=committed"

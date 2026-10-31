@@ -23,3 +23,6 @@ Task 6a: fix round 1 by Codex, each test shown failing against the review's muta
 Task 6a: complete; the fix round is rechecked by the final review.
 Task 6b: review 0 Blocking, 2 Important, 8 Minor (`task-6b-review.md`), the gate probed with requests the tests do not send.
 Task 7: built by Codex.
+Task 6b: fix round 1 by Codex: a short body is refused with 400 and writes nothing, the size and thread-ID refusals each have a test that fails without them, a doubled Host or Origin is refused; m5 (a routing refactor) parked for the final wave; gate green.
+Task 6b: complete; the fix round is rechecked by the final review.
+Task 7: review 0 Blocking, 2 Important, 6 Minor (`task-7-review.md`); I2 was a `vulture_allow.py` line left out of the Task 7 commit, committed with the 6b fix.

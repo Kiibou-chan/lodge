@@ -105,9 +105,10 @@ def problems_page(result: CheckResult, read: Read, notice: str | None = None) ->
     return page("Problems", body, read, notice)
 
 
-def error_page(message: str) -> str:
+def error_page(message: str, back: str | None = None) -> str:
+    link = f'<a href="{e(back)}">Back to the form</a>' if back is not None else ""
     return page(
-        "Cannot show this page", f"<h1>Cannot show this page</h1><p>{e(message)}</p>", _NONE
+        "Cannot show this page", f"<h1>Cannot show this page</h1><p>{e(message)}</p>{link}", _NONE
     )
 
 

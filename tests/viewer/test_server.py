@@ -115,7 +115,7 @@ def test_unreadable_file_banner_reaches_the_browser() -> None:
         assert BAD in body and 'href="/problems"' in body
 
 
-def test_only_reads_are_served() -> None:
+def test_post_without_origin_and_other_methods_refused() -> None:
     with running(world) as port:
         assert get(port, "/", method="POST")[0] == 403
         assert get(port, "/", method="DELETE")[0] == 405

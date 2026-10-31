@@ -123,3 +123,99 @@ This report distinguishes those cases rather than claiming first failures that w
 Socket-bound verification remains with the coordinator: all of `tests/viewer/test_server.py`, and `tests/e2e/test_view.py::test_view_serves_the_project_until_interrupted`.
 The two non-selected e2e cases can both be included in the coordinator's full run.
 No design conflict was identified.
+
+## Fix round 1
+
+Requirements: `task-6b-brief.md` and `task-6b-review.md`, with the requested socket-free short-reader test.
+Task 7 remains in place.
+No commit or staging was performed.
+The pre-existing uncommitted `HTMLParser.handle_starttag` allowance in `vulture_allow.py` was preserved.
+
+### Changes
+
+- `src/lodge/viewer/server.py`: refuse a short body with 400 and "the form arrived incomplete; nothing was written", before calling the writer (I1).
+  Reject repeated Host, Origin, Content-Length, and Content-Type headers with 400 on GET, HEAD, and POST, before reading the body (m1).
+  Render every non-303 POST reply through the error page, carrying the optional back link (m2).
+  Update the module docstring (m7).
+- `src/lodge/viewer/writes.py`: `Reply` carries a plain reason and optional `back`, with escaping delegated to the page renderer (m2).
+  Thread redirects use `Written.about`, retaining the submitted reference for the pre-write back link (m3).
+- `src/lodge/viewer/pages.py`: error pages accept an optional back link and escape both the reason and the link (m2).
+- `src/lodge/cli/parser.py`: add the specified HOST metavar and repeatable-host help (m6).
+  This adds only one line to the current parser, staying within the brief's original eight-line budget.
+- `tests/viewer/test_request_gate.py`: new in-memory handler tests for short reads, excessive declared lengths, repeated headers in both orders on GET and POST, and complete refusal pages (I1, I2, m1, m2).
+  `BodyReader` records each requested read size; every refusal asserts zero publishes, and the length-limit and repeated-header tests assert no body read.
+- `tests/viewer/test_post_gate.py`: cover malformed thread IDs on reply and close, origin-prefix attacks, and the exact missing-Origin reason with the key absent (I2, m8).
+  Remove the artificial dispatch-and-timeout test (m4).
+- `tests/viewer/test_post_routes.py`: test canonical redirects and quoted area redirects, and assert author, location, and minute on each reply and closing message (m3, m8).
+  Existing refusal tests now inspect `Reply.back` because the server owns the HTML rendering.
+- `tests/viewer/test_server.py`: rename the obsolete read-only test (m7).
+- `vulture_allow.py`: allow the HTTP dispatch name, timeout, and parsed protocol attribute read by the standard library (m4).
+
+### First failures and mutation evidence
+
+Each mutation below was applied alone, its named test was run with `uv run pytest TEST -q`, and the source was restored in a `finally` block.
+All mutant runs exited 1 through assertion failures, not collection or syntax errors.
+The tests were retained, and the restored implementation passed afterwards.
+The short-body, repeated-header, complete-page, and canonical-reference tests were also observed failing against the original implementation before their fixes.
+
+| Test or strengthened cases | Mutation | Observed failing output |
+| --- | --- | --- |
+| `test_short_body_refused_without_writing` | Replace the short-body comparison with `if False` | Expected `400 Bad Request`, received `303 See Other`; `1 failed in 0.28s`. |
+| `test_excessive_declared_length_refused_without_reading` | Replace the server's over-limit length branch with `elif False` | Expected HTTP 413, received 303 before the short-body fix; `1 failed in 0.25s`. |
+| `test_bad_thread_id_refused_without_writing`, both actions and both IDs | Remove the whole thread-ID guard | Expected 400, received 404; `4 failed in 0.27s`. |
+| Same ID test, `s-aaaaaa` | Remove only the `q-` prefix check | Expected 400, received 404; `2 failed, 2 passed in 0.30s`. |
+| Same ID test, `q-11111` | Remove only the ID-shape check | Expected 400, received 404; `2 failed, 2 passed in 0.30s`. |
+| `test_repeated_headers_refused`, four header names, two methods, and two orders | Replace the duplicate-count check with `if False` | Expected 400, received 303, 403, 404, or 415; `16 failed in 0.36s`. |
+| `test_write_refusal_is_a_complete_page` | Send the reason directly instead of using `pages.error_page` | Missing `<!doctype html>`; `1 failed in 0.28s`. |
+| `test_ask_redirect_uses_canonical_about` | Use raw `about` instead of `written.about` | Expected `/r/s-aaaaaa`, received `/r/S-AAAAAA`; `1 failed in 0.30s`. |
+| `test_origin_needs_scheme_and_allowed_host`, the two new prefix attacks | Replace exact origin membership with `startswith` matching | Expected 403, received 303; `2 failed, 3 passed in 0.26s`. |
+| `test_no_origin_refused` | Remove the empty-Origin branch | Expected `a write needs an Origin header`, received `this origin is not served`; `1 failed in 0.24s`. |
+| `test_reply_and_close_redirect_to_the_thread` | Change reply and close `where` to `elsewhere` | Expected `lodge viewer`, received `elsewhere`; `1 failed in 0.27s`. |
+| Same provenance test, closing message separately | Change `where` only when the action is `close` | Expected `lodge viewer`, received `elsewhere`; `1 failed in 0.30s`. |
+| `test_area_redirect_quotes_area` | Remove `quote` from the area redirect | Expected `cold%20%26%20storage`, received `cold & storage`; `1 failed in 0.26s`. |
+
+The first over-limit test run exposed a test assumption about Python's reason phrase: Python 3.13 says `413 Content Too Large`.
+The assertion was corrected to check status 413, then the actual guard-removal mutation was observed failing as recorded above.
+The first static pass also found a BytesIO override annotation and standard-library attribute allowances; these were corrected without changing the security checks.
+Removing the apparently unused `requestline` from the in-memory handler exposed a standard-library logging dependency in the next broad run (`19 failed, 1334 passed`), so it was restored and allow-listed.
+The boundary mutations were rerun afterwards and failed through the expected assertions; the table records those valid runs.
+
+### Validation
+
+- Focused run: `uv run pytest tests/viewer/test_request_gate.py tests/viewer/test_post_gate.py tests/viewer/test_post_routes.py -q`, `58 passed in 0.35s`.
+- Broad socket-free run: `uv run pytest -q --ignore=tests/viewer/test_server.py --ignore=tests/e2e/test_view.py`, `1353 passed in 36.47s`.
+- CLI run: `uv run pytest tests/e2e/test_view.py -q -k 'passes_the_port or allow_host'`, `5 passed, 2 deselected in 0.06s`.
+- `uv run ruff format --check`: `433 files already formatted`.
+- `uv run ruff check`: `All checks passed!`.
+- `uv run mypy`: `Success: no issues found in 193 source files`.
+- `uv run vulture`: exit 0, no output.
+- `uv run lodge check --gate`: exit 0, `ok`, ending with `note: area writing: added`.
+- `git diff --check`: exit 0, no output.
+- Attempted `uv run pytest tests/viewer/test_server.py tests/e2e/test_view.py -q`: `19 failed, 6 passed in 1.14s`.
+  All 18 socket-based viewer tests failed at socket creation with `PermissionError: [Errno 1] Operation not permitted`; the server-starting e2e test received the corresponding listen error.
+  The coordinator must rerun those files outside the sandbox.
+  The new request-boundary tests require no sockets.
+
+### Finding left open
+
+Minor m5 remains: extracting the routing helpers and separating commit-detail printing from `done_code` is a structural refactor across the lock, stale-list handling, and refusal back links.
+It is outside the cheap fixes in this security round, and the existing routing behaviour remains covered.
+I1, I2, m1, m2, m3, m4, m6, m7, and every m8 test gap are addressed.
+
+Final restored-source builder gate:
+
+```text
+uv run ruff format --check && uv run ruff check && uv run mypy && uv run vulture && uv run pytest -q --ignore=tests/viewer/test_server.py --ignore=tests/e2e/test_view.py && uv run lodge check --gate
+433 files already formatted
+All checks passed!
+Success: no issues found in 193 source files
+1353 passed in 35.50s
+ok
+note: area writing: added
+```
+
+The command exited 0; vulture produced no output.
+The final selected CLI rerun gave `5 passed, 2 deselected in 0.06s`.
+The restored focused tests gave `58 passed in 0.39s`.
+A final rerun of the over-limit mutation, with the short-body fix present, received 400 rather than 413 (`1 failed in 0.28s`), confirming the server's early length check remains independently pinned.
+All source mutations were restored before the final gate.

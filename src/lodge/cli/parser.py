@@ -140,7 +140,8 @@ def _parser() -> argparse.ArgumentParser:
     view = add(
         "view", "serve the viewer on this machine: read, confirm, and raise doubts", _view_of
     )
-    view.add_argument("--allow-host", action="append", default=[])
+    host_help = "also answer this Host header, name:port; repeatable"
+    view.add_argument("--allow-host", action="append", default=[], metavar="HOST", help=host_help)
     view.add_argument("--port", type=int, default=DEFAULT_PORT, help=f"default {DEFAULT_PORT}")
     hook = add("hook", "answer a Claude Code hook event: post-tool-use", lambda a: Hook(a.event))
     hook.add_argument("event", choices=(HOOK_EVENT,))
