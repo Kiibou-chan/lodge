@@ -17,6 +17,7 @@ from lodge.core import (
     check_change,
     check_state,
     load,
+    unrecorded_problems,
 )
 
 
@@ -126,3 +127,21 @@ def test_missing_published_thread_fails_check_2(stale_path: bool) -> None:
         datetime.fromisoformat("2026-10-30T12:00:00+01:00"),
     )
     assert any(p.check == 2 and t.id in p.message for p in result.problems)
+
+
+def test_changing_opened_fails_check_5() -> None:
+    t = thread()
+    fails(
+        t,
+        replace(t, opened="2026-10-31T12:00:00+01:00"),
+        "opened of a published thread was changed",
+    )
+
+
+@pytest.mark.parametrize("wrong_name", [False, True])
+def test_thread_problems_are_visible_in_reads(wrong_name: bool) -> None:
+    t = thread()
+    s = snapshot_of(t, paths={t.id: "lodge/threads/wrong.md"} if wrong_name else None)
+    result = check_state(s)
+    assert result.problems
+    assert unrecorded_problems(s, result) == result.problems

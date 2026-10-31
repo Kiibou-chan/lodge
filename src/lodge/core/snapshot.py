@@ -6,10 +6,11 @@ from dataclasses import dataclass, field
 
 from lodge.core.fileformat import parse_area, parse_record
 from lodge.core.model import Area, Decision, Problem, SpecEntry, Thread
-from lodge.core.threads import THREADS, parse_thread
+from lodge.core.threads import parse_thread
 
 Files = Mapping[str, str]
 
+_THREAD_FILE = re.compile(r"lodge/threads/[^/]+\.md")
 _DECISION_FILE = re.compile(r"lodge/decisions/[^/]+\.md")
 _AREA_FILE = re.compile(r"lodge/spec/[^/]+/_area\.md")
 _SPEC_FILE = re.compile(r"lodge/spec/[^/]+/[^/]+\.md")
@@ -57,7 +58,7 @@ def load(tree: Tree) -> Snapshot:
     for path in sorted(tree.files):
         if path.startswith(ATTACHMENTS):
             attachments.add(path)
-        elif re.fullmatch(rf"{THREADS}[^/]+\.md", path):
+        elif _THREAD_FILE.fullmatch(path):
             _keep_thread(path, parse_thread(path, tree.files[path]), threads, paths, problems)
         elif _AREA_FILE.fullmatch(path):
             _keep_area(parse_area(path, tree.files[path]), areas, problems)
@@ -94,9 +95,7 @@ def _keep_record(
         home = "lodge/decisions/" if isinstance(parsed, Decision) else "lodge/spec/<area>/"
         problems.append(Problem(path, 1, f"this record belongs in {home}"))
     elif parsed.id in paths:
-        kept = paths[parsed.id]
-        message = f"the ID {parsed.id} is in both {kept} and {path}; the first is kept"
-        problems.extend([Problem(kept, 2, message), Problem(path, 2, message)])
+        problems.extend(_duplicate(paths[parsed.id], path, parsed.id))
     else:
         paths[parsed.id] = path
         if isinstance(parsed, Decision):
@@ -115,9 +114,12 @@ def _keep_thread(
     if isinstance(parsed, Problem):
         problems.append(parsed)
     elif parsed.id in paths:
-        kept = paths[parsed.id]
-        message = f"the ID {parsed.id} is in both {kept} and {path}; the first is kept"
-        problems.extend([Problem(kept, 2, message), Problem(path, 2, message)])
+        problems.extend(_duplicate(paths[parsed.id], path, parsed.id))
     else:
         paths[parsed.id] = path
         threads[parsed.id] = parsed
+
+
+def _duplicate(kept: str, path: str, ident: str) -> tuple[Problem, Problem]:
+    message = f"the ID {ident} is in both {kept} and {path}; the first is kept"
+    return Problem(kept, 2, message), Problem(path, 2, message)

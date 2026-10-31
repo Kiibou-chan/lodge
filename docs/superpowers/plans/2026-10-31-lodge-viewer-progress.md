@@ -8,3 +8,6 @@ Task 2: built by Codex (f23dd1d); review 0 Blocking, 1 Important, 8 Minor (`task
 Task 3: built by Codex (68c4572).
 Task 2: fix round 1 by Codex: I1 the reverse of `rests_on` reads "supports", and the design's line 114 says so too; M1 to M8 fixed; gate green.
 Task 2: complete; the fix round is rechecked by the final review.
+Task 3: review 0 Blocking, 3 Important, 7 Minor (`task-3-review.md`); fix round 1 by Codex, all fixed with failing-first evidence in the report, the CR rule kept once in core and called by Task 4's code; gate green.
+Task 3: complete; the fix round is rechecked by the final review.
+Task 4: built by Codex (a64c88e).

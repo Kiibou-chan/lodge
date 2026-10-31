@@ -9,16 +9,8 @@ from lodge.core.snapshot import Snapshot
 def doubt_marks(
     s: Snapshot, changed_by: Mapping[str, tuple[str, ...]]
 ) -> dict[str, tuple[str, ...]]:
-    doubts = {
-        t.about
-        for t in s.threads.values()
-        if t.state is ThreadState.OPEN and t.raises is Raises.DOUBT
-    }
-    questions = {
-        t.about
-        for t in s.threads.values()
-        if t.state is ThreadState.OPEN and t.raises is Raises.QUESTION
-    }
+    doubts = _open(s, Raises.DOUBT)
+    questions = _open(s, Raises.QUESTION)
     marks: dict[str, list[str]] = {}
     affected: set[str] = set()
     for ident in sorted(s.decisions.keys() | s.entries.keys()):
@@ -27,6 +19,7 @@ def doubt_marks(
             local.append("in doubt")
         if ident in questions:
             local.append("question open")
+        changed = False
         if ident in s.entries:
             for decision in sorted(doubts & s.decisions.keys()):
                 created = any(
@@ -34,11 +27,21 @@ def doubt_marks(
                     for c in s.decisions[decision].changes
                 )
                 if created or changed_by.get(ident, ())[:1] == (decision,):
+                    changed = True
                     local.append(f"changed by {decision}, in doubt")
-            if ident in doubts or any(m.startswith("changed by ") for m in local):
+            if ident in doubts or changed:
                 affected.add(ident)
         if local:
             marks[ident] = local
+    _propagate(s, affected, marks)
+    return {ident: tuple(values) for ident, values in marks.items()}
+
+
+def _open(s: Snapshot, kind: Raises) -> set[str]:
+    return {t.about for t in s.threads.values() if t.state is ThreadState.OPEN and t.raises is kind}
+
+
+def _propagate(s: Snapshot, affected: set[str], marks: dict[str, list[str]]) -> None:
     for ident, entry in sorted(s.entries.items()):
         seen = {ident}
         pending = list(entry.rests_on)
@@ -54,4 +57,3 @@ def doubt_marks(
                 pending.extend(s.entries[target].rests_on)
         if reached:
             marks.setdefault(ident, []).extend(f"rests on {t}, in doubt" for t in sorted(reached))
-    return {ident: tuple(values) for ident, values in marks.items()}

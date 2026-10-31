@@ -43,7 +43,7 @@ Your final message: DONE, DONE_WITH_CONCERNS, or BLOCKED, one line on the tests,
 - Test: `tests/app/test_thread_ops.py` (new), `tests/gitstore/test_commit.py` (new)
 
 **Interfaces:**
-- Consumes: Task 3's `Thread`, `Message`, `Raises`, `thread_path`, `write_thread`, `appended`, `newest_last`, `Snapshot.threads`.
+- Consumes: Task 3's `Thread`, `Message`, `Raises`, `thread_path`, `write_thread`, `appended`, `clean_text`, `newest_last`, `Snapshot.threads`.
 - Produces:
   ```python
   # ports.py

@@ -1,14 +1,17 @@
 """Thread files preserve messages and reject malformed records."""
 
 import pytest
-from builders import at, files_of, message, thread
+from builders import at, decision, files_of, message, snapshot_of, thread
 
 from lodge.core import (
+    LengthGuidance,
     Problem,
     Thread,
     ThreadState,
     Tree,
     appended,
+    derive,
+    feedback,
     load,
     newest_last,
     parse_thread,
@@ -154,3 +157,45 @@ def test_load_reads_threads_and_their_paths() -> None:
 def test_nested_file_under_threads_is_stray() -> None:
     s = load(Tree(None, {"lodge/threads/nested/q-aaaaaa.md": EXAMPLE}))
     assert s.problems[0].check == 1
+    assert s.problems[0].path == "lodge/threads/nested/q-aaaaaa.md"
+    assert "this file is not a record" in s.problems[0].message
+
+
+@pytest.mark.parametrize("close", [False, True])
+def test_appended_cleans_the_text_and_closes(close: bool) -> None:
+    result = appended(thread(), message(text=" " if close else "a\r\nb \r\n  "), close=close)
+    assert result.messages[-1].text == ("" if close else "a\nb")
+    assert result.state is (ThreadState.CLOSED if close else ThreadState.OPEN)
+
+
+@pytest.mark.parametrize(
+    "old,new,key",
+    [
+        ("opened: " + at(0), "opened: yesterday", "opened"),
+        ("raises: doubt", "raises: worry", "raises"),
+        ("state: open", "state: ajar", "state"),
+        ("when: " + at(0), "when: yesterday", "when"),
+        ("by: coordinator", "by: coordinator\nextra: value", "extra"),
+        ("by: coordinator\n", "", "by"),
+    ],
+)
+def test_unreadable_header_values_are_problem_1(old: str, new: str, key: str) -> None:
+    assert key in invalid(old, new).message
+
+
+@pytest.mark.parametrize("text", ["A message. ", "A\r\nmessage."])
+def test_write_text_error_names_the_field(text: str) -> None:
+    with pytest.raises(ValueError, match="message 1 text"):
+        write_thread(thread(messages=(message(text=text),)))
+
+
+def test_message_without_metadata_names_the_message() -> None:
+    problem = invalid("by: coordinator\nwhen: " + at(0) + "\n\nA message.", "")
+    assert problem.message == "a message needs by and when"
+    assert problem.line == 10
+
+
+def test_thread_id_is_not_number_feedback() -> None:
+    d = decision(statement="See q-123456.")
+    s = snapshot_of(d)
+    assert not any("number" in f.message for f in feedback([d], s, derive(s), LengthGuidance()))

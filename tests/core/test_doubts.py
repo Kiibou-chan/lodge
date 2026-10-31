@@ -54,7 +54,11 @@ def test_doubt_reaches_entries_resting_on_it_further_down() -> None:
 def test_doubt_on_decision_marks_entries_it_created_and_last_changed() -> None:
     a, b, c = chain()
     d = decision(changes=(Change(a.id, Action.CREATE), Change(b.id, Action.EDIT)))
-    m = marks(a, b, c, d, thread(about=d.id))
+    old = entry(rests_on=())
+    d = decision(id=d.id, changes=(*d.changes, Change(old.id, Action.EDIT)), date=at(0))
+    later = decision(changes=(Change(old.id, Action.EDIT),), date=at(1))
+    m = marks(a, b, c, old, d, later, thread(about=d.id))
+    assert old.id not in m
     assert f"changed by {d.id}, in doubt" in m[a.id]
     assert f"changed by {d.id}, in doubt" in m[b.id]
 

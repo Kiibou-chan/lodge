@@ -22,7 +22,7 @@ def _find(state: State, ref: str) -> Thread:
 def _message(
     now: datetime, by: str, text: str, where: str | None, when: str | None, close: bool
 ) -> Message:
-    text = text.replace("\r\n", "\n").strip()
+    text = core.clean_text(text)
     if not text and not close:
         raise LodgeError("the message is empty")
     if not by.strip():
@@ -79,7 +79,7 @@ def write(
         try:
             content = core.write_thread(thread)
         except ValueError as error:
-            raise LodgeError(f"message text or header field: {error}") from None
+            raise LodgeError(str(error)) from None
         after = core.load(
             Tree(
                 state.current.rev, {**state.current.files, path: content}, state.current.attachments

@@ -78,11 +78,11 @@ def read_with[T](path: str, text: str, build: Callable[[dict[str, object], str],
 
 def problem_for(path: str, error: FormatError, header_text: str) -> Problem:
     """Problem 1 for `error`, with the line of its key in `header_text` when that is known."""
-    line = error.line if error.line is not None else _key_line(header_text, error.key)
+    line = error.line if error.line is not None else key_line(header_text, error.key)
     return Problem(path, 1, str(error), line)
 
 
-def _key_line(header_text: str, key: str | None) -> int | None:
+def key_line(header_text: str, key: str | None) -> int | None:
     """The file line where the top-level `key` starts, for a dotted key its first part."""
     if key is None:
         return None

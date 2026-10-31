@@ -54,7 +54,7 @@ def failing_ids(s: Snapshot, result: CheckResult) -> frozenset[str]:
 
 def unrecorded_problems(s: Snapshot, result: CheckResult) -> tuple[Problem, ...]:
     """The problems whose path holds no loaded record, such as an unreadable file."""
-    held = set(s.paths.values())
+    held = {p for i, p in s.paths.items() if i not in s.threads}
     return tuple(p for p in result.problems if p.path not in held)
 
 

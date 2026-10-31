@@ -4,10 +4,8 @@ from lodge.core.apply import Applied, StaleBase, apply_drafts
 from lodge.core.check_change import check_change
 from lodge.core.check_state import CheckResult, check_state
 from lodge.core.derive import Derived, derive, is_author
-from lodge.core.doubts import doubt_marks
 from lodge.core.drafts import Draft, parse_draft, record_from_draft
 from lodge.core.feedback import Feedback, area_feedback, feedback
-from lodge.core.fields import read_stamp
 from lodge.core.fileformat import (
     area_path,
     content_hash,
@@ -44,6 +42,7 @@ from lodge.core.snapshot import ATTACHMENTS, Files, Snapshot, Tree, attachment_p
 from lodge.core.threads import (
     THREADS,
     appended,
+    clean_text,
     newest_last,
     parse_thread,
     thread_path,
@@ -110,10 +109,10 @@ __all__ = [
     "attachment_path",
     "check_change",
     "check_state",
+    "clean_text",
     "content_hash",
     "derive",
     "derived_order",
-    "doubt_marks",
     "failing_ids",
     "feedback",
     "format_level1",
@@ -135,7 +134,6 @@ __all__ = [
     "parse_draft",
     "parse_record",
     "parse_thread",
-    "read_stamp",
     "record_from_draft",
     "related",
     "render_spec",

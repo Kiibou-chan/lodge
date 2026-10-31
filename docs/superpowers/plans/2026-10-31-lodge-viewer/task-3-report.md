@@ -149,3 +149,199 @@ Socket-bound tests were excluded as instructed:
 The port-forwarding test in the excluded end-to-end file was run separately as required.
 The remaining excluded test, `test_view_outside_a_repository_is_one_sentence`, is not socket-bound but is outside the separate selection named by this brief.
 The coordinator still needs to run `sh scripts/check.sh` outside the sandbox.
+
+
+## Fix round 1
+
+All three Important findings and all seven Minor findings are fixed.
+No commit or push was made.
+
+### Changes by finding
+
+- I1: added tests for successful append clean-up, closing with empty text, invalid opened/raises/state/agent-when values, unknown message keys, missing by, and immutable opened.
+  Each previously unpinned guard was disabled individually, and its new test failed before restoring the guard.
+- I2: `unrecorded_problems` excludes thread paths from the loaded record paths, so read banners include thread problems.
+  Both an unresolved about and a wrong filename are tested.
+- I3: exported `core.clean_text`, used it in core `appended` and Task 4's message construction, and added it to Task 4's Consumes in the plan and brief.
+  The append clean-up mutation below pins the CR-and-whitespace rule.
+- M1: extracted `_open` and `_propagate` in `core/doubts.py`, and tracked the changed boolean directly instead of inspecting rendered marks.
+- M2: extracted `_message` and promoted the document key-line helper to `key_line` for reuse, preserving metadata error-line translation and empty-text line reporting.
+- M3: added `_THREAD_FILE` and shared `_duplicate` between the record and thread keepers.
+- M4: compared message fields individually after read-back, naming `message N text` for text changes.
+  Task 4 now forwards the specific core error through `LodgeError` without guessing which field failed.
+- M5: removed unused `doubt_marks` and `read_stamp` front-door exports; their internal consumers retain direct imports.
+- M6: a message without metadata now reports `a message needs by and when` at the heading line.
+- M7: strengthened the stray-file assertion, pinned q IDs in number feedback, and added an entry subsequently edited by an undoubted decision to the latest-editor test.
+
+### Failing-first evidence
+
+The initial focused command was `uv run pytest tests/core/test_thread_files.py tests/core/test_check_threads.py tests/core/test_doubts.py -q`.
+It ran before implementation changes.
+The following is its failing output, with passing progress and verbose assertion context omitted.
+
+```text
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'message 1 text'
+E         Actual message: 'the thread would not read back unchanged: messages or header'
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'message 1 text'
+E         Actual message: 'the thread would not read back unchanged: messages or header'
+E       AssertionError: assert 'the header m...eys to values' == 'a message needs by and when'
+E
+E         - a message needs by and when
+E         + the header must be a mapping of keys to values
+E       AssertionError: assert () == (Problem(path..., line=None),)
+E
+E         Right contains one more item: Problem(path='lodge/threads/q-01x000.md', check=2, message='q-01x000: about s-aaaaaa, which does not exist', line=None)
+E         Use -v to get more diff
+E       AssertionError: assert () == (Problem(path...', line=None))
+E
+E         Right contains 2 more items, first extra item: Problem(path='lodge/threads/wrong.md', check=1, message='q-01y000: the file name wrong.md does not start with the ID', line=None)
+E         Use -v to get more diff
+FAILED tests/core/test_thread_files.py::test_write_text_error_names_the_field[A message. ]
+FAILED tests/core/test_thread_files.py::test_write_text_error_names_the_field[A\r\nmessage.]
+FAILED tests/core/test_thread_files.py::test_message_without_metadata_names_the_message
+FAILED tests/core/test_check_threads.py::test_thread_problems_are_visible_in_reads[False]
+FAILED tests/core/test_check_threads.py::test_thread_problems_are_visible_in_reads[True]
+5 failed, 53 passed in 0.24s
+```
+
+The remaining tests pin behaviour already implemented correctly, so each was run against a temporary faulty variant before the refactoring.
+Every variant was restored immediately after its run, and every run exited 1.
+Each command was `uv run pytest tests/core/test_thread_files.py tests/core/test_check_threads.py tests/core/test_doubts.py -q -k TEST_NAME`, with the selected test shown in the output below.
+The variants respectively removed append clean-up, forced the appended state open, replaced opened stamp validation with string validation, forced raises to doubt, forced state open, skipped the agent stamp check, skipped message key validation, supplied a default by, removed opened from immutable fields, reduced feedback IDs to d/s, accepted any historical editor, and substituted the stray diagnostic.
+These are the actual assertion errors and final lines from those runs, with trailing whitespace omitted.
+
+#### Faulty variant: CR clean-up
+
+```text
+E       AssertionError: assert 'a\r\nb \r\n  ' == 'a\nb'
+E
+E         - a
+E         + a
+E         ?  +
+E         - b
+E         + b
+E         +
+E       AssertionError: assert ' ' == ''
+E
+E         Strings contain only whitespace, escaping them using repr()
+E         - ''
+E         + ' '
+E         ?  +
+FAILED tests/core/test_thread_files.py::test_appended_cleans_the_text_and_closes[False]
+FAILED tests/core/test_thread_files.py::test_appended_cleans_the_text_and_closes[True]
+2 failed, 56 deselected in 0.21s
+```
+
+#### Faulty variant: closing state
+
+```text
+E       AssertionError: assert <ThreadState.OPEN: 'open'> is <ThreadState.CLOSED: 'closed'>
+E        +  where <ThreadState.OPEN: 'open'> = Thread(id='q-002000', about='s-aaaaaa', raises=<Raises.DOUBT: 'doubt'>, state=<ThreadState.OPEN: 'open'>, opened='2026...00', text='A message.', where=None), Message(by='coordinator', when='2026-10-28T10:00:00+01:00', text='', where=None))).state
+FAILED tests/core/test_thread_files.py::test_appended_cleans_the_text_and_closes[True]
+1 failed, 1 passed, 56 deselected in 0.21s
+```
+
+#### Faulty variant: opened stamp
+
+```text
+E       AssertionError: assert (False)
+E        +  where False = isinstance(Thread(id='q-001000', about='s-aaaaaa', raises=<Raises.DOUBT: 'doubt'>, state=<ThreadState.OPEN: 'open'>, opened='yesterday', messages=(Message(by='coordinator', when='2026-10-28T10:00:00+01:00', text='A message.', where=None),)), Problem)
+FAILED tests/core/test_thread_files.py::test_unreadable_header_values_are_problem_1[opened: 2026-10-28T10:00:00+01:00-opened: yesterday-opened]
+1 failed, 5 passed, 52 deselected in 0.22s
+```
+
+#### Faulty variant: raises enum
+
+```text
+E       AssertionError: assert (False)
+E        +  where False = isinstance(Thread(id='q-002000', about='s-aaaaaa', raises=<Raises.DOUBT: 'doubt'>, state=<ThreadState.OPEN: 'open'>, opened='2026...0:00:00+01:00', messages=(Message(by='coordinator', when='2026-10-28T10:00:00+01:00', text='A message.', where=None),)), Problem)
+FAILED tests/core/test_thread_files.py::test_unreadable_header_values_are_problem_1[raises: doubt-raises: worry-raises]
+1 failed, 5 passed, 52 deselected in 0.21s
+```
+
+#### Faulty variant: state enum
+
+```text
+E       AssertionError: assert (False)
+E        +  where False = isinstance(Thread(id='q-003000', about='s-aaaaaa', raises=<Raises.DOUBT: 'doubt'>, state=<ThreadState.OPEN: 'open'>, opened='2026...0:00:00+01:00', messages=(Message(by='coordinator', when='2026-10-28T10:00:00+01:00', text='A message.', where=None),)), Problem)
+FAILED tests/core/test_thread_files.py::test_unreadable_header_values_are_problem_1[state: open-state: ajar-state]
+1 failed, 5 passed, 52 deselected in 0.21s
+```
+
+#### Faulty variant: agent stamp
+
+```text
+E       AssertionError: assert (False)
+E        +  where False = isinstance(Thread(id='q-004000', about='s-aaaaaa', raises=<Raises.DOUBT: 'doubt'>, state=<ThreadState.OPEN: 'open'>, opened='2026-10-28T10:00:00+01:00', messages=(Message(by='coordinator', when='yesterday', text='A message.', where=None),)), Problem)
+FAILED tests/core/test_thread_files.py::test_unreadable_header_values_are_problem_1[when: 2026-10-28T10:00:00+01:00-when: yesterday-when]
+1 failed, 5 passed, 52 deselected in 0.21s
+```
+
+#### Faulty variant: message keys
+
+```text
+E       AssertionError: assert (False)
+E        +  where False = isinstance(Thread(id='q-005000', about='s-aaaaaa', raises=<Raises.DOUBT: 'doubt'>, state=<ThreadState.OPEN: 'open'>, opened='2026...0:00:00+01:00', messages=(Message(by='coordinator', when='2026-10-28T10:00:00+01:00', text='A message.', where=None),)), Problem)
+FAILED tests/core/test_thread_files.py::test_unreadable_header_values_are_problem_1[by: coordinator-by: coordinator\nextra: value-extra]
+1 failed, 5 passed, 52 deselected in 0.21s
+```
+
+#### Faulty variant: missing by
+
+```text
+E       AssertionError: assert (False)
+E        +  where False = isinstance(Thread(id='q-006000', about='s-aaaaaa', raises=<Raises.DOUBT: 'doubt'>, state=<ThreadState.OPEN: 'open'>, opened='2026...0:00:00+01:00', messages=(Message(by='coordinator', when='2026-10-28T10:00:00+01:00', text='A message.', where=None),)), Problem)
+FAILED tests/core/test_thread_files.py::test_unreadable_header_values_are_problem_1[by: coordinator\n--by]
+1 failed, 5 passed, 52 deselected in 0.22s
+```
+
+#### Faulty variant: immutable opened
+
+```text
+E       assert False
+E        +  where False = any(<generator object fails.<locals>.<genexpr> at 0x7f7ecb4c7370>)
+FAILED tests/core/test_check_threads.py::test_changing_opened_fails_check_5
+1 failed, 57 deselected in 0.22s
+```
+
+#### Faulty variant: thread feedback ID
+
+```text
+E       assert not True
+E        +  where True = any(<generator object test_thread_id_is_not_number_feedback.<locals>.<genexpr> at 0x7f6107bcb370>)
+FAILED tests/core/test_thread_files.py::test_thread_id_is_not_number_feedback
+1 failed, 57 deselected in 0.23s
+```
+
+#### Faulty variant: latest editor
+
+```text
+E       AssertionError: assert 's-005000' not in {'d-004000': ('in doubt',), 's-001000': ('changed by d-004000, in doubt',), 's-002000': ('changed by d-004000, in doubt', 'rests on s-001000, in doubt'), 's-005000': ('changed by d-004000, in doubt',), ...}
+E        +  where 's-005000' = SpecEntry(id='s-005000', area='storage', title='An entry', statement='What holds now.', code=None, imported_from=None, rests_on=()).id
+FAILED tests/core/test_doubts.py::test_doubt_on_decision_marks_entries_it_created_and_last_changed
+1 failed, 57 deselected in 0.20s
+```
+
+#### Faulty variant: stray diagnostic
+
+```text
+E       AssertionError: assert 'this file is not a record' in 'unrecognised'
+E        +  where 'unrecognised' = Problem(path='lodge/threads/nested/q-aaaaaa.md', check=1, message='unrecognised', line=None).message
+FAILED tests/core/test_thread_files.py::test_nested_file_under_threads_is_stray
+1 failed, 57 deselected in 0.24s
+```
+
+### Final verification
+
+- `uv run ruff format --check`: 415 files already formatted.
+- `uv run ruff check`: All checks passed!
+- `uv run mypy`: Success: no issues found in 176 source files.
+- `uv run vulture`: exit 0, no output.
+- `uv run pytest -q --ignore=tests/viewer/test_server.py --ignore=tests/e2e/test_view.py`: 1216 passed in 32.23s.
+- `uv run pytest tests/e2e/test_view.py -q -k 'passes_the_port or outside_a_repository'`: 2 passed, 1 deselected in 0.32s.
+- `uv run lodge check --gate`: ok, followed by area-added notes.
+
+Socket-bound tests remain for the coordinator's external gate: `tests/viewer/test_server.py` and `tests/e2e/test_view.py::test_view_serves_the_project_until_interrupted`.
+No finding was left unfixed.

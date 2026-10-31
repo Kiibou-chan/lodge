@@ -5,7 +5,7 @@ from collections.abc import Iterable
 from dataclasses import replace
 from datetime import datetime
 
-from lodge.core.document import assemble, load_header, read_with, trim_block
+from lodge.core.document import assemble, key_line, load_header, read_with, trim_block
 from lodge.core.fields import (
     FormatError,
     check_keys,
@@ -61,41 +61,39 @@ def _messages(body: str, state: ThreadState, offset: int) -> tuple[Message, ...]
         if lines[start] != f"## Message {n}":
             raise FormatError("messages are numbered 1, 2, 3, in order", line=offset + start + 1)
         end = starts[n] if n < len(starts) else len(lines)
-        first = start + 1
-        while first < end and not lines[first].strip():
-            first += 1
-        split = first
-        while split < end and lines[split].strip():
-            split += 1
-        try:
-            header = load_header("\n".join(lines[first:split]))
-            check_keys(header, ("by", "when", "where"))
-            by = read_str(require(header, "by"), "by")
-            when = read_str(require(header, "when"), "when")
-            where = read_optional_str(header, "where")
-            if by == "author" and where is None:
-                raise FormatError("an author message needs where", "where")
-            if by != "author":
-                when = read_stamp(when, "when")
-        except FormatError as error:
-            relative = error.line
-            if error.key is not None:
-                relative = next(
-                    (
-                        i + 2
-                        for i, line in enumerate(lines[first:split])
-                        if line.startswith(error.key + ":")
-                    ),
-                    None,
-                )
-            error.line = offset + first + (relative or 2) - 1
-            raise
-        text = trim_block("\n".join(lines[split:end]))
-        text = _UNESCAPE.sub(lambda m: m.group()[1:], text)
-        if not text and not (state is ThreadState.CLOSED and n == len(starts)):
-            raise FormatError("message text must not be empty", line=offset + split + 1)
-        result.append(Message(by, when, text, where))
+        closing = state is ThreadState.CLOSED and n == len(starts)
+        result.append(_message(lines, start + 1, end, offset, closing))
     return tuple(result)
+
+
+def _message(lines: list[str], first: int, end: int, offset: int, closing: bool) -> Message:
+    heading = first
+    while first < end and not lines[first].strip():
+        first += 1
+    split = first
+    while split < end and lines[split].strip():
+        split += 1
+    if first == split:
+        raise FormatError("a message needs by and when", line=offset + heading)
+    header_text = "\n".join(lines[first:split])
+    try:
+        header = load_header(header_text)
+        check_keys(header, ("by", "when", "where"))
+        by = read_str(require(header, "by"), "by")
+        when = read_str(require(header, "when"), "when")
+        where = read_optional_str(header, "where")
+        if by == "author" and where is None:
+            raise FormatError("an author message needs where", "where")
+        if by != "author":
+            when = read_stamp(when, "when")
+    except FormatError as error:
+        relative = key_line(header_text, error.key) if error.key is not None else error.line
+        error.line = offset + first + (relative or 2) - 1
+        raise
+    text = trim_block("\n".join(lines[split:end]))
+    if not text and not closing:
+        raise FormatError("message text must not be empty", line=offset + split + 1)
+    return Message(by, when, _UNESCAPE.sub(lambda m: m.group()[1:], text), where)
 
 
 def _quote(key: str, value: str) -> str:
@@ -128,14 +126,27 @@ def write_thread(thread: Thread) -> str:
     if isinstance(back, Problem):
         raise ValueError(f"the thread would not read back: {back.message}")
     if back != thread:
-        raise ValueError("the thread would not read back unchanged: messages or header")
+        for n, (original, parsed) in enumerate(
+            zip(thread.messages, back.messages, strict=False), 1
+        ):
+            for field in ("by", "when", "where", "text"):
+                if getattr(original, field) != getattr(parsed, field):
+                    raise ValueError(
+                        f"the thread would not read back unchanged: message {n} {field}"
+                    )
+        raise ValueError("the thread would not read back unchanged: header or messages")
     return text
+
+
+def clean_text(text: str) -> str:
+    """Remove CR before LF and surrounding whitespace from message text."""
+    return text.replace("\r\n", "\n").strip()
 
 
 def appended(thread: Thread, message: Message, close: bool = False) -> Thread:
     if thread.state is ThreadState.CLOSED:
         raise ValueError("the thread is closed")
-    message = replace(message, text=message.text.replace("\r\n", "\n").strip())
+    message = replace(message, text=clean_text(message.text))
     if not message.text and not close:
         raise ValueError("message text must not be empty")
     return replace(
