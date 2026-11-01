@@ -53,14 +53,8 @@ def test_lookup_keeps_partial_hits(tmp_path: Path) -> None:
     index.close()
 
 
-def test_settings_key_needs_no_plain_codec(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(
-        index_db,
-        "to_plain",
-        lambda value: (_ for _ in ()).throw(ValueError("new field")),
-        raising=False,
-    )
-    assert len(index_db.settings_key(CoreSettings())) == 40
+def test_parse_only_module_has_no_settings_key() -> None:
+    assert not hasattr(index_db, "settings_key")
 
 
 def test_project_index_skips_open_errors(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -83,6 +77,6 @@ def test_parse_only_opening_needs_no_settings(
         raise AssertionError("parse-only opening computed a settings digest")
 
     monkeypatch.setattr(index_db, "open_index", opened)
-    monkeypatch.setattr(index_db, "settings_key", forbidden)
+    monkeypatch.setattr(index_db, "settings_key", forbidden, raising=False)
     assert index_db.project_index(tmp_path) is None
     assert calls == [tmp_path]

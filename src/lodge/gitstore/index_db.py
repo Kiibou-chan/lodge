@@ -12,7 +12,7 @@ from typing import IO
 import yaml
 
 from lodge.app import FileKey, Index
-from lodge.core import CoreSettings, Parsed
+from lodge.core import Parsed
 from lodge.gitstore.index_parses import find_parses, insert_parses
 from lodge.gitstore.index_space import exclusive, open_lock, prune, share
 
@@ -37,10 +37,6 @@ def build_digest(source: Path | None = None) -> str:
             raw = path.read_bytes()
             digest.update(str(len(raw)).encode() + b"\0" + raw)
     return digest.hexdigest()[:16]
-
-
-def settings_key(settings: CoreSettings) -> str:
-    return sha1(repr(settings).encode()).hexdigest()
 
 
 def project_index(common: Path) -> Index | None:
