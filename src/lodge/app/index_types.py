@@ -40,6 +40,7 @@ class StoredState:
     codes: Mapping[str, tuple[str, ...]]
     citers: Mapping[str, int]
     unrecorded: tuple[Problem, ...]
+    threads: tuple[str, ...] = ()
 
 
 def level1_of(row: Row, record: Decision | SpecEntry) -> Level1:

@@ -56,10 +56,15 @@ class State:
 
 
 def snapshot_of(
-    tree: Tree, index: Index | None, memo: dict[FileKey, core.Parsed | None] | None = None
+    tree: Tree,
+    index: Index | None,
+    memo: dict[FileKey, core.Parsed | None] | None = None,
+    *,
+    epoch: int | None = None,
 ) -> Snapshot:
     if index is None:
         return load(tree)
+    epoch = index.epoch() if epoch is None else epoch
     keys = {path: (path, blob) for path, blob in tree.blobs.items() if path in tree.files}
     memo = memo if memo is not None else {}
     cached = {key: memo[key] for key in keys.values() if key in memo}
@@ -70,9 +75,9 @@ def snapshot_of(
         if path not in keys or keys[path] not in cached
     }
     kept = {keys[path]: value for path, value in missing.items() if path in keys}
-    index.keep_parses(kept, files=len(tree.files))
     memo.update(cached)
     memo.update(kept)
+    index.keep_parses(kept, files=len(tree.files), used=memo, epoch=epoch)
     return core.assemble(
         {**{path: cached[key] for path, key in keys.items() if key in cached}, **missing},
         tree.attachments,
@@ -84,7 +89,7 @@ def read_state(store: Store, index: Index | None = None) -> State:
     current, published = store.trees()
     epoch = index.epoch() if index is not None else 0
     parses: dict[FileKey, core.Parsed | None] = {}
-    snapshot = snapshot_of(current, index, parses)
+    snapshot = snapshot_of(current, index, parses, epoch=epoch)
     derived = core.derive(snapshot)
     result = core.check_state(snapshot, derived=derived)
     return State(
@@ -114,7 +119,7 @@ def read_checked(w: Wiring) -> State:
     state = read_state(w.store, w.index)
     if same_listing(state.current, state.published):
         return replace(state, published_state=Checked(state.snapshot, state.derived, state.result))
-    published = snapshot_of(state.published, w.index, state.parses)
+    published = snapshot_of(state.published, w.index, state.parses, epoch=state.epoch)
     before = core.derive(published)
     published_result = core.check_state(published, derived=before)
     return finish_checked(w, state, Checked(published, before, published_result), w.clock.now())

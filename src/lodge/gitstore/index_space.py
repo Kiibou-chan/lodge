@@ -18,6 +18,10 @@ INDEX_BYTES_PER_FILE = 1_500
 MIN_FILE_CAP = 16 * 1024 * 1024
 
 
+def index_file_cap(files: int) -> int:
+    return max(MIN_FILE_CAP, INDEX_BYTES_PER_FILE * files)
+
+
 def open_lock(path: Path) -> IO[bytes] | None:
     lock: IO[bytes] | None = None
     try:
@@ -99,8 +103,7 @@ def clear(db: sqlite3.Connection) -> None:
 
 def prepare_keep(db: sqlite3.Connection, files: int) -> None:
     """Check used pages while holding BEGIN IMMEDIATE, before writing a state's units."""
-    INDEX_FILE_CAP = max(MIN_FILE_CAP, INDEX_BYTES_PER_FILE * files)
-    over = used_bytes(db) > INDEX_FILE_CAP
+    over = used_bytes(db) > index_file_cap(files)
     kept, written = db.execute("SELECT kept,written FROM meta").fetchone()
     if over and (kept or written >= files):
         clear(db)

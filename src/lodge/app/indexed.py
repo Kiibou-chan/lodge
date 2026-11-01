@@ -1,4 +1,8 @@
-"""Indexed reads with pinned inputs and an optional keep after output."""
+"""Indexed reads with pinned inputs and an optional keep after output.
+
+The listing assembler must stay equivalent to state.snapshot_of/read_checked;
+test_outputs_print_as_in_memory compares both paths over synthetic stores.
+"""
 
 from collections.abc import Callable, Sequence
 from dataclasses import replace
@@ -9,6 +13,7 @@ from itertools import chain
 from lodge import core
 from lodge.app import read_model, reads
 from lodge.app import threads as thread_reads
+from lodge.app.errors import LodgeError
 from lodge.app.index_lookups import Lookups, Miss
 from lodge.app.index_types import FileKey, level1_of
 from lodge.app.results import Listed, Read, ShownMany, ThreadList, ThreadShown, ThreadsWaiting
@@ -39,8 +44,6 @@ def _built(w: Wiring, now: datetime, epoch: int) -> tuple[State, tuple[FileKey, 
         absent = [k for k in keys if k not in parses]
         texts = w.store.texts(listing, [p for p, _ in absent]) if absent else {}
         for path, blob in absent:
-            if path not in texts:
-                raise Miss
             parses[path, blob] = core.parse_file(path, texts[path])
         misses.extend(absent)
         return core.assemble({path: parses[path, blob] for path, blob in keys}, listing.attachments)
@@ -91,6 +94,8 @@ def _run[T](
                     Lookups(index, stored, Read(w.store.freshness(), stored.unrecorded))
                 ), _nothing
             seen = index.seen(key)
+    except LodgeError:
+        raise
     except Exception:
         # A partial cached answer is discarded with its transaction.
         seen = index.seen(key)
@@ -98,7 +103,14 @@ def _run[T](
     result = memory(replace(w, checked=state))
     files = len(state.current.blobs)
     if not seen:
-        index.mark_seen(key, {k: state.parses[k] for k in misses}, {}, files=files)
+        index.mark_seen(
+            key,
+            {k: state.parses[k] for k in misses},
+            {},
+            files=files,
+            used=state.parses,
+            epoch=epoch,
+        )
         return result, _nothing
 
     def keep() -> None:
@@ -163,6 +175,8 @@ def threads(w: Wiring) -> tuple[ThreadList, Callable[[], None]]:
 
 def thread(w: Wiring, ref: str) -> tuple[ThreadShown, Callable[[], None]]:
     def cached(lookups: Lookups) -> ThreadShown:
+        if ref.lower() not in lookups.state.threads:
+            raise lookups.not_found(f"thread named {ref}", ref)
         value = lookups.index.answer(lookups.state.key, f"thread:{ref.lower()}")
         if not isinstance(value, ThreadShown):
             raise Miss
@@ -209,11 +223,13 @@ def search_many(
                 else lookups.index.rows(lookups.state.key, ids | extras)
             )
             if (
-                (not query.text.strip() and not rows)
+                rows is None
+                or (not query.text.strip() and not rows)
                 or not ids <= rows.keys()
                 or not extras <= rows.keys()
             ):
                 raise Miss
+            assert rows is not None
             for key, record in parsed.items():
                 if not isinstance(record, (core.Decision, core.SpecEntry)):
                     raise Miss

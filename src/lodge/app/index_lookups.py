@@ -4,7 +4,7 @@ from collections.abc import Sequence
 from dataclasses import replace
 
 from lodge import core
-from lodge.app.errors import LodgeError
+from lodge.app.errors import LodgeError, NotFound
 from lodge.app.index_types import Row, StoredState, level1_of
 from lodge.app.ports import Index
 from lodge.app.results import Read, Shown, ShownMany
@@ -19,11 +19,17 @@ class Lookups:
         self.index, self.state, self.read = index, state, read
         self.loaded: dict[str, tuple[Row, core.Decision | core.SpecEntry]] = {}
 
-    def record(self, ident: str) -> tuple[Row, core.Decision | core.SpecEntry]:
+    def record(
+        self, ident: str, ref: str | None = None
+    ) -> tuple[Row, core.Decision | core.SpecEntry]:
         if ident not in self.loaded:
             rows = self.index.rows(self.state.key, [ident])
-            if ident not in rows:
+            if rows is None:
                 raise Miss
+            if ident not in rows:
+                if ref is None:
+                    raise Miss
+                raise self.not_found(f"record named {ref}", ref)
             row = rows[ident]
             parses = self.index.parses([row.key])
             record = parses.get(row.key)
@@ -38,14 +44,20 @@ class Lookups:
     def resolve(self, ref: str) -> str:
         wanted = ref.strip().lower()
         if wanted.startswith(("d-", "s-")):
-            self.record(wanted)
+            self.record(wanted, ref)
             return wanted
         coded = self.state.codes.get(wanted, ())
         if len(coded) > 1:
             raise LodgeError(f"the code {ref} names more than one record: {', '.join(coded)}")
         if not coded:
-            raise Miss
+            raise self.not_found(f"record named {ref}", ref)
         return coded[0]
+
+    def not_found(self, what: str, needle: str) -> NotFound:
+        paths = [p.path for p in self.read.unrecorded if p.check == 1]
+        named = [p for p in paths if needle.strip().lower() in p.lower()] or paths
+        suffix = f"; lodge could not read {', '.join(named)}, which may hold it" if named else ""
+        return NotFound(f"no {what}{suffix}")
 
     def family(self, code: str) -> tuple[str, ...]:
         wanted = code.lower()

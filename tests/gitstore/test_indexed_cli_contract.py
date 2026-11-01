@@ -85,7 +85,8 @@ def test_incomplete_rows_discard_the_whole_cached_answer(
     if damage == "delete":
         index.db.execute(f"DELETE FROM {table}")
     else:
-        index.db.execute(f"UPDATE {table} SET value='not JSON'")
+        damaged = "bucket_blobs" if table == "buckets" else table
+        index.db.execute(f"UPDATE {damaged} SET value='not JSON'")
     args = ["waiting"] if table == "answers" else ["show", FIRST.id, "--reasoning", "--provenance"]
     expected = printed(app(store), args)
     with patch.object(core, "assemble", wraps=core.assemble) as assembled:
@@ -133,7 +134,13 @@ def test_tree_count_reaches_parse_only_writer(tmp_path: Path) -> None:
     captured: list[int] = []
     original = index.keep_parses
 
-    def writer(parses: dict[FileKey, core.Parsed | None], *, files: int) -> None:
+    def writer(
+        parses: dict[FileKey, core.Parsed | None],
+        *,
+        files: int,
+        used: object = None,
+        epoch: int | None = None,
+    ) -> None:
         captured.append(files)
         original(parses, files=files)
 

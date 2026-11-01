@@ -145,3 +145,16 @@ The final gate passes 2,105 tests, with six skipped, plus formatting, Ruff, stri
 All 108 timed search replay samples match the exact reader's stdout, stderr, and exit status, across all three sizes and both modes.
 The larger stores' kept working sets exceed the production cap with FTS, so their changed samples clear and are reported as cold; the seen targets remain missed at `s90000` with interim R11-A.
 The cap, targets, and Task 12 stop are unchanged; Task 6 M1's kept-state candidate word-set rebuild is replaced by FTS.
+
+
+## Task 10a fix round before Task 10c
+
+The dispatched review is copied to `2026-10-31-lodge-at-scale/task-10a-review.md`.
+The coordinator's I-1 ruling is built: states share immutable content-addressed bucket blobs through per-state pointers; replacement and eviction collect only blobs with no remaining pointer, transactionally.
+M-1 to M-4 and M-6 are fixed; M-5's termination window remains documented, as the review permits.
+Marker and parse-only clears retain the complete used parse set, and unknown refs use proven absence while damaged buckets fall back.
+The final gate passes 2,135 tests, with six skipped, plus formatting, Ruff, strict mypy, Vulture, and `lodge check --gate`.
+With FTS, the second s90000 state's added space falls from 59.59 MB to 8.39 MB, but zero complete states fit under the current cap at s9000 or s90000.
+Both layouts clear ten times in ten edit/read/read/read cycles at both sizes; the cap stays unchanged pending DISK-1.
+The larger stores' kept working sets exceed the production cap with FTS, so their clearing changed reads are cold, following Task 10b's wording.
+The red evidence, gate, space measurements, and concerns are in `2026-10-31-lodge-at-scale/task-10c-report.md`.

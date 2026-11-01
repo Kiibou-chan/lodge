@@ -128,4 +128,5 @@ def build_state(
         {code: tuple(sorted(ids)) for code, ids in codes.items()},
         {code: len(ids) for code, ids in citing.items()},
         state.read.unrecorded,
+        tuple(sorted(state.snapshot.threads)),
     )

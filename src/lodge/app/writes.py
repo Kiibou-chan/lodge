@@ -94,11 +94,15 @@ def _attempt(w: Wiring, state: State, first: Snapshot, request: _Request) -> Add
         current.attachments | placed.keys(),
         {p: b for p, b in current.blobs.items() if p not in files},
     )
-    after = snapshot_of(after_tree, w.index, state.parses)
+    after = snapshot_of(after_tree, w.index, state.parses, epoch=state.epoch)
     if request.attached:
         _require_listed(after.decisions[new_ids[0]], request.attached)
     check = core.check_change(
-        snapshot_of(state.published, w.index, state.parses), after, w.settings, now, s
+        snapshot_of(state.published, w.index, state.parses, epoch=state.epoch),
+        after,
+        w.settings,
+        now,
+        s,
     )
     notes = tuple(
         core.feedback(_written(s, after, applied.ids), after, core.derive(after), w.settings.length)

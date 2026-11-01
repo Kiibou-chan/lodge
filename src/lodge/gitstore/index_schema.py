@@ -22,7 +22,11 @@ def create(db: sqlite3.Connection) -> None:
     )
     db.execute(
         "CREATE TABLE IF NOT EXISTS buckets(key TEXT NOT NULL, name TEXT NOT NULL, "
-        "value BLOB NOT NULL, PRIMARY KEY(key,name))"
+        "hash TEXT NOT NULL, PRIMARY KEY(key,name)) WITHOUT ROWID"
+    )
+    db.execute(
+        "CREATE TABLE IF NOT EXISTS bucket_blobs(hash TEXT PRIMARY KEY, "
+        "value BLOB NOT NULL) WITHOUT ROWID"
     )
     db.execute(
         "CREATE TABLE IF NOT EXISTS answers(key TEXT NOT NULL, name TEXT NOT NULL, "
