@@ -24,6 +24,7 @@ def read_tree(root: Path, rev: str) -> Tree:
     """The files under `lodge/` at `rev`; attachments are listed, never read."""
     listing = run_bytes(["ls-tree", "-r", "-z", "--full-tree", rev, "--", DATA], root)
     blobs: dict[str, str] = {}
+    object_ids: dict[str, str] = {}
     attachments: set[str] = set()
     other: dict[str, str] = {}
     for item in listing.split(b"\0"):
@@ -34,13 +35,15 @@ def read_tree(root: Path, rev: str) -> Tree:
             continue
         if path.startswith(ATTACHMENTS):
             attachments.add(path)
-        elif fields[1] == b"blob":
-            blobs[path] = fields[2].decode()
         else:
-            other[path] = ""
+            object_ids[path] = fields[2].decode()
+            if fields[1] == b"blob":
+                blobs[path] = object_ids[path]
+            else:
+                other[path] = ""
     contents = _contents(root, sorted(set(blobs.values())))
     files = {**other, **{path: decode(contents[sha]) for path, sha in blobs.items()}}
-    return Tree(rev, files, frozenset(attachments))
+    return Tree(rev, files, frozenset(attachments), object_ids)
 
 
 def _contents(root: Path, shas: Sequence[str]) -> dict[str, bytes]:

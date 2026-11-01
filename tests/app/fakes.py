@@ -6,7 +6,7 @@ from datetime import datetime, timedelta, timezone
 from builders import files_of
 
 from lodge.app import CommitOutcome, Committed, Gate, PublishOutcome
-from lodge.core import Area, Decision, SpecEntry, Tree
+from lodge.core import ATTACHMENTS, Area, Decision, SpecEntry, Tree, blob_id
 
 START = datetime(2026, 10, 29, 9, 30, tzinfo=timezone(timedelta(hours=1)))
 
@@ -37,11 +37,22 @@ class MemoryStore:
         return self.commit_result
 
     def trees(self) -> tuple[Tree, Tree]:
-        current = Tree(str(self.rev), dict(self.files))
-        published = Tree(str(self.rev), dict(self.published)) if self.staged else current
+        current = self._tree(self.files)
+        published = self._tree(self.published) if self.staged else current
         if self._moves:
             self._land(self._moves.pop(0))
         return current, published
+
+    def _tree(self, files: Mapping[str, str]) -> Tree:
+        return Tree(
+            str(self.rev),
+            dict(files),
+            blobs={
+                path: blob_id(text.encode("utf-8", "surrogateescape"))
+                for path, text in files.items()
+                if not path.startswith(ATTACHMENTS)
+            },
+        )
 
     def freshness(self) -> str | None:
         return self.stamp
@@ -49,7 +60,7 @@ class MemoryStore:
     def gate(self, current: Tree) -> Gate:
         if self.gate_for is not None:
             return self.gate_for
-        published = Tree(str(self.rev), dict(self.published)) if self.staged else current
+        published = self._tree(self.published) if self.staged else current
         return Gate(published, (("", current),))
 
     def publish(self, base: Tree, writes: Mapping[str, str], message: str) -> PublishOutcome:

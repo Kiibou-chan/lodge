@@ -9,6 +9,7 @@ from lodge.core.model import Area, Decision, Problem, SpecEntry, Thread
 from lodge.core.threads import parse_thread
 
 Files = Mapping[str, str]
+Parsed = Decision | SpecEntry | Area | Thread | Problem
 
 _THREAD_FILE = re.compile(r"lodge/threads/[^/]+\.md")
 _DECISION_FILE = re.compile(r"lodge/decisions/[^/]+\.md")
@@ -33,6 +34,7 @@ class Tree:
     rev: str | None
     files: Files
     attachments: frozenset[str] = frozenset()
+    blobs: Mapping[str, str] = field(default_factory=dict)
 
 
 def same_listing(a: Tree, b: Tree) -> bool:
@@ -51,29 +53,49 @@ class Snapshot:
     threads: Mapping[str, Thread] = field(default_factory=dict)
 
 
-def load(tree: Tree) -> Snapshot:
-    """Every file of `tree` read; a file that does not read, or repeats an ID, is a problem."""
+def parse_file(path: str, text: str) -> Parsed | None:
+    """Parse one store file independently of every other file."""
+    if path.startswith(ATTACHMENTS):
+        return None
+    if _THREAD_FILE.fullmatch(path):
+        return parse_thread(path, text)
+    if _AREA_FILE.fullmatch(path):
+        return parse_area(path, text)
+    if _DECISION_FILE.fullmatch(path) or _SPEC_FILE.fullmatch(path):
+        return parse_record(path, text)
+    if path.startswith("lodge/") and not path.endswith("/.gitkeep"):
+        return Problem(path, 1, _STRAY)
+    return None
+
+
+def assemble(parsed: Mapping[str, Parsed | None], attachments: frozenset[str]) -> Snapshot:
+    """Assemble records, preserving sorted-path duplicate handling and problems."""
     threads: dict[str, Thread] = {}
     decisions: dict[str, Decision] = {}
     entries: dict[str, SpecEntry] = {}
     areas: dict[str, Area] = {}
     paths: dict[str, str] = {}
     problems: list[Problem] = []
-    attachments = set(tree.attachments)
-    for path in sorted(tree.files):
+    listed = set(attachments)
+    for path in sorted(parsed):
+        item = parsed[path]
         if path.startswith(ATTACHMENTS):
-            attachments.add(path)
-        elif _THREAD_FILE.fullmatch(path):
-            _keep_thread(path, parse_thread(path, tree.files[path]), threads, paths, problems)
-        elif _AREA_FILE.fullmatch(path):
-            _keep_area(parse_area(path, tree.files[path]), areas, problems)
-        elif _DECISION_FILE.fullmatch(path) or _SPEC_FILE.fullmatch(path):
-            parsed = parse_record(path, tree.files[path])
-            _keep_record(path, parsed, decisions, entries, paths, problems)
-        elif path.startswith("lodge/") and not path.endswith("/.gitkeep"):
-            problems.append(Problem(path, 1, _STRAY))
-    return Snapshot(
-        decisions, entries, areas, paths, tuple(problems), frozenset(attachments), threads
+            listed.add(path)
+        elif isinstance(item, Problem):
+            problems.append(item)
+        elif isinstance(item, Thread):
+            _keep_thread(path, item, threads, paths, problems)
+        elif isinstance(item, Area):
+            _keep_area(item, areas, problems)
+        elif isinstance(item, (Decision, SpecEntry)):
+            _keep_record(path, item, decisions, entries, paths, problems)
+    return Snapshot(decisions, entries, areas, paths, tuple(problems), frozenset(listed), threads)
+
+
+def load(tree: Tree) -> Snapshot:
+    """Every file of `tree` read; a file that does not read, or repeats an ID, is a problem."""
+    return assemble(
+        {path: parse_file(path, text) for path, text in tree.files.items()}, tree.attachments
     )
 
 
