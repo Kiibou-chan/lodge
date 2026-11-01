@@ -97,6 +97,10 @@ def clear(db: sqlite3.Connection) -> None:
         if name not in {"meta", "folders", "folder_roots"} and not name.startswith("sqlite_"):
             escaped = name.replace('"', '""')
             db.execute(f'DELETE FROM "{escaped}"')
+    for (root,) in db.execute("SELECT root FROM folders UNION SELECT root FROM folder_roots"):
+        if not Path(root).is_dir():
+            db.execute("DELETE FROM folders WHERE root=?", (root,))
+            db.execute("DELETE FROM folder_roots WHERE root=?", (root,))
     create_words(db)
     db.execute("UPDATE meta SET epoch=epoch+1, kept=0, written=0")
 
