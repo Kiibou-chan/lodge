@@ -16,6 +16,7 @@ from lodge.core import (
     failing_ids,
     load,
     resolve,
+    same_listing,
     unrecorded_problems,
 )
 
@@ -71,12 +72,11 @@ def read_checked(w: Wiring) -> State:
 
     Checks 4, 5, and 6 (LODGE-9) need the comparison; it is the one the gate makes, on the
     published tree the store returned, so a rewritten branch is compared with its accepted tip.
+    Equal listings load to equal snapshots, and a state compared with itself finds nothing,
+    so the comparison is skipped (d-zyqzkg).
     """
     state = read_state(w.store)
-    if (state.current.files, state.current.attachments) == (
-        state.published.files,
-        state.published.attachments,
-    ):
+    if same_listing(state.current, state.published):
         return replace(state, published_state=Checked(state.snapshot, state.derived, state.result))
     published = load(state.published)
     before = core.derive(published)

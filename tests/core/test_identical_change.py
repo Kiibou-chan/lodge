@@ -95,6 +95,54 @@ def snapshots() -> list[Snapshot]:
     return samples
 
 
-@pytest.mark.parametrize("snapshot", snapshots())
+CASE_IDS = [
+    "empty",
+    "example",
+    "parsed-example",
+    "published",
+    "state",
+    "created-entry",
+    "author-without-quote",
+    "bad-author-and-missing-replacement",
+    "missing-replacement",
+    "missing-old",
+    "live-edit",
+    "import-over-live",
+    "imported-entry",
+    "repeated-import",
+    "renamed-area",
+    "area-intro",
+    "retired-entry",
+    "now",
+    "later-today",
+    "other-area",
+    "ranked-area",
+    "fifty-areas",
+    "chain",
+    "published-hand-edit",
+    "duplicate-id",
+    "dependency-cycle",
+    "dependency",
+    "link",
+    "unlisted-decision-source",
+    "unlisted-entry-source",
+    "threads",
+    "broken-header",
+    *(
+        f"{verb}-{when}"
+        for verb in ("replaces", "narrows", "confirms")
+        for when in ("earlier-day", "earlier-time", "later")
+    ),
+    "replacement-same-time",
+    "earlier-edit",
+    "earlier-imported-replacement",
+    "future-decision",
+    "future-edit",
+    "future-imported-decision",
+    "future-imported-edit",
+]
+
+
+@pytest.mark.parametrize("snapshot", snapshots(), ids=CASE_IDS)
 def test_check_change_of_a_state_with_itself_is_empty(snapshot: Snapshot) -> None:
     assert check_change(snapshot, snapshot, SETTINGS, NOW).problems == ()

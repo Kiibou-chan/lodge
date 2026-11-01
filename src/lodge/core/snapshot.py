@@ -35,6 +35,11 @@ class Tree:
     attachments: frozenset[str] = frozenset()
 
 
+def same_listing(a: Tree, b: Tree) -> bool:
+    """Whether two exact trees hold equal file mappings and attachment sets."""
+    return (a.files, a.attachments) == (b.files, b.attachments)
+
+
 @dataclass(frozen=True)
 class Snapshot:
     decisions: Mapping[str, Decision]

@@ -340,3 +340,33 @@ Task 1 explicitly bounds its large-store baseline attempt; Task 4 requests every
 The user's brief requires an unclear step to be reported as NEEDS_CONTEXT and that task stopped.
 The benchmark step is therefore stopped pending the intended execution bound; Task 4 is not reported complete.
 No decision record was added or edited.
+
+## Task 4 fix round
+
+Step 4 is closed by d-xc4nz9, read through `lodge show --reasoning`.
+The large-store baseline retains the 900-second bound, and the review's 785 old-against-new comparisons establish parity on the smaller stores and the repository's own store.
+This supersedes the NEEDS_CONTEXT above; no unbounded retry is required.
+The fix round takes M1 to M3: state the self-comparison rule, name all 48 cases, and share the exact-tree listing comparison for current callers and Task 10a.
+
+The interface skeleton passed structure (39 tests) and strict mypy (223 source files) before the new tests were written.
+The four new listing-comparison cases ran before implementation with `uv run --frozen pytest tests/core/test_same_listing.py -q`.
+Failing output, with repeated trace detail omitted:
+
+```text
+E       NotImplementedError
+src/lodge/core/snapshot.py:40: NotImplementedError
+FAILED tests/core/test_same_listing.py::test_same_listing_compares_files_and_attachments[revision]
+FAILED tests/core/test_same_listing.py::test_same_listing_compares_files_and_attachments[contents]
+FAILED tests/core/test_same_listing.py::test_same_listing_compares_files_and_attachments[paths]
+FAILED tests/core/test_same_listing.py::test_same_listing_compares_files_and_attachments[attachments]
+4 failed in 1.06s
+```
+
+`same_listing` now compares exact file mappings and attachment sets and is exported through core's front door.
+Both `read_checked` and `committed_gate` call it; Task 10a can consume the same function.
+The self-comparison rule is stated in both relying functions' docstrings, and all 48 existing self-comparison cases have descriptive IDs.
+Existing test edit: only the parametrisation IDs in `tests/core/test_identical_change.py`; the snapshots and assertions are unchanged.
+The focused listing, self-comparison, application, and checkout-gate run passed all 84 tests in 0.70 s.
+
+Fix-round gate: `UV_FROZEN=true sh scripts/check.sh` passed formatting, Ruff, strict mypy, Vulture, 1,613 tests with 1 skipped in 51.50 s, and `lodge check --gate` printed `ok`.
+The fix round has no remaining findings or context questions.
