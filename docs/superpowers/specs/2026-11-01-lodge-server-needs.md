@@ -29,6 +29,10 @@ The author: "Conceptually the workflow is fine, but again everything is in files
 What is needed instead: "A UI that would make the state of each task and Dev part etc explicit and easy to interact with in a way that concerns are also separated (mocking and design is done somewhere else than implementation for example)."
 The workflow is adaptable, not fixed: "On the one hand I like opinionated tooling but I also don't know if this is the best way to do this and I'm sure that it does not fit every project. So it should be adaptable/not fixed."
 
+## Sessions
+
+Starting agent sessions is flexible as well: "I think the tool would start it or suggest starting it, if it runs on the server or on a machine connected to it should be flexible."
+
 ## Relation to other work
 
 The product stays separate from an existing editor for academic writing that shares much of this ground (threads backed by sessions, agent backends, knowledge records, coordination between sessions); sharing logic between the two should be considered.
@@ -37,7 +41,6 @@ lodge was written in Python because of its first constraints; reimplementing it 
 ## Open points
 
 1. Workflow: which concerns get a place of their own; the author is not sure yet.
-2. Who starts sessions: the server itself, or each client, reporting in.
-3. How tasks and decisions relate to code, which stays in git: branches, merges, and review.
-4. Who uses it: the author and her agents only, or other people too.
-5. Architecture and language, proposed once the points above are settled.
+2. How tasks and decisions relate to code, which stays in git: branches, merges, and review.
+3. Who uses it: the author and her agents only, or other people too.
+4. Architecture and language, proposed once the points above are settled.
