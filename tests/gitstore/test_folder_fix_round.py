@@ -1,6 +1,7 @@
 """Checkout isolation, bounded git work, timestamp races, and incremental rows."""
 
 import os
+import subprocess
 from pathlib import Path
 from unittest.mock import Mock, patch
 
@@ -48,10 +49,14 @@ def test_three_hundred_changes_use_constant_git_processes(
         for n in range(300):
             write(repo, f"lodge/decisions/new-{n}.md", "After.\n")
     seed(cached)
-    with patch.object(runner, "attempt", wraps=runner.attempt) as calls:
+    with (
+        patch.object(subprocess, "Popen", wraps=subprocess.Popen) as spawns,
+        patch.object(runner, "attempt", wraps=runner.attempt) as calls,
+        patch.object(runner, "run_many", wraps=runner.run_many) as group,
+    ):
         opened(repo, index).identities()
-    # The seven run_many children are fixed; attempt covers every other process.
-    assert calls.call_count <= 10, calls.call_count
+    assert spawns.call_count <= 16, spawns.call_count
+    assert ["rev-parse", "--absolute-git-dir"] in group.call_args.args[0]
     batches = [c for c in calls.call_args_list if c.args[0][:2] == ["cat-file", "--batch-check"]]
     assert len(batches) == int(tracked)
     if tracked:
@@ -60,10 +65,19 @@ def test_three_hundred_changes_use_constant_git_processes(
     agrees(opened(repo, index))
 
 
-@pytest.mark.parametrize("quantum", [1_000_000_000, 2_000_000_000])
-def test_reference_time_precedes_lstat_and_scan(cached: tuple[Path, IndexDB], quantum: int) -> None:
+@pytest.mark.parametrize(
+    "quantum,reference,mutation",
+    [
+        (1_000_000_000, 10_900_000_000, 13_100_000_000),
+        (2_000_000_000, 10_900_000_000, 13_100_000_000),
+        (2_000_000_000, 12_000_000_000, 12_005_000_000),
+    ],
+)
+def test_reference_time_precedes_lstat_and_scan(
+    cached: tuple[Path, IndexDB], quantum: int, reference: int, mutation: int
+) -> None:
     repo, index = cached
-    now = [10_900_000_000]
+    now = [reference]
     original_stat, original_entries = disk.folder_stat, disk.folder_entries
     path = "lodge/decisions/late.md"
     created = False
@@ -86,7 +100,7 @@ def test_reference_time_precedes_lstat_and_scan(cached: tuple[Path, IndexDB], qu
         if name == "lodge/decisions" and not created:
             created = True
             write(repo, path, "Created inside the scan.\n")
-            now[0] = 13_100_000_000
+            now[0] = mutation
         return entries
 
     with (
@@ -128,7 +142,7 @@ def test_one_changed_folder_writes_and_lists_only_it(cached: tuple[Path, IndexDB
     assert not any(s.startswith("DELETE FROM folders") for s in statements)
     listings = [c.args[0] for c in calls.call_args_list if c.args[0][0] == "ls-tree"]
     assert len(listings) == 1 and "-r" not in listings[0]
-    assert any(str(p).endswith(":lodge/decisions") for p in listings[0])
+    assert listings[0][-1] == "lodge/decisions/"
     assert statements.count("BEGIN IMMEDIATE") == statements.count("COMMIT") - 1 == 1
     agrees(opened(repo, index))
 

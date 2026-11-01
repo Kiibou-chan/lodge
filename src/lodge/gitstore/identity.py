@@ -63,6 +63,7 @@ class CheckoutIdentity:
                 ["var", "-l"],
                 ["rev-parse", *([f"{rev}:lodge/"] if rev is not None else [])],
                 ["merge-base", rev or EMPTY_TREE, trunk or EMPTY_TREE],
+                ["rev-parse", "--absolute-git-dir"],
             ]
             results = git.run_many(calls, self.root)
             if before != self.flags.key():
@@ -75,7 +76,8 @@ class CheckoutIdentity:
                 self.committed.remember(rev, decode(resolved.stdout).strip())
             self.committed.tree_id(self.published)
             flagged = scan(results[2].stdout)
-            walked = self._walk(rev)
+            checkout = decode(results[7].stdout).strip() if results[7].returncode == 0 else None
+            walked = self._walk(rev, checkout)
             try:
 
                 def all_paths(walked: disk.DiskWalk = walked) -> set[str]:
@@ -157,11 +159,14 @@ class CheckoutIdentity:
         self._pending = base.rev, overlay
         return LazyListing(base.rev, ident, {}, frozenset()), texts
 
-    def _walk(self, rev: str | None) -> disk.DiskWalk:
-        if self.folders is None:
+    def _walk(self, rev: str | None, checkout: str | None) -> disk.DiskWalk:
+        if self.folders is None or checkout is None:
             return disk.walk(self.root)
         return self.folders.walk(
-            self.root, self.committed.tree_id(rev), lambda path: self.committed.folder(rev, path)
+            self.root,
+            self.committed.tree_id(rev),
+            lambda paths: self.committed.folders(rev, paths),
+            checkout=checkout,
         )
 
     def materialise(self, listing: Listing) -> Listing:

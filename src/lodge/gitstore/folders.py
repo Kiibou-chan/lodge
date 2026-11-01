@@ -1,8 +1,9 @@
 """Base-relative folder signatures for indexed checkout reads.
 
 Hits assume directory mutations update inode, mtime, or ctime, a local wall clock
-comparable with the file system's, and no directory attribute caching. The two
-second margin covers timestamp rounding through two seconds, with its reference
+comparable with the file system's, and no directory attribute caching. The three
+second margin exceeds two-second timestamp rounding and a coarse kernel clock
+lagging by up to a tick, with its reference
 taken before lstat. Network file systems such as NFS and SMB can violate these
 assumptions through server clock skew or attribute caching; inode reuse across
 mounts is also outside the key, which has no device number. FUSE, NFS, and SMB
@@ -13,12 +14,12 @@ import json
 import os
 import sqlite3
 import stat
-from collections.abc import Callable, Mapping
-from dataclasses import dataclass, field
+from collections.abc import Callable, Collection, Mapping
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from time import time_ns
 
-from lodge.gitstore import disk, git
+from lodge.gitstore import disk
 from lodge.gitstore.index_transactions import transaction
 
 
@@ -44,7 +45,7 @@ class Row:
             (self.ino, self.mtime_ns, self.ctime_ns)
             == (held.st_ino, held.st_mtime_ns, held.st_ctime_ns)
             and self.base == base
-            and self.ctime_ns <= self.listed_at_ns - 2_000_000_000
+            and self.ctime_ns <= self.listed_at_ns - 3_000_000_000
         )
 
 
@@ -106,10 +107,14 @@ class Folders:
         self.db = db
 
     def walk(
-        self, root: Path, base: str, names: Callable[[str], Mapping[str, str]]
+        self,
+        root: Path,
+        base: str,
+        names: Callable[[Collection[str]], Mapping[str, Mapping[str, str]]],
+        *,
+        checkout: str,
     ) -> disk.DiskWalk:
         try:
-            checkout = git.run(["rev-parse", "--absolute-git-dir"], root)
             rows = _rows(self.db, checkout)
         except Exception:
             return disk.walk(root)
@@ -118,6 +123,7 @@ class Folders:
         for path in rows:
             children.setdefault(path.rpartition("/")[0], []).append(path)
         kept: dict[str, Row] = {}
+        relisted: dict[str, dict[str, str]] = {}
         pending = ["lodge"]
         try:
             while pending:
@@ -144,9 +150,7 @@ class Folders:
                         else:
                             walked.unlistable.add(path)
                         continue
-                    before = names(path)
-                    added = {n: k for n, k in entries.items() if before.get(n) != k}
-                    removed = {n: k for n, k in before.items() if entries.get(n) != k}
+                    relisted[path] = entries
                     row = Row(
                         path,
                         held.st_ino,
@@ -154,12 +158,22 @@ class Folders:
                         held.st_ctime_ns,
                         listed,
                         base,
-                        added,
-                        removed,
+                        {},
+                        {},
                     )
                     pending.extend(f"{path}/{n}" for n, k in entries.items() if k == "folder")
                 walked.folders.add(path)
                 kept[path] = row
+            bases = names(relisted) if relisted else {}
+            for path, row in kept.items():
+                if path in relisted:
+                    entries, before = relisted[path], bases[path]
+                    row = replace(
+                        row,
+                        added={n: k for n, k in entries.items() if before.get(n) != k},
+                        removed={n: k for n, k in before.items() if entries.get(n) != k},
+                    )
+                    kept[path] = row
                 walked.names.update(
                     (f"{path}/{n}", k) for n, k in row.added.items() if k != "folder"
                 )

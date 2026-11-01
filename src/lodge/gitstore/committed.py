@@ -21,6 +21,7 @@ class Committed:
 
     def __init__(self, root: Path) -> None:
         self.root = root
+        self._folders: dict[str | None, dict[str, dict[str, str]]] = {}
         self._trees: dict[str | None, str] = {}
         self._listings: dict[str | None, CommittedListing] = {}
 
@@ -31,6 +32,7 @@ class Committed:
             oldest = next(iter(self._trees))
             self._trees.pop(oldest)
             self._listings.pop(oldest, None)
+            self._folders.pop(oldest, None)
 
     def tree_id(self, rev: str | None) -> str:
         if rev not in self._trees:
@@ -47,6 +49,7 @@ class Committed:
         ident = self.tree_id(rev)
         if rev not in self._listings:
             blobs, attachments, kinds = {}, set(), {}
+            folders: dict[str, dict[str, str]] = {}
             raw = (
                 b""
                 if rev is None or ident == EMPTY_TREE
@@ -59,11 +62,23 @@ class Committed:
                 fields, path = meta.split(b" "), decode(raw_path)
                 if len(fields) != 3 or not path.startswith("lodge/"):
                     continue
+                parent, _, name = path.rpartition("/")
+                folders.setdefault(parent, {})[name] = (
+                    "link"
+                    if fields[0] == b"120000"
+                    else "file"
+                    if fields[1] == b"blob"
+                    else "other"
+                )
+                while parent != "lodge":
+                    parent, _, name = parent.rpartition("/")
+                    folders.setdefault(parent, {})[name] = "folder"
                 kinds[path] = decode(fields[1])
                 if path.startswith(ATTACHMENTS):
                     attachments.add(path)
                 else:
                     blobs[path] = decode(fields[2]) if fields[1] == b"blob" else blob_id(b"")
+            self._folders[rev] = folders
             self._listings[rev] = CommittedListing(rev, ident, blobs, frozenset(attachments), kinds)
         return self._listings[rev]
 
@@ -71,15 +86,13 @@ class Committed:
         """List only the immediate base entries of one relisted folder."""
         if rev is None or self.tree_id(rev) == EMPTY_TREE:
             return {}
-        done = git.attempt(["ls-tree", "-z", f"{rev}:{path}"], self.root)
-        if done.returncode:
-            return {}
+        raw = git.run_bytes(["ls-tree", "-z", rev, "--", path + "/"], self.root)
         entries = {}
-        for item in done.stdout.split(b"\0"):
+        for item in raw.split(b"\0"):
             meta, _, name = item.partition(b"\t")
             fields = meta.split(b" ")
             if len(fields) == 3:
-                entries[decode(name)] = (
+                entries[decode(name).removeprefix(path + "/")] = (
                     "folder"
                     if fields[1] == b"tree"
                     else "link"
@@ -89,6 +102,13 @@ class Committed:
                     else "other"
                 )
         return entries
+
+    def folders(self, rev: str | None, paths: Collection[str]) -> Mapping[str, Mapping[str, str]]:
+        """Take every relisted base from one listing above sixteen folders."""
+        if len(paths) <= 16:
+            return {path: self.folder(rev, path) for path in paths}
+        self.listing(rev)
+        return {path: self._folders[rev].get(path, {}) for path in paths}
 
     def selected(
         self, rev: str | None, paths: Collection[str], nonblobs: Collection[str] = ()

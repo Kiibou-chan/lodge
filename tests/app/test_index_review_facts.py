@@ -1,6 +1,6 @@
 """Published statuses, minimal facts, and the boundary of exact readers."""
 
-from dataclasses import MISSING, fields, replace
+from dataclasses import fields, replace
 from unittest.mock import patch
 
 import pytest
@@ -56,7 +56,12 @@ def test_facts_store_only_published_statuses() -> None:
 
 
 def test_stored_threads_are_required() -> None:
-    assert next(f for f in fields(StoredState) if f.name == "threads").default is MISSING
+    store, index = project(True), MemoryIndex()
+    seed(store, index)
+    values = vars(next(iter(index.states.values()))).copy()
+    values.pop("threads")
+    with pytest.raises(TypeError, match="threads"):
+        StoredState(**values)
 
 
 @pytest.mark.parametrize("args", [["check"], ["check", "--gate"], ["spec"], ["add"]])
