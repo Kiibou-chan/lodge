@@ -8,7 +8,8 @@ No record files have been opened or written.
 
 The supplied review is copied verbatim to `task-1-2-review.md`.
 I1, M1, M2, M4, M5, and M6 were addressed before Task 5.
-M3 conflicts with the task's explicit rewrite list and the Global Constraints' fixed `CORE_MODULES` list: a standard priority queue for maintaining ready placements would require `heapq`, which that list excludes.
+M3 has two parts: grouping entries once per render fixes `written_order`'s repeated scans without new imports, and is deferred to the next round touching `order.py` or `render.py` (Task 5 review M5).
+The `derived_order` part remains a plan gap: a standard priority queue for maintaining ready placements would require `heapq`, which the Global Constraints' fixed `CORE_MODULES` list excludes.
 The review itself identifies M3 as a plan gap and allows recording it as out of scope.
 Whole-spec rendering and large independent areas therefore remain an open performance concern for the coordinator; no rule is loosened and no additional rewrite is attempted in this fix round.
 M6 is closed: Task 2's 0.424 s state check and 0.950 s derivation meet the plan's separate phase estimates.

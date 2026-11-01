@@ -8,7 +8,7 @@ from enum import StrEnum
 from lodge.core.ids import is_id
 from lodge.core.yamlio import LINE_BREAKS_AND_TABS, unreadable_char
 
-_CODE = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
+CODE_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
 _AREA = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
 _STAMP = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}[+-][0-9]{2}:[0-9]{2}")
 _DAY = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}")
@@ -54,7 +54,7 @@ def read_optional_str(header: Mapping[str, object], key: str) -> str | None:
 
 def read_code(header: Mapping[str, object]) -> str | None:
     code = read_optional_str(header, "code")
-    if code is not None and _CODE.fullmatch(code) is None:
+    if code is not None and CODE_PATTERN.fullmatch(code) is None:
         raise FormatError(f"code must match [A-Za-z0-9][A-Za-z0-9._-]*, not {code!r}", "code")
     return code
 

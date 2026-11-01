@@ -1,5 +1,6 @@
 """Batched show reads once, preserves ref order, and caps contextual records."""
 
+from dataclasses import replace
 from unittest.mock import patch
 
 import pytest
@@ -7,6 +8,7 @@ from builders import area, at, decision
 from fakes import MemoryStore
 from support import ENTRY, FIRST, project, wired
 
+from lodge import core
 from lodge.app import Conflict, LodgeError, Shown, reads
 from lodge.app.state import State, resolve_ref
 from lodge.cli import run
@@ -53,7 +55,7 @@ def test_siblings_and_citers_capped_at_ten(capsys: pytest.CaptureFixture[str]) -
     assert [v.id for v in shown.siblings] == [s.id for s in siblings[:10]]
     assert [v.id for v in shown.citers] == [c.id for c in reversed(citers[1:])]
     assert shown.left_out == (2, 1)
-    assert lodge.show("X-1") == shown
+    assert lodge.show("X-1") == replace(shown, siblings=(), citers=(), left_out=(0, 0))
     assert (
         run(
             ["show", "X-1", "--reasoning", "--provenance"],
@@ -69,6 +71,18 @@ def test_siblings_and_citers_capped_at_ten(capsys: pytest.CaptureFixture[str]) -
     assert output.endswith("and 2 more siblings and 1 more citing records; lodge search X-1\n")
     assert output.count(" · A decision") == 20
     assert "A statement." not in output[output.index("siblings:") :]
+
+
+def test_viewer_show_does_not_compute_unused_code_context() -> None:
+    lodge = wired(project())
+    with (
+        patch.object(core, "family", side_effect=AssertionError("unused siblings")),
+        patch.object(core, "citers", side_effect=AssertionError("unused citers")),
+    ):
+        shown = lodge.show("ITEM-1", True, True)
+    assert shown.level1.id == FIRST.id and shown.level2 is not None
+    assert shown.level3 is not None
+    assert (shown.siblings, shown.citers, shown.left_out) == ((), (), (0, 0))
 
 
 def test_broken_files_reported_once_for_the_batch(capsys: pytest.CaptureFixture[str]) -> None:
