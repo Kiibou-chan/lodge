@@ -1,6 +1,6 @@
 # Task 4 build report
 
-Status: in progress on `read-speed-build`.
+Status: NEEDS_CONTEXT for Task 4, Step 4; implementation and the full gate are complete on `read-speed-build`.
 Only Task 4's application state, new test files, the explicitly named derivation test, and this report are in scope.
 No project records are opened directly, added, or edited.
 
@@ -258,3 +258,85 @@ Mode: `seen`; store: `s900`; runs: 3.
 
 All twelve commands had identical standard output and exit status across all three measured runs.
 These initial timings overlapped the gate and a separate review workload, so they are reported as observed and do not isolate the shortcut's speedup.
+
+### s9000
+
+Command: `uv run --frozen python scripts/bench_reads.py /var/tmp/lodge-bench/s9000 --lodge /var/tmp/lodge-build/.venv/bin/lodge --against /var/tmp/lodge-bench/venv-base/bin/lodge`.
+
+Mode: `seen`; store: `s9000`; runs: 3.
+
+| Command | Build | Best (s) | Median (s) | Exit | Characters | Identical |
+|---|---|---:|---:|---|---|---|
+| `show {code}` | lodge | 1.916 | 1.966 | 0 | 249 | true |
+| `show {code}` | against | 22.404 | 24.455 | 0 | 249 | true |
+| `show {entry} --reasoning --provenance` | lodge | 3.001 | 3.033 | 0 | 438 | true |
+| `show {entry} --reasoning --provenance` | against | 24.944 | 25.027 | 0 | 438 | true |
+| `show {decision}` | lodge | 3.544 | 3.836 | 0 | 261 | true |
+| `show {decision}` | against | 23.560 | 25.051 | 0 | 261 | true |
+| `search berth --brief` | lodge | 4.143 | 4.343 | 0 | 2112 | true |
+| `search berth --brief` | against | 14.935 | 16.116 | 0 | 2112 | true |
+| `search "berth crane" --brief` | lodge | 3.428 | 3.658 | 0 | 2175 | true |
+| `search "berth crane" --brief` | against | 15.255 | 15.833 | 0 | 2175 | true |
+| `search {code} --brief` | lodge | 3.435 | 3.480 | 0 | 1804 | true |
+| `search {code} --brief` | against | 16.162 | 16.290 | 0 | 1804 | true |
+| `search berth` | lodge | 3.525 | 3.890 | 0 | 5038 | true |
+| `search berth` | against | 16.586 | 16.674 | 0 | 5038 | true |
+| `waiting` | lodge | 4.025 | 4.095 | 0 | 61 | true |
+| `waiting` | against | 15.893 | 16.209 | 0 | 61 | true |
+| `threads` | lodge | 4.149 | 4.258 | 0 | 16 | true |
+| `threads` | against | 15.724 | 15.929 | 0 | 16 | true |
+| `spec --area area-001` | lodge | 3.815 | 3.936 | 0 | 8013 | true |
+| `spec --area area-001` | against | 15.861 | 15.880 | 0 | 8013 | true |
+| `check` | lodge | 3.389 | 3.464 | 0 | 3 | true |
+| `check` | against | 16.072 | 16.664 | 0 | 3 | true |
+| `check --gate` | lodge | 6.754 | 6.799 | 0 | 3 | true |
+| `check --gate` | against | 27.281 | 27.658 | 0 | 3 | true |
+
+All twelve commands had identical standard output and exit status across all three measured runs.
+The comparison measures the combined changes of Tasks 2 to 4 against Task 1 and overlaps other benchmark and review work.
+It does not isolate the contribution of the identical-state shortcut.
+
+### s90000, interrupted comparison
+
+Command: `uv run --frozen python scripts/bench_reads.py /var/tmp/lodge-bench/s90000 --lodge /var/tmp/lodge-build/.venv/bin/lodge --against /var/tmp/lodge-bench/venv-base/bin/lodge`.
+The current build completed all twelve commands, including warm-ups and three measured runs.
+The Task 1 baseline was still running its first warm-up after more than 24 minutes.
+The replay then terminated with exit status 143, and its output file was empty.
+The source of the termination was not established.
+The replay retains results in memory and emits its combined table only after both builds finish, so the interrupted run supplies no large-store comparison table or verified output parity.
+No timeout or reduced command list was substituted in that run.
+The separate point-read measurement below preserves a completed large-store timing.
+
+### Independent large-store point-read measurement
+
+To record a completed large-store timing while the combined replay waits on the old baseline, the one-command probe was run separately.
+Command: `uv run --frozen python scripts/bench_reads.py /var/tmp/lodge-bench/s90000 --lodge /var/tmp/lodge-build/.venv/bin/lodge --commands /var/tmp/lodge-bench/show-code.txt`.
+The command file contains only `show {code}`.
+
+Mode: `seen`; store: `s90000`; runs: 3.
+
+| Command | Build | Best (s) | Median (s) | Exit | Characters | Identical |
+|---|---|---:|---:|---|---|---|
+| `show {code}` | lodge | 17.023 | 17.042 | 0 | 256 | n/a |
+
+This is the best of three measured runs after a warm-up and is not a completed baseline output comparison.
+
+## Delivery and concerns
+
+Implementation, tests, the failing output, proof, and the initial report are committed as `0a29988` and pushed to `origin/read-speed-build`.
+The report commit records the remaining completed measurements and the interrupted comparison.
+The full gate is green, and no implementation concern remains.
+No source or test changed after that gate.
+All twelve commands at both `s900` and `s9000` have identical standard output and exit status across all three measured runs.
+The independent large-store point read completed with best-of-three time 17.023 s and exit status 0.
+Large-store parity against Task 1 is unverified because the combined replay was terminated before its first baseline read finished.
+The baseline's quadratic change check makes this comparison much slower than the new build.
+Timing comparisons overlap other benchmarking and review work and measure Tasks 2 to 4 together.
+
+## NEEDS_CONTEXT
+
+Question for Task 4, Step 4: should the full `s90000 --against` replay against Task 1 be retried without a time bound, or should the large-store baseline retain Task 1's 900-second bound, with unfinished comparisons explicitly reported?
+Task 1 explicitly bounds its large-store baseline attempt; Task 4 requests every line compared against that build without stating a bound, and this full attempt was terminated before the first baseline warm-up finished.
+The user's brief requires an unclear step to be reported as NEEDS_CONTEXT and that task stopped.
+The benchmark step is therefore stopped pending the intended execution bound; Task 4 is not reported complete.
+No decision record was added or edited.
