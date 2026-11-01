@@ -32,6 +32,7 @@ The workflow is adaptable, not fixed: "On the one hand I like opinionated toolin
 ## Sessions
 
 Starting agent sessions is flexible as well: "I think the tool would start it or suggest starting it, if it runs on the server or on a machine connected to it should be flexible."
+lodge also works the other way round with cloud agent sessions: "Ideally this can also interact with Claude cloud sessions, spawning and using them."
 
 ## Relation to other work
 
