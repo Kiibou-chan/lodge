@@ -2,19 +2,14 @@
 
 import json
 import re
-from collections.abc import Hashable
-from typing import Any
 
 import yaml
-from yaml.constructor import ConstructorError
 
 from lodge.core import yamlfast
 
-_KEPT_TAGS = {"tag:yaml.org,2002:str", "tag:yaml.org,2002:seq", "tag:yaml.org,2002:map", None}
 _UNREADABLE = re.compile(r"[\x00-\x1f\x7f-\x9f\u2028\u2029\ud800-\udfff\ufffe\uffff]")
 
 
-_PAIR = re.compile(r"[\ud800-\udbff][\udc00-\udfff]")
 LINE_BREAKS_AND_TABS = "\t\n\r"
 
 
@@ -26,31 +21,8 @@ class YamlError(ValueError):
         self.line = line
 
 
-class _TextLoader(yaml.SafeLoader):
+class _TextLoader(yamlfast.TextConstructor, yaml.SafeLoader):
     """A safe loader with no implicit resolvers: `yes`, `14:14`, `~`, and `1234` stay text."""
-
-    yaml_implicit_resolvers: dict[Any, Any] = {}  # noqa: RUF012
-    yaml_constructors = {  # noqa: RUF012
-        tag: build for tag, build in yaml.SafeLoader.yaml_constructors.items() if tag in _KEPT_TAGS
-    }
-
-    def construct_scalar(self, node: yaml.ScalarNode | yaml.MappingNode) -> Any:
-        """Text with each escaped UTF-16 surrogate pair joined into the character it encodes."""
-        return _PAIR.sub(_join_pair, super().construct_scalar(node))
-
-    def construct_mapping(self, node: yaml.MappingNode, deep: bool = False) -> dict[Hashable, Any]:
-        seen: set[str] = set()
-        for key_node, _ in node.value:
-            if isinstance(key_node, yaml.ScalarNode):
-                if key_node.value in seen:
-                    message = f"duplicate key {key_node.value!r}"
-                    raise ConstructorError(None, None, message, key_node.start_mark)
-                seen.add(key_node.value)
-        return super().construct_mapping(node, deep)
-
-
-def _join_pair(pair: re.Match[str]) -> str:
-    return pair.group().encode("utf-16-le", "surrogatepass").decode("utf-16-le")
 
 
 def load_yaml(text: str) -> object:

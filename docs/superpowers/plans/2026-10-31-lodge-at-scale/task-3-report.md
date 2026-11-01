@@ -18,11 +18,9 @@ The module is internal to core, so no front-door export is needed.
 
 Command: `uv run --frozen pytest tests/core/test_yaml_guard.py tests/core/test_yaml_fuzz.py -q --tb=short`.
 All 60 new cases failed before implementation, including each named Task 3 test.
-The full captured output follows.
+The first lines of one representative failure per test function follow.
 
 ```text
-FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF             [100%]
-=================================== FAILURES ===================================
 ____________________ test_every_written_header_is_admitted _____________________
 tests/core/test_yaml_guard.py:65: in test_every_written_header_is_admitted
     assert yamlfast.admitted(header), header
@@ -30,6 +28,7 @@ tests/core/test_yaml_guard.py:65: in test_every_written_header_is_admitted
 src/lodge/core/yamlfast.py:6: in admitted
     raise NotImplementedError
 E   NotImplementedError
+
 _______ test_trailing_tab_is_not_admitted_and_fails_as_today[title: x\t] _______
 tests/core/test_yaml_guard.py:78: in test_trailing_tab_is_not_admitted_and_fails_as_today
     assert not yamlfast.admitted(header)
@@ -37,27 +36,7 @@ tests/core/test_yaml_guard.py:78: in test_trailing_tab_is_not_admitted_and_fails
 src/lodge/core/yamlfast.py:6: in admitted
     raise NotImplementedError
 E   NotImplementedError
-_______ test_trailing_tab_is_not_admitted_and_fails_as_today[title:\tx] ________
-tests/core/test_yaml_guard.py:78: in test_trailing_tab_is_not_admitted_and_fails_as_today
-    assert not yamlfast.admitted(header)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-_________ test_trailing_tab_is_not_admitted_and_fails_as_today[- a\t] __________
-tests/core/test_yaml_guard.py:78: in test_trailing_tab_is_not_admitted_and_fails_as_today
-    assert not yamlfast.admitted(header)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-_____ test_trailing_tab_is_not_admitted_and_fails_as_today[title: x\t# c] ______
-tests/core/test_yaml_guard.py:78: in test_trailing_tab_is_not_admitted_and_fails_as_today
-    assert not yamlfast.admitted(header)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
+
 ___________ test_block_scalar_bom_and_nesting_not_admitted[key: |#] ____________
 tests/core/test_yaml_guard.py:95: in test_block_scalar_bom_and_nesting_not_admitted
     assert not yamlfast.admitted(header)
@@ -65,20 +44,7 @@ tests/core/test_yaml_guard.py:95: in test_block_scalar_bom_and_nesting_not_admit
 src/lodge/core/yamlfast.py:6: in admitted
     raise NotImplementedError
 E   NotImplementedError
-______ test_block_scalar_bom_and_nesting_not_admitted[a: b\n\ufeffkey: c] ______
-tests/core/test_yaml_guard.py:95: in test_block_scalar_bom_and_nesting_not_admitted
-    assert not yamlfast.admitted(header)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-___________ test_block_scalar_bom_and_nesting_not_admitted[header2] ____________
-tests/core/test_yaml_guard.py:95: in test_block_scalar_bom_and_nesting_not_admitted
-    assert not yamlfast.admitted(header)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
+
 ___________________ test_c_loader_used_for_admitted_headers ____________________
 tests/core/test_yaml_guard.py:108: in test_c_loader_used_for_admitted_headers
     assert calls == ["key: yes"]
@@ -86,6 +52,7 @@ E   AssertionError: assert [] == ['key: yes']
 E     
 E     Right contains one more item: 'key: yes'
 E     Use -v to get more diff
+
 _______________________ test_falls_back_without_libyaml ________________________
 tests/core/test_yaml_guard.py:112: in test_falls_back_without_libyaml
     assert yamlfast.admitted('key: "berth"')
@@ -93,6 +60,7 @@ tests/core/test_yaml_guard.py:112: in test_falls_back_without_libyaml
 src/lodge/core/yamlfast.py:6: in admitted
     raise NotImplementedError
 E   NotImplementedError
+
 _________ test_c_failures_fall_back_with_python_diagnostics[failure0] __________
 tests/core/test_yaml_guard.py:126: in test_c_failures_fall_back_with_python_diagnostics
     assert yamlfast.admitted("title: a\ntitle: b")
@@ -100,13 +68,7 @@ tests/core/test_yaml_guard.py:126: in test_c_failures_fall_back_with_python_diag
 src/lodge/core/yamlfast.py:6: in admitted
     raise NotImplementedError
 E   NotImplementedError
-_________ test_c_failures_fall_back_with_python_diagnostics[failure1] __________
-tests/core/test_yaml_guard.py:126: in test_c_failures_fall_back_with_python_diagnostics
-    assert yamlfast.admitted("title: a\ntitle: b")
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
+
 ____________________ test_writer_shapes_are_admitted[a: b] _____________________
 tests/core/test_yaml_guard.py:147: in test_writer_shapes_are_admitted
     assert yamlfast.admitted(header)
@@ -114,69 +76,7 @@ tests/core/test_yaml_guard.py:147: in test_writer_shapes_are_admitted
 src/lodge/core/yamlfast.py:6: in admitted
     raise NotImplementedError
 E   NotImplementedError
-____________________ test_writer_shapes_are_admitted[a: ""] ____________________
-tests/core/test_yaml_guard.py:147: in test_writer_shapes_are_admitted
-    assert yamlfast.admitted(header)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-__________________ test_writer_shapes_are_admitted[a: 14:14] ___________________
-tests/core/test_yaml_guard.py:147: in test_writer_shapes_are_admitted
-    assert yamlfast.admitted(header)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-__________________ test_writer_shapes_are_admitted[a: [a, b]] __________________
-tests/core/test_yaml_guard.py:147: in test_writer_shapes_are_admitted
-    assert yamlfast.admitted(header)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-____________________ test_writer_shapes_are_admitted[a: []] ____________________
-tests/core/test_yaml_guard.py:147: in test_writer_shapes_are_admitted
-    assert yamlfast.admitted(header)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-_______________ test_writer_shapes_are_admitted[a: {b: c, d: e}] _______________
-tests/core/test_yaml_guard.py:147: in test_writer_shapes_are_admitted
-    assert yamlfast.admitted(header)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-________ test_writer_shapes_are_admitted[a:\n  - {b: "c"}\n  - {d: 3}] _________
-tests/core/test_yaml_guard.py:147: in test_writer_shapes_are_admitted
-    assert yamlfast.admitted(header)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-____________ test_writer_shapes_are_admitted[a: "# | > & * ! % ?"] _____________
-tests/core/test_yaml_guard.py:147: in test_writer_shapes_are_admitted
-    assert yamlfast.admitted(header)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-______ test_writer_shapes_are_admitted[a: "\\u0000\\u0041\\uD7FF\\ue000"] ______
-tests/core/test_yaml_guard.py:147: in test_writer_shapes_are_admitted
-    assert yamlfast.admitted(header)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-_______ test_writer_shapes_are_admitted[a: "\\b\\f\\n\\r\\t\\/\\\\\\""] ________
-tests/core/test_yaml_guard.py:147: in test_writer_shapes_are_admitted
-    assert yamlfast.admitted(header)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
+
 _____________________ test_other_shapes_are_not_admitted[] _____________________
 tests/core/test_yaml_guard.py:163: in test_other_shapes_are_not_admitted
     assert not yamlfast.admitted(header)
@@ -184,258 +84,7 @@ tests/core/test_yaml_guard.py:163: in test_other_shapes_are_not_admitted
 src/lodge/core/yamlfast.py:6: in admitted
     raise NotImplementedError
 E   NotImplementedError
-____________________ test_other_shapes_are_not_admitted[a:] ____________________
-tests/core/test_yaml_guard.py:163: in test_other_shapes_are_not_admitted
-    assert not yamlfast.admitted(header)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-_________________ test_other_shapes_are_not_admitted[a:\nb: c] _________________
-tests/core/test_yaml_guard.py:163: in test_other_shapes_are_not_admitted
-    assert not yamlfast.admitted(header)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-________________ test_other_shapes_are_not_admitted[  - {a: b}] ________________
-tests/core/test_yaml_guard.py:163: in test_other_shapes_are_not_admitted
-    assert not yamlfast.admitted(header)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-________________ test_other_shapes_are_not_admitted[a:\n  - b] _________________
-tests/core/test_yaml_guard.py:163: in test_other_shapes_are_not_admitted
-    assert not yamlfast.admitted(header)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-__________________ test_other_shapes_are_not_admitted[a: {}] ___________________
-tests/core/test_yaml_guard.py:163: in test_other_shapes_are_not_admitted
-    assert not yamlfast.admitted(header)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-__________________ test_other_shapes_are_not_admitted[a: b ] ___________________
-tests/core/test_yaml_guard.py:163: in test_other_shapes_are_not_admitted
-    assert not yamlfast.admitted(header)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-_________________ test_other_shapes_are_not_admitted[a: b\n\n] _________________
-tests/core/test_yaml_guard.py:163: in test_other_shapes_are_not_admitted
-    assert not yamlfast.admitted(header)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-_________________ test_other_shapes_are_not_admitted[a: b # c] _________________
-tests/core/test_yaml_guard.py:163: in test_other_shapes_are_not_admitted
-    assert not yamlfast.admitted(header)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-__________________ test_other_shapes_are_not_admitted[a: a:] ___________________
-tests/core/test_yaml_guard.py:163: in test_other_shapes_are_not_admitted
-    assert not yamlfast.admitted(header)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-___________________ test_other_shapes_are_not_admitted[a: ~] ___________________
-tests/core/test_yaml_guard.py:163: in test_other_shapes_are_not_admitted
-    assert not yamlfast.admitted(header)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-___________________ test_other_shapes_are_not_admitted[A: b] ___________________
-tests/core/test_yaml_guard.py:163: in test_other_shapes_are_not_admitted
-    assert not yamlfast.admitted(header)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-__________________ test_other_shapes_are_not_admitted[a1: b] ___________________
-tests/core/test_yaml_guard.py:163: in test_other_shapes_are_not_admitted
-    assert not yamlfast.admitted(header)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-__________________ test_other_shapes_are_not_admitted[a-b: c] __________________
-tests/core/test_yaml_guard.py:163: in test_other_shapes_are_not_admitted
-    assert not yamlfast.admitted(header)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-______________ test_other_shapes_are_not_admitted[a: {b: {c: d}}] ______________
-tests/core/test_yaml_guard.py:163: in test_other_shapes_are_not_admitted
-    assert not yamlfast.admitted(header)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-_______________ test_other_shapes_are_not_admitted[a: [a, [b]]] ________________
-tests/core/test_yaml_guard.py:163: in test_other_shapes_are_not_admitted
-    assert not yamlfast.admitted(header)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-_________________ test_other_shapes_are_not_admitted[a: [a,b]] _________________
-tests/core/test_yaml_guard.py:163: in test_other_shapes_are_not_admitted
-    assert not yamlfast.admitted(header)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-______________ test_other_shapes_are_not_admitted[a: {b: c,d: e}] ______________
-tests/core/test_yaml_guard.py:163: in test_other_shapes_are_not_admitted
-    assert not yamlfast.admitted(header)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-___________________ test_other_shapes_are_not_admitted[a: |] ___________________
-tests/core/test_yaml_guard.py:163: in test_other_shapes_are_not_admitted
-    assert not yamlfast.admitted(header)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-___________________ test_other_shapes_are_not_admitted[a: >] ___________________
-tests/core/test_yaml_guard.py:163: in test_other_shapes_are_not_admitted
-    assert not yamlfast.admitted(header)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-_________________ test_other_shapes_are_not_admitted[a: &b c] __________________
-tests/core/test_yaml_guard.py:163: in test_other_shapes_are_not_admitted
-    assert not yamlfast.admitted(header)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-__________________ test_other_shapes_are_not_admitted[a: *b] ___________________
-tests/core/test_yaml_guard.py:163: in test_other_shapes_are_not_admitted
-    assert not yamlfast.admitted(header)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-________________ test_other_shapes_are_not_admitted[a: !str b] _________________
-tests/core/test_yaml_guard.py:163: in test_other_shapes_are_not_admitted
-    assert not yamlfast.admitted(header)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-________________ test_other_shapes_are_not_admitted[%YAML 1.1] _________________
-tests/core/test_yaml_guard.py:163: in test_other_shapes_are_not_admitted
-    assert not yamlfast.admitted(header)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-___________________ test_other_shapes_are_not_admitted[? a] ____________________
-tests/core/test_yaml_guard.py:163: in test_other_shapes_are_not_admitted
-    assert not yamlfast.admitted(header)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-_______________ test_other_shapes_are_not_admitted[a: "\\uD800"] _______________
-tests/core/test_yaml_guard.py:163: in test_other_shapes_are_not_admitted
-    assert not yamlfast.admitted(header)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-_______________ test_other_shapes_are_not_admitted[a: "\\udfff"] _______________
-tests/core/test_yaml_guard.py:163: in test_other_shapes_are_not_admitted
-    assert not yamlfast.admitted(header)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-___________ test_other_shapes_are_not_admitted[a: "\\ud83d\\ude00"] ____________
-tests/core/test_yaml_guard.py:163: in test_other_shapes_are_not_admitted
-    assert not yamlfast.admitted(header)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-________________ test_other_shapes_are_not_admitted[a: "\\x41"] ________________
-tests/core/test_yaml_guard.py:163: in test_other_shapes_are_not_admitted
-    assert not yamlfast.admitted(header)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-________________ test_other_shapes_are_not_admitted[a: "\x7f"] _________________
-tests/core/test_yaml_guard.py:163: in test_other_shapes_are_not_admitted
-    assert not yamlfast.admitted(header)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-________________ test_other_shapes_are_not_admitted[a: "\x85"] _________________
-tests/core/test_yaml_guard.py:163: in test_other_shapes_are_not_admitted
-    assert not yamlfast.admitted(header)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-_______________ test_other_shapes_are_not_admitted[a: "\u2028"] ________________
-tests/core/test_yaml_guard.py:163: in test_other_shapes_are_not_admitted
-    assert not yamlfast.admitted(header)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-_______________ test_other_shapes_are_not_admitted[a: "\u2029"] ________________
-tests/core/test_yaml_guard.py:163: in test_other_shapes_are_not_admitted
-    assert not yamlfast.admitted(header)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-_______________ test_other_shapes_are_not_admitted[a: "\ufeff"] ________________
-tests/core/test_yaml_guard.py:163: in test_other_shapes_are_not_admitted
-    assert not yamlfast.admitted(header)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-_______________ test_other_shapes_are_not_admitted[a: "\ud800"] ________________
-tests/core/test_yaml_guard.py:163: in test_other_shapes_are_not_admitted
-    assert not yamlfast.admitted(header)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-_________________ test_other_shapes_are_not_admitted[a: b\r\n] _________________
-tests/core/test_yaml_guard.py:163: in test_other_shapes_are_not_admitted
-    assert not yamlfast.admitted(header)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
-_________________ test_other_shapes_are_not_admitted[a: "\t"] __________________
-tests/core/test_yaml_guard.py:163: in test_other_shapes_are_not_admitted
-    assert not yamlfast.admitted(header)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^
-src/lodge/core/yamlfast.py:6: in admitted
-    raise NotImplementedError
-E   NotImplementedError
+
 _____________________ test_admitted_headers_parse_the_same _____________________
 tests/core/test_yaml_fuzz.py:73: in test_admitted_headers_parse_the_same
     if yamlfast.admitted(header):
@@ -443,67 +92,7 @@ tests/core/test_yaml_fuzz.py:73: in test_admitted_headers_parse_the_same
 src/lodge/core/yamlfast.py:6: in admitted
     raise NotImplementedError
 E   NotImplementedError
-=========================== short test summary info ============================
-FAILED tests/core/test_yaml_guard.py::test_every_written_header_is_admitted
-FAILED tests/core/test_yaml_guard.py::test_trailing_tab_is_not_admitted_and_fails_as_today[title: x\t]
-FAILED tests/core/test_yaml_guard.py::test_trailing_tab_is_not_admitted_and_fails_as_today[title:\tx]
-FAILED tests/core/test_yaml_guard.py::test_trailing_tab_is_not_admitted_and_fails_as_today[- a\t]
-FAILED tests/core/test_yaml_guard.py::test_trailing_tab_is_not_admitted_and_fails_as_today[title: x\t# c]
-FAILED tests/core/test_yaml_guard.py::test_block_scalar_bom_and_nesting_not_admitted[key: |#]
-FAILED tests/core/test_yaml_guard.py::test_block_scalar_bom_and_nesting_not_admitted[a: b\n\ufeffkey: c]
-FAILED tests/core/test_yaml_guard.py::test_block_scalar_bom_and_nesting_not_admitted[header2]
-FAILED tests/core/test_yaml_guard.py::test_c_loader_used_for_admitted_headers
-FAILED tests/core/test_yaml_guard.py::test_falls_back_without_libyaml - NotIm...
-FAILED tests/core/test_yaml_guard.py::test_c_failures_fall_back_with_python_diagnostics[failure0]
-FAILED tests/core/test_yaml_guard.py::test_c_failures_fall_back_with_python_diagnostics[failure1]
-FAILED tests/core/test_yaml_guard.py::test_writer_shapes_are_admitted[a: b]
-FAILED tests/core/test_yaml_guard.py::test_writer_shapes_are_admitted[a: ""]
-FAILED tests/core/test_yaml_guard.py::test_writer_shapes_are_admitted[a: 14:14]
-FAILED tests/core/test_yaml_guard.py::test_writer_shapes_are_admitted[a: [a, b]]
-FAILED tests/core/test_yaml_guard.py::test_writer_shapes_are_admitted[a: []]
-FAILED tests/core/test_yaml_guard.py::test_writer_shapes_are_admitted[a: {b: c, d: e}]
-FAILED tests/core/test_yaml_guard.py::test_writer_shapes_are_admitted[a:\n  - {b: "c"}\n  - {d: 3}]
-FAILED tests/core/test_yaml_guard.py::test_writer_shapes_are_admitted[a: "# | > & * ! % ?"]
-FAILED tests/core/test_yaml_guard.py::test_writer_shapes_are_admitted[a: "\\u0000\\u0041\\uD7FF\\ue000"]
-FAILED tests/core/test_yaml_guard.py::test_writer_shapes_are_admitted[a: "\\b\\f\\n\\r\\t\\/\\\\\\""]
-FAILED tests/core/test_yaml_guard.py::test_other_shapes_are_not_admitted[] - ...
-FAILED tests/core/test_yaml_guard.py::test_other_shapes_are_not_admitted[a:]
-FAILED tests/core/test_yaml_guard.py::test_other_shapes_are_not_admitted[a:\nb: c]
-FAILED tests/core/test_yaml_guard.py::test_other_shapes_are_not_admitted[  - {a: b}]
-FAILED tests/core/test_yaml_guard.py::test_other_shapes_are_not_admitted[a:\n  - b]
-FAILED tests/core/test_yaml_guard.py::test_other_shapes_are_not_admitted[a: {}]
-FAILED tests/core/test_yaml_guard.py::test_other_shapes_are_not_admitted[a: b ]
-FAILED tests/core/test_yaml_guard.py::test_other_shapes_are_not_admitted[a: b\n\n]
-FAILED tests/core/test_yaml_guard.py::test_other_shapes_are_not_admitted[a: b # c]
-FAILED tests/core/test_yaml_guard.py::test_other_shapes_are_not_admitted[a: a:]
-FAILED tests/core/test_yaml_guard.py::test_other_shapes_are_not_admitted[a: ~]
-FAILED tests/core/test_yaml_guard.py::test_other_shapes_are_not_admitted[A: b]
-FAILED tests/core/test_yaml_guard.py::test_other_shapes_are_not_admitted[a1: b]
-FAILED tests/core/test_yaml_guard.py::test_other_shapes_are_not_admitted[a-b: c]
-FAILED tests/core/test_yaml_guard.py::test_other_shapes_are_not_admitted[a: {b: {c: d}}]
-FAILED tests/core/test_yaml_guard.py::test_other_shapes_are_not_admitted[a: [a, [b]]]
-FAILED tests/core/test_yaml_guard.py::test_other_shapes_are_not_admitted[a: [a,b]]
-FAILED tests/core/test_yaml_guard.py::test_other_shapes_are_not_admitted[a: {b: c,d: e}]
-FAILED tests/core/test_yaml_guard.py::test_other_shapes_are_not_admitted[a: |]
-FAILED tests/core/test_yaml_guard.py::test_other_shapes_are_not_admitted[a: >]
-FAILED tests/core/test_yaml_guard.py::test_other_shapes_are_not_admitted[a: &b c]
-FAILED tests/core/test_yaml_guard.py::test_other_shapes_are_not_admitted[a: *b]
-FAILED tests/core/test_yaml_guard.py::test_other_shapes_are_not_admitted[a: !str b]
-FAILED tests/core/test_yaml_guard.py::test_other_shapes_are_not_admitted[%YAML 1.1]
-FAILED tests/core/test_yaml_guard.py::test_other_shapes_are_not_admitted[? a]
-FAILED tests/core/test_yaml_guard.py::test_other_shapes_are_not_admitted[a: "\\uD800"]
-FAILED tests/core/test_yaml_guard.py::test_other_shapes_are_not_admitted[a: "\\udfff"]
-FAILED tests/core/test_yaml_guard.py::test_other_shapes_are_not_admitted[a: "\\ud83d\\ude00"]
-FAILED tests/core/test_yaml_guard.py::test_other_shapes_are_not_admitted[a: "\\x41"]
-FAILED tests/core/test_yaml_guard.py::test_other_shapes_are_not_admitted[a: "\x7f"]
-FAILED tests/core/test_yaml_guard.py::test_other_shapes_are_not_admitted[a: "\x85"]
-FAILED tests/core/test_yaml_guard.py::test_other_shapes_are_not_admitted[a: "\u2028"]
-FAILED tests/core/test_yaml_guard.py::test_other_shapes_are_not_admitted[a: "\u2029"]
-FAILED tests/core/test_yaml_guard.py::test_other_shapes_are_not_admitted[a: "\ufeff"]
-FAILED tests/core/test_yaml_guard.py::test_other_shapes_are_not_admitted[a: "\ud800"]
-FAILED tests/core/test_yaml_guard.py::test_other_shapes_are_not_admitted[a: b\r\n]
-FAILED tests/core/test_yaml_guard.py::test_other_shapes_are_not_admitted[a: "\t"]
-FAILED tests/core/test_yaml_fuzz.py::test_admitted_headers_parse_the_same - N...
+
 60 failed in 0.23s
 ```
 

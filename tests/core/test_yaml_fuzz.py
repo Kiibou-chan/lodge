@@ -8,6 +8,7 @@ import yaml
 
 from lodge.core import yamlfast, yamlio
 
+LIBYAML = bool(getattr(yaml, "__with_libyaml__", False))
 SEED = 20261101
 
 
@@ -112,14 +113,16 @@ def test_admitted_headers_parse_the_same() -> None:
         context = f"seed={SEED}, case={n}, header={header!r}"
         if yamlfast.admitted(header):
             admitted_count += 1
-            try:
-                fast = yamlfast.load_yaml(header)
-            except Exception:
-                pass  # A C failure is allowed, but the public loader must fall back below.
-            else:
-                c_successes += 1
-                assert ("value", fast) == outcome(python_yaml, header), context
+            if LIBYAML:
+                try:
+                    fast = yamlfast.load_yaml(header)
+                except Exception:
+                    pass  # A C failure is allowed, but the public loader must fall back below.
+                else:
+                    c_successes += 1
+                    assert ("value", fast) == outcome(python_yaml, header), context
         assert outcome(yamlio.load_yaml, header) == outcome(python_yaml, header), context
     print(f"seed={SEED}: libyaml parsed {c_successes}/{admitted_count} admitted headers")
     assert admitted_count > 1000
-    assert c_successes > 1000
+    if LIBYAML:
+        assert c_successes > 1000
