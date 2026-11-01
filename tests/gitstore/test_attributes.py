@@ -49,7 +49,7 @@ def test_no_sources_no_check_attr_call(
     variables = [call.args[0] for call in calls.call_args_list if call.args[0][0] == "var"]
     assert all(len(args) == 2 for args in variables)
     assert {args[1] for args in variables} == (
-        {"GIT_ATTR_GLOBAL"} if system_disabled else {"GIT_ATTR_GLOBAL", "GIT_ATTR_SYSTEM"}
+        {"-l"} if system_disabled else {"-l", "GIT_ATTR_SYSTEM"}
     )
 
 
