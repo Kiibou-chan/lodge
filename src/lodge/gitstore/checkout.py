@@ -10,6 +10,7 @@ from lodge.core import Tree
 from lodge.gitstore.commit import commit_paths
 from lodge.gitstore.disk import tree as disk_tree
 from lodge.gitstore.errors import NOT_INITIALISED, NotInitialised
+from lodge.gitstore.folders import Folders
 from lodge.gitstore.git import run
 from lodge.gitstore.listing import CheckoutListing
 from lodge.gitstore.lock import locked
@@ -29,6 +30,8 @@ class CheckoutStore:
         common_dir: Path,
         lock_wait_seconds: float,
         index_retry_seconds: float = 1.0,
+        *,
+        folders: Folders | None = None,
     ) -> None:
         self._retry = index_retry_seconds
         self._root = root
@@ -36,7 +39,7 @@ class CheckoutStore:
         self._common = common_dir
         self._wait = lock_wait_seconds
         self._published: Published | None = None
-        self._listing = CheckoutListing(root, settings, data_folder_exists)
+        self._listing = CheckoutListing(root, settings, data_folder_exists, folders)
         self.identities = self._listing.identities
         self.listings = self._listing.listings
         self.texts = self._listing.texts

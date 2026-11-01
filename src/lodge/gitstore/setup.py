@@ -2,11 +2,13 @@
 
 from pathlib import Path
 
-from lodge.app import Clock, LodgeError, Store
+from lodge.app import Clock, Index, LodgeError, Store
 from lodge.gitstore.branch import BranchStore, init_branch
 from lodge.gitstore.checkout import CheckoutStore, data_folder_exists
 from lodge.gitstore.errors import GitMissing, NotARepository
+from lodge.gitstore.folders import Folders
 from lodge.gitstore.git import run
+from lodge.gitstore.index_db import IndexDB
 from lodge.gitstore.lock import locked
 from lodge.gitstore.settings import StoreSettings
 from lodge.gitstore.trees import DATA, KEPT
@@ -31,11 +33,13 @@ def open_store(
     *,
     lock_wait_seconds: float = LOCK_WAIT_SECONDS,
     common: Path | None = None,
+    index: Index | None = None,
 ) -> Store:
     common = common or common_dir(root)
     if settings.mode == "branch":
         return BranchStore(root, settings, clock, common, lock_wait_seconds)
-    return CheckoutStore(root, settings, common, lock_wait_seconds)
+    folders = Folders(index.db) if isinstance(index, IndexDB) else None
+    return CheckoutStore(root, settings, common, lock_wait_seconds, folders=folders)
 
 
 def init_store(root: Path, settings: StoreSettings) -> str:
