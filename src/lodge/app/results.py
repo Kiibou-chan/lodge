@@ -54,6 +54,8 @@ class Listed:
     items: tuple[Level1, ...]
     read: Read
     more: int = 0
+    query: str = ""
+    above: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)

@@ -25,16 +25,38 @@ def read_lines(read: Read) -> list[str]:
     return [*first, *(f"problem: {_where(p)}: {p.message}" for p in read.unrecorded)]
 
 
-def listed_text(listed: Listed, empty: str, brief: bool = False) -> str:
-    """Each record at level 1, or as one line when `brief`, then what was left out."""
-    body = _lines(listed.items, empty) if brief else _blocks(listed.items, empty)
-    lines = [*read_lines(listed.read), body]
+def search_text(results: Sequence[Listed], brief: bool, default_status: bool) -> str:
+    lines = read_lines(results[0].read)
+    if brief and default_status:
+        lines.append("records are current unless marked")
+    for result in results:
+        if len(results) > 1:
+            total = len(result.items) + result.more + len(result.above)
+            header = f"query: {result.query} · {total} matches"
+            if result.above:
+                header += f" · also {', '.join(result.above)} above"
+            lines.append(header)
+        empty = "" if result.above else NO_MATCHES
+        lines.extend(_listing(result, empty, brief, default_status))
+    return "\n".join(line for line in lines if line)
+
+
+def _listing(listed: Listed, empty: str, brief: bool, default_status: bool = False) -> list[str]:
+    if brief:
+        lines = [
+            format_brief(v).replace(" · current", "", 1)
+            if default_status and v.status == "current"
+            else format_brief(v)
+            for v in listed.items
+        ] or [empty]
+    else:
+        lines = [_blocks(listed.items, empty)]
     if listed.more:
         total = len(listed.items) + listed.more
         lines.append(
             f"{len(listed.items)} of {total} shown; narrow the query or give --limit {total}"
         )
-    return "\n".join(lines)
+    return lines
 
 
 def shown_text(shown: Shown) -> str:

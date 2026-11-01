@@ -12,3 +12,5 @@ check
 check --gate
 show {code} {code2} {entry}
 show A
+search berth tide --brief
+search --phrase "berth crane" --brief

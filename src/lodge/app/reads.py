@@ -31,9 +31,26 @@ _AREA = "area:"
 
 
 def search_records(w: Wiring, query: str, filters: Filters, limit: int) -> Listed:
+    return search_many(w, [core.parse_query(query)], filters, limit)[0]
+
+
+def search_many(
+    w: Wiring, queries: Sequence[core.Query], filters: Filters, limit: int
+) -> tuple[Listed, ...]:
     state = read_checked(w)
-    ids, total = core.search_counted(state.snapshot, state.derived, query, filters, limit)
-    return Listed(_views(state, ids), state.read, total - len(ids))
+    seen: set[str] = set()
+    results: list[Listed] = []
+    count = len(state.snapshot.decisions) + len(state.snapshot.entries)
+    for query in queries or [core.parse_query("")]:
+        ids, _ = core.search_counted(state.snapshot, state.derived, query, filters, count)
+        above = tuple(i for i in ids if i in seen)
+        fresh = [i for i in ids if i not in seen]
+        shown = fresh[:limit]
+        results.append(
+            Listed(_views(state, shown), state.read, len(fresh) - len(shown), query.text, above)
+        )
+        seen.update(shown)
+    return tuple(results)
 
 
 def show(w: Wiring, ref: str, reasoning: bool, provenance: bool) -> Shown:

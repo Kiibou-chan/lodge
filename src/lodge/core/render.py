@@ -38,7 +38,15 @@ def spec_view(
 ) -> tuple[SpecArea, ...]:
     """Areas by rank and name, with written entries and their dependency placements."""
     names = area_names(s)
-    return tuple(_area(s, d, failing, name) for name in names if area is None or area == name)
+    grouped: dict[str, set[str]] = {}
+    for ident, entry in s.entries.items():
+        if d.status.get(ident) == "current":
+            grouped.setdefault(entry.area, set()).add(ident)
+    return tuple(
+        _area(s, d, failing, name, frozenset(grouped.get(name, ())))
+        for name in names
+        if area is None or area == name
+    )
 
 
 def render_spec(s: Snapshot, d: Derived, failing: frozenset[str], area: str | None = None) -> str:
@@ -58,12 +66,23 @@ def render_spec(s: Snapshot, d: Derived, failing: frozenset[str], area: str | No
     return "".join(f"{block}\n\n" for block in blocks).removesuffix("\n")
 
 
-def _area(s: Snapshot, d: Derived, failing: frozenset[str], name: str) -> SpecArea:
+def _area(
+    s: Snapshot, d: Derived, failing: frozenset[str], name: str, current: frozenset[str]
+) -> SpecArea:
     held = s.areas.get(name)
-    shown = {i: level1(s, d, i, failing) for i in written_order(s, d, name)}
+    local = Snapshot(
+        s.decisions,
+        {i: s.entries[i] for i in current},
+        s.areas,
+        s.paths,
+        s.problems,
+        s.attachments,
+        s.threads,
+    )
+    shown = {i: level1(s, d, i, failing) for i in written_order(local, d, name)}
     entries = tuple(shown.values())
     placed = []
-    for p in derived_order(s, d, name):
+    for p in derived_order(local, d, name):
         targets = tuple(dict.fromkeys(s.entries[p.id].rests_on))
         also = tuple(
             t

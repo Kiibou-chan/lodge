@@ -9,14 +9,13 @@ from lodge.app import AddOutcome, Lodge, LodgeError
 from lodge.cli.files import read_file
 from lodge.cli.output import (
     DECISION_DRAFT_NOTE,
-    NO_MATCHES,
     NOTHING_RECORDED,
     added_lines,
     check_lines,
     is_decision_file,
-    listed_text,
     read_lines,
     record_text,
+    search_text,
     shown_text,
 )
 from lodge.cli.parser import (
@@ -37,6 +36,7 @@ from lodge.cli.parser import (
 )
 from lodge.cli.thread_output import waiting_text
 from lodge.cli.threads import Ask, Close, Reply, ThreadCommand, Threads, run_thread
+from lodge.core import parse_query
 
 
 def run(
@@ -60,8 +60,10 @@ def run(
             print("next: lodge guide")
         case NewId(prefix):
             print(make_lodge().mint(prefix))
-        case Search(query, filters, limit, brief):
-            print(listed_text(make_lodge().search(query, filters, limit), NO_MATCHES, brief))
+        case Search(queries, filters, limit, brief, phrases):
+            parsed = [parse_query(q) for q in queries] + [parse_query(q, True) for q in phrases]
+            results = make_lodge().search_many(parsed, filters, limit)
+            print(search_text(results, brief, filters.status == "current"))
         case Show(refs, reasoning, provenance):
             return _show(make_lodge(), refs, reasoning, provenance)
         case Draft(ref):
