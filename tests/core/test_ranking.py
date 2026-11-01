@@ -22,6 +22,7 @@ from lodge.core import (
     rank,
     search_counted,
 )
+from lodge.core.words import tokens, words
 
 
 def candidates(s: Snapshot) -> list[Candidate]:
@@ -90,7 +91,7 @@ def test_phrase_is_a_run_of_whole_words() -> None:
         decision(id="d-cccccc", statement="settled, point.", date=at(0)),
         decision(id="d-dddddd", title="settled", statement="point", date=at(7)),
     )
-    assert ranked(s, "settled point", True) == ["d-cccccc"]
+    assert ranked(s, "settled point", True) == ["d-cccccc", "d-aaaaaa", "d-dddddd"]
 
 
 def test_phrase_keeps_function_words() -> None:
@@ -98,7 +99,7 @@ def test_phrase_keeps_function_words() -> None:
         decision(id="d-aaaaaa", title="of the berth"),
         decision(id="d-bbbbbb", title="berth of the", date=at(9)),
     )
-    assert ranked(s, "of the berth", True) == ["d-aaaaaa"]
+    assert ranked(s, "of the berth", True) == ["d-aaaaaa", "d-bbbbbb"]
     assert parse_query("Of, the berth!", True).tokens == ("of", "the", "berth")
 
 
@@ -161,16 +162,21 @@ def test_rank_over_candidates_equals_rank_over_all() -> None:
                 date=at(n % 60),
                 title=" ".join(rng.choices(vocabulary, k=3)),
                 statement=" ".join(rng.choices(vocabulary, k=5)),
+                decided_by="author" if n % 2 else "agent",
+                changes=(Change(f"s-{n % 12:06d}", Action.EDIT),),
                 code=("PORT-1" if n == 0 else f"PORT-1.{n}" if n < 10 else None),
             )
             for n in range(400)
-        )
+        ),
+        *(entry(id=f"s-{n:06d}", area=f"port-{n % 3}", title="crane berth") for n in range(12)),
+        decision(id="D-ABCDEF", title="berth crane", code="ORPHAN.why"),
+        decision(id="d-abcdef", title="crane berth", replaces=("d-000000",)),
     )
     all_candidates = candidates(s)
     d = derive(s)
     for step in range(300):
         text = (
-            rng.choice([*vocabulary, "PORT", "of the", "", "d-000001"])
+            rng.choice([*vocabulary, "PORT", "of the", "", "d-000001", "D-ABCDEF", "ORPHAN"])
             if step % 3
             else " ".join(rng.choices(vocabulary, k=2))
         )
@@ -178,14 +184,21 @@ def test_rank_over_candidates_equals_rank_over_all() -> None:
         if needs_memory(q):
             continue
         f = rng.choice(
-            [Filters(), Filters(status="any"), Filters(kind="spec"), Filters(decided_by="author")]
+            [
+                Filters(),
+                Filters(status="any"),
+                Filters(kind="spec"),
+                Filters(decided_by="author"),
+                Filters(area="port-1"),
+                Filters(status="replaced"),
+            ]
         )
         fam, citing = family(s, text), citers(s, d, text)
         subset = [
             c
             for c in all_candidates
             if not text.strip()
-            or c.view.id == text.lower()
+            or c.view.id.lower() == text.strip().lower()
             or c.view.id in (*fam, *citing)
             or q.words & (c.title_words | c.statement_words)
         ]
@@ -194,7 +207,20 @@ def test_rank_over_candidates_equals_rank_over_all() -> None:
             q,
         )
         assert search_counted(s, d, q, f, 13) == rank(all_candidates, q, f, fam, citing, 13)
+    # Explicitly cover reversed phrase words under a non-empty area filter.
+    q = parse_query("berth crane", True)
+    f = Filters(kind="spec", area="port-1")
+    subset = [c for c in all_candidates if q.words & (c.title_words | c.statement_words)]
+    assert rank(subset, q, f, (), (), 100) == rank(all_candidates, q, f, (), (), 100)
+    assert rank(subset, q, f, (), (), 100)[1] == 4
     # Candidate word sets, rather than recomputed text, determine scores.
     q = Query("cargo", False, frozenset({"cargo"}), ("cargo",))
-    c = replace(all_candidates[0], title_words=q.words, statement_words=frozenset())
+    c = replace(all_candidates[1], title_words=q.words, statement_words=frozenset())
     assert rank([c], q, Filters(), (), (), 1) == ([c.view.id], 1)
+
+
+def test_phrase_and_words_share_tokens() -> None:
+    text = "Of, İSland_berth! Straße 42"
+    assert tokens(text) == ("of", "i", "sland", "berth", "straße", "42")
+    assert parse_query(text, True).tokens == tokens(text)
+    assert words(text) == set(tokens(text)) - {"of", "i"}

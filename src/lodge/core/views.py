@@ -141,9 +141,9 @@ def format_level1(v: Level1) -> str:
     return text
 
 
-def format_brief(v: Level1) -> str:
+def format_brief(v: Level1, *, status: bool = True) -> str:
     """The header line and the title on one line, without the statement."""
-    return _head(v).replace("\n", " · ", 1)
+    return _head(v, status=status).replace("\n", " · ", 1)
 
 
 def format_level3(v: Level3) -> str:
@@ -171,10 +171,17 @@ def head_parts(
     return (v.id, v.code, v.status, who, day, v.scope or v.area)
 
 
-def _head(v: Level1) -> str:
+def _head(v: Level1, *, status: bool = True) -> str:
     """The header line and the title."""
-    ident, code, status, who, day, place = head_parts(v)
-    parts = [f"{ident} {code}" if code else ident, status, who, day, place, *v.flags]
+    ident, code, state, who, day, place = head_parts(v)
+    parts = [
+        f"{ident} {code}" if code else ident,
+        state if status else None,
+        who,
+        day,
+        place,
+        *v.flags,
+    ]
     return " · ".join(p for p in parts if p) + "\n" + v.title
 
 

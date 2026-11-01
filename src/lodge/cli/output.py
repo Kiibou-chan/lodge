@@ -32,7 +32,8 @@ def search_text(results: Sequence[Listed], brief: bool, default_status: bool) ->
     for result in results:
         if len(results) > 1:
             total = len(result.items) + result.more + len(result.above)
-            header = f"query: {result.query} · {total} matches"
+            noun = "match" if total == 1 else "matches"
+            header = f"query: {result.query} · {total} {noun}"
             if result.above:
                 header += f" · also {', '.join(result.above)} above"
             lines.append(header)
@@ -44,9 +45,7 @@ def search_text(results: Sequence[Listed], brief: bool, default_status: bool) ->
 def _listing(listed: Listed, empty: str, brief: bool, default_status: bool = False) -> list[str]:
     if brief:
         lines = [
-            format_brief(v).replace(" · current", "", 1)
-            if default_status and v.status == "current"
-            else format_brief(v)
+            format_brief(v, status=not (default_status and v.status == "current"))
             for v in listed.items
         ] or [empty]
     else:

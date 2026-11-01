@@ -55,7 +55,10 @@ def test_siblings_and_citers_capped_at_ten(capsys: pytest.CaptureFixture[str]) -
     assert [v.id for v in shown.siblings] == [s.id for s in siblings[:10]]
     assert [v.id for v in shown.citers] == [c.id for c in reversed(citers[1:])]
     assert shown.left_out == (2, 1)
-    assert lodge.show("X-1") == replace(shown, siblings=(), citers=(), left_out=(0, 0))
+    assert lodge.show("X-1") == shown
+    assert lodge.show("X-1", context=False) == replace(
+        shown, siblings=(), citers=(), left_out=(0, 0)
+    )
     assert (
         run(
             ["show", "X-1", "--reasoning", "--provenance"],
@@ -79,7 +82,7 @@ def test_viewer_show_does_not_compute_unused_code_context() -> None:
         patch.object(core, "family", side_effect=AssertionError("unused siblings")),
         patch.object(core, "citers", side_effect=AssertionError("unused citers")),
     ):
-        shown = lodge.show("ITEM-1", True, True)
+        shown = lodge.show("ITEM-1", True, True, context=False)
     assert shown.level1.id == FIRST.id and shown.level2 is not None
     assert shown.level3 is not None
     assert (shown.siblings, shown.citers, shown.left_out) == ((), (), (0, 0))
