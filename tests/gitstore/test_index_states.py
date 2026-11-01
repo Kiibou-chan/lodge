@@ -1,16 +1,33 @@
 """State completeness, immutable shared units, eviction, and bounded growth."""
 
-from dataclasses import replace
+import json
+from dataclasses import fields, replace
 from pathlib import Path
 
 import pytest
 
 from gitstore.index_helpers import KEY, filename, opened
 from gitstore.state_helpers import FACT, ROW, changed_rows, keep
-from lodge.app import StateFacts
+from lodge.app import StateFacts, StoredState
 from lodge.core import Problem
 from lodge.gitstore import index_space
-from lodge.gitstore.index_states import KEPT_STATES
+from lodge.gitstore.index_states import KEPT_STATES, decode
+
+
+def test_stored_row_without_threads_is_refused(tmp_path: Path) -> None:
+    index = opened(tmp_path)
+    keep(index)
+    raw = index.db.execute("SELECT value FROM states WHERE key='one'").fetchone()[0]
+    assert isinstance(decode(raw), StoredState)
+    plain = json.loads(raw)
+    plain.pop(1 + [field.name for field in fields(StoredState)].index("threads"))
+    raw = json.dumps(plain)
+    index.db.execute("UPDATE states SET value=? WHERE key='one'", (raw,))
+    stored_raw = index.db.execute("SELECT value FROM states WHERE key='one'").fetchone()[0]
+    with pytest.raises(ValueError, match="invalid cached arity"):
+        decode(stored_raw)
+    assert index.state("one") is None
+    index.close()
 
 
 def test_kept_states_constant(tmp_path: Path) -> None:

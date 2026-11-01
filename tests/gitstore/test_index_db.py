@@ -175,22 +175,27 @@ def populate(index: index_db.IndexDB) -> None:
     index.db.execute("UPDATE meta SET kept=1")
 
 
-def test_secure_delete_off_and_wal_bounded(tmp_path: Path) -> None:
+def test_secure_delete_off(tmp_path: Path) -> None:
     index = opened(tmp_path)
     assert index.db.execute("PRAGMA secure_delete").fetchone()[0] == 0
-    assert index.db.execute("PRAGMA journal_size_limit").fetchone()[0] == 16777216
     with sqlite3.connect(":memory:") as probe:
         default = probe.execute("PRAGMA secure_delete").fetchone()[0]
     if default != 1:
         index.close()
         pytest.skip("SQLite does not default secure_delete to 1; pragma assertions passed")
+    index.close()
+
+
+def test_clear_wal_bounded(tmp_path: Path) -> None:
+    index = opened(tmp_path)
+    assert index.db.execute("PRAGMA journal_size_limit").fetchone()[0] == 16777216
     populate(index)
     index.db.execute("PRAGMA wal_checkpoint(TRUNCATE)")
     index.db.execute("BEGIN IMMEDIATE")
     index_space.clear(index.db)
     index.db.execute("COMMIT")
+    assert 0 < Path(str(filename(tmp_path)) + "-wal").stat().st_size <= 16777216
     index.db.execute("PRAGMA wal_checkpoint(TRUNCATE)")
-    assert Path(str(filename(tmp_path)) + "-wal").stat().st_size <= 16777216
     index.close()
 
 

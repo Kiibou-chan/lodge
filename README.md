@@ -74,7 +74,7 @@ Read through lodge, never by opening record files.
 
 lodge speeds reads with a disposable SQLite index in `<git common dir>/lodge/`, with one file per lodge build.
 Past its size cap it clears that file in place, and later reads rebuild what they need.
-Removing that folder with `rm -r "$(git rev-parse --git-common-dir)/lodge"` is safe at any time and reclaims all its space.
+Removing that folder with `rm -r "$(git rev-parse --git-common-dir)/lodge"` is safe at any time; its space returns when open connections close.
 The git common directory may be shared by worktrees.
 Set `LODGE_INDEX=off` to read without the index.
 
@@ -233,7 +233,5 @@ No licence has been chosen yet.
 
 ## Disposable read index
 
-lodge keeps a rebuildable SQLite index under `lodge/` in the repository's git common directory.
-Set `LODGE_INDEX=off` to read without it.
-To reclaim all of its space, stop lodge commands and the viewer, find the directory with `git rev-parse --path-format=absolute --git-common-dir`, and remove only its `lodge/` subdirectory.
+See [Reading](#reading) for the index location, safe removal, and `LODGE_INDEX=off`.
 Old build databases are pruned under locks; their empty lock files remain, one per build, until that folder is removed.
