@@ -32,7 +32,7 @@ class Search:
 
 @dataclass(frozen=True)
 class Show:
-    ref: str
+    refs: tuple[str, ...]
     reasoning: bool
     provenance: bool
 
@@ -119,7 +119,7 @@ def _parser() -> argparse.ArgumentParser:
     ids = add("id", "print a new ID for a decision (d) or a specification entry (s)", _new_id)
     ids.add_argument("prefix", choices=("d", "s"))
     _search(add("search", "find records by words, ID, or code; one level-1 block each", _search_of))
-    _show(add("show", "show one record; reasoning and provenance only when asked for", _show_of))
+    _show(add("show", "show records; reasoning and provenance only when asked for", _show_of))
     draft = add(
         "draft",
         "print the file of an entry to edit and add; area:<name> for an area; "
@@ -177,7 +177,7 @@ def _search(sub: argparse.ArgumentParser) -> None:
 
 
 def _show(sub: argparse.ArgumentParser) -> None:
-    sub.add_argument("ref", help="an ID or a code")
+    sub.add_argument("refs", nargs="+", help="IDs or codes")
     sub.add_argument("--reasoning", action="store_true", help="add level 2")
     sub.add_argument("--provenance", action="store_true", help="add level 3")
 
@@ -213,7 +213,7 @@ def _search_of(args: argparse.Namespace) -> Command:
 
 
 def _show_of(args: argparse.Namespace) -> Command:
-    return Show(args.ref, args.reasoning, args.provenance)
+    return Show(tuple(args.refs), args.reasoning, args.provenance)
 
 
 def _draft_of(args: argparse.Namespace) -> Command:

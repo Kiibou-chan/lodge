@@ -5,7 +5,7 @@ from collections.abc import Callable, Sequence
 from importlib.resources import files
 from pathlib import Path
 
-from lodge.app import AddOutcome, Lodge
+from lodge.app import AddOutcome, Lodge, LodgeError
 from lodge.cli.files import read_file
 from lodge.cli.output import (
     DECISION_DRAFT_NOTE,
@@ -16,6 +16,7 @@ from lodge.cli.output import (
     is_decision_file,
     listed_text,
     read_lines,
+    record_text,
     shown_text,
 )
 from lodge.cli.parser import (
@@ -61,8 +62,8 @@ def run(
             print(make_lodge().mint(prefix))
         case Search(query, filters, limit, brief):
             print(listed_text(make_lodge().search(query, filters, limit), NO_MATCHES, brief))
-        case Show(ref, reasoning, provenance):
-            print(shown_text(make_lodge().show(ref, reasoning, provenance)))
+        case Show(refs, reasoning, provenance):
+            return _show(make_lodge(), refs, reasoning, provenance)
         case Draft(ref):
             text = make_lodge().draft(ref)
             if is_decision_file(text):
@@ -91,6 +92,33 @@ def run(
         case Hook(event):
             return hook() if event == HOOK_EVENT else 0
     return 0
+
+
+def _show(lodge: Lodge, refs: Sequence[str], reasoning: bool, provenance: bool) -> int:
+    result = lodge.show_many(refs, reasoning, provenance)
+    if len(result.items) == 1:
+        item = result.items[0][1]
+        if isinstance(item, LodgeError):
+            sys.stdout.flush()
+            raise item
+        print(shown_text(item))
+        return 0
+    for line in read_lines(result.read):
+        print(line)
+    status = 0
+    for position, (ref, item) in enumerate(result.items):
+        if not isinstance(item, LodgeError) and item.repeat:
+            print(f"----- {ref} is {item.level1.id}, shown above")
+            continue
+        if position or isinstance(item, LodgeError):
+            print(f"----- {ref}")
+        if isinstance(item, LodgeError):
+            sys.stdout.flush()
+            print(f"lodge: {item}", file=sys.stderr)
+            status = max(status, item.exit_code)
+        else:
+            print(record_text(item))
+    return status
 
 
 def _add(

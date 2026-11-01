@@ -38,12 +38,28 @@ def listed_text(listed: Listed, empty: str, brief: bool = False) -> str:
 
 
 def shown_text(shown: Shown) -> str:
+    return "\n".join([*read_lines(shown.read), record_text(shown)])
+
+
+def record_text(shown: Shown) -> str:
+    """One record with its requested levels and code context, without the batch's read lines."""
     sections = [format_level1(shown.level1)]
     if shown.level2 is not None:
         sections.append(_section("Reasoning", shown.level2))
     if shown.level3 is not None:
         sections.append(_section("Provenance", format_level3(shown.level3)))
-    return "\n".join([*read_lines(shown.read), "\n\n".join(sections)])
+    if shown.level1.code:
+        if shown.siblings:
+            sections.append("siblings:\n" + _lines(shown.siblings, ""))
+        if shown.citers:
+            sections.append("cited by:\n" + _lines(shown.citers, ""))
+        if any(shown.left_out):
+            siblings, citing = shown.left_out
+            sections.append(
+                f"and {siblings} more siblings and {citing} more citing records; "
+                f"lodge search {shown.level1.code}"
+            )
+    return "\n\n".join(sections)
 
 
 def check_lines(result: CheckResult, already_shown: Collection[Problem] = ()) -> list[str]:

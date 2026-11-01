@@ -1,13 +1,13 @@
 # Task 5 report
 
-Status: Tasks 1 and 2 fix round in progress, then Task 5.
+Status: Task 5 built and validated; Tasks 1 and 2 fix round committed and pushed as `8f980c9`.
 The coordinator supplied Task 5's product decision and spec edit as d-y94v0n, read through `lodge show --reasoning`.
 No record files have been opened or written.
 
 ## Tasks 1 and 2 fix round
 
 The supplied review is copied verbatim to `task-1-2-review.md`.
-I1, M1, M2, M4, M5, and M6 are being addressed before Task 5.
+I1, M1, M2, M4, M5, and M6 were addressed before Task 5.
 M3 conflicts with the task's explicit rewrite list and the Global Constraints' fixed `CORE_MODULES` list: a standard priority queue for maintaining ready placements would require `heapq`, which that list excludes.
 The review itself identifies M3 as a plan gap and allows recording it as out of scope.
 Whole-spec rendering and large independent areas therefore remain an open performance concern for the coordinator; no rule is loosened and no additional rewrite is attempted in this fix round.
@@ -87,3 +87,127 @@ Best-of-three timings:
 
 The probe also passes an explicit Ruff import and upgrade check outside the normal gate's documentation exclusions.
 No Task 5 implementation is included in the fix-round commit.
+
+## Task 5
+
+The interface skeleton added the five code helpers, the `Shown` fields, `ShownMany`, and `show_many` through both app front doors.
+The shared one-record builder was skeletonised before tests so the unchanged single-ref contract is tested through the new path too.
+Before any Task 5 test, the structure suite passed (39 passed) and strict mypy passed (213 files).
+No prior tests have been edited for Task 5.
+The new tests were run with `uv run --frozen pytest tests/core/test_codes.py tests/app/test_show_many.py -q`, then `uv run --frozen pytest tests/e2e/test_show_many.py -q`.
+Failing output:
+
+```text
+FAILED tests/core/test_codes.py::test_family_takes_dotted_siblings_not_longer_numbers
+FAILED tests/core/test_codes.py::test_family_orders_the_code_first - NotImple...
+FAILED tests/core/test_codes.py::test_cites_whole_tokens_only - NotImplemente...
+FAILED tests/core/test_codes.py::test_cites_equals_the_boundary_rule - NotImp...
+FAILED tests/core/test_codes.py::test_citers_exclude_the_family_and_order_newest_first
+FAILED tests/core/test_codes.py::test_is_code_token_uses_the_ascii_grammar - ...
+FAILED tests/app/test_show_many.py::test_each_record_once_in_ref_order - NotI...
+FAILED tests/app/test_show_many.py::test_failing_ref_in_place_and_others_shown
+FAILED tests/app/test_show_many.py::test_one_read_for_many_refs - NotImplemen...
+FAILED tests/app/test_show_many.py::test_siblings_and_citers_capped_at_ten - ...
+FAILED tests/app/test_show_many.py::test_broken_files_reported_once_for_the_batch
+11 failed in 0.22s
+FAILED tests/e2e/test_show_many.py::test_show_three_refs_one_output - Asserti...
+FAILED tests/e2e/test_show_many.py::test_unknown_ref_exits_2_after_the_others
+FAILED tests/e2e/test_show_many.py::test_stdout_flushed_before_each_error - A...
+FAILED tests/e2e/test_show_many.py::test_single_ref_output_unchanged - NotImp...
+4 failed in 0.84s
+```
+
+Every core/app failure above raised `NotImplementedError` from a skeleton helper or `Lodge.show_many`.
+The first three end-to-end failures exposed the old single-ref parser: exit 2 for extra arguments, with no record text.
+The single-ref literal-output test raised `NotImplementedError` from the shared record-builder skeleton.
+The caps test also checks the CLI's context headings, their position after provenance, twenty brief lines, and the exact omitted-count sentence.
+An additional mixed-exit test was run before implementation and failed because the old parser rejected the extra refs before any output; it checks that a later exit-1 conflict cannot lower an earlier exit-2 failure.
+
+### Implementation and targeted validation
+
+`core/codes.py` implements the ASCII grammar, dotted code families, whole-token citation sets, and citers ordered by their level-1 date and ID, including undated entries last.
+Case comparisons use `str.lower()` throughout.
+The app reads once for a batch, retains errors at their ref positions, and reuses the first `Shown` result for aliases and repeats with `repeat=True`.
+Both single and batched show use the same record builder, with ten siblings and ten citers at most and separate omitted counts.
+The CLI prints freshness and unreadable-file problems once for a batch, marks repeated records, flushes stdout before reporting each failed ref on stderr, and keeps the highest failure exit code.
+The context follows all requested levels and uses existing brief-line formatting.
+Single-ref output, including the existing empty stdout for a failed single ref, remains compatible; the new separators apply to the multi-ref command.
+The parser change touches four existing lines, within Task 5's six-line allowance.
+Both requested benchmark lines were added to `scripts/bench_reads.txt`.
+
+The targeted suite covering the structure checks, all new tests, existing app reads, and existing single-ref/ambiguous-code CLI behaviour passed: 93 passed.
+The narrower new-test and identical-state suite then passed: 45 passed.
+Ruff, strict mypy (216 files), and Vulture pass after implementation.
+No existing Task 5 test was edited, and no file outside Task 5's file list was changed after the separate fix-round commit, apart from this report.
+
+Representative exception lines from the saved Task 5 failures:
+
+```text
+src/lodge/core/codes.py:12: NotImplementedError
+src/lodge/core/codes.py:20: NotImplementedError
+src/lodge/core/codes.py:24: NotImplementedError
+src/lodge/core/codes.py:8: NotImplementedError
+src/lodge/app/lodge.py:37: NotImplementedError
+E       ValueError: substring not found
+E       AssertionError: assert (2 == 2 and 's-qbgbz8' in '')
+src/lodge/app/reads.py:45: NotImplementedError
+FAILED tests/app/test_show_many.py::test_batch_exit_uses_highest_failure - As...
+E       AssertionError: assert False
+1 failed in 0.22s
+```
+
+Full scratch outputs are retained under `/var/tmp/lodge-bench/` as `task5-core-app-red.txt`, `task5-e2e-red.txt`, and `task5-exit-red.txt`.
+
+### Benchmarks
+
+Native-disk worktree and virtual environment, Python 3.13.5, PyYAML with libyaml available.
+Bytecode was compiled with `uv run --frozen python -m compileall -q src .venv/lib` before the replay.
+Stores are the existing synthetic `bench_store.py` stores under `/var/tmp/lodge-bench/`, with 1,607, 16,120, and 160,800 record files respectively.
+Each sample starts a fresh process, with an untimed warm-up per command and three timed runs; the runner reports the best and median.
+The commands file `/var/tmp/lodge-bench/task5-commands.txt` contains exactly:
+
+```text
+show {code} {code2} {entry}
+show A
+```
+
+For each of `s900`, `s9000`, and `s90000`, the command was:
+
+```sh
+uv run --frozen python scripts/bench_reads.py /var/tmp/lodge-bench/STORE --lodge /var/tmp/lodge-build/.venv/bin/lodge --commands /var/tmp/lodge-bench/task5-commands.txt --mode seen --runs 3 --timeout 180
+```
+
+Mode: `seen`; store: `s900`; runs: 3.
+
+| Command | Build | Best (s) | Median (s) | Exit | Characters | Identical |
+|---|---|---:|---:|---|---|---|
+| `show {code} {code2} {entry}` | lodge | 0.383 | 0.387 | 0 | 998 | n/a |
+| `show A` | lodge | 0.366 | 0.367 | 0 | 789 | n/a |
+
+Mode: `seen`; store: `s9000`; runs: 3.
+
+| Command | Build | Best (s) | Median (s) | Exit | Characters | Identical |
+|---|---|---:|---:|---|---|---|
+| `show {code} {code2} {entry}` | lodge | 2.017 | 2.029 | 0 | 1004 | n/a |
+| `show A` | lodge | 1.784 | 1.801 | 0 | 1183 | n/a |
+
+Mode: `seen`; store: `s90000`; runs: 3.
+
+| Command | Build | Best (s) | Median (s) | Exit | Characters | Identical |
+|---|---|---:|---:|---|---|---|
+| `show {code} {code2} {entry}` | lodge | 19.771 | 19.908 | 0 | 839 | n/a |
+| `show A` | lodge | 16.997 | 17.130 | 0 | 1194 | n/a |
+
+All samples exited 0, with stable output sizes for each command and store.
+`Identical` is not applicable because this replay measures the new product behaviour without an old-build comparison.
+The added citation scans run in memory at this stage; the later index tasks own the warm-read target.
+No new timing assertion was added to pytest.
+
+### Concerns
+
+The review's M3 whole-spec/large-area performance gap remains reported to the coordinator, as described above.
+Task 5 has no unresolved context question or further implementation concern.
+The final full gate, `UV_FROZEN=true sh scripts/check.sh`, passed before commit.
+Results: 591 files already formatted, Ruff clean, strict mypy clean (216 files), Vulture clean, 1,580 tests passed and 1 skipped in 51.19 s, and `lodge check --gate` returned `ok`.
+The working diff passes `git diff --check`.
+Task 5 is delivered in its own commit after the fix round, with the required Codex co-author trailer and branch push.

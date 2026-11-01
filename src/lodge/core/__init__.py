@@ -3,6 +3,7 @@
 from lodge.core.apply import Applied, StaleBase, apply_drafts
 from lodge.core.check_change import ChangeFacts, change_facts, check_change
 from lodge.core.check_state import CheckResult, check_state
+from lodge.core.codes import citers, cites, code_tokens, family, is_code_token
 from lodge.core.confirmation import (
     MINUTE_FORMAT,
     VIEWER,
@@ -130,19 +131,24 @@ __all__ = [
     "change_facts",
     "check_change",
     "check_state",
+    "citers",
+    "cites",
     "clean_text",
+    "code_tokens",
     "confirmable_ids",
     "confirmation_draft",
     "content_hash",
     "derive",
     "derived_order",
     "failing_ids",
+    "family",
     "feedback",
     "format_brief",
     "format_level1",
     "format_level3",
     "head_parts",
     "is_author",
+    "is_code_token",
     "is_id",
     "level1",
     "level2",
