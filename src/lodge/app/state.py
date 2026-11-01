@@ -29,14 +29,23 @@ class Wiring:
 
 
 @dataclass(frozen=True)
+class Checked:
+    snapshot: Snapshot
+    derived: Derived
+    result: CheckResult
+
+
+@dataclass(frozen=True)
 class State:
     current: Tree
     published: Tree
     snapshot: Snapshot
     derived: Derived
     result: CheckResult
+    standing: CheckResult
     failing: frozenset[str]
     read: Read
+    published_state: Checked | None = None
 
 
 def read_state(store: Store) -> State:
@@ -50,6 +59,7 @@ def read_state(store: Store) -> State:
         published,
         snapshot,
         derived,
+        result,
         result,
         failing_ids(snapshot, result),
         Read(store.freshness(), unrecorded_problems(snapshot, result), derived.status),
@@ -67,17 +77,17 @@ def read_checked(w: Wiring) -> State:
         state.published.files,
         state.published.attachments,
     ):
-        return state
+        return replace(state, published_state=Checked(state.snapshot, state.derived, state.result))
     published = load(state.published)
     before = core.derive(published)
-    facts = core.ChangeFacts(
-        before.status,
-        frozenset(
-            (p.path, p.check, p.message)
-            for p in core.check_state(published, derived=before).problems
-        ),
-        state.derived,
-        state.result.problems,
+    published_result = core.check_state(published, derived=before)
+    facts = core.change_facts(
+        published,
+        state.snapshot,
+        before=before,
+        before_problems=published_result.problems,
+        after_derived=state.derived,
+        after_problems=state.result.problems,
     )
     change = core.check_change(published, state.snapshot, w.settings, w.clock.now(), facts=facts)
     known = set(state.result.problems)
@@ -89,6 +99,7 @@ def read_checked(w: Wiring) -> State:
     return replace(
         state,
         result=result,
+        published_state=Checked(published, before, published_result),
         failing=failing_ids(state.snapshot, result),
         read=replace(state.read, unrecorded=unrecorded),
     )

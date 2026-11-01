@@ -29,13 +29,23 @@ class ChangeFacts:
     after_problems: tuple[Problem, ...]
 
 
-def change_facts(published: Snapshot, after: Snapshot) -> ChangeFacts:
-    before, standing = derive(published), derive(after)
+def change_facts(
+    published: Snapshot,
+    after: Snapshot,
+    *,
+    before: Derived | None = None,
+    before_problems: tuple[Problem, ...] | None = None,
+    after_derived: Derived | None = None,
+    after_problems: tuple[Problem, ...] | None = None,
+) -> ChangeFacts:
+    before = derive(published) if before is None else before
+    standing = derive(after) if after_derived is None else after_derived
+    if before_problems is None:
+        before_problems = check_state(published, derived=before).problems
+    if after_problems is None:
+        after_problems = check_state(after, derived=standing).problems
     return ChangeFacts(
-        before.status,
-        frozenset(sort_key(p) for p in check_state(published, derived=before).problems),
-        standing,
-        check_state(after, derived=standing).problems,
+        before.status, frozenset(sort_key(p) for p in before_problems), standing, after_problems
     )
 
 

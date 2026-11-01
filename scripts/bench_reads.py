@@ -6,6 +6,7 @@ Commands are shell-style argument lists, parsed without invoking a shell.
 import argparse
 import shlex
 import shutil
+import signal
 import statistics
 import subprocess
 import tempfile
@@ -34,9 +35,11 @@ def placeholders(store: Path) -> tuple[dict[str, str], Path]:
     }, entry[0]
 
 
-def run(store: Path, command: list[str]) -> tuple[float, int, str]:
+def run(store: Path, command: list[str], timeout: float) -> tuple[float, int, str]:
     start = time.perf_counter()
-    result = subprocess.run(command, cwd=store, capture_output=True, text=True, check=False)
+    result = subprocess.run(
+        command, cwd=store, capture_output=True, text=True, check=False, timeout=timeout
+    )
     return time.perf_counter() - start, result.returncode, result.stdout
 
 
@@ -45,20 +48,20 @@ def clear(cache: Path) -> None:
         shutil.rmtree(cache)
 
 
-def measure(store, build, commands, mode, runs, cache, entry):
+def measure(store, build, commands, mode, runs, cache, entry, timeout):
     results = []
     with tempfile.TemporaryDirectory(prefix="read-cache-", dir=store.parent) as folder:
         saved = Path(folder) / "lodge"
         try:
             if mode == "changed":
                 for _, args in commands:
-                    run(store, [*build, *args])
+                    run(store, [*build, *args], timeout=timeout)
                 if cache.exists():
                     shutil.copytree(cache, saved)
             original = entry.read_text(encoding="utf-8")
             for _, args in commands:
                 if mode == "seen":
-                    run(store, [*build, *args])
+                    run(store, [*build, *args], timeout=timeout)
                 samples = []
                 for number in range(1, runs + 1):
                     if mode in {"cold", "changed"}:
@@ -67,7 +70,7 @@ def measure(store, build, commands, mode, runs, cache, entry):
                         if saved.exists():
                             shutil.copytree(saved, cache)
                         entry.write_text(f"{original.rstrip()}\nBenchmark run {number}.\n")
-                    samples.append(run(store, [*build, *args]))
+                    samples.append(run(store, [*build, *args], timeout=timeout))
                 results.append(samples)
         finally:
             if mode == "changed":
@@ -75,17 +78,25 @@ def measure(store, build, commands, mode, runs, cache, entry):
     return results
 
 
+def terminate(signum, _frame):
+    raise SystemExit(128 + signum)
+
+
 def main() -> None:
+    signal.signal(signal.SIGTERM, terminate)
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("store", type=Path)
     parser.add_argument("--lodge", required=True)
     parser.add_argument("--against")
+    parser.add_argument("--timeout", type=float, default=900.0)
     parser.add_argument("--runs", type=int, default=3)
     parser.add_argument("--commands", type=Path, default=Path("scripts/bench_reads.txt"))
     parser.add_argument("--mode", choices=("cold", "seen", "changed"), default="seen")
     args = parser.parse_args()
     if args.runs < 1:
         parser.error("--runs must be positive")
+    if args.timeout <= 0:
+        parser.error("--timeout must be positive")
     store = args.store.resolve()
     refs, entry = placeholders(store)
     commands = [
@@ -97,15 +108,14 @@ def main() -> None:
         ["git", "rev-parse", "--absolute-git-dir"], cwd=store, text=True
     ).strip()
     cache = Path(gitdir) / "lodge"
-    if args.mode == "changed" and subprocess.check_output(
-        ["git", "status", "--porcelain", "--", "lodge"], cwd=store
-    ):
-        parser.error("changed mode requires a clean lodge folder")
+    if subprocess.check_output(["git", "status", "--porcelain", "--", "lodge"], cwd=store):
+        parser.error("every mode requires a clean lodge folder")
     builds = [shlex.split(args.lodge)]
     if args.against:
         builds.append(shlex.split(args.against))
     results = [
-        measure(store, build, commands, args.mode, args.runs, cache, entry) for build in builds
+        measure(store, build, commands, args.mode, args.runs, cache, entry, args.timeout)
+        for build in builds
     ]
     print(f"Mode: `{args.mode}`; store: `{store.name}`; runs: {args.runs}.")
     print()

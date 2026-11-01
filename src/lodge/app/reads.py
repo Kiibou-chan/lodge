@@ -8,7 +8,7 @@ from lodge import core
 from lodge.app import threads
 from lodge.app.errors import LodgeError
 from lodge.app.results import Listed, Read, Shown, ThreadsWaiting
-from lodge.app.state import State, Wiring, not_found, read_checked, read_state, resolve_ref
+from lodge.app.state import Checked, State, Wiring, not_found, read_checked, read_state, resolve_ref
 from lodge.core import (
     CheckResult,
     Filters,
@@ -82,18 +82,29 @@ def check(w: Wiring, gate: bool) -> tuple[CheckResult, Read]:
     if not gate:
         return state.result, state.read
     base = w.store.gate(state.current)
-    published, now = load(base.published), w.clock.now()
-    before = core.derive(published)
-    known = frozenset(
-        (p.path, p.check, p.message) for p in core.check_state(published, derived=before).problems
-    )
+    cached = state.published_state if base.published is state.published else None
+    if cached is None:
+        published = load(base.published)
+        before = core.derive(published)
+        cached = Checked(published, before, core.check_state(published, derived=before))
+    published, now = cached.snapshot, w.clock.now()
     found: dict[Problem, list[str]] = {}
     notes: dict[str, None] = {}
     for label, tree in base.checked:
         snapshot = state.snapshot if tree is state.current else load(tree)
         derived = state.derived if tree is state.current else core.derive(snapshot)
-        facts = core.ChangeFacts(
-            before.status, known, derived, core.check_state(snapshot, derived=derived).problems
+        standing_problems = (
+            state.standing.problems
+            if tree is state.current
+            else core.check_state(snapshot, derived=derived).problems
+        )
+        facts = core.change_facts(
+            published,
+            snapshot,
+            before=cached.derived,
+            before_problems=cached.result.problems,
+            after_derived=derived,
+            after_problems=standing_problems,
         )
         result = core.check_change(published, snapshot, w.settings, now, facts=facts)
         for problem in result.problems:
