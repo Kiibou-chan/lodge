@@ -5,7 +5,7 @@ from datetime import datetime
 
 from lodge import core
 from lodge.app.errors import LodgeError, NotFound
-from lodge.app.index_types import FileKey
+from lodge.app.index_types import FileKey, StateFacts
 from lodge.app.ports import Clock, IdSource, Index, Store
 from lodge.app.results import Read
 from lodge.core import (
@@ -36,8 +36,9 @@ class Wiring:
 @dataclass(frozen=True)
 class Checked:
     snapshot: Snapshot
-    derived: Derived
+    derived: Derived | None
     result: CheckResult
+    facts: StateFacts | None = None
 
 
 @dataclass(frozen=True)
@@ -125,19 +126,30 @@ def read_checked(w: Wiring) -> State:
     return finish_checked(w, state, Checked(published, before, published_result), w.clock.now())
 
 
-def finish_checked(w: Wiring, state: State, before_state: Checked, now: datetime) -> State:
+def finish_checked(
+    w: Wiring,
+    state: State,
+    before_state: Checked,
+    now: datetime,
+    *,
+    facts: core.ChangeFacts | None = None,
+) -> State:
     published, before, published_result = (
         before_state.snapshot,
         before_state.derived,
         before_state.result,
     )
-    facts = core.change_facts(
-        published,
-        state.snapshot,
-        before=before,
-        before_problems=published_result.problems,
-        after_derived=state.derived,
-        after_problems=state.result.problems,
+    facts = (
+        facts
+        if facts is not None
+        else core.change_facts(
+            published,
+            state.snapshot,
+            before=before,
+            before_problems=published_result.problems,
+            after_derived=state.derived,
+            after_problems=state.result.problems,
+        )
     )
     change = core.check_change(published, state.snapshot, w.settings, now, facts=facts)
     known = set(state.result.problems)
@@ -149,7 +161,7 @@ def finish_checked(w: Wiring, state: State, before_state: Checked, now: datetime
     return replace(
         state,
         result=result,
-        published_state=Checked(published, before, published_result),
+        published_state=before_state,
         failing=failing_ids(state.snapshot, result),
         read=replace(state.read, unrecorded=unrecorded),
     )

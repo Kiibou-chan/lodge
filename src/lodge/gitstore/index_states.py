@@ -60,9 +60,12 @@ def buckets(rows: Mapping[str, Row]) -> dict[str, str]:
 def insert_facts(db: sqlite3.Connection, facts: Mapping[str, StateFacts]) -> None:
     written = 0
     for ident, value in facts.items():
-        written += db.execute(
-            "INSERT OR IGNORE INTO facts VALUES(?,?)", (ident, encode(value))
-        ).rowcount
+        try:
+            written += db.execute(
+                "INSERT OR IGNORE INTO facts VALUES(?,?)", (ident, encode(value))
+            ).rowcount
+        except UnicodeEncodeError:
+            continue
     db.execute("UPDATE meta SET written=written+?", (written,))
 
 

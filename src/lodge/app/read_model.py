@@ -1,4 +1,4 @@
-"""Build the derived rows, answers, and facts only during a deferred keep."""
+"""Build stored read values and snapshot facts from a checked state."""
 
 from collections.abc import Mapping
 from dataclasses import replace
@@ -87,11 +87,31 @@ def build_citers(state: State, codes: Mapping[str, tuple[str, ...]]) -> dict[str
     }
 
 
+def change_facts_of(state: State, before: StateFacts) -> core.ChangeFacts | None:
+    allowed: dict[str, core.Status] = {
+        "current": "current",
+        "replaced": "replaced",
+        "retired": "retired",
+    }
+    if any(status not in allowed for status in before.status.values()):
+        return None
+    return core.ChangeFacts(
+        {ident: allowed[status] for ident, status in before.status.items()},
+        frozenset((p.path, p.check, p.message) for p in before.problems),
+        state.derived,
+        state.standing.problems,
+    )
+
+
 def build_facts(state: State, current: str, published: str) -> dict[str, StateFacts]:
     facts = {current: StateFacts(state.derived.status, state.standing.problems)}
     if state.published_state is not None:
         before = state.published_state
-        facts[published] = StateFacts(before.derived.status, before.result.problems)
+        if before.facts is not None:
+            facts[published] = before.facts
+        else:
+            assert before.derived is not None
+            facts[published] = StateFacts(before.derived.status, before.result.problems)
     return facts
 
 

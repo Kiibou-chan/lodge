@@ -69,6 +69,15 @@ def _built(w: Wiring, now: datetime, epoch: int) -> tuple[State, tuple[FileKey, 
     if (current.blobs, current.attachments) == (published.blobs, published.attachments):
         return replace(state, published_state=Checked(s, d, result)), tuple(misses)
     before = snapshot(published)
+    cached_facts = index.facts(published.ident)
+    complete = cached_facts is not None and cached_facts.status.keys() == (
+        before.decisions.keys() | before.entries.keys()
+    )
+    change = read_model.change_facts_of(state, cached_facts) if complete and cached_facts else None
+    if change is not None:
+        assert cached_facts is not None
+        checked = Checked(before, None, core.CheckResult(cached_facts.problems, ()), cached_facts)
+        return finish_checked(w, state, checked, now, facts=change), tuple(misses)
     derived = core.derive(before)
     checked = Checked(before, derived, core.check_state(before, derived=derived))
     return finish_checked(w, state, checked, now), tuple(misses)
@@ -106,7 +115,7 @@ def _run[T](
         index.mark_seen(
             key,
             {k: state.parses[k] for k in misses},
-            {},
+            read_model.build_facts(state, current, published),
             files=files,
             used=state.parses,
             epoch=epoch,
