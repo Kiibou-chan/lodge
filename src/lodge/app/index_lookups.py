@@ -1,6 +1,6 @@
 """Assemble CLI results from a single stored-state read transaction."""
 
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import replace
 
 from lodge import core
@@ -12,6 +12,10 @@ from lodge.app.results import Read, Shown, ShownMany
 
 class Miss(Exception):
     """The cache cannot prove this complete answer."""
+
+
+class QueryFallback(Exception):
+    """The query needs memory, while the stored state remains valid."""
 
 
 class Lookups:
@@ -37,6 +41,31 @@ class Lookups:
                 raise Miss
             self.loaded[ident] = row, record
         return self.loaded[ident]
+
+    def empty_candidates(self, rows: Mapping[str, Row]) -> list[core.Candidate]:
+        # Empty-query ranking reads only filters, dates, and IDs from these views.
+        return [
+            core.Candidate(
+                core.Level1(
+                    ident,
+                    "decision" if ident.startswith("d-") else "spec",
+                    None,
+                    "",
+                    "",
+                    row.status,
+                    row.decided_by,
+                    row.date,
+                    row.scope,
+                    row.area,
+                    row.flags,
+                    row.quote,
+                ),
+                row.areas,
+                frozenset(),
+                frozenset(),
+            )
+            for ident, row in rows.items()
+        ]
 
     def view(self, ident: str) -> core.Level1:
         return level1_of(*self.record(ident))

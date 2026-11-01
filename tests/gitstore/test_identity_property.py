@@ -6,8 +6,24 @@ from pathlib import Path
 from random import Random
 
 from gitstore.repos import git, write
-from gitstore.test_identity import RECORD, agrees, prepared
-from lodge.core import Tree
+from gitstore.test_identity import RECORD, prepared
+from lodge.app import Store
+from lodge.core import Listing, Tree, parse_file
+
+
+def parsed_agrees(store: Store) -> Listing:
+    identities = store.identities()
+    listings = store.listings()
+    assert identities == tuple(listing.ident for listing in listings)
+    for listing, exact in zip(listings, store.trees(), strict=True):
+        texts = store.texts(listing, tuple(listing.blobs))
+        assert texts.keys() == exact.files.keys()
+        assert listing.attachments == exact.attachments
+        for path, text in texts.items():
+            # R11-B permits index LF versus disk CRLF after a source is removed.
+            assert text.replace("\r\n", "\n") == exact.files[path].replace("\r\n", "\n")
+            assert parse_file(path, text) == parse_file(path, exact.files[path])
+    return listings[0]
 
 
 def test_random_edits_agree(tmp_path: Path) -> None:
@@ -37,19 +53,12 @@ def test_random_edits_agree(tmp_path: Path) -> None:
     seen: dict[str, tuple[dict[str, str], frozenset[str]]] = {}
 
     def remember(ident: str, exact: Tree) -> None:
-        value = (dict(exact.files), exact.attachments)
+        value = ({p: t.replace("\r\n", "\n") for p, t in exact.files.items()}, exact.attachments)
         assert seen.setdefault(ident, value) == value
 
-    listing = agrees(store)
+    listing = parsed_agrees(store)
     remember(listing.ident, store.trees()[0])
     for sequence in range(200):
-        # Remove the source only after eliminating staged CRLF/index-LF histories.
-        for path in paths:
-            target = repo / path
-            if target.is_file():
-                raw = target.read_bytes()
-                if b"\r\n" in raw:
-                    target.write_bytes(raw.replace(b"\r\n", b"\n"))
         (repo / ".gitattributes").unlink(missing_ok=True)
         tracked = list(filter(None, git(repo, "ls-files", "-z", "--", "lodge").split("\0")))
         for flag in ("--no-assume-unchanged", "--no-skip-worktree"):
@@ -99,7 +108,7 @@ def test_random_edits_agree(tmp_path: Path) -> None:
             elif operation == "folder":
                 target.unlink(missing_ok=True)
                 write(repo, f"{path}/new.md", "A folder replaced a record.\n")
-        listing = agrees(store)
+        listing = parsed_agrees(store)
         exact, published = store.trees()
         remember(listing.ident, exact)
         remember(store.listings()[1].ident, published)
