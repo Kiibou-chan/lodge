@@ -8,7 +8,6 @@ import yaml
 
 from gitstore.index_helpers import KEY, filename, opened
 from gitstore.test_index_db import old_file
-from lodge.core import CoreSettings
 from lodge.gitstore import index_db, index_space
 from lodge.gitstore.index_db import IndexDB
 
@@ -73,10 +72,37 @@ def test_parse_only_opening_needs_no_settings(
     def opened(common: Path) -> None:
         calls.append(common)
 
-    def forbidden(settings: CoreSettings) -> str:
-        raise AssertionError("parse-only opening computed a settings digest")
-
     monkeypatch.setattr(index_db, "open_index", opened)
-    monkeypatch.setattr(index_db, "settings_key", forbidden, raising=False)
     assert index_db.project_index(tmp_path) is None
     assert calls == [tmp_path]
+
+
+class FailedScanCursor(sqlite3.Cursor):
+    read = 0
+
+    def __next__(self) -> tuple[object, ...]:
+        if self.read == 700:
+            raise sqlite3.DatabaseError("injected bad page mid-scan")
+        self.read += 1
+        return super().__next__()  # type: ignore[no-any-return]
+
+
+class FailedScan(sqlite3.Connection):
+    def execute(self, sql: str, parameters: object = (), /) -> sqlite3.Cursor:
+        if sql.startswith("SELECT path, blob, value"):
+            return self.cursor(factory=FailedScanCursor).execute(sql, parameters)  # type: ignore[arg-type]
+        return super().execute(sql, parameters)  # type: ignore[arg-type]
+
+
+def test_scan_keeps_hits_before_sql_error(tmp_path: Path) -> None:
+    initial = opened(tmp_path)
+    keys = [(f"unit-{n}", "blob") for n in range(1500)]
+    initial.keep_parses(dict.fromkeys(keys))
+    initial.close()
+    db = sqlite3.connect(filename(tmp_path), isolation_level=None, factory=FailedScan)
+    index = IndexDB(db, None)
+    try:
+        assert index.parses(keys) == dict.fromkeys(keys[:700])
+        assert not db.in_transaction
+    finally:
+        index.close()

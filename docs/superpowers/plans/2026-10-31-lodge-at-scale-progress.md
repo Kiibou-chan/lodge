@@ -84,7 +84,7 @@ Plan fix 6b (Task 8c without RAW-1 or LAZY-1, Task 11 with FOLD-1, Task 12 with 
 Plan fix 7 (delta rows and citers, a diff-scoped `check_change`, joined decoding, TGT-7): reviewed by Codex (`review-codex-67.md`, F1 Blocking, F2 to F9 Important), rejected; withdrawn whole.
 Plan fix 7b (Task 9c's ordered scan with each row decoded and admitted on its own, full checks, the keep on a state's second sighting after the output, 3 s kept): reviewed by Codex (`review-codex-7b.md`, accept with fixes B1 to B6), fixed in place; the changed read measures 4.713 s as a sum of stages (floor 3.214 s), so Task 12 is expected to record a miss.
 Pasted into the plan from `tasks-6b.md` and `tasks-7b.md`: calls 22 to 25, the cost table's rows, the build order line, Task 8c and Task 9c after Task 9, Task 10a and Task 10c amended, Task 11 and Task 12 replaced.
-Task 9's hand-offs now in the plan: I4 in Task 10a's Step 3a with the cap's new condition (a working set inserted since the last clear, or a state kept); M9 answered by Task 9c; `settings_key` used for the stored state's key in Step 3a; the stale `marshal` mentions replaced by JSON, as built.
+Task 9's hand-offs now in the plan: I4 in Task 10a's Step 3a with the cap's new condition (a working set inserted since the last clear, or a state kept); M9 answered by Task 9c; `sha1(repr(settings).encode()).hexdigest()` added for the stored state's key in Step 3a; the stale `marshal` mentions replaced by JSON, as built.
 Build order from here: Task 8c, Task 9c, Task 10a, Task 10b, Task 10c, Task 11, Task 12.
 Decisions to record before building: R11-A or R11-B (STALE-1, with the author) and CONV-1 before Task 8c; FOLD-1 before Task 11 (the task records it); SECOND-1 before Task 10a; none before Task 9c, 10b, 10c, or 12.
 
@@ -96,3 +96,13 @@ The report is `2026-10-31-lodge-at-scale/task-8c-report.md`.
 The R11-B scratch alternative's new-store, one-edit identity at `s90000` measured 0.485094 s best of three in the initial diagnostic, above Task 8c's 0.45 s reporting threshold; the final rerun measured 0.448099 s, just below it.
 The report gives every stage's share and all final samples.
 The production R11-A and the `core.autocrlf=input` rows are reported separately, with the targets and Task 12 stop unchanged.
+
+
+## Task 9c fix round and Task 10a dispatch
+
+Task 9c review: `2026-10-31-lodge-at-scale/task-9c-review.md`, copied from the dispatched review.
+M1 to M5 are addressed: pair-membership mutation coverage, a table-size scan threshold, partial scan hits on SQL failure, the settings digest hand-off, and the test/report clean-up.
+The 1,000-key lookup against a full 278,177-row table measured 0.229595 s before and 0.004688 s after, best of three; the compiled repeat gave 0.005364 s after.
+Evidence and the gate are in `2026-10-31-lodge-at-scale/task-10a-report.md`.
+Task 10a is NEEDS_CONTEXT before its interface skeleton: Step 3a requires the caller's tree file count, but the specified writer signatures do not carry it and Task 10b preserves them.
+The report gives the exact interface question; no Task 10a implementation or timing claim is made.
