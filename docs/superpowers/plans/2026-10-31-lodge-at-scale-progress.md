@@ -75,3 +75,15 @@ N7 is now an explicit Task 10a Step 3a: parse-only writers clear too, `meta.kept
 M9's batching remains deferred because the recheck measured about 0.05 s saved, superseding the previous report's per-key error-isolation rationale.
 N2 remains report-only here: the recheck measured 1.40 to 1.42 s for lookup and decode of 160,800 units, giving about 4.3 s against the changed-read target of 3 s on the plan's arithmetic.
 The planner is reworking that path; this fix round changes neither lookup nor codec design, and the stop remains after Task 11 (d-26e6zj).
+
+## Plan fixes 6, 6b, 7, and 7b
+
+Files: `2026-10-31-lodge-at-scale/plan-fix-6/` (plan fix 6 with `tasks.md`, 6b, 7b, and Codex's reviews; 7 is kept only in the reviews' citations).
+Plan fix 6 (Task 8c, a private stat cache RAW-1 with Task 11b, LAZY-1): reviewed by Codex (`review-codex.md`, R1 and R4 Blocking), rejected; withdrawn whole.
+Plan fix 6b (Task 8c without RAW-1 or LAZY-1, Task 11 with FOLD-1, Task 12 with the conversion row, R11 written as two branches): reviewed by Codex with 7 (`review-codex-67.md`, accept with fixes: F10, the empty-text gitlink key, the absent submodule folder, both R11 branches with regression tests), fixed in place, then accepted (`review-codex-7b.md`).
+Plan fix 7 (delta rows and citers, a diff-scoped `check_change`, joined decoding, TGT-7): reviewed by Codex (`review-codex-67.md`, F1 Blocking, F2 to F9 Important), rejected; withdrawn whole.
+Plan fix 7b (Task 9c's ordered scan with each row decoded and admitted on its own, full checks, the keep on a state's second sighting after the output, 3 s kept): reviewed by Codex (`review-codex-7b.md`, accept with fixes B1 to B6), fixed in place; the changed read measures 4.713 s as a sum of stages (floor 3.214 s), so Task 12 is expected to record a miss.
+Pasted into the plan from `tasks-6b.md` and `tasks-7b.md`: calls 22 to 25, the cost table's rows, the build order line, Task 8c and Task 9c after Task 9, Task 10a and Task 10c amended, Task 11 and Task 12 replaced.
+Task 9's hand-offs now in the plan: I4 in Task 10a's Step 3a with the cap's new condition (a working set inserted since the last clear, or a state kept); M9 answered by Task 9c; `settings_key` used for the stored state's key in Step 3a; the stale `marshal` mentions replaced by JSON, as built.
+Build order from here: Task 8c, Task 9c, Task 10a, Task 10b, Task 10c, Task 11, Task 12.
+Decisions to record before building: R11-A or R11-B (STALE-1, with the author) and CONV-1 before Task 8c; FOLD-1 before Task 11 (the task records it); SECOND-1 before Task 10a; none before Task 9c, 10b, 10c, or 12.
