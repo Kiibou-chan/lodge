@@ -10,6 +10,7 @@ from lodge.core import ATTACHMENTS, Tree, blob_id
 from lodge.gitstore.commit import commit_paths
 from lodge.gitstore.errors import NOT_INITIALISED, NotInitialised
 from lodge.gitstore.git import run
+from lodge.gitstore.listing import CheckoutListing
 from lodge.gitstore.lock import locked
 from lodge.gitstore.plumbing import check_writes
 from lodge.gitstore.published import Published, committed_gate, published_state
@@ -34,6 +35,10 @@ class CheckoutStore:
         self._common = common_dir
         self._wait = lock_wait_seconds
         self._published: Published | None = None
+        self._listing = CheckoutListing(root, settings, data_folder_exists)
+        self.identities = self._listing.identities
+        self.listings = self._listing.listings
+        self.texts = self._listing.texts
 
     def commit(self, paths: Sequence[str], message: str) -> Committed:
         return commit_paths(self._root, self._settings.base, paths, message, self._retry)
@@ -43,11 +48,12 @@ class CheckoutStore:
         if not data_folder_exists(self._root):
             raise NotInitialised(NOT_INITIALISED)
         self._published = published_state(self._root, self._settings)
+        self._listing.missing = self._published.missing
         return disk_tree(self._root), self._published.tree
 
     def freshness(self) -> str | None:
         """Only that the published state is missing; None otherwise."""
-        return None if self._published is None else self._published.missing
+        return self._listing.missing
 
     def gate(self, current: Tree) -> Gate:
         published = self._published or published_state(self._root, self._settings)

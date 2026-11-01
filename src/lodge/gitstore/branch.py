@@ -9,6 +9,7 @@ from lodge.core import Tree
 from lodge.gitstore.accepted import ACCEPTED, ACKNOWLEDGE, accept, rewritten
 from lodge.gitstore.errors import NOT_INITIALISED, NotInitialised
 from lodge.gitstore.git import attempt, first_line, resolve, run
+from lodge.gitstore.listing import BranchListing
 from lodge.gitstore.lock import LockHeld, locked
 from lodge.gitstore.plumbing import check_writes, commit_files, push, remote_tip
 from lodge.gitstore.settings import StoreSettings
@@ -37,6 +38,10 @@ class BranchStore:
         self._failure: str | None = None
         self._held: LockHeld | None = None
         self._rev: str | None = None
+        self._listing = BranchListing(self)
+        self.identities = self._listing.identities
+        self.listings = self._listing.listings
+        self.texts = self._listing.texts
 
     def commit(self, paths: Sequence[str], message: str) -> Committed:
         raise LodgeError("branch mode commits when it publishes")

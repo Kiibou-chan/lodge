@@ -1,12 +1,12 @@
 """In-memory ports for the app tests; the project is made up."""
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Collection, Mapping, Sequence
 from datetime import datetime, timedelta, timezone
 
 from builders import files_of
 
 from lodge.app import CommitOutcome, Committed, Gate, PublishOutcome
-from lodge.core import ATTACHMENTS, Area, Decision, SpecEntry, Tree, blob_id
+from lodge.core import ATTACHMENTS, Area, Decision, Listing, SpecEntry, Tree, blob_id
 
 START = datetime(2026, 10, 29, 9, 30, tzinfo=timezone(timedelta(hours=1)))
 
@@ -47,12 +47,38 @@ class MemoryStore:
         return Tree(
             str(self.rev),
             dict(files),
+            attachments=frozenset(path for path in files if path.startswith(ATTACHMENTS)),
             blobs={
                 path: blob_id(text.encode("utf-8", "surrogateescape"))
                 for path, text in files.items()
                 if not path.startswith(ATTACHMENTS)
             },
         )
+
+    def identities(self) -> tuple[str, str]:
+        self._listed_trees = self.trees()
+        return self._ident(self._listed_trees[0]), self._ident(self._listed_trees[1])
+
+    def listings(self) -> tuple[Listing, Listing]:
+        if not hasattr(self, "_listed_trees"):
+            self.identities()
+        current, published = self._listed_trees
+        return self._listing(current), self._listing(published)
+
+    def _listing(self, tree: Tree) -> Listing:
+        return Listing(tree.rev, self._ident(tree), tree.blobs, tree.attachments)
+
+    def _ident(self, tree: Tree) -> str:
+        return "\0".join(
+            [
+                *(f"{path}:{blob}" for path, blob in sorted(tree.blobs.items())),
+                *sorted(tree.attachments),
+            ]
+        )
+
+    def texts(self, listing: Listing, paths: Collection[str]) -> dict[str, str]:
+        tree = next(t for t in self._listed_trees if self._ident(t) == listing.ident)
+        return {path: tree.files[path] for path in paths}
 
     def freshness(self) -> str | None:
         return self.stamp
