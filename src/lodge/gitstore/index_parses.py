@@ -17,16 +17,33 @@ from lodge.core import (
     to_plain,
 )
 
+SCAN_FROM = 1_000
+
+
+def _parse_value(raw: str) -> Parsed | None:
+    value = from_plain(json.loads(raw), CORE_CLASSES)
+    if value is None or isinstance(value, (Area, Decision, Problem, SpecEntry, Thread)):
+        return value
+    raise ValueError("cached value is not a parse")
+
 
 def find_parses(db: sqlite3.Connection, keys: Collection[FileKey]) -> dict[FileKey, Parsed | None]:
     found: dict[FileKey, Parsed | None] = {}
+    if len(keys) >= SCAN_FROM:
+        requested = set(keys)
+        for path, blob, raw in db.execute("SELECT path, blob, value FROM parses ORDER BY rowid"):
+            key = (path, blob)
+            if key in requested:
+                try:
+                    found[key] = _parse_value(raw)
+                except Exception:
+                    continue
+        return found
     for key in keys:
         try:
             row = db.execute("SELECT value FROM parses WHERE path=? AND blob=?", key).fetchone()
             if row is not None:
-                value = from_plain(json.loads(row[0]), CORE_CLASSES)
-                if value is None or isinstance(value, (Area, Decision, Problem, SpecEntry, Thread)):
-                    found[key] = value
+                found[key] = _parse_value(row[0])
         except Exception:
             continue
     return found
