@@ -9,7 +9,7 @@ from lodge import core
 from lodge.app.errors import Conflict, LodgeError
 from lodge.app.ports import Clock, IdSource, PublishOutcome
 from lodge.app.results import Added, AddOutcome
-from lodge.app.state import State, Wiring, read_state
+from lodge.app.state import State, Wiring, read_state, snapshot_of
 from lodge.core import (
     Decision,
     Draft,
@@ -20,7 +20,6 @@ from lodge.core import (
     Tree,
     apply_drafts,
     attachment_path,
-    load,
     mint_id,
     parse_draft,
 )
@@ -39,7 +38,7 @@ class _Request:
 
 
 def mint(w: Wiring, prefix: Literal["d", "s"]) -> str:
-    s = read_state(w.store).snapshot
+    s = read_state(w.store, w.index).snapshot
     return mint_unused(w.ids, prefix, {*s.decisions, *s.entries})
 
 
@@ -58,7 +57,7 @@ def add(
     request = _Request(parsed, importing, dry_run, _attached(attachments, parsed))
     first: Snapshot | None = None
     for _ in range(_ATTEMPTS):
-        state = read_state(w.store)
+        state = read_state(w.store, w.index)
         first = first or state.snapshot
         added = _attempt(w, state, first, request)
         if added is not None:
@@ -90,10 +89,10 @@ def _attempt(w: Wiring, state: State, first: Snapshot, request: _Request) -> Add
     files = {p: t for p, t in applied.files.items() if current.files.get(p) != t}
     placed = {attachment_path(new_ids[0], name): text for name, text in request.attached.items()}
     after_tree = Tree(current.rev, {**current.files, **files}, current.attachments | placed.keys())
-    after = load(after_tree)
+    after = snapshot_of(after_tree, w.index)
     if request.attached:
         _require_listed(after.decisions[new_ids[0]], request.attached)
-    check = core.check_change(load(state.published), after, w.settings, now, s)
+    check = core.check_change(snapshot_of(state.published, w.index), after, w.settings, now, s)
     notes = tuple(
         core.feedback(_written(s, after, applied.ids), after, core.derive(after), w.settings.length)
         + core.area_feedback(after, files.keys())

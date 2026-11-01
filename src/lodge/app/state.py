@@ -4,7 +4,7 @@ from dataclasses import dataclass, replace
 
 from lodge import core
 from lodge.app.errors import LodgeError, NotFound
-from lodge.app.ports import Clock, IdSource, Store
+from lodge.app.ports import Clock, IdSource, Index, Store
 from lodge.app.results import Read
 from lodge.core import (
     AmbiguousRef,
@@ -27,6 +27,7 @@ class Wiring:
     clock: Clock
     ids: IdSource
     settings: CoreSettings
+    index: Index | None = None
 
 
 @dataclass(frozen=True)
@@ -49,10 +50,29 @@ class State:
     published_state: Checked | None = None
 
 
-def read_state(store: Store) -> State:
+def snapshot_of(tree: Tree, index: Index | None) -> Snapshot:
+    if index is None:
+        return load(tree)
+    keys = {path: (path, blob) for path, blob in tree.blobs.items() if path in tree.files}
+    cached = index.parses(tuple(keys.values()))
+    missing = {
+        path: core.parse_file(path, text)
+        for path, text in tree.files.items()
+        if path not in keys or keys[path] not in cached
+    }
+    index.keep_parses({keys[path]: value for path, value in missing.items() if path in keys})
+    return core.assemble(
+        {**{path: cached[key] for path, key in keys.items() if key in cached}, **missing},
+        tree.attachments,
+    )
+
+
+def read_state(store: Store, index: Index | None = None) -> State:
     """The current state read once, with the one-state checks run on it."""
     current, published = store.trees()
-    snapshot = load(current)
+    if index is not None:
+        index.epoch()
+    snapshot = snapshot_of(current, index)
     derived = core.derive(snapshot)
     result = core.check_state(snapshot, derived=derived)
     return State(
@@ -75,10 +95,10 @@ def read_checked(w: Wiring) -> State:
     Equal listings load to equal snapshots, and a state compared with itself finds nothing,
     so the comparison is skipped (d-zyqzkg).
     """
-    state = read_state(w.store)
+    state = read_state(w.store, w.index)
     if same_listing(state.current, state.published):
         return replace(state, published_state=Checked(state.snapshot, state.derived, state.result))
-    published = load(state.published)
+    published = snapshot_of(state.published, w.index)
     before = core.derive(published)
     published_result = core.check_state(published, derived=before)
     facts = core.change_facts(

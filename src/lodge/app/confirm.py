@@ -18,7 +18,7 @@ def _behind_ids(state: State, name: str) -> tuple[str, ...]:
 
 
 def behind_area(w: Wiring, name: str) -> tuple[Behind, ...]:
-    state = read_state(w.store)
+    state = read_state(w.store, w.index)
     s = state.snapshot
     return tuple(
         Behind(
@@ -60,7 +60,7 @@ def confirm(
         raise LodgeError("your words hold a character lodge cannot store")
     if not words:
         raise LodgeError("your words are required; nothing was written")
-    state = read_state(w.store)
+    state = read_state(w.store, w.index)
     expected = _expected(state, ids, area)
     if not expected or len(ids) != len(expected) or set(ids) != set(expected):
         raise StaleList("the list changed since the page was loaded; nothing was written")

@@ -4,7 +4,7 @@ from collections.abc import Sequence
 from typing import Literal
 
 from lodge.app import confirm, reads, threads, writes
-from lodge.app.ports import Clock, IdSource, Store
+from lodge.app.ports import Clock, IdSource, Index, Store
 from lodge.app.results import (
     Added,
     Behind,
@@ -22,8 +22,15 @@ from lodge.core import CheckResult, CoreSettings, Filters, Query, Raises, SpecAr
 
 
 class Lodge:
-    def __init__(self, store: Store, clock: Clock, ids: IdSource, settings: CoreSettings) -> None:
-        self._w = Wiring(store, clock, ids, settings)
+    def __init__(
+        self,
+        store: Store,
+        clock: Clock,
+        ids: IdSource,
+        settings: CoreSettings,
+        index: Index | None = None,
+    ) -> None:
+        self._w = Wiring(store, clock, ids, settings, index)
 
     def search(self, query: str, filters: Filters, limit: int = 20) -> Listed:
         return reads.search_records(self._w, query, filters, limit)

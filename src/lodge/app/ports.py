@@ -6,7 +6,8 @@ from datetime import datetime
 from enum import StrEnum
 from typing import Protocol
 
-from lodge.core import Listing, Tree
+from lodge.app.index_types import FileKey
+from lodge.core import Listing, Parsed, Tree
 
 
 class PublishOutcome(StrEnum):
@@ -95,3 +96,11 @@ class IdSource(Protocol):
     def entropy(self) -> bytes:
         """At least six random bytes."""
         ...
+
+
+class Index(Protocol):
+    def parses(self, keys: Collection[FileKey]) -> dict[FileKey, Parsed | None]: ...
+
+    def keep_parses(self, parsed: Mapping[FileKey, Parsed | None]) -> None: ...
+
+    def epoch(self) -> int: ...

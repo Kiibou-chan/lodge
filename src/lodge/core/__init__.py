@@ -3,6 +3,7 @@
 from lodge.core.apply import Applied, StaleBase, apply_drafts
 from lodge.core.check_change import ChangeFacts, change_facts, check_change
 from lodge.core.check_state import CheckResult, check_state
+from lodge.core.codec import CORE_CLASSES, from_plain, to_plain
 from lodge.core.codes import citers, cites, code_tokens, family, is_code_token
 from lodge.core.confirmation import (
     MINUTE_FORMAT,
@@ -95,6 +96,7 @@ from lodge.core.yamlio import YamlError, load_yaml
 
 __all__ = [
     "ATTACHMENTS",
+    "CORE_CLASSES",
     "MINUTE_FORMAT",
     "THREADS",
     "VIEWER",
@@ -166,6 +168,7 @@ __all__ = [
     "format_brief",
     "format_level1",
     "format_level3",
+    "from_plain",
     "head_parts",
     "is_author",
     "is_code_token",
@@ -199,6 +202,7 @@ __all__ = [
     "slug",
     "spec_view",
     "thread_path",
+    "to_plain",
     "unrecorded_problems",
     "write_area",
     "write_record",
