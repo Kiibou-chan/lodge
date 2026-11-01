@@ -430,7 +430,7 @@ The changed-record row is at its target; Task 10c measures it, and Task 12 appli
       def keep_parses(self, parsed: Mapping[FileKey, Parsed | None]) -> None
       def epoch(self) -> int   # meta.epoch; a build calls it once, before its first lookup (the fourth recheck's W1)
   # gitstore
-  def open_index(common_dir: Path, settings_digest: str) -> Index | None
+  def open_index(common_dir: Path) -> Index | None
   ```
 - Files (d-faakge, d-rvf532, d-e3stjn): `<git common dir>/lodge/index-<digest>.sqlite` with its `-wal` and `-shm`, one per build key, never swapped or renamed, and beside it `index-<digest>.lock`, which is never deleted; `<digest>` the first 16 hex characters of sha1 over the schema number, lodge's source bytes (every `.py` and `.md` file of the installed `lodge` package, by relative name, 2.3 ms for 273,039 bytes in the planner's probe), `sys.version`, `yaml.__version__`, `yaml.__with_libyaml__`, and `sqlite3.sqlite_version`.
 - The lock (d-e3stjn, d-bzp30x): `open_index` takes `fcntl.flock(LOCK_SH)`, blocking, on its lock file before it connects, and releases it after the connection is closed; it creates the lock file, or opens an existing one read-only when it cannot create it, and touches it (`os.utime`, a failure ignored), so a build's age is its lock file's modification time; on opening, another build's file whose lock file is older than 7 days, or that is beyond the four most recently touched builds, is deleted, with its `-wal` and `-shm`, only while `flock(LOCK_EX | LOCK_NB)` on its lock file succeeds; any failure skips it; without `fcntl`, or when no lock file can be opened, nothing is deleted; the protocol is at most about 40 lines, else deletion is dropped and the README's `rm` of the folder is the way to reclaim space.
@@ -531,6 +531,13 @@ The changed-record row is at its target; Task 10c measures it, and Task 12 appli
   `tests/e2e/test_indexed_reads.py`: `test_edit_on_disk_then_show_sees_it`; `test_commit_then_show_sees_it`; `test_branch_mode_after_fetch_sees_the_new_tip`; `test_viewer_factory_has_no_read_model`.
 - [ ] **Step 2:** run; expected FAIL.
 - [ ] **Step 3:** implement.
+- [ ] **Step 3a: Complete Task 9's hand-offs before the gate.**
+  I4/M10, quoted from `task-9-fix-report.md`: "Task 10a must wire the cap, clear, and keep callers, including parse-only writers, use the tree's file count, name `INDEX_FILE_CAP`, and make `meta.kept` mean a state kept."
+  Wire `prepare_keep` into both `keep_state` and parse-only keeps (`add`, the gate, and every non-indexed read), within their write transaction, with the file count supplied by the tree's caller rather than the number of misses.
+  Set `meta.kept` only when a complete state is kept, so invariant 1's unit growth is bounded by the end of this task, and test parse-only writers crossing the cap after a state keep.
+  M9, quoted from `task-9-recheck.md`: "batching gains about 0.05 s".
+  That measured gain supports deferring batched SELECTs; the previous report's claim that per-key error isolation requires per-key SQL is superseded, and the changed-read planner owns any lookup redesign.
+  The parse-only opening path no longer computes or threads a settings digest; use `settings_key` when constructing the stored state's key and exercise `test_settings_change_is_another_state`.
 - [ ] **Step 4:** gate; the replay at all three sizes for the four reads, `show A` included, `cold`, `seen`, and `changed`, recorded as provisional (d-26e6zj), with the phase times of one `changed` read, `keep_state`'s inserts and its eviction apart (the second recheck's V2); the read that clears is a cold read and is reported with the cold ones (d-e3stjn).
 - [ ] **Step 5:** commit, push.
 

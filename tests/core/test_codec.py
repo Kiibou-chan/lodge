@@ -1,7 +1,8 @@
 """Plain values preserve types and reject shapes the encoder cannot write."""
 
 import ast
-from dataclasses import replace
+from collections.abc import Mapping
+from dataclasses import dataclass, fields, replace
 from pathlib import Path
 
 import pytest
@@ -120,11 +121,44 @@ def test_compact_scalar_types_are_preserved(plain: object) -> None:
 
 
 @pytest.mark.parametrize(
-    "position,bad", [(3, ["=Action", "edit"]), (9, None), (9, ["", 1]), (16, ["", 3])]
+    "name,bad",
+    [
+        ("scope", ["=Action", "edit"]),
+        ("changes", None),
+        ("changes", ["", 1]),
+        ("attachments", ["", 3]),
+        pytest.param("attachments", ["x", "berth"], id="wrong-tuple-marker"),
+    ],
 )
-def test_compact_nested_shapes_are_checked(position: int, bad: object) -> None:
-    plain = to_plain(decision())
+def test_compact_nested_shapes_are_checked(name: str, bad: object) -> None:
+    record = decision()
+    plain = to_plain(record)
     assert isinstance(plain, list)
-    plain[position] = bad
+    plain[1 + [f.name for f in fields(record)].index(name)] = bad
     with pytest.raises(ValueError):
         from_plain(plain, CORE_CLASSES)
+
+
+@dataclass(frozen=True)
+class NestedCounts:
+    pairs: tuple[tuple[int, str], ...]
+    counts: Mapping[str, int | None]
+
+
+@pytest.mark.parametrize(
+    "name,bad",
+    [
+        pytest.param("pairs", ["", ["", True, "berths"]], id="nested-int-bool"),
+        pytest.param("counts", {"berths": True}, id="nested-union-int-bool"),
+        pytest.param("counts", {"berths": "wrong"}, id="mapping-item-type"),
+    ],
+)
+def test_compact_nested_scalar_types_are_preserved(name: str, bad: object) -> None:
+    record = NestedCounts(((1, "berths"),), {"berths": 1})
+    classes = {**CORE_CLASSES, "NestedCounts": NestedCounts}
+    assert from_plain(to_plain(record), classes) == record
+    plain = to_plain(record)
+    assert isinstance(plain, list)
+    plain[1 + [f.name for f in fields(record)].index(name)] = bad
+    with pytest.raises(ValueError):
+        from_plain(plain, classes)

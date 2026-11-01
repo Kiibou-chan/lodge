@@ -43,9 +43,9 @@ def settings_key(settings: CoreSettings) -> str:
     return sha1(repr(settings).encode()).hexdigest()
 
 
-def project_index(common: Path, settings: CoreSettings) -> Index | None:
+def project_index(common: Path) -> Index | None:
     try:
-        return open_index(common, settings_key(settings))
+        return open_index(common)
     except Exception:
         return None
 
@@ -99,7 +99,7 @@ def _connect(path: Path, readonly: bool) -> sqlite3.Connection:
         raise
 
 
-def open_index(common_dir: Path, settings_digest: str) -> Index | None:
+def open_index(common_dir: Path) -> Index | None:
     lock: IO[bytes] | None = None
     try:
         folder = common_dir.resolve() / "lodge"
@@ -125,7 +125,7 @@ def open_index(common_dir: Path, settings_digest: str) -> Index | None:
                 Path(str(path) + suffix).unlink(missing_ok=True)
             db = _connect(path, False)
             share(lock)
-        return IndexDB(db, lock, settings_digest)
+        return IndexDB(db, lock)
     except Exception:
         if lock is not None:
             lock.close()
@@ -133,7 +133,7 @@ def open_index(common_dir: Path, settings_digest: str) -> Index | None:
 
 
 class IndexDB:
-    def __init__(self, db: sqlite3.Connection, lock: IO[bytes] | None, settings: str) -> None:
+    def __init__(self, db: sqlite3.Connection, lock: IO[bytes] | None) -> None:
         self.db = db
         self.lock = lock
 

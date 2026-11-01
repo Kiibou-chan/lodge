@@ -45,7 +45,7 @@ def test_lookup_keeps_partial_hits(tmp_path: Path) -> None:
     initial.keep_parses({KEY: None, ("last", "blob"): None})
     initial.close()
     db = sqlite3.connect(filename(tmp_path), isolation_level=None, factory=OneBadKey)
-    index = IndexDB(db, None, "settings")
+    index = IndexDB(db, None)
     assert index.parses([KEY, ("bad", "blob"), ("last", "blob")]) == {
         KEY: None,
         ("last", "blob"): None,
@@ -61,3 +61,28 @@ def test_settings_key_needs_no_plain_codec(monkeypatch: pytest.MonkeyPatch) -> N
         raising=False,
     )
     assert len(index_db.settings_key(CoreSettings())) == 40
+
+
+def test_project_index_skips_open_errors(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    def broken(*args: object) -> None:
+        raise RuntimeError("injected opening failure")
+
+    monkeypatch.setattr(index_db, "open_index", broken)
+    assert index_db.project_index(tmp_path) is None
+
+
+def test_parse_only_opening_needs_no_settings(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    calls: list[Path] = []
+
+    def opened(common: Path) -> None:
+        calls.append(common)
+
+    def forbidden(settings: CoreSettings) -> str:
+        raise AssertionError("parse-only opening computed a settings digest")
+
+    monkeypatch.setattr(index_db, "open_index", opened)
+    monkeypatch.setattr(index_db, "settings_key", forbidden)
+    assert index_db.project_index(tmp_path) is None
+    assert calls == [tmp_path]

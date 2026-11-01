@@ -67,3 +67,11 @@ Task 7 and the earlier Task 5 fix round are reported in `2026-10-31-lodge-at-sca
 Tasks 6 and 7 fix round: d-t2dsd3's phrase groups and all review minors addressed, except Task 6 M1 measured only by the coordinator's instruction, pending Task 10b.
 The report and failing-test evidence are in `2026-10-31-lodge-at-scale/task-8b-report.md`.
 Task 6 already resolved the deferred `written_order` grouping; Task 8a's report verifies the area-local inputs, and this round preserves them.
+
+
+Task 9 fix round 2 addresses recheck N1 and N3 to N7; evidence and delivery are in `2026-10-31-lodge-at-scale/task-9-fix-2-report.md`.
+N1 shares decoded units in the gate's extra snapshots, and N3 to N6 cover private module imports, the remaining codec guards, POST release, and index-opening failure; unused settings threading is removed.
+N7 is now an explicit Task 10a Step 3a: parse-only writers clear too, `meta.kept` means a state kept, the tree's file count is the caller's, and invariant 1's unit growth is bounded by the end of Task 10a.
+M9's batching remains deferred because the recheck measured about 0.05 s saved, superseding the previous report's per-key error-isolation rationale.
+N2 remains report-only here: the recheck measured 1.40 to 1.42 s for lookup and decode of 160,800 units, giving about 4.3 s against the changed-read target of 3 s on the plan's arithmetic.
+The planner is reworking that path; this fix round changes neither lookup nor codec design, and the stop remains after Task 11 (d-26e6zj).

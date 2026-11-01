@@ -155,7 +155,7 @@ def corrupt(folder: Path) -> Path:
 def test_refused_upgrade_returns_none_and_holds_no_lock(tmp_path: Path) -> None:
     path = corrupt(tmp_path)
     with shared_elsewhere(path.with_suffix(".lock")):
-        assert open_index(tmp_path, "settings") is None
+        assert open_index(tmp_path) is None
         assert path.read_bytes() == b"not a database"
     with path.with_suffix(".lock").open("rb") as probe:
         fcntl.flock(probe, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -166,7 +166,7 @@ def test_corrupt_without_fcntl_returns_none(
 ) -> None:
     path = corrupt(tmp_path)
     monkeypatch.setattr(index_space, "fcntl", None)
-    assert open_index(tmp_path, "settings") is None
+    assert open_index(tmp_path) is None
     assert path.read_bytes() == b"not a database"
 
 

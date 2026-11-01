@@ -1,6 +1,7 @@
 """Composition shares repository discovery and releases each request's index explicitly."""
 
 import sqlite3
+from http import HTTPStatus
 from urllib.parse import urlsplit
 
 import pytest
@@ -10,7 +11,7 @@ from e2e.conftest import Project
 from lodge.gitstore import index_db, project_index, setup
 from lodge.gitstore.git import run
 from lodge.gitstore.index_db import IndexDB
-from lodge.viewer import server
+from lodge.viewer import server, writes
 
 
 def test_common_directory_discovered_once(
@@ -31,7 +32,9 @@ def test_common_directory_discovered_once(
     assert len(calls) == 1
 
 
-@pytest.mark.parametrize("operation", ["cli", "cli-error", "viewer", "viewer-error"])
+@pytest.mark.parametrize(
+    "operation", ["cli", "cli-error", "viewer", "viewer-error", "post", "post-error"]
+)
 def test_factory_releases_retained_index(
     project: Project, monkeypatch: pytest.MonkeyPatch, operation: str
 ) -> None:
@@ -48,10 +51,35 @@ def test_factory_releases_retained_index(
     monkeypatch.setattr(entrypoint, "project_index", retain)
     if operation.startswith("cli"):
         project.run(*(("show", "missing") if operation.endswith("error") else ("waiting",)))
-    else:
+    elif operation.startswith("viewer"):
         monkeypatch.chdir(project.root)
         path = "/r/missing" if operation.endswith("error") else "/problems"
         server.render(entrypoint._make_lodge, urlsplit(path), "token")
+    else:
+        monkeypatch.chdir(project.root)
+
+        def confirm(post: writes._Post) -> writes.Reply:
+            if operation.endswith("error"):
+                raise RuntimeError("injected POST failure")
+            return writes.Reply(HTTPStatus.SEE_OTHER, "", "/")
+
+        monkeypatch.setattr(writes._Post, "confirm", confirm)
+        reply = writes.handle_post(
+            entrypoint._make_lodge,
+            writes.Gatekeeper("t" * 32, frozenset({"localhost:8000"})),
+            "/confirm",
+            {
+                "host": "localhost:8000",
+                "origin": "http://localhost:8000",
+                "content-type": "application/x-www-form-urlencoded",
+            },
+            b"token=" + b"t" * 32,
+        )
+        assert reply.status == (
+            HTTPStatus.INTERNAL_SERVER_ERROR
+            if operation.endswith("error")
+            else HTTPStatus.SEE_OTHER
+        )
     assert len(indexes) == 1
     assert indexes[0].lock is None
     with pytest.raises(sqlite3.ProgrammingError):

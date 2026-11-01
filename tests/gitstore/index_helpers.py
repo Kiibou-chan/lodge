@@ -14,7 +14,7 @@ KEY = ("lodge/spec/berths/s-aaaaaa-berths.md", "a" * 40)
 
 
 def opened(folder: Path) -> IndexDB:
-    index = open_index(folder, "settings")
+    index = open_index(folder)
     assert isinstance(index, IndexDB)
     return index
 
