@@ -1,0 +1,12 @@
+{"label": "before", "mode": "new-commit", "processes": 2267, "sample": 1, "seconds": 5.789039470022544}
+{"label": "before", "mode": "cold-index", "processes": 2267, "sample": 1, "seconds": 5.76855865799007}
+{"label": "before", "mode": "new-commit", "processes": 2267, "sample": 2, "seconds": 5.740158384985989}
+{"label": "before", "mode": "cold-index", "processes": 2267, "sample": 2, "seconds": 5.783032185019692}
+{"label": "before", "mode": "new-commit", "processes": 2267, "sample": 3, "seconds": 5.781962439010385}
+{"label": "before", "mode": "cold-index", "processes": 2267, "sample": 3, "seconds": 5.730873800988775}
+{"label": "after", "mode": "new-commit", "processes": 15, "sample": 1, "seconds": 0.5624533589871135}
+{"label": "after", "mode": "cold-index", "processes": 15, "sample": 1, "seconds": 0.5816299830039497}
+{"label": "after", "mode": "new-commit", "processes": 15, "sample": 2, "seconds": 0.5683726230054162}
+{"label": "after", "mode": "cold-index", "processes": 15, "sample": 2, "seconds": 0.5416985229821876}
+{"label": "after", "mode": "new-commit", "processes": 15, "sample": 3, "seconds": 0.5557284879905637}
+{"label": "after", "mode": "cold-index", "processes": 15, "sample": 3, "seconds": 0.5325179270002991}

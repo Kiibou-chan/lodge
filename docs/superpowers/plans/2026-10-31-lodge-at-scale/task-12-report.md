@@ -1,14 +1,14 @@
 # Task 12 report
 
-Production now runs R11-B (d-jwpwe7) and 1,900 bytes per file (d-j51qmy), so the R11-B / 1,900 columns are the production figures.
+Production runs R11-B (d-jwpwe7) and 1,900 bytes per file (d-j51qmy); its s90000 rows use the refreshed final code, and the smaller-store rows retain the initial four-way comparison.
 
 ## Task 10c fix round, complete
 
 B-2 and B-1 have app and end-to-end regressions written before their fixes.
 The published-status regression kills a substitution of current statuses for published ones.
-M-3 has exact-reader boundary tests; their injected facts lookup fails before implementation.
-I-2 will follow the explicit dispatch: only published identities and their statuses are stored, with no published state check on indexed reads.
-M-1 is left as a reported conflict: replacing or deleting a referenced bucket blob conflicts with Global Constraint 1, and reads already fall back to memory.
+M-3 guards the exact-reader boundary; a deliberate facts-lookup mutant fails those tests.
+I-2 follows d-k194gk, narrowing d-dxqxsn: only published identities and their statuses are stored, with no published state check on indexed reads.
+M-1 is ruled not fixed: a damaged shared bucket blob arises only through an edit of the index file, reads stay exact through the memory fallback, and the index is safe to delete.
 M-2 removes the thread default, and M-4 documents the facts-backed constructor.
 No record operation has been run.
 
@@ -356,11 +356,11 @@ B-2 returns from an empty `keep_parses` before any write transaction, retaining 
 B-1 checks the intact ID bucket, then resolves the code and its ambiguity exactly as the in-memory reader does.
 The end-to-end codes are `d-fast` and `S-ab`, whose suffixes have real buckets; shorter `d-x` and `S-1` would fall back on a missing bucket and mask the defect, so the app tests cover those separately.
 I-1 proves the published replaced status differs from current current status, and kills the swapped-status mutant.
-I-2 stores status-only facts for published identities; the dispatch explicitly authorises this narrowing of the earlier d-dxqxsn policy.
+I-2 stores status-only facts for published identities; d-k194gk records the narrowing of d-dxqxsn.
 A clean current identity equal to published still supplies its statuses without a second derivation.
 Schema 7 prevents old value shapes from being reused.
 M-2 makes threads required, M-3 proves all exact commands ignore poisoned facts and kills an injected facts lookup, and M-4 documents the sole constructor allowed to omit the derived object.
-M-1 remains a plan conflict, as described above, with memory fallback retained.
+M-1 is ruled not fixed for the index-edit-only damage described above; memory fallback keeps reads exact, and the index is safe to delete.
 
 Existing tests edited: `test_published_facts.py` follows the status-only shape and now compares against the exact `read_checked` oracle, `state_helpers.py` supplies required threads and status-only facts, and `test_index_states.py` follows that facts constructor.
 The Task 10c Files list and facts hand-off are amended for these changes; no new port or package is introduced.
@@ -420,15 +420,14 @@ FAILED tests/test_bench_replay_options.py::test_epoch_probe_skips_incomplete_ind
 1 failed in 0.19s
 ```
 
-Native-disk measurement follows, with production R11-A and 1,500 bytes per file unchanged.
+The native matrix includes R11-A and 1,500 bytes per file as an explicitly labelled comparison; production is R11-B and 1,900 bytes per file.
 
 Measurement completed: `s900`, `a1500`, every selected replay row compared with the exact reader in stdout, stderr, and exit status; three complete processes per timing.
 
 Measurement completed: `s9000`, `a1500`, every selected replay row compared with the exact reader in stdout, stderr, and exit status; three complete processes per timing.
 
-Preliminary native results: production seen `show {code}` is 0.142737 s at s900 and 0.304214 s at s9000, and seen `search berth --brief` is 0.163930 s and 0.585501 s respectively, best of three.
-The s9000 baseline holds one complete state at 26,804,224 used bytes, above its 24,180,000-byte production cap; its changed samples clear and are cold.
-Large-store cold measurement is in progress, with all completed samples equal to the exact reader.
+R11-A / 1,500 native results: seen `show {code}` is 0.142737 s at s900 and 0.304214 s at s9000, and seen `search berth --brief` is 0.163930 s and 0.585501 s respectively, best of three.
+The s9000 baseline holds one complete state at 26,804,224 used bytes, above its 24,180,000-byte comparison cap; its changed samples clear and are cold.
 
 The start-up helper also resolves an installed lodge command from PATH before selecting its sibling Python.
 Its regression ran red first:
@@ -444,19 +443,19 @@ FAILED tests/test_bench_replay_options.py::test_startup_resolves_installed_lodge
 
 The replay-focused suite now passes 16 tests in 0.10 s, with strict mypy and Ruff green.
 The four scratch sources were verified at runtime: every import comes from its intended copy, each cap has the requested value, and only the B copies call stat_current.
-The base runtime matches the completed build: CPython 3.13.5, SQLite 3.47.1, PyYAML 6.0.3, and libyaml enabled.
+The base runtime is CPython 3.13.5 with SQLite 3.47.1; the completed build uses native CPython 3.13.16 with SQLite 3.53.1, with PyYAML 6.0.3 and libyaml enabled in both.
 No inherited attributes or injected git configuration overrides the no-conversion experiment.
 
-The first complete large-store production point row is recorded: show by code is 2.002969 s seen, then 10.124897 s on the first changed sighting (epoch 1 to 2, cold clear), 12.010507 s on the second sighting through the complete keep, and 2.010119 s on the third, best of three.
+The R11-A / 1,500 large-store point row is recorded: show by code is 2.002969 s seen, then 10.124897 s on the first changed sighting (epoch 1 to 2, cold clear), 12.010507 s on the second sighting through the complete keep, and 2.010119 s on the third, best of three.
 The second sighting misses 3 s, and the seen rows miss 0.3 s.
 The one complete state is 251,666,432 used and physical bytes against the 241,200,000-byte cap.
 Every corresponding output and exit status equals the exact reader.
 
 Measurement completed: `s90000`, `a1500`, every selected replay row compared with the exact reader in stdout, stderr, and exit status; three complete processes per timing.
 
-The full large-store production command table is complete with exact-reader parity.
+The full large-store R11-A / 1,500 command table is complete with exact-reader parity.
 All three no-edit spec, check, and gate samples preserve the epoch, kept-state count, facts, and markers; the best gate time is 9.017 s.
-The first five ten-cycle observations each clear once on the first read, keep one complete state on the second, and read it without a write on the third.
+The R11-A / 1,500 ten-cycle observations each clear once on the first read, keep one complete state on the second, and read it without a write on the third.
 Facts remain one 3,329,566-byte published status map, with no dirty-ident growth.
 The chained regression is strengthened to two commands; a deliberate counter reset reuses three edits and fails, while the implementation keeps all six edits distinct.
 
@@ -473,7 +472,7 @@ The focused replay suite passes 16 tests in 0.11 s after that mutation is restor
 
 Ten edit/read/read/read cycles completed: `a1500`; epoch changes and complete-state counts are retained for every sighting.
 
-The production ten-cycle run completes with ten clears in ten edit/read/read/read cycles.
+The R11-A / 1,500 ten-cycle run completes with ten clears in ten edit/read/read/read cycles.
 One complete state is held after each second sighting, but zero fit under the cap.
 The first changed read clears, the second keeps, and the third reads that state; facts remain one published map.
 Chained epoch observations also carry each subprocess's exit status and stdout digest, enabling the hundred-read output audit.
@@ -491,21 +490,25 @@ CONV-1 rows completed: `a1500`, seen and all three changed sightings, three samp
 
 ## Reproduction method
 
-The scratch drivers and durable JSONL samples are retained under `/var/tmp/lodge-bench/task12/`.
+The checked-in drivers are in `task12-tools/`, and durable JSONL samples are retained under the configurable benchmark root, default `/var/tmp/lodge-bench/task12/`.
 The setup clones Task 1's synthetic stores without hard links and makes four compiled source copies of the completed application.
 Its only application-code differences are the one R11 function body and the cap constant.
 The commands run in the build worktree with the frozen environment:
 
 ```sh
-uv run --frozen python /var/tmp/lodge-bench/task12/setup.py
-uv run --frozen python /var/tmp/lodge-bench/task12/measure.py matrix
-uv run --frozen python /var/tmp/lodge-bench/task12/measure.py small-options
-uv run --frozen python /var/tmp/lodge-bench/task12/measure.py base
-uv run --frozen python /var/tmp/lodge-bench/task12/measure.py diagnostics
-uv run --frozen python /var/tmp/lodge-bench/task12/measure.py clear
+tools=docs/superpowers/plans/2026-10-31-lodge-at-scale/task12-tools
+uv run --frozen python "$tools/setup.py" --source-ref bb9fe48
+uv run --frozen python "$tools/measure.py" matrix
+uv run --frozen python "$tools/measure.py" small-options
+uv run --frozen python "$tools/measure.py" base
+uv run --frozen python "$tools/measure.py" diagnostics
+uv run --frozen python "$tools/measure.py" clear
 ```
 
-These stages run sequentially, with no concurrent timed workload.
+Other CPU-heavy jobs ran on the machine during parts of the a1500 s90000 section of the first matrix; every cell is best of three, and no table value is known to depend on them (review F-2).
+The code-identical a1500 and a1900 seen and third-sighting cells agree within 1.3 per cent.
+The final production rerun runs sequentially with no other CPU-heavy work alongside it, and refreshes git's index outside all timed reads.
+A two-second machine-wide sampler observes no sustained competing load; one isolated background interval peaks at 0.597 of one core, with adjacent intervals at 0.010 and 0.020.
 The base stage compares clean and edited inputs, with three attempts each.
 Large-store base attempts are bounded to 20 s, with Task 1's original 900 s timeout recorded separately; no output equality is asserted for a timeout.
 Every completed-build replay sample compares stdout, stderr, and status with `LODGE_INDEX=off` on the same bytes.
@@ -539,8 +542,8 @@ Ten edit/read/read/read cycles completed: `b1500`; epoch changes and complete-st
 CONV-1 rows completed: `b1500`, seen and all three changed sightings, three samples, against the exact reader.
 
 The preserved native base package is verified byte for byte against Task 1 commit d8cb076 for every Python and Markdown package source.
-The three alternative source copies differ from the production copy only in the required R11 and cap files.
-R11-B with the scratch 1,900-byte cap records show by code at 0.477424 s seen, 4.800864 s first changed, 10.317305 s second changed, and 0.478916 s third changed, best of three with no clears.
+The four-way comparison source copies differ only in the required R11 and cap files; the final production rerun takes the committed R11-B / 1,900 source.
+Production R11-B with the 1,900-byte cap records show by code at 0.318994 s seen, 4.763202 s first changed, 10.246784 s second changed, and 0.329925 s third changed, best of three with no clears.
 This row independently misses the point and changed limits.
 
 Measurement completed: `s90000`, `b1900`, every selected replay row compared with the exact reader in stdout, stderr, and exit status; three complete processes per timing.
@@ -550,13 +553,12 @@ Ten edit/read/read/read cycles completed: `b1900`; epoch changes and complete-st
 All targeted large-store command rows are complete under all four combinations, with exact-reader output and status parity.
 Both 1,500-byte variants clear ten times in ten cycles, holding one over-cap state and fitting zero complete states within the cap.
 Both 1,900-byte variants retain four states and clear zero times.
-R11-B with 1,900 bytes per file ends its cycles at 266,752,000 used bytes and 267,313,152 physical bytes.
+Production R11-B / 1,900 completes all three ten-cycle sequences without a clear, with four states; the first sequence ends at 266,977,280 used bytes and 267,530,240 physical bytes.
 The measured show-by-code seen miss independently triggers the stop under each combination, even before the search candidate counts are classified.
-The conversion completion, hundred-read chained experiment, smaller-store alternatives, historical-base audit, and phase diagnostics remain in progress.
 
 CONV-1 rows completed: `b1900`, seen and all three changed sightings, three samples, against the exact reader.
 
-The production `--mode chained --runs 100` experiment completed without restoring the saved index, with the epoch before and after every edit/read.
+The R11-A / 1,500 `--mode chained --runs 100` experiment completed without restoring the saved index, with the epoch before and after every edit/read.
 
 Ten edit/read/read/read cycles completed: `a1500`; epoch changes and complete-state counts are retained for every sighting.
 
@@ -569,7 +571,6 @@ Its 1,122 timed replay samples all match the exact reader in stdout, stderr, and
 The product replay's hundred-read chained run completes with one clear in 100 distinct changed reads, best 6.074 s and median 6.127 s through exit.
 All hundred exit statuses are zero, and all stdout digests match the exact-reader reference.
 This count is separate from the ten repeated-sighting cycles: every chained state is read once, so only markers and computed units are written.
-The smaller-store alternatives are running next.
 
 Measurement completed: `s900`, `b1500`, every selected replay row compared with the exact reader in stdout, stderr, and exit status; three complete processes per timing.
 
@@ -601,16 +602,15 @@ The smaller-store historical-base audit completes with no differences outside sh
 For both sizes, clean and edited spec, check, gate, waiting, and threads outputs and statuses match; level-1 search berth also matches.
 A 36-case audit verifies that original show bodies remain unchanged and that single-word brief ranking is identical after removing Task 6's documented current labels and heading.
 The remaining differences are Task 5's context and multi-ref syntax, and Task 6's ranking, brief format, multi-query syntax, and phrase option.
-At s90000, the historical base's completed attempts so far are censored at 20 s; equality is unavailable for those attempts.
+At s90000, 78 historical-base attempts time out at 20 s; equality is unavailable for those attempts.
 
 ### Rulings received during measurement
 
 Commits `23a51e5` and `164e43e` arrived on the shared build branch during the historical-base replay.
 Read through `lodge show --reasoning`, d-jwpwe7 chooses R11-B for STALE-1 and d-j51qmy chooses 1,900 bytes per file for DISK-1.
 These questions are now ruled; the four-way table already includes the chosen combination.
-The timed production source remains `a92836c`, R11-A and 1,500 bytes per file, as this dispatch explicitly requires.
-Task 12 changes neither production switch nor cap; applying the new choices is a coordinator hand-off.
-The benchmark source copies remain unchanged throughout the experiment.
+Production applies d-jwpwe7 and d-j51qmy: R11-B and 1,900 bytes per file.
+The final production source is commit `2a82ebe`, with the fix-round tooling committed before remeasurement; the source copies remain unchanged throughout the rerun.
 
 Task 1 base replay completed: `s90000`, clean and changed inputs; large-store attempts are bounded to 20 s each, with the original 900 s point-read timeout retained separately.
 
@@ -623,15 +623,14 @@ Large-store base equality remains unavailable for the 78 censored attempts.
 This replay uses a shorter 20 s diagnostic bound for those fresh attempts; it does not claim to reproduce Task 1's 900 s timeout on every command.
 Task 1's original bound is retained separately, and d-xc4nz9's reasoning explicitly distinguishes the smaller-store old/new proof from Task 12's largest-store measurement of the new build alone.
 The shorter bound is a reported measurement limitation, with no fabricated equality or speed-up ratio.
-The base stage exits 0, and the phase diagnostic stage now runs.
 
-### Phase progress
+### Phase attribution
 
 The R11-A probes attribute about 1.76 s of a seen show read to identity and about 0.12 s to complete-state metadata decoding.
 The second changed sighting includes complete-keep construction, particularly citers, rows, and bucket encoding, through process exit.
 Candidate counts are measured before status filtering: 543 for the large-store code query, 69,208 for berth, 68,183 for tide, and 108,331 for the two-word and phrase queries.
 The code query is judged against the 0.3 s seen limit and misses it; the other large-store searches are reported separately against the 1.0 s broad-search limit.
-Start-up floors are 0.097967 to 0.102820 s for guide read, leaving about 0.20 s of the 0.3 s seen budget.
+Start-up floors are 0.089991 to 0.102820 s for guide read, leaving about 0.20 s of the 0.3 s seen budget.
 Phase timings are separate diagnostic runs with exclusive nested timings, rather than components spliced into the uninstrumented replay results.
 
 Phase diagnostics completed for every targeted large-store seen row and all three changed sightings of show, in each combination; candidate counts are recorded for every search at every size.
@@ -640,24 +639,22 @@ Phase diagnostics completed for every targeted large-store seen row and all thre
 
 All 216 phase samples completed, covering every targeted large-store seen row in all four combinations, all three changed show sightings, the supplemental thread miss, and candidate counts at both smaller sizes.
 Every diagnostic stream matches its exact-reader reference after removing the diagnostic trailer.
-R11-B diagnostics ran faster than the earlier uninstrumented matrix, so six additional same-state audit processes compare the probe with ordinary execution.
-For R11-B/1,900, ordinary seen show is 0.335951 s best of three, and the probe is 0.338646 s, with equal output and unchanged metadata in every sample.
-This check finds no probe-caused speed-up; it does not establish the reason for the difference from the earlier 0.477424 s matrix result.
-The original matrix and later audit are both retained, and both trigger the 0.3 s stop.
-The current full-state clear stage now runs on three independent SQLite copies.
+The final R11-B / 1,900 diagnostics run from a refreshed index, with three samples for every targeted seen row, the supplemental thread miss, and all three changed-show sightings.
+For final production R11-B / 1,900, ordinary seen show is 0.318994 s best of three, and the diagnostic process is 0.323667 s, with equal output and unchanged metadata in every seen sample.
+The cause is git re-hashing racily clean files in the fresh clones while `GIT_OPTIONAL_LOCKS=0` prevents reads from refreshing the index; changed-mode cleanup refreshes it before diagnostics, removing about 0.14 s (review F-1).
+The production matrix is remeasured from a refreshed index; the historical R11-B / 1,500 matrix rows retain about 0.14 s of git re-hashing of racily clean files and are not production.
 
-A current full-state in-place clear is measured three times on independent SQLite copies, with unchanged inode and physical size, an incremented epoch, and secure_delete=OFF.
+An initial R11-A / 1,500 full-state in-place clear is measured three times on independent SQLite copies, with unchanged inode and physical size, an incremented epoch, and secure_delete=OFF.
 
 ### Runtime verification and clear result
 
-The final runtime check corrected an inaccurate draft environment label: the completed-build executable is native CPython 3.13.16 with SQLite 3.53.1, while the preserved Task 1 base is CPython 3.13.5 with SQLite 3.47.1.
+The completed-build executable is native CPython 3.13.16 with SQLite 3.53.1, while the preserved Task 1 base is CPython 3.13.5 with SQLite 3.47.1.
 Both use PyYAML 6.0.3 with libyaml and git 2.56.0.
-The native executable and its virtual-environment link date from before Task 12; its current source/runtime digest, `fdf2cb6b420c3d85`, matches the index filename recorded by the completed matrix's chained run.
-The draft's single-runtime claim was wrong, rather than a detected runtime replacement during measurement.
-`timings.md` now distinguishes the runtimes, and no code-only speed-up ratio is claimed from that historical comparison.
+The native executable and its virtual-environment link date from before Task 12; the initial four-way matrix's chained index uses digest `fdf2cb6b420c3d85`, while the final production source has its own source-addressed index.
+The runtimes differ, so no code-only speed-up ratio is claimed from that historical comparison.
 The frozen workspace gate uses CPython 3.13.5 and SQLite 3.47.1, providing separate functional validation there.
 
-The current full-state clear completes in 0.078891 s best of three on SQLite 3.53.1, with secure_delete=OFF.
+The initial R11-A / 1,500 full-state clear completes in 0.078891 s best of three on SQLite 3.53.1, with secure_delete=OFF.
 It reduces used pages from 251,641,856 to 94,208 bytes, leaves the 251,641,856-byte physical file and inode unchanged, and increments the epoch once in every sample.
 The source index is primed independently; its FTS layout can differ slightly from the earlier replay's complete state.
 Task 9's 0.049078 s parse-only clear at 144,568,320 used bytes, SQLite 3.47.1, remains a separate historical row.
@@ -668,7 +665,6 @@ Final review found that the replay located its cache under a worktree's administ
 A seventh new regression runs red on that mismatch before the lookup changes to `git rev-parse --path-format=absolute --git-common-dir`.
 All three measured stores are standalone clones, where both directories are identical, so their existing timing and epoch samples remain applicable.
 The focused replay suites now pass 17 tests, with Ruff lint and formatting checks green.
-The full gate is repeated after this final helper change.
 
 ```text
 F                                                                        [100%]
@@ -691,44 +687,43 @@ FAILED tests/test_bench_replay_options.py::test_replay_observes_shared_common_ca
 ## Task 12 outcome
 
 The replay options, README index paragraph, regression tests, amended Files list, and complete `timings.md` are built.
-The final coverage audit exits 0:
+The initial four-way coverage audit exits 0:
 
 ```text
 replay_samples=1602, cycle_samples=360, base_samples=288, base_timeouts=78
 phase_samples=216, clear_samples=3, chained_samples=100, chained_clears=1
 ```
 
-All 1,602 replay samples match the exact reader's stdout, stderr, and status.
+The initial four-way replay has 1,602 samples matching the exact reader; the refreshed production replacement is independently audited at 195 replay samples, 90 cycle reads over three sequences, and 51 phase samples, all matching their exact-reader references.
 All cycle streams and chained stdout digests and statuses match their references, and every seen or third-sighting replay leaves the recorded index metadata unchanged.
 The complete timing table separates cold clears, searches over 5,000 candidates, and CONV-1 conversions, and includes the start-up floor, phases, clear cost, cap occupancy, and base audit.
-The final production and scratch show-by-code summary at 160,800 files follows, in seconds through process exit:
+The final production and labelled comparison show-by-code summary at 160,800 files follows, in seconds through process exit:
 
 | Rule / cap | Seen | Changed first | Changed second, including keep | Changed third | Complete states fitting | Clears in ten cycles | Stop |
 |---|---:|---:|---:|---:|---:|---:|---|
 | R11-A / 1,500 | 2.002969 | 10.124897 cold | 12.010507 | 2.010119 | 0 | 10 | STOP |
 | R11-A / 1,900 | 2.008090 | 6.134215 | 11.660802 | 2.001470 | 4 | 0 | STOP |
 | R11-B / 1,500 | 0.481090 | 8.802426 cold | 10.735255 | 0.477769 | 0 | 10 | STOP |
-| R11-B / 1,900 | 0.477424 | 4.800864 | 10.317305 | 0.478916 | 4 | 0 | STOP |
+| R11-B / 1,900 | 0.318994 | 4.763202 | 10.246784 | 0.329925 | 4 | 0 | STOP |
 
-Every combination triggers the stop, including the newly ruled R11-B/1,900 combination.
+Every combination triggers the stop, including the refreshed final production R11-B / 1,900 combination.
 The server question goes to the coordinator; no server is implemented.
-Production remains R11-A/1,500 as dispatched, and applying d-jwpwe7 and d-j51qmy is explicitly handed off.
+Production runs R11-B / 1,900 under d-jwpwe7 and d-j51qmy; its refreshed s90000 measurements determine the current stop.
 No `lodge add` or other record-writing command was run.
 Only the dispatched build worktree and synthetic benchmark area were changed.
 
 ### Concerns and limitations
 
-- M-1 remains the reported conflict with referenced-blob immutability; memory fallback is retained.
+- M-1 is ruled not fixed: damage requires editing the index file, reads stay exact through memory fallback, and deleting the index is safe.
 - Historical-base equality is unavailable for 78 large-store attempts censored at the shorter 20 s bound; Task 1's original 900 s show timeout is reported separately.
 - The historical base and completed build use different Python patch and SQLite versions, so their times do not isolate a code-only speed-up.
-- Later R11-B ordinary and diagnostic reads are faster than the original matrix; both measurements remain recorded, and both exceed the target.
+- The R11-B / 1,500 comparison matrix retains about 0.14 s of git re-hashing of racily clean files; the s90000 production R11-B / 1,900 rows use a refreshed index.
 - The synthetic stores have no successful thread case, and no FUSE-mounted synthetic copy is at hand under the permitted benchmark root.
-- The newly arrived author rulings are measured but intentionally not applied to production by this dispatch.
+- Other CPU-heavy jobs overlapped parts of the initial a1500 s90000 matrix; every cell is best of three, and no table value is known to depend on them (review F-2).
 
 ### Final validation
 
-The gate before the final common-directory helper correction exits 0: 2,214 tests passed, 39 skipped in 203.17 s, with format, Ruff, strict mypy, Vulture, and `lodge check --gate` green.
-The fresh full gate after the final correction exits 0: `UV_FROZEN=1 sh scripts/check.sh` passes formatting, Ruff, strict mypy over 296 source files, Vulture, and all 2,215 tests, with 39 skipped in 203.56 s.
+The final fix-round gate exits 0: `UV_FROZEN=1 sh scripts/check.sh` passes formatting, Ruff, strict mypy over 301 source files, Vulture, and all 2,236 tests, with two skipped in 211.06 s.
 `lodge check --gate` prints `ok` and the existing `area storage: order changed` note.
 `git diff --check` and the public-path scan are clean.
 Task 12 is complete and ready for review; the performance stop remains the recorded outcome.
