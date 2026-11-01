@@ -4,13 +4,17 @@ Commands are shell-style argument lists, parsed without invoking a shell.
 """
 
 import argparse
+import json
+import os
 import shlex
 import shutil
 import signal
+import sqlite3
 import statistics
 import subprocess
 import tempfile
 import time
+from hashlib import sha256
 from pathlib import Path
 
 
@@ -35,11 +39,19 @@ def placeholders(store: Path) -> tuple[dict[str, str], Path]:
     }, entry[0]
 
 
-def run(store: Path, command: list[str], timeout: float) -> tuple[float, int | None, str | None]:
+def run(
+    store: Path, command: list[str], timeout: float, env: dict[str, str] | None = None
+) -> tuple[float, int | None, str | None]:
     start = time.perf_counter()
     try:
         result = subprocess.run(
-            command, cwd=store, capture_output=True, text=True, check=False, timeout=timeout
+            command,
+            cwd=store,
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=timeout,
+            env=env,
         )
     except subprocess.TimeoutExpired:
         return timeout, None, None
@@ -51,33 +63,88 @@ def clear(cache: Path) -> None:
         shutil.rmtree(cache)
 
 
-def measure(store, build, commands, mode, runs, cache, entry, timeout):
+def epochs(cache: Path) -> dict[str, int]:
+    found = {}
+    for path in sorted(cache.glob("index-*.sqlite")):
+        try:
+            db = sqlite3.connect(path.as_uri() + "?mode=ro", uri=True, timeout=0.2)
+            try:
+                found[path.name] = db.execute("SELECT epoch FROM meta").fetchone()[0]
+            finally:
+                db.close()
+        except (sqlite3.Error, TypeError, ValueError):
+            continue
+    return found
+
+
+def startup(store: Path, build: list[str], timeout: float, env: dict[str, str]) -> None:
+    executable = Path(shutil.which(build[0]) or build[0])
+    python = executable if executable.name.startswith("python") else executable.with_name("python")
+    print("| Start-up | Best of nine (s) |")
+    print("|---|---:|")
+    for label, command in (
+        ("python -c pass", [str(python), "-c", "pass"]),
+        ("import lodge.main", [str(python), "-c", "import lodge.main"]),
+        ("lodge guide --read", [*build, "guide", "--read"]),
+    ):
+        samples = [run(store, command, timeout=timeout, env=env) for _ in range(9)]
+        if any(code != 0 for _, code, _ in samples):
+            raise SystemExit(f"start-up command failed: {label}")
+        print(f"| `{label}` | {min(s[0] for s in samples):.6f} |", flush=True)
+
+
+def measure(store, build, commands, mode, runs, cache, entry, timeout, env=None):
     results = []
     with tempfile.TemporaryDirectory(prefix="read-cache-", dir=store.parent) as folder:
         saved = Path(folder) / "lodge"
         try:
-            if mode == "changed":
+            if mode in {"changed", "chained"}:
                 for _, args in commands:
-                    run(store, [*build, *args], timeout=timeout)
-                if cache.exists():
+                    for _ in range(2):
+                        run(store, [*build, *args], timeout=timeout, env=env)
+                if mode == "changed" and cache.exists():
                     shutil.copytree(cache, saved)
             original = entry.read_text(encoding="utf-8")
-            for _, args in commands:
+            number = 0
+            for line, args in commands:
                 if mode == "seen":
-                    run(store, [*build, *args], timeout=timeout)
+                    for _ in range(2):
+                        run(store, [*build, *args], timeout=timeout, env=env)
                 samples = []
-                for number in range(1, runs + 1):
+                for sample in range(1, runs + 1):
+                    number += 1
                     if mode in {"cold", "changed"}:
                         clear(cache)
-                    if mode == "changed":
-                        if saved.exists():
+                    if mode in {"changed", "chained"}:
+                        if mode == "changed" and saved.exists():
                             shutil.copytree(saved, cache)
                         entry.write_text(f"{original.rstrip()}\nBenchmark run {number}.\n")
-                    samples.append(run(store, [*build, *args], timeout=timeout))
+                    before = epochs(cache) if mode == "chained" else {}
+                    samples.append(run(store, [*build, *args], timeout=timeout, env=env))
+                    if mode == "chained":
+                        print(
+                            "Epochs: "
+                            + json.dumps(
+                                {
+                                    "command": line,
+                                    "sample": sample,
+                                    "exit": samples[-1][1],
+                                    "stdout_sha256": (
+                                        sha256(samples[-1][2].encode()).hexdigest()
+                                        if samples[-1][2] is not None
+                                        else None
+                                    ),
+                                    "before": before,
+                                    "after": epochs(cache),
+                                },
+                                sort_keys=True,
+                            ),
+                            flush=True,
+                        )
                 results.append(samples)
         finally:
-            if mode == "changed":
-                subprocess.run(["git", "checkout", "--", "lodge"], cwd=store, check=True)
+            if mode in {"changed", "chained"}:
+                subprocess.run(["git", "checkout", "--", "lodge"], cwd=store, check=True, env=env)
     return results
 
 
@@ -94,13 +161,38 @@ def main() -> None:
     parser.add_argument("--timeout", type=float, default=900.0)
     parser.add_argument("--runs", type=int, default=3)
     parser.add_argument("--commands", type=Path, default=Path("scripts/bench_reads.txt"))
-    parser.add_argument("--mode", choices=("cold", "seen", "changed"), default="seen")
+    parser.add_argument("--mode", choices=("cold", "seen", "changed", "chained"), default="seen")
+    parser.add_argument(
+        "--git-config",
+        type=Path,
+        metavar="FILE",
+        help="global git config for every child, with system configuration and attributes off",
+    )
+    parser.add_argument(
+        "--startup",
+        action="store_true",
+        help="measure the build's Python, imports, and reading guide, best of nine",
+    )
     args = parser.parse_args()
     if args.runs < 1:
         parser.error("--runs must be positive")
     if args.timeout <= 0:
         parser.error("--timeout must be positive")
     store = args.store.resolve()
+    env = dict(os.environ)
+    if args.git_config is not None:
+        env.update(
+            GIT_CONFIG_GLOBAL=str(args.git_config.resolve()),
+            GIT_CONFIG_NOSYSTEM="1",
+            GIT_ATTR_NOSYSTEM="1",
+        )
+    builds = [shlex.split(args.lodge)]
+    if args.against:
+        builds.append(shlex.split(args.against))
+    if args.startup:
+        for build in builds:
+            startup(store, build, args.timeout, env)
+        return
     refs, entry = placeholders(store)
     commands = [
         (line, shlex.split(line.format_map(refs)))
@@ -108,16 +200,16 @@ def main() -> None:
         if line.strip() and not line.lstrip().startswith("#")
     ]
     gitdir = subprocess.check_output(
-        ["git", "rev-parse", "--absolute-git-dir"], cwd=store, text=True
+        ["git", "rev-parse", "--path-format=absolute", "--git-common-dir"],
+        cwd=store,
+        text=True,
+        env=env,
     ).strip()
     cache = Path(gitdir) / "lodge"
-    if subprocess.check_output(["git", "status", "--porcelain", "--", "lodge"], cwd=store):
+    if subprocess.check_output(["git", "status", "--porcelain", "--", "lodge"], cwd=store, env=env):
         parser.error("every mode requires a clean lodge folder")
-    builds = [shlex.split(args.lodge)]
-    if args.against:
-        builds.append(shlex.split(args.against))
     results = [
-        measure(store, build, commands, args.mode, args.runs, cache, entry, args.timeout)
+        measure(store, build, commands, args.mode, args.runs, cache, entry, args.timeout, env)
         for build in builds
     ]
     print(f"Mode: `{args.mode}`; store: `{store.name}`; runs: {args.runs}.")

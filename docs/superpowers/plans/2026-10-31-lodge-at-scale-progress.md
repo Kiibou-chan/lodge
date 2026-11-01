@@ -212,3 +212,35 @@ M-1 remains a reported conflict with referenced-blob immutability, with memory f
 The amended Task 10c Files list covers the value-shape, lookup, schema, and fixture hand-offs.
 Red evidence, gate results, and the forthcoming Task 12 measurements are in `2026-10-31-lodge-at-scale/task-12-report.md`.
 The final frozen gate passes 2,208 tests, with 39 skipped, plus formatting, Ruff, strict mypy, Vulture, and `lodge check --gate`.
+
+
+## Task 12
+
+The replay adds chained distinct edits with epoch observations, isolated git configuration, and best-of-nine start-up measurements with the selected build's Python.
+Seen and changed baselines prime both SECOND-1 sightings, and the README documents index removal and LODGE_INDEX=off.
+The task's Files list includes the replay regression file and timeout-test hand-off.
+The seven new regression tests run red before implementation, with failing output in `2026-10-31-lodge-at-scale/task-12-report.md`.
+
+The completed matrix covers s900, s9000, and s90000, both R11 rules, and both 1,500-byte and 1,900-byte caps, with every targeted row under each combination.
+All 1,602 timed replay samples match the exact reader's stdout, stderr, and exit status.
+The audit also checks 360 cycle reads, 216 phase samples, three in-place clears, and all 100 chained reads.
+At 160,800 files, both 1,500-byte variants fit zero complete states within the cap and clear ten times in ten edit/read/read/read cycles; both 1,900-byte variants fit four states and clear zero times.
+The production hundred-read chained experiment clears once, since each edited state is read only once.
+The current full-state clear is 0.078891 s best of three, on SQLite 3.53.1, with unchanged inode and physical size.
+
+R11-A/1,500: STOP; seen show-by-code is 2.002969 s and the second changed sighting is 12.010507 s.
+R11-A/1,900: STOP; seen show-by-code is 2.008090 s, and the first and second changed sightings are 6.134215 s and 11.660802 s.
+R11-B/1,500: STOP; seen show-by-code is 0.481090 s and the second changed sighting is 10.735255 s.
+R11-B/1,900: STOP; seen show-by-code is 0.477424 s, and the first and second changed sightings are 4.800864 s and 10.317305 s.
+Cold clears are excluded; broad searches and CONV-1 conversion rows are reported separately.
+The server question goes to the coordinator under every combination; Task 12 builds no server.
+
+During measurement, d-jwpwe7 rules STALE-1 for R11-B, and d-j51qmy rules DISK-1 for 1,900 bytes per file.
+The chosen combination is already measured and still triggers the stop, including a later same-state ordinary show audit at 0.335951 s.
+The dispatched production source remains R11-A/1,500; applying the new rulings is a coordinator hand-off.
+The Task 1 base completes 210 of 288 bounded attempts, with 78 large-store timeouts and no unexpected completed differences.
+Its CPython 3.13.5/SQLite 3.47.1 runtime differs from the completed-build native CPython 3.13.16/SQLite 3.53.1 runtime, so no code-only speed-up ratio is claimed.
+Successful-thread timing and the optional FUSE timing are unavailable on these synthetic stores.
+The phase table, candidate counts, occupancy, output audit, runtime correction, and limitations are in `2026-10-31-lodge-at-scale/timings.md` and `2026-10-31-lodge-at-scale/task-12-report.md`.
+The final frozen whole gate exits 0: formatting, Ruff, strict mypy over 296 files, Vulture, 2,215 tests passed and 39 skipped in 203.56 s, and `lodge check --gate` prints `ok` with its existing area-order note.
+Task 12 is complete and ready for review, with the server question handed to the coordinator.
