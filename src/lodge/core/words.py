@@ -2,6 +2,9 @@
 
 import re
 
+from lodge.core.model import Decision, SpecEntry
+from lodge.core.snapshot import Parsed
+
 _WORDS = re.compile(r"[^\W_]+")
 _FUNCTION_WORDS = frozenset(
     [
@@ -96,3 +99,10 @@ def words(text: str) -> set[str]:
 def tokens(text: str) -> tuple[str, ...]:
     """Lower-cased word runs, including function words, in their original order."""
     return tuple(_WORDS.findall(text.lower()))
+
+
+def parse_words(parsed: Parsed | None) -> tuple[str, str]:
+    """Space-joined word sets of a searchable record, empty for other parse kinds."""
+    if isinstance(parsed, (Decision, SpecEntry)):
+        return " ".join(sorted(words(parsed.title))), " ".join(sorted(words(parsed.statement)))
+    return "", ""

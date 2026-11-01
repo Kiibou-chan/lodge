@@ -18,7 +18,7 @@ from lodge.app.results import (
     Written,
 )
 from lodge.app.state import Wiring
-from lodge.core import CheckResult, CoreSettings, Filters, Query, Raises, SpecArea
+from lodge.core import CheckResult, CoreSettings, Filters, Query, Raises, SpecArea, parse_query
 
 
 class Lodge:
@@ -46,11 +46,16 @@ class Lodge:
             self._w.index.close()
 
     def search(self, query: str, filters: Filters, limit: int = 20) -> Listed:
+        if self._w.index is not None and self._read_model:
+            return self.search_many([parse_query(query)], filters, limit)[0]
         return reads.search_records(self._w, query, filters, limit)
 
     def search_many(
         self, queries: Sequence[Query], filters: Filters, limit: int = 20
     ) -> tuple[Listed, ...]:
+        if self._w.index is not None and self._read_model:
+            result, self._keep = indexed.search_many(self._w, queries, filters, limit)
+            return result
         return reads.search_many(self._w, queries, filters, limit)
 
     def show(

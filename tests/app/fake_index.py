@@ -4,7 +4,7 @@ from collections.abc import Collection, Mapping
 from contextlib import AbstractContextManager, nullcontext
 
 from lodge.app import FileKey, Row, StateFacts, StoredState
-from lodge.core import Parsed
+from lodge.core import Parsed, parse_words
 
 
 class MemoryIndex:
@@ -25,6 +25,18 @@ class MemoryIndex:
     def epoch(self) -> int:
         self.epochs += 1
         return 1
+
+    def candidates(
+        self, words: Collection[str], every: bool
+    ) -> dict[FileKey, tuple[frozenset[str], frozenset[str]]] | None:
+        found = {}
+        wanted = set(words)
+        for key, parsed in self.values.items():
+            title, statement = (frozenset(text.split()) for text in parse_words(parsed))
+            held = title | statement
+            if wanted and (wanted <= held if every else wanted & held):
+                found[key] = (title, statement)
+        return found
 
     def parses(self, keys: Collection[FileKey]) -> dict[FileKey, Parsed | None]:
         self.lookups += 1

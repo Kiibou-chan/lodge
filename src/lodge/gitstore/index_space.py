@@ -7,6 +7,8 @@ from contextlib import suppress
 from pathlib import Path
 from typing import IO
 
+from lodge.gitstore.index_words import create_words
+
 try:
     import fcntl
 except ImportError:
@@ -85,11 +87,13 @@ def used_bytes(db: sqlite3.Connection) -> int:
 
 def clear(db: sqlite3.Connection) -> None:
     """Clear inside the caller's write transaction, preserving WAL snapshots and file identity."""
+    db.execute("DROP TABLE IF EXISTS words")
     tables = db.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()
     for (name,) in tables:
         if name != "meta" and not name.startswith("sqlite_"):
             escaped = name.replace('"', '""')
             db.execute(f'DELETE FROM "{escaped}"')
+    create_words(db)
     db.execute("UPDATE meta SET epoch=epoch+1, kept=0, written=0")
 
 

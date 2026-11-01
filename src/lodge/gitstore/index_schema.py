@@ -2,6 +2,8 @@
 
 import sqlite3
 
+from lodge.gitstore.index_words import create_words
+
 
 def create(db: sqlite3.Connection) -> None:
     db.execute(
@@ -32,3 +34,4 @@ def create(db: sqlite3.Connection) -> None:
     )
     db.execute("CREATE TABLE IF NOT EXISTS facts(ident TEXT PRIMARY KEY, value BLOB NOT NULL)")
     db.execute("CREATE TABLE IF NOT EXISTS seen(key TEXT PRIMARY KEY, at INTEGER NOT NULL)")
+    create_words(db)

@@ -10,7 +10,7 @@ from lodge import core
 from lodge.app import read_model, reads
 from lodge.app import threads as thread_reads
 from lodge.app.index_lookups import Lookups, Miss
-from lodge.app.index_types import FileKey
+from lodge.app.index_types import FileKey, level1_of
 from lodge.app.results import Listed, Read, ShownMany, ThreadList, ThreadShown, ThreadsWaiting
 from lodge.app.state import Checked, State, Wiring, finish_checked
 
@@ -169,3 +169,90 @@ def thread(w: Wiring, ref: str) -> tuple[ThreadShown, Callable[[], None]]:
         return replace(value, read=lookups.read)
 
     return _run(w, lambda w: thread_reads.show(w, ref), cached)
+
+
+def search_many(
+    w: Wiring, queries: Sequence[core.Query], filters: core.Filters, limit: int
+) -> tuple[tuple[Listed, ...], Callable[[], None]]:
+    def cached(lookups: Lookups) -> tuple[Listed, ...]:
+        if any(core.needs_memory(q) for q in queries):
+            raise Miss
+        seen: set[str] = set()
+        results: list[Listed] = []
+        for query in queries or [core.parse_query("")]:
+            words = lookups.index.candidates(query.words, False)
+            if words is None:
+                raise Miss
+            members = (
+                lookups.family(query.text.strip()) if core.is_code_token(query.text.strip()) else ()
+            )
+            citing: tuple[str, ...] = ()
+            if members:
+                code = query.text.strip().lower()
+                found = lookups.index.citing(lookups.state.key, code, None)
+                if found is None or len(found) != lookups.state.citers.get(code, -1):
+                    raise Miss
+                citing = found
+            parsed = lookups.index.parses(list(words))
+            if set(parsed) != set(words):
+                raise Miss
+            records: set[str] = set()
+            # Several historical parses may name one ID; only its state row chooses the key.
+            ids = {p.id for p in parsed.values() if isinstance(p, (core.Decision, core.SpecEntry))}
+            exact = query.text.strip().lower()
+            extras = {*members, *citing}
+            if core.is_id(exact) and exact.startswith(("d-", "s-")):
+                extras.add(exact)
+            rows = (
+                lookups.index.all_rows(lookups.state.key)
+                if not query.text.strip()
+                else lookups.index.rows(lookups.state.key, ids | extras)
+            )
+            if (
+                (not query.text.strip() and not rows)
+                or not ids <= rows.keys()
+                or not extras <= rows.keys()
+            ):
+                raise Miss
+            for key, record in parsed.items():
+                if not isinstance(record, (core.Decision, core.SpecEntry)):
+                    raise Miss
+                if record.id in rows and rows[record.id].key == key:
+                    records.add(record.id)
+                    lookups.loaded[record.id] = rows[record.id], record
+            candidates: list[core.Candidate] = []
+            wanted = set(rows) if not query.text.strip() else set(records) | (extras & rows.keys())
+            for ident in wanted:
+                if ident not in lookups.loaded:
+                    # Resolve exact IDs, codes, and citers absent from the word candidates.
+                    row = rows[ident]
+                    value = lookups.index.parses([row.key]).get(row.key)
+                    if not isinstance(value, (core.Decision, core.SpecEntry)) or value.id != ident:
+                        raise Miss
+                    lookups.loaded[ident] = row, value
+                row, record = lookups.loaded[ident]
+                held = words.get(row.key)
+                if held is None:
+                    title, statement = core.parse_words(record)
+                    held = frozenset(title.split()), frozenset(statement.split())
+                title_words, statement_words = held
+                candidates.append(
+                    core.Candidate(level1_of(row, record), row.areas, title_words, statement_words)
+                )
+            ids_ranked, _ = core.rank(candidates, query, filters, members, citing, len(candidates))
+            above = tuple(i for i in ids_ranked if i in seen)
+            fresh = [i for i in ids_ranked if i not in seen]
+            shown = fresh[:limit]
+            results.append(
+                Listed(
+                    tuple(lookups.view(i) for i in shown),
+                    lookups.read,
+                    len(fresh) - len(shown),
+                    query.text,
+                    above,
+                )
+            )
+            seen.update(shown)
+        return tuple(results)
+
+    return _run(w, lambda w: reads.search_many(w, queries, filters, limit), cached)
