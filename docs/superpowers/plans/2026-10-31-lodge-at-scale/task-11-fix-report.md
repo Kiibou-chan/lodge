@@ -79,10 +79,10 @@ E AssertionError: invalid row never healed
 1 failed in 0.47s
 ```
 
-The process bound was corrected from six `attempt` calls to ten after the first implementation showed eight on the tracked case, including fixed setup and configuration work.
-The seven concurrent git calls are separately fixed by `run_many`, giving a bound of seventeen processes independent of the 300 changed paths.
-The folder-listing spy now observes `attempt`, which handles missing base folders, rather than only `run_bytes`.
-These corrections retain the original failures at 305 and 606 calls and the prohibition on full base mappings.
+The 300-path process bound counts `subprocess.Popen`, including every grouped child and the git-directory lookup, which belongs to `run_many`.
+The folder-listing spy observes the successful `git ls-tree <rev> -- <folder>/` spelling; a failed listing raises, while a missing folder returns empty output successfully.
+At most sixteen relisted folders use individual base listings; above sixteen every relisted base comes from the cached per-commit full listing.
+The Task 12 fix report records the additional process-level and failure-injection red evidence.
 The final focused regression run passes 42 tests, and the wider identity, folder, property, fault, and structure run passes 152 tests.
 
 I1: `folders` has primary key `(root, path)`, where `root` is the absolute git dir, with `folder_roots(root, folder_count)` completeness and schema 8.
@@ -90,11 +90,11 @@ Alternating worktrees retain independent hits.
 I2: a non-folder `added` name absent from the same folder's `removed` proves the base lacks that path, so it skips lookup; all remaining paths use one `cat-file --batch-check` process.
 Its ordinary inputs are `rev:path` lines; the same single batch uses NUL separators when a path contains a line break.
 Known unavailable gitlinks retain their empty-text representation without asking git to inspect the absent object.
-M1 and M2: the reference time is captured before `lstat`, and the 2 s margin stays; controlled 1 s and 2 s rounded-stat histories both recover the file created during the first scan.
+M1 and M2: the reference time is captured before `lstat`, and the margin is 3 s; controlled 1 s and 2 s rounded-stat histories, including a coarse clock lag at the 2 s boundary, recover the file created during the first scan.
 M3 and M4: production R11-B runs in every normal test run and takes no base names on a folder hit; the plan states this in place.
-M5: clears retain both independent folder tables, including their per-root counts.
+M5: clears retain both independent folder tables and per-root counts for existing git directories, and delete both sets of rows for roots whose directories no longer exist.
 M6: the current path retains at most 64 ancestor descriptors, plus the root and a transient descriptor; the regression also checks that all descriptors close.
-M7: the base is listed only for each relisted folder; only changed or vanished rows are written in one transaction, comparing with the current database under its write lock, and malformed extra rows are removed when healing.
+M7: at most sixteen relisted folders use individual base listings, and larger relists use one cached per-commit listing; only changed or vanished rows are written in one transaction, comparing with the current database under its write lock, and malformed extra rows are removed when healing.
 M8: R11-A and its tests are removed, so the production R11-B oracle keeps its ruled line-ending comparison; the exact-reader agreement regressions still compare blobs for ordinary histories.
 M9: lazy placeholders have a distinct type, and materialising one after a failed refresh raises instead of returning an empty valid-looking listing.
 M10: `disk.open_root` replaces the private flag reference, and `listing.py` imports `Committed` directly from its owner.
@@ -107,7 +107,7 @@ The obsolete `identity_rules.py` helper is deleted.
 New regressions are in `test_index_cap_ruling.py`, `test_folder_fix_round.py`, `test_disk_descriptor_stack.py`, and `test_committed_batch.py`.
 
 The plan's cap, R11 ruling, folder table, reference-time order, incremental-write rule, and no-base-names paragraph are amended in place, as are the ledger's STALE-1 and DISK-1 entries.
-Task 12's report and timings each gain the one sentence naming R11-B / 1,900 as production; no recorded table, benchmark script, or imported benchmark name changes.
+Task 12's report and timings name R11-B / 1,900 as production, with its refreshed s90000 measurements, checked-in benchmark drivers, and current stop verdict.
 The Task 12 stop remains in effect; this fix round starts no later work.
 
 The final collection is 2,230 tests, compared with 2,254 before the round.

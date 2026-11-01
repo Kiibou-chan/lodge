@@ -525,7 +525,7 @@ clears = [r for r in rows if r["kind"] == "clear"]
 if len(clears) == 3:
     best = min(clears, key=lambda r: r["seconds"])
     out.append(
-        f"Current full state with words, SQLite {best['sqlite']}: {best['seconds']:.6f} s best of three, {best['before']['used']:,} to {best['after']['used']:,} used bytes; the {best['before']['file_bytes']:,}-byte physical file and inode remain unchanged, and the epoch rises once.\n"
+        f"Initial R11-A / 1,500 full state with words, SQLite {best['sqlite']}: {best['seconds']:.6f} s best of three, {best['before']['used']:,} to {best['after']['used']:,} used bytes; the {best['before']['file_bytes']:,}-byte physical file and inode remain unchanged, and the epoch rises once.\n"
     )
     out.append(
         "All clear samples use WAL, synchronous=NORMAL, and secure_delete=OFF, inside one BEGIN IMMEDIATE transaction; copies are independent and the copy time is excluded.\n"

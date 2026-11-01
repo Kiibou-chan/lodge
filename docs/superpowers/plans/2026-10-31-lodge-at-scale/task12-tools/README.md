@@ -54,3 +54,7 @@ PYTHONPATH="$PWD/src" uv run --frozen python "$tools/relist.py" --label after
 
 Each sample commits a distinct synthetic file edit, then measures a full relist against the changed base and a second full relist with a cold lodge index.
 The explicit git-index refresh is outside the timed region in both cases.
+
+The final production samples are retained here as `results-fix.jsonl`, and the twelve relist samples as `relist-results.jsonl`.
+The full comparison renderer consumes the initial `results.jsonl` under the benchmark root and replaces its production groups with the fix-round samples.
+The fix report records every before-and-after row and the final audit and gate results.
