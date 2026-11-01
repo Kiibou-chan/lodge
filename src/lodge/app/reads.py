@@ -55,14 +55,17 @@ def search_many(
 
 def show(w: Wiring, ref: str, reasoning: bool, provenance: bool) -> Shown:
     state = read_checked(w)
-    return _shown(state, resolve_ref(state, ref), reasoning, provenance)
+    return _shown(state, resolve_ref(state, ref), reasoning, provenance, context=False)
 
 
-def _shown(state: State, record_id: str, reasoning: bool, provenance: bool) -> Shown:
+def _shown(
+    state: State, record_id: str, reasoning: bool, provenance: bool, *, context: bool = True
+) -> Shown:
     s, d = state.snapshot, state.derived
     view = level1(s, d, record_id, state.failing)
-    siblings = tuple(i for i in core.family(s, view.code) if i != record_id) if view.code else ()
-    citing = core.citers(s, d, view.code) if view.code else ()
+    code = view.code if context else None
+    siblings = tuple(i for i in core.family(s, code) if i != record_id) if code else ()
+    citing = core.citers(s, d, code) if code else ()
     return Shown(
         view,
         level2(s, d, record_id, state.failing) if reasoning else None,

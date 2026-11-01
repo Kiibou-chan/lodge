@@ -2,6 +2,7 @@
 
 import random
 import re
+from unittest.mock import patch
 
 from builders import at, decision, entry, snapshot_of
 
@@ -11,6 +12,7 @@ from lodge.core import (
     citers,
     cites,
     code_tokens,
+    codes,
     derive,
     family,
     is_code_token,
@@ -96,3 +98,15 @@ def test_is_code_token_uses_the_ascii_grammar() -> None:
         assert is_code_token(code)
     for code in ["", " A", "A ", "A B", ".A", "-A", "\u017f-1", "é1", "A\n"]:
         assert not is_code_token(code), code
+
+
+def test_citers_tokenise_only_records_containing_the_lower_cased_code() -> None:
+    root = decision(id="d-000001", code="X-1")
+    title = decision(id="d-000002", title="See x-1.")
+    statement = entry(id="s-000001", statement="See X-1.")
+    unrelated = decision(id="d-000003", title="Crane", statement="Berth.")
+    snapshot = snapshot_of(root, title, statement, unrelated)
+    with patch.object(codes, "code_tokens", wraps=code_tokens) as tokens:
+        assert set(citers(snapshot, derive(snapshot), "X-1")) == {title.id, statement.id}
+    assert tokens.call_count == 2
+    assert all("x-1" in call.args[0].lower() for call in tokens.call_args_list)

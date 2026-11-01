@@ -5,10 +5,10 @@ from datetime import UTC, datetime
 from itertools import chain
 
 from lodge.core.derive import Derived
+from lodge.core.fields import CODE_PATTERN
 from lodge.core.model import Record
 from lodge.core.snapshot import Snapshot
 
-_CODE = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
 _RUN = re.compile(r"[a-z0-9._-]+")
 _ALNUM = frozenset("abcdefghijklmnopqrstuvwxyz0123456789")
 _NEVER = datetime.min.replace(tzinfo=UTC)
@@ -16,7 +16,7 @@ _NEVER = datetime.min.replace(tzinfo=UTC)
 
 def is_code_token(query: str) -> bool:
     """One token of the code grammar, without surrounding whitespace."""
-    return _CODE.fullmatch(query) is not None
+    return CODE_PATTERN.fullmatch(query) is not None
 
 
 def family(s: Snapshot, code: str) -> tuple[str, ...]:
@@ -31,7 +31,9 @@ def family(s: Snapshot, code: str) -> tuple[str, ...]:
 
 
 def code_tokens(text: str) -> frozenset[str]:
-    """Maximal ASCII runs and the prefixes before punctuation or terminal dots."""
+    """Each maximal run of [a-z0-9._-] in the lower-cased text, and each prefix
+    of a run that ends before a dot not followed by a letter or digit.
+    """
     tokens: set[str] = set()
     for run in _RUN.findall(text.lower()):
         tokens.add(run)
@@ -51,10 +53,13 @@ def cites(text: str, code: str) -> bool:
 def citers(s: Snapshot, d: Derived, code: str) -> tuple[str, ...]:
     """Citing records outside the family, newest first by their level-1 date and ID."""
     excluded = set(family(s, code))
+    wanted = code.lower()
     found = (
         r.id
         for r in chain[Record](s.decisions.values(), s.entries.values())
-        if r.id not in excluded and cites(f"{r.title}\n{r.statement}", code)
+        if r.id not in excluded
+        and (wanted in r.title.lower() or wanted in r.statement.lower())
+        and cites(f"{r.title}\n{r.statement}", code)
     )
 
     def key(ident: str) -> tuple[datetime, str]:

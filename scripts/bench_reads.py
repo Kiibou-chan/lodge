@@ -35,11 +35,14 @@ def placeholders(store: Path) -> tuple[dict[str, str], Path]:
     }, entry[0]
 
 
-def run(store: Path, command: list[str], timeout: float) -> tuple[float, int, str]:
+def run(store: Path, command: list[str], timeout: float) -> tuple[float, int | None, str | None]:
     start = time.perf_counter()
-    result = subprocess.run(
-        command, cwd=store, capture_output=True, text=True, check=False, timeout=timeout
-    )
+    try:
+        result = subprocess.run(
+            command, cwd=store, capture_output=True, text=True, check=False, timeout=timeout
+        )
+    except subprocess.TimeoutExpired:
+        return timeout, None, None
     return time.perf_counter() - start, result.returncode, result.stdout
 
 
@@ -125,17 +128,29 @@ def main() -> None:
         identical = "n/a"
         if len(results) == 2:
             identical = str(
-                [s[1:] for s in results[0][index]] == [s[1:] for s in results[1][index]]
+                all(s[1] is not None for build in results for s in build[index])
+                and [s[1:] for s in results[0][index]] == [s[1:] for s in results[1][index]]
             ).lower()
         for build_index, build_results in enumerate(results):
             samples = build_results[index]
             times = [sample[0] for sample in samples]
-            exits = ", ".join(str(value) for value in sorted({s[1] for s in samples}))
-            lengths = ", ".join(str(value) for value in sorted({len(s[2]) for s in samples}))
+            timed_out = any(s[1] is None for s in samples)
+            exits = ", ".join(
+                sorted({str(s[1]) if s[1] is not None else "timeout" for s in samples})
+            )
+            lengths = ", ".join(
+                sorted({str(len(s[2])) if s[2] is not None else "n/a" for s in samples})
+            )
+            completed = [s[0] for s in samples if s[1] is not None]
+            best = f"{min(completed):.3f}" if completed else f">{args.timeout:.3f}"
+            median = (
+                f"{'includes ' if completed else ''}>{args.timeout:.3f}"
+                if timed_out
+                else f"{statistics.median(times):.3f}"
+            )
             label = "lodge" if build_index == 0 else "against"
             print(
-                f"| `{line}` | {label} | {min(times):.3f} | {statistics.median(times):.3f} "
-                f"| {exits} | {lengths} | {identical} |",
+                f"| `{line}` | {label} | {best} | {median} | {exits} | {lengths} | {identical} |",
                 flush=True,
             )
 
