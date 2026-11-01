@@ -8,7 +8,16 @@ from lodge import core
 from lodge.app import threads
 from lodge.app.errors import LodgeError
 from lodge.app.results import Listed, Read, Shown, ShownMany, ThreadsWaiting
-from lodge.app.state import Checked, State, Wiring, not_found, read_checked, read_state, resolve_ref
+from lodge.app.state import (
+    Checked,
+    State,
+    Wiring,
+    not_found,
+    read_checked,
+    read_state,
+    resolve_ref,
+    snapshot_of,
+)
 from lodge.core import (
     CheckResult,
     Filters,
@@ -21,7 +30,6 @@ from lodge.core import (
     level2,
     level2_views,
     level3,
-    load,
     newest_last,
     render_spec,
     spec_view,
@@ -133,14 +141,14 @@ def check(w: Wiring, gate: bool) -> tuple[CheckResult, Read]:
     base = w.store.gate(state.current)
     cached = state.published_state if base.published is state.published else None
     if cached is None:
-        published = load(base.published)
+        published = snapshot_of(base.published, w.index)
         before = core.derive(published)
         cached = Checked(published, before, core.check_state(published, derived=before))
     published, now = cached.snapshot, w.clock.now()
     found: dict[Problem, list[str]] = {}
     notes: dict[str, None] = {}
     for label, tree in base.checked:
-        snapshot = state.snapshot if tree is state.current else load(tree)
+        snapshot = state.snapshot if tree is state.current else snapshot_of(tree, w.index)
         derived = state.derived if tree is state.current else core.derive(snapshot)
         standing_problems = (
             state.standing.problems
@@ -177,7 +185,7 @@ def _labelled(problem: Problem, labels: list[str]) -> Problem:
 
 def draft(w: Wiring, ref: str) -> str:
     """The file of a record or area, with a `base` key and for an area a `name` key added."""
-    state = read_state(w.store)
+    state = read_state(w.store, w.index)
     s = state.snapshot
     if ref.startswith(_AREA):
         name = ref.removeprefix(_AREA)

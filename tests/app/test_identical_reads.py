@@ -9,7 +9,7 @@ from fakes import CountingIds, FixedClock, MemoryStore
 from support import AREA, ENTRY, FIRST, project, wired
 
 from lodge import core
-from lodge.app import Store, state
+from lodge.app import Index, Store, state
 from lodge.app.state import State, Wiring, read_checked
 from lodge.cli import run
 
@@ -126,8 +126,8 @@ def test_identical_read_output_unchanged(
     store = sample_store(sample)
     original = state.read_state
 
-    def shortcut_disabled(store: Store) -> State:
-        checked = original(store)
+    def shortcut_disabled(store: Store, index: Index | None = None) -> State:
+        checked = original(store, index)
         published = replace(checked.published, files=UnequalFiles(checked.published.files))
         return replace(checked, published=published)
 

@@ -7,7 +7,15 @@ from lodge import core
 from lodge.app.errors import Conflict, LodgeError
 from lodge.app.ports import PublishOutcome
 from lodge.app.results import AddOutcome, ThreadList, ThreadShown, ThreadsWaiting, Written
-from lodge.app.state import State, Wiring, not_found, read_checked, read_state, resolve_ref
+from lodge.app.state import (
+    State,
+    Wiring,
+    not_found,
+    read_checked,
+    read_state,
+    resolve_ref,
+    snapshot_of,
+)
 from lodge.app.writes import mint_unused
 from lodge.core import Message, Raises, Thread, ThreadState, Tree
 
@@ -53,7 +61,7 @@ def write(
     close: bool = False,
 ) -> Written:
     for _ in range(3):
-        state = read_state(w.store)
+        state = read_state(w.store, w.index)
         now = w.clock.now()
         message = _message(now, by, text, where, when, close)
         s = state.snapshot
@@ -81,12 +89,13 @@ def write(
             content = core.write_thread(thread)
         except ValueError as error:
             raise LodgeError(str(error)) from None
-        after = core.load(
+        after = snapshot_of(
             Tree(
                 state.current.rev, {**state.current.files, path: content}, state.current.attachments
-            )
+            ),
+            w.index,
         )
-        check = core.check_change(core.load(state.published), after, w.settings, now, s)
+        check = core.check_change(snapshot_of(state.published, w.index), after, w.settings, now, s)
         if not check.ok:
             return Written((thread.id,), AddOutcome.CHECK_FAILED, check, about=thread.about)
         commit_message = f"Thread {thread.id}: {description}"

@@ -2,6 +2,7 @@
 
 import gc
 import io
+import os
 import secrets
 import signal
 import sys
@@ -18,6 +19,7 @@ from lodge.gitstore import (
     init_store,
     load_settings,
     open_store,
+    project_index,
     repo_root,
     request_exit,
 )
@@ -50,7 +52,8 @@ def _make_lodge() -> Lodge:
     root = repo_root(Path.cwd())
     settings = _settings(root)
     clock = _Clock()
-    return Lodge(open_store(root, settings.store, clock), clock, _Entropy(), settings.core)
+    index = None if os.environ.get("LODGE_INDEX") == "off" else project_index(root, settings.core)
+    return Lodge(open_store(root, settings.store, clock), clock, _Entropy(), settings.core, index)
 
 
 def _init() -> str:
