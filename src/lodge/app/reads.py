@@ -141,14 +141,16 @@ def check(w: Wiring, gate: bool) -> tuple[CheckResult, Read]:
     base = w.store.gate(state.current)
     cached = state.published_state if base.published is state.published else None
     if cached is None:
-        published = snapshot_of(base.published, w.index)
+        published = snapshot_of(base.published, w.index, state.parses)
         before = core.derive(published)
         cached = Checked(published, before, core.check_state(published, derived=before))
     published, now = cached.snapshot, w.clock.now()
     found: dict[Problem, list[str]] = {}
     notes: dict[str, None] = {}
     for label, tree in base.checked:
-        snapshot = state.snapshot if tree is state.current else snapshot_of(tree, w.index)
+        snapshot = (
+            state.snapshot if tree is state.current else snapshot_of(tree, w.index, state.parses)
+        )
         derived = state.derived if tree is state.current else core.derive(snapshot)
         standing_problems = (
             state.standing.problems

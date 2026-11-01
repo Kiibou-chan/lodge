@@ -207,12 +207,14 @@ def test_confined_io_is_allowed_where_ruled(tmp_path: Path) -> None:
 
 
 @pytest.mark.parametrize("pkg", ["core", "app", "gitstore", "cli", "viewer", "hook", "main"])
-@pytest.mark.parametrize("module", ["sqlite3", "marshal", "pickle", "shelve", "dbm"])
+@pytest.mark.parametrize(
+    "module", ["sqlite3", "_sqlite3", "marshal", "pickle", "_pickle", "shelve", "dbm", "_dbm"]
+)
 @pytest.mark.parametrize("form", ["import {module}", "from {module} import loads"])
 def test_index_modules_confined(tmp_path: Path, pkg: str, module: str, form: str) -> None:
     path = "main.py" if pkg == "main" else f"{pkg}/a.py"
     found = scan(tmp_path, {path: form.format(module=module) + "\n"})
-    if pkg == "gitstore" and module in {"sqlite3", "dbm"}:
+    if pkg == "gitstore" and module in {"sqlite3", "_sqlite3", "dbm", "_dbm"}:
         assert found == []
     else:
         assert found, (pkg, module, form)

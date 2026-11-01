@@ -55,7 +55,7 @@ def _make_lodge() -> Lodge:
     clock = _Clock()
     common = common_dir(root)
     store = open_store(root, settings.store, clock, common=common)
-    index = None if os.environ.get("LODGE_INDEX") == "off" else project_index(common, settings.core)
+    index = None if os.environ.get("LODGE_INDEX") == "off" else project_index(common)
     return Lodge(store, clock, _Entropy(), settings.core, index)
 
 

@@ -121,7 +121,7 @@ def test_surrogate_path_with_real_index(tmp_path: Path, operation: str) -> None:
     record = decision(id="d-aaaaaa")
     store = MemoryStore(record, staged=True)
     store.files["lodge/decisions/stray-\udcff.md"] = "broken"
-    index = open_index(tmp_path, "settings")
+    index = open_index(tmp_path)
     assert index is not None
     before = application(store, None)
     after = Lodge(store, FixedClock(), CountingIds(), CoreSettings(), index=index)
@@ -184,6 +184,33 @@ def test_checked_read_looks_up_shared_keys_once(monkeypatch: pytest.MonkeyPatch)
     monkeypatch.setattr(index, "parses", spy)
     application(store, index).show(one.id)
     assert len(seen) == len(set(seen))
+
+
+def test_gate_looks_up_shared_keys_once(monkeypatch: pytest.MonkeyPatch) -> None:
+    one, two = decision(id="d-aaaaaa"), decision(id="d-bbbbbb")
+    store, index = MemoryStore(one, two, staged=True), MemoryIndex()
+    committed = store.trees()[0]
+    published = store.trees()[1]
+    path = next(path for path in store.files if two.id in path)
+    store.files[path] = store.files[path].replace(two.statement, "A changed berth.")
+    current = store.trees()[0]
+    store.gate_for = Gate(published, (("committed", committed), ("working tree", current)))
+    expected = application(store, None).check(gate=True)
+    original = index.parses
+    seen: list[tuple[str, str]] = []
+
+    def spy(keys: tuple[tuple[str, str], ...]) -> dict[tuple[str, str], Parsed | None]:
+        seen.extend(keys)
+        return original(keys)
+
+    monkeypatch.setattr(index, "parses", spy)
+    for _ in range(2):
+        seen.clear()
+        assert application(store, index).check(gate=True) == expected
+        assert set(seen) == {
+            (path, blob) for tree in (current, published) for path, blob in tree.blobs.items()
+        }
+        assert len(seen) == len(set(seen))
 
 
 def test_epoch_is_kept_for_the_build() -> None:

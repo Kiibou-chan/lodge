@@ -25,7 +25,7 @@ def test_read_only_folder_reads_or_skips(tmp_path: Path) -> None:
     path.chmod(0o400)
     path.parent.chmod(0o500)
     try:
-        again = open_index(tmp_path, "settings")
+        again = open_index(tmp_path)
         if again is not None:
             assert again.parses([KEY]) == {KEY: None}
             again.keep_parses({("other", "blob"): None})
@@ -43,7 +43,7 @@ def test_read_only_and_missing_returns_none(tmp_path: Path) -> None:
         pytest.skip("root bypasses permission bits")
     tmp_path.chmod(0o500)
     try:
-        assert open_index(tmp_path, "settings") is None
+        assert open_index(tmp_path) is None
         assert not (tmp_path / "lodge").exists()
     finally:
         tmp_path.chmod(0o700)
@@ -56,7 +56,7 @@ def test_locked_at_open_does_not_delete(tmp_path: Path) -> None:
     before = filename(tmp_path).read_bytes()
     index.db.execute("BEGIN IMMEDIATE")
     start = time.monotonic()
-    other = open_index(tmp_path, "settings")
+    other = open_index(tmp_path)
     assert time.monotonic() - start < 1
     assert isinstance(other, IndexDB)
     other.keep_parses({("locked", "blob"): None})
@@ -100,7 +100,7 @@ def test_corrupt_file_is_rebuilt(tmp_path: Path) -> None:
 def test_corrupt_file_held_by_another_reader_is_not_deleted(tmp_path: Path) -> None:
     path = garbage(tmp_path)
     with shared_elsewhere(path.with_suffix(".lock")):
-        assert open_index(tmp_path, "settings") is None
+        assert open_index(tmp_path) is None
         assert path.read_bytes() == b"garbage"
 
 
@@ -110,7 +110,7 @@ def test_corrupt_file_read_only_returns_none(tmp_path: Path) -> None:
     path = garbage(tmp_path)
     path.chmod(0o400)
     try:
-        assert open_index(tmp_path, "settings") is None
+        assert open_index(tmp_path) is None
         assert path.read_bytes() == b"garbage"
     finally:
         path.chmod(0o600)
@@ -140,7 +140,7 @@ def test_keep_parses_interrupted_at_each_statement(tmp_path: Path, after: int) -
     initial.keep_parses({KEY: None})
     initial.close()
     db = sqlite3.connect(filename(tmp_path), isolation_level=None, factory=Interrupted)
-    index = IndexDB(db, None, "settings")
+    index = IndexDB(db, None)
     db.after = after
     values = {("one", "blob"): Problem("one", 1, "bad"), ("two", "blob"): None}
     index.keep_parses(values)
@@ -191,7 +191,7 @@ def test_non_corruption_open_error_never_deletes(
         raise sqlite3.OperationalError("I/O error")
 
     monkeypatch.setattr(sqlite3, "connect", fail)
-    assert open_index(tmp_path, "settings") is None
+    assert open_index(tmp_path) is None
     assert path.read_bytes() == before
 
 
