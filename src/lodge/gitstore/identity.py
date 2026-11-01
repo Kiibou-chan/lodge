@@ -73,9 +73,11 @@ class Committed:
         return self._listings[rev]
 
 
-def read_paths(base: set[str], present: set[str], changed: set[str]) -> set[str]:
-    """Interim R11-A: read every file, even after all conversion sources are removed."""
-    return base | present | changed
+def candidates(
+    identity: "CheckoutIdentity", rev: str | None, trunk: str | None
+) -> tuple[Listing, dict[str, str]] | None:
+    """Interim R11-A; R11-B switches only this body to identity.stat_current(rev, trunk)."""
+    return None
 
 
 class CheckoutIdentity:
@@ -87,6 +89,21 @@ class CheckoutIdentity:
         self.published: str | None = None
 
     def current(self, rev: str | None, trunk: str | None = None) -> tuple[Listing, dict[str, str]]:
+        candidate = candidates(self, rev, trunk)
+        if candidate is not None:
+            return candidate
+        merged = git.attempt(["merge-base", rev or EMPTY_TREE, trunk or EMPTY_TREE], self.root)
+        self.published = decode(merged.stdout).strip() if merged.returncode == 0 else None
+        self.committed.tree_id(self.published)
+        base = self.committed.listing(rev)
+        walked = disk.walk(self.root)
+        try:
+            return self._overlay(base, walked, {*base.blobs, *base.attachments, *walked.names})
+        finally:
+            walked.close()
+
+    def stat_current(self, rev: str | None, trunk: str | None) -> tuple[Listing, dict[str, str]]:
+        """R11-B's coherent git candidates, ready for the author's ruling."""
         for _ in range(3):
             before = self.flags.key()
             calls = [
@@ -135,13 +152,13 @@ class CheckoutIdentity:
                         config=(results[3], results[4]),
                     )
                 )
+                if results[2].returncode:
+                    changed.update(base_paths)
                 for done in results[:2]:
                     if done.returncode:
                         changed.update(base_paths)
                     changed.update(decode(p) for p in done.stdout.split(b"\0") if p)
-                listing, texts = self._overlay(
-                    base, walked, read_paths(base_paths, present, changed)
-                )
+                listing, texts = self._overlay(base, walked, changed)
             finally:
                 walked.close()
             if before == self.flags.key():

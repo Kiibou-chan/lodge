@@ -8,7 +8,7 @@ from pathlib import Path
 from lodge.app import Committed, Gate, LodgeError, PublishOutcome
 from lodge.core import Tree
 from lodge.gitstore.commit import commit_paths
-from lodge.gitstore.disk import tree
+from lodge.gitstore.disk import tree as disk_tree
 from lodge.gitstore.errors import NOT_INITIALISED, NotInitialised
 from lodge.gitstore.git import run
 from lodge.gitstore.listing import CheckoutListing
@@ -17,8 +17,6 @@ from lodge.gitstore.plumbing import check_writes
 from lodge.gitstore.published import Published, committed_gate, published_state
 from lodge.gitstore.settings import StoreSettings
 from lodge.gitstore.trees import DATA, decode, encode
-
-disk_tree = tree
 
 _TEMPORARY_SUFFIX = ".lodge-tmp"
 

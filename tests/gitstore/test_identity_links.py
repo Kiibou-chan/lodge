@@ -15,7 +15,7 @@ import pytest
 from gitstore.repos import git, write
 from gitstore.test_identity import ATTACHMENT, RECORD, agrees, prepared
 from lodge.gitstore import disk
-from lodge.gitstore.checkout import disk_tree
+from lodge.gitstore.disk import tree as disk_tree
 
 
 def replace_folder(repo: Path, folder: str, target: Path) -> None:
@@ -73,6 +73,7 @@ def test_folder_swapped_for_link_during_the_walk(tmp_path: Path) -> None:
     target.mkdir()
     (target / "old.md").write_text("Do not traverse.\n")
     original = os.scandir
+    listed = 0
 
     class Listed:
         def __init__(self, path: int | str | os.PathLike[str]) -> None:
@@ -88,11 +89,13 @@ def test_folder_swapped_for_link_during_the_walk(tmp_path: Path) -> None:
             _error: BaseException | None,
             _traceback: TracebackType | None,
         ) -> None:
+            nonlocal listed
             self.entries.close()
+            listed += 1
             # The walk has classified every entry, but has not opened any child.
             if (
                 isinstance(self.path, int)
-                and os.readlink(f"/proc/self/fd/{self.path}") == str(repo / "lodge")
+                and listed == 1
                 and not (repo / "lodge/decisions").is_symlink()
             ):
                 replace_folder(repo, "lodge/decisions", target)
@@ -105,6 +108,7 @@ def test_folder_swapped_for_link_during_the_walk(tmp_path: Path) -> None:
     assert RECORD not in listing.blobs
     assert "lodge/decisions" in listing.blobs
     # Repeat against the exact reader with a fresh real folder.
+    listed = 0
     (repo / "lodge/decisions").unlink()
     write(repo, RECORD, "Before swap.\n")
     with patch.object(os, "scandir", swapped):
@@ -141,6 +145,7 @@ def test_fifo_agrees(tmp_path: Path) -> None:
 
 def test_regular_file_swapped_for_fifo_before_open(tmp_path: Path) -> None:
     repo, store = prepared(tmp_path)
+    write(repo, RECORD, "Changed before the swap.\n")
 
     def child() -> None:
         original = os.open

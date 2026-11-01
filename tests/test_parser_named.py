@@ -71,3 +71,9 @@ def test_named_parser_builds_one_subcommand() -> None:
     with patch.object(argparse._SubParsersAction, "add_parser", counted):
         assert grammar.parse(["guide", "--read"]) == grammar.Guide(True)
     assert made == ["guide"]
+
+
+def test_command_names_match_the_complete_parser() -> None:
+    parser = grammar._parser()
+    action = next(a for a in parser._actions if isinstance(a, argparse._SubParsersAction))
+    assert set(action.choices) == grammar._COMMANDS == set(COMMANDS)

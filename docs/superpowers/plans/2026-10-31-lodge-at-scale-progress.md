@@ -118,3 +118,17 @@ The final gate passes 2,076 tests, with six skipped, plus Ruff, strict mypy, Vul
 All 216 indexed CLI replay samples match the exact reader's stdout, stderr, and exit status.
 The report is `2026-10-31-lodge-at-scale/task-10a-report.md`, with the red output, the gate, provisional timings, complete-keep phases, cap occupancy, and ten-cycle clears.
 The eventual seen and changed targets are still missed at s90000; d-26e6zj leaves the stop to Task 12.
+
+
+## Task 8c fix round before Task 10b
+
+The review is copied to `2026-10-31-lodge-at-scale/task-8c-review.md`.
+A1 preserves all files at depth 1,100 through an iterative walk and constant descriptor use, including under a 128-descriptor soft limit.
+B1 fixes the property sequence's removed-source CRLF history and makes F10 edit its target before swapping it for a FIFO.
+The final scratch R11-B source passes the property and FIFO tests twenty times each; all four property mutants fail independently.
+M1 to M6 are addressed; `unlistable` stays because the plan's walk interface requires it, rather than being removed as the review suggested.
+Production retains interim R11-A and now skips the candidate git group entirely; the alternative remains one function body away.
+The final gate passes 2,081 tests, with six skipped, plus formatting, Ruff, strict mypy, Vulture, and `lodge check --gate`.
+Red evidence, the proof, diagnostic timing, and concerns are in `2026-10-31-lodge-at-scale/task-10b-report.md`.
+Task 10b is NEEDS_CONTEXT before its skeleton: may its file scope include `app/lodge.py`, `gitstore/index_schema.py`, `gitstore/index_space.py`, and `tests/app/fake_index.py` to wire search and complete Task 10a's extracted-module hand-offs?
+No Task 10b implementation or search timing is claimed while that question is pending.
