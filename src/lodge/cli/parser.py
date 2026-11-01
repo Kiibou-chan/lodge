@@ -93,7 +93,11 @@ def parse(argv: list[str]) -> Command | int:
         return Hook(argv[1] if len(argv) > 1 else "")
     parser = _parser()
     try:
-        args = parser.parse_args(argv)
+        args, rest = parser.parse_known_args(argv)
+        if rest:
+            if argv[:1] != ["search"] or any(word.startswith("-") for word in rest):
+                parser.error("unrecognized arguments: " + " ".join(rest))
+            args.queries.extend(rest)
     except SystemExit as stop:
         return stop.code if isinstance(stop.code, int) else 2
     command: Command = args.build(args)
@@ -162,9 +166,16 @@ def _search(sub: argparse.ArgumentParser) -> None:
     sub.add_argument(
         "queries",
         nargs="*",
-        help="words, an ID, or a code; empty lists records newest first, up to --limit",
+        help="each argument is a query; a quoted argument groups all its words; "
+        "empty lists newest first",
     )
-    sub.add_argument("--phrase", action="append", default=[], metavar="WORDS")
+    sub.add_argument(
+        "--phrase",
+        action="append",
+        default=[],
+        metavar="WORDS",
+        help="exact runs first, then all words in another order, then some; repeatable",
+    )
     sub.add_argument("--kind", choices=("decision", "spec"))
     sub.add_argument("--scope", choices=[s.value for s in Scope])
     sub.add_argument(
@@ -172,7 +183,7 @@ def _search(sub: argparse.ArgumentParser) -> None:
     )
     sub.add_argument("--area", help="an area; a decision's areas are those of its entries")
     sub.add_argument("--by", help="who decided, such as author or an agent role")
-    sub.add_argument("--limit", type=_positive, default=20, help="records to list; default 20")
+    sub.add_argument("--limit", type=_positive, default=20, help="records per query; default 20")
     sub.add_argument(
         "--brief", action="store_true", help="one line per record: its header and title"
     )

@@ -1,7 +1,7 @@
 """The readable specification: the areas as structure, and that structure as Markdown."""
 
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from lodge.core.derive import Derived
 from lodge.core.order import area_names, derived_order, written_order
@@ -70,15 +70,7 @@ def _area(
     s: Snapshot, d: Derived, failing: frozenset[str], name: str, current: frozenset[str]
 ) -> SpecArea:
     held = s.areas.get(name)
-    local = Snapshot(
-        s.decisions,
-        {i: s.entries[i] for i in current},
-        s.areas,
-        s.paths,
-        s.problems,
-        s.attachments,
-        s.threads,
-    )
+    local = replace(s, entries={i: s.entries[i] for i in current})
     shown = {i: level1(s, d, i, failing) for i in written_order(local, d, name)}
     entries = tuple(shown.values())
     placed = []

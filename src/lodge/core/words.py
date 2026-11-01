@@ -90,4 +90,9 @@ _FUNCTION_WORDS = frozenset(
 
 def words(text: str) -> set[str]:
     """Runs of letters or digits, lower-cased, without English function words."""
-    return set(_WORDS.findall(text.lower())) - _FUNCTION_WORDS
+    return set(tokens(text)) - _FUNCTION_WORDS
+
+
+def tokens(text: str) -> tuple[str, ...]:
+    """Lower-cased word runs, including function words, in their original order."""
+    return tuple(_WORDS.findall(text.lower()))

@@ -33,8 +33,11 @@ class Lodge:
     ) -> tuple[Listed, ...]:
         return reads.search_many(self._w, queries, filters, limit)
 
-    def show(self, ref: str, reasoning: bool = False, provenance: bool = False) -> Shown:
-        return reads.show(self._w, ref, reasoning, provenance)
+    def show(
+        self, ref: str, reasoning: bool = False, provenance: bool = False, *, context: bool = True
+    ) -> Shown:
+        """Read a record; callers omitting siblings and citers must pass context=False."""
+        return reads.show(self._w, ref, reasoning, provenance, context=context)
 
     def show_many(
         self, refs: Sequence[str], reasoning: bool = False, provenance: bool = False

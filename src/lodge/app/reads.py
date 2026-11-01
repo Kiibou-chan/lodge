@@ -53,9 +53,10 @@ def search_many(
     return tuple(results)
 
 
-def show(w: Wiring, ref: str, reasoning: bool, provenance: bool) -> Shown:
+def show(w: Wiring, ref: str, reasoning: bool, provenance: bool, *, context: bool = True) -> Shown:
+    """Read a record with code context unless the caller explicitly declines it."""
     state = read_checked(w)
-    return _shown(state, resolve_ref(state, ref), reasoning, provenance, context=False)
+    return _shown(state, resolve_ref(state, ref), reasoning, provenance, context=context)
 
 
 def _shown(

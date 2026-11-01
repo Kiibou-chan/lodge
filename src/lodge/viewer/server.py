@@ -185,7 +185,9 @@ def _record_ref(path: str) -> str | None:
 def _page(lodge: Lodge, path: str, ref: str | None, query: Query, token: str) -> str:
     notice = writes.NOTICES.get(_first(query, "done") or "")
     if ref is not None:
-        return pages.record_page(lodge.show(ref, reasoning=True, provenance=True), token, notice)
+        return pages.record_page(
+            lodge.show(ref, reasoning=True, provenance=True, context=False), token, notice
+        )
     match path:
         case "/":
             filters = _filters(query)

@@ -37,6 +37,12 @@ def test_guide_read_is_short_and_has_no_writing_rules(project: Project, tmp_path
         "--phrase",
         "in order",
         "two queries",
+        "exact runs first",
+        "another order",
+        "tell the author what waits",
+        "where a project codes",
+        "lodge thread id",
+        "rewritten",
         "family and citers first",
         "siblings",
         "citers",
@@ -85,6 +91,11 @@ def test_guide_read_examples_run(project: Project) -> None:
         args = [next(refs) if word == "REF" else word for word in shlex.split(command)[1:]]
         result = project.run(*args)
         assert (result.code, result.err) == (0, ""), (example, result)
+        if example == "lodge search word1 word2 --brief":
+            assert result.out.count("query:") == 2
+        if example == "lodge search CODE --brief":
+            found = re.findall(r"^[ds]-[a-z0-9]{6}\b", result.out, re.MULTILINE)
+            assert found[:2] == [ids.decision, sibling]
         if example in EXAMPLES[:2]:
             first = re.search(r"^[ds]-[a-z0-9]{6}\b", result.out, re.MULTILINE)
             assert first is not None, result.out

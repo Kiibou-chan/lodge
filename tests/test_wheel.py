@@ -29,7 +29,9 @@ def test_installed_wheel_runs(tmp_path: Path) -> None:
     need(uv("build", "--wheel", "--out-dir", str(dist)), "uv build")
     (wheel,) = dist.glob("lodge-*.whl")
     with zipfile.ZipFile(wheel) as built:
-        assert {"lodge/viewer/style.css", "lodge/cli/guide.md"} <= set(built.namelist())
+        assert {"lodge/viewer/style.css", "lodge/cli/guide.md", "lodge/cli/guide-read.md"} <= set(
+            built.namelist()
+        )
     need(uv("venv", str(venv)), "uv venv")
     need(uv("pip", "install", "--python", str(venv), str(wheel)), "uv pip install")
     bindir = venv / ("Scripts" if os.name == "nt" else "bin")

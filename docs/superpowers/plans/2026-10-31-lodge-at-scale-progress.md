@@ -61,3 +61,9 @@ Tasks 1 and 2 fix round: I1 centralises change-check facts using `sort_key`, rep
 M1 reuses published snapshot facts when the gate returns the same tree; M2 adds per-run timeouts, SIGTERM cleanup, and a clean-store requirement for every benchmark mode; M4 exercises flagged decisions in the shape probe and uses `datetime.UTC`; M5 moves the app call-budget test into the app suite.
 M6 is closed: the earlier concern in `task-1-2-report.md` compared combined derivation and state checks with an estimate for state checks alone; the measured 0.424 s state check meets the plan's separate estimate, alongside 0.950 s derivation (review M6, Expected cost).
 M3 has two deferred halves: `written_order` can group entries once per render using existing imports, to be taken by the next round touching `order.py` or `render.py`; `derived_order` needs a separate large-area rewrite, whose standard priority queue would require `heapq`, outside the fixed core import rules.
+
+
+Task 7 and the earlier Task 5 fix round are reported in `2026-10-31-lodge-at-scale/task-7-report.md`.
+Tasks 6 and 7 fix round: d-t2dsd3's phrase groups and all review minors addressed, except Task 6 M1 measured only by the coordinator's instruction, pending Task 10b.
+The report and failing-test evidence are in `2026-10-31-lodge-at-scale/task-8b-report.md`.
+Task 6 already resolved the deferred `written_order` grouping; Task 8a's report verifies the area-local inputs, and this round preserves them.
