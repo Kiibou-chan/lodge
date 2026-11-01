@@ -18,8 +18,9 @@ from lodge.gitstore.index_schema import create
 from lodge.gitstore.index_space import exclusive, open_lock, prepare_keep, prune, share
 from lodge.gitstore.index_states import IndexStates
 from lodge.gitstore.index_transactions import transaction as transaction
+from lodge.gitstore.index_words import find_candidates
 
-SCHEMA = 3
+SCHEMA = 4
 
 
 def build_digest(source: Path | None = None) -> str:
@@ -116,6 +117,15 @@ class IndexDB(IndexStates):
     def __init__(self, db: sqlite3.Connection, lock: IO[bytes] | None) -> None:
         self.db = db
         self.lock = lock
+
+    def candidates(
+        self, words: Collection[str], every: bool
+    ) -> dict[FileKey, tuple[frozenset[str], frozenset[str]]] | None:
+        try:
+            with transaction(self.db):
+                return find_candidates(self.db, words, every)
+        except Exception:
+            return None
 
     def parses(self, keys: Collection[FileKey]) -> dict[FileKey, Parsed | None]:
         try:

@@ -62,8 +62,11 @@ def run(
             print(make_lodge().mint(prefix))
         case Search(queries, filters, limit, brief, phrases):
             parsed = [parse_query(q) for q in queries] + [parse_query(q, True) for q in phrases]
-            results = make_lodge().search_many(parsed, filters, limit)
+            lodge = make_lodge()
+            results = lodge.search_many(parsed, filters, limit)
             print(search_text(results, brief, filters.status == "current"))
+            sys.stdout.flush()
+            lodge.after_output()
         case Show(refs, reasoning, provenance):
             lodge = make_lodge()
             status = _show(lodge, refs, reasoning, provenance)

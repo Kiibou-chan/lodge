@@ -132,3 +132,16 @@ The final gate passes 2,081 tests, with six skipped, plus formatting, Ruff, stri
 Red evidence, the proof, diagnostic timing, and concerns are in `2026-10-31-lodge-at-scale/task-10b-report.md`.
 Task 10b is NEEDS_CONTEXT before its skeleton: may its file scope include `app/lodge.py`, `gitstore/index_schema.py`, `gitstore/index_space.py`, and `tests/app/fake_index.py` to wire search and complete Task 10a's extracted-module hand-offs?
 No Task 10b implementation or search timing is claimed while that question is pending.
+
+## Task 10b
+
+The coordinator resolved the Task 10b file-scope question: `app/lodge.py`, `gitstore/index_schema.py`, `gitstore/index_space.py`, and `tests/app/fake_index.py` are authorised for their named hand-offs.
+The dispatch's general hand-off rule also covers the search output flush in `cli/commands.py` and the extracted property-test helper; Task 10b's Files list is amended with the code.
+Schema 4 adds immutable FTS5 words rows sharing parse rowids, including transactional recovery across clears, and indexed search uses core's existing ranking and phrase rules.
+The indexed search filters historical units by the current state's parse key, includes code families and citers, and falls back for function-word queries, unavailable FTS5, and incomplete cached data.
+Search honours SECOND-1 after its successful output flush, and Task 8c's interim identity port is unchanged.
+The report is `2026-10-31-lodge-at-scale/task-10b-report.md`, including each new test's red evidence, the gate, the search replay timings, and concerns.
+The final gate passes 2,105 tests, with six skipped, plus formatting, Ruff, strict mypy, Vulture, and `lodge check --gate`.
+All 108 timed search replay samples match the exact reader's stdout, stderr, and exit status, across all three sizes and both modes.
+The larger stores' kept working sets exceed the production cap with FTS, so their changed samples clear and are reported as cold; the seen targets remain missed at `s90000` with interim R11-A.
+The cap, targets, and Task 12 stop are unchanged; Task 6 M1's kept-state candidate word-set rebuild is replaced by FTS.

@@ -92,6 +92,7 @@ from lodge.core.views import (
     level3,
     unrecorded_problems,
 )
+from lodge.core.words import parse_words
 from lodge.core.yamlio import YamlError, load_yaml
 
 __all__ = [
@@ -190,6 +191,7 @@ __all__ = [
     "parse_query",
     "parse_record",
     "parse_thread",
+    "parse_words",
     "rank",
     "record_from_draft",
     "related",
