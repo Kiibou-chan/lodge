@@ -10,6 +10,8 @@ import pytest
 
 import lodge.main
 from gitstore.conftest import isolated_git  # noqa: F401
+
+# isolated_git also puts HOME and XDG_CONFIG_HOME in the test folder.
 from gitstore.repos import bare_remote, git, seeded
 from lodge.main import main
 

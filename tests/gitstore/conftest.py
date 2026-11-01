@@ -16,6 +16,10 @@ def isolated_git(tmp_path_factory: pytest.TempPathFactory) -> Iterator[None]:
     config = tmp_path_factory.mktemp("gitconfig") / "config"
     config.write_text("")
     patch = pytest.MonkeyPatch()
+    patch.setenv("HOME", str(config.parent))
+    patch.setenv("XDG_CONFIG_HOME", str(config.parent / "xdg"))
+    patch.setenv("GIT_ATTR_NOSYSTEM", "1")
+    patch.delenv("GIT_ATTR_GLOBAL", raising=False)
     patch.setenv("GIT_CONFIG_GLOBAL", str(config))
     patch.setenv("GIT_CONFIG_NOSYSTEM", "1")
     patch.setenv("GIT_TERMINAL_PROMPT", "0")

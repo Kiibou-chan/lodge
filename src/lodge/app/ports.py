@@ -1,12 +1,12 @@
 """What the operations need from outside: the store, the clock, and the entropy."""
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Collection, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
 from typing import Protocol
 
-from lodge.core import Tree
+from lodge.core import Listing, Tree
 
 
 class PublishOutcome(StrEnum):
@@ -52,6 +52,18 @@ class Store(Protocol):
 
     def trees(self) -> tuple[Tree, Tree]:
         """The current and the published state, from one read."""
+        ...
+
+    def identities(self) -> tuple[str, str]:
+        """Current and published identities, resolving and fetching revisions once."""
+        ...
+
+    def listings(self) -> tuple[Listing, Listing]:
+        """The states named by identities(), using those same resolved revisions."""
+        ...
+
+    def texts(self, listing: Listing, paths: Collection[str]) -> dict[str, str]:
+        """Selected texts, including the overlay bytes already read for the listing."""
         ...
 
     def freshness(self) -> str | None:

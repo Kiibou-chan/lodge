@@ -31,6 +31,9 @@ class Interleaved:
 
     def __init__(self, inner: Store, during: "Lodge") -> None:
         self.inner = inner
+        self.identities = inner.identities
+        self.listings = inner.listings
+        self.texts = inner.texts
         self.during = during
         self.drafts = A_DRAFTS
         self.fired = False
