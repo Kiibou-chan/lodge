@@ -3,7 +3,7 @@
 Rechecks: `plan-recheck-opus.md` (correctness and design: N1 to N4 Important, N5 to N9 Minor) and `plan-recheck-codex.md` (feasibility and performance: F1, F3, F5, and F6 partly fixed; R1 to R4 Important, R5 Minor).
 Every finding was taken; none is parked.
 The coordinator's ruling for this round is d-6hb3yd: the index's consistency findings are one class, answered by five invariants in the plan's Global Constraints and tested by fault injection.
-The planner's calls are d-c0q20c (narrows d-ana6c0), d-aej8rs (narrows d-n9w4by and d-dxqxsn), d-9r24jc (narrows d-dqpf59), d-4n5tr6 (narrows d-her016), and d-gd00c6 (narrows d-me8vm3).
+The calls are d-c0q20c (narrows d-ana6c0), d-aej8rs (narrows d-n9w4by and d-dxqxsn), d-9r24jc (narrows d-dqpf59), d-3ck8km (WAL with `synchronous=NORMAL`, replacing d-4n5tr6 and d-gvz66f), and d-gd00c6 (narrows d-me8vm3).
 
 ## The index's consistency (d-6hb3yd)
 
@@ -14,7 +14,7 @@ The sweep applied them wherever the plan writes to the index:
 |---|---|
 | Task 9, parse cache | `keep_parses` in one transaction; `test_keep_parses_interrupted_at_each_statement`, `test_concurrent_keep_parses` |
 | Task 9, flag and conversion cache | keyed by the index file's stat, the configuration values, and the source bytes; `test_cached_flags_and_conversions_keyed` |
-| Task 9, pruning | journals deleted with their files, a locked one skipped |
+| Task 9, pruning | `-wal` and `-shm` deleted with their build file under an exclusive lock, a locked one skipped |
 | Task 10a, `keep_state` | takes the missing parse units, citer rows, and facts, and writes the state's row last; `StoredState.promised` counts what it holds; `test_keep_state_interrupted_at_each_statement`, `test_reader_during_a_concurrent_keep_state` |
 | Task 10a, eviction | drops buckets, answers, citer rows, facts no kept state names, and parse units no kept state references; `test_eviction_drops_only_what_the_state_owns` |
 | Task 10b, words | written and dropped with their parse unit; `keep_words` removed; `test_index_words_faults.py` |
@@ -30,9 +30,9 @@ The sweep applied them wherever the plan writes to the index:
 | N4, no citer lookup in Task 10a | Task 10a stores every code's citers per state and `Index.citing` reads them; `test_show_code_reads_citers_without_texts` | d-aej8rs |
 | N5, the `crlf` attribute | `check-attr` asks for `crlf`; a test case with `lodge/*.md crlf` and `core.eol=crlf` | d-9r24jc |
 | N6, published facts evicted | Eviction keeps the facts of every kept state's current and published idents; Task 10c's test checks they survive | d-aej8rs |
-| N7, `synchronous=NORMAL` in rollback-journal mode | `synchronous=FULL` | d-4n5tr6 |
+| N7, `synchronous=NORMAL` in rollback-journal mode | WAL with `synchronous=NORMAL` | d-3ck8km |
 | N8, words queries of function words only | Task 6's ranking steps 3 and 4 apply only when `words` is not empty; `test_function_words_only_finds_id_and_code_only`; `of the` among the property test's queries | none needed |
-| N9, pruning leaves journals | Pruning deletes the journal and skips a locked one; `test_pruning_takes_the_journal_and_skips_a_locked_one` | d-4n5tr6 |
+| N9, pruning leaves journals | Pruning deletes the build file with its `-wal` and `-shm` under an exclusive lock; `test_old_build_deleted_after_seven_days_under_the_lock` | d-3ck8km |
 
 ## Feasibility and performance recheck
 

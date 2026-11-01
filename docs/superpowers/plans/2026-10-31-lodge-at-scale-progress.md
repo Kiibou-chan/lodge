@@ -5,6 +5,7 @@ Briefs, reports, and reviews: `docs/superpowers/plans/2026-10-31-lodge-at-scale/
 
 The coordinator's rulings for this plan, recorded: correctness first (d-1bww1r), the speed order (d-1ftgg3), the index and its targets (d-232gxs), leaner reads (d-3g6ard), benchmarks (d-542m5g).
 The planner's calls, recorded: d-5xhxh1, d-5zqvxb, d-8kq2nk, d-atsx8n, d-c400w8, d-c4w7xy, d-eby5pb, d-f3r5aq, d-hf2fms, d-kj554d, d-m0g9tx, d-n9w4by, d-p60ka9, d-s2ypth, d-zyqzkg; d-5xhxh1 and d-hf2fms were edited before publishing, through `lodge draft` and `lodge add`, to name decision IDs where their first text named draft labels.
+The coordinator's final-review rulings, recorded in 84e8cd3: d-cqr414 narrows d-a8gkrh so every write checks the cap, d-3ck8km replaces d-gvz66f and d-4n5tr6 with one file per build in WAL mode with `synchronous=NORMAL`, and d-bbhak7 narrows d-jwpwe7 to name stat-preserving writes unseen by indexed reads.
 The coordinator's constraint on unwritable and locked indexes is d-kj554d and Task 9's failure-mode tests.
 SCALE-1 and DISK-1 are answered by the author through d-j51qmy: 1,900 bytes per file, about 305 MB at 160,000 files, and four kept states.
 Plan written; probes and their output in `plan-report.md` and `probes/`.
@@ -244,3 +245,13 @@ The supplemental thread read covers a not-found answer; successful-thread timing
 The refreshed phase table, candidate counts, occupancy, output audit, runtime verification, and limitations are in `2026-10-31-lodge-at-scale/timings.md` and `2026-10-31-lodge-at-scale/task-12-report.md`.
 The final fix-round frozen whole gate exits 0: formatting, Ruff, strict mypy over 301 files, Vulture, 2,236 tests passed and two skipped in 211.06 s, and `lodge check --gate` prints `ok` with its existing area-order note.
 Task 12 and the dispatched Task 11 recheck fixes are complete and ready for review, with the server question handed to the coordinator; the item-by-item evidence is in `2026-10-31-lodge-at-scale/task-12-fix-report.md`.
+
+
+## Final review fix round
+
+The scrubbed whole-branch review is `2026-10-31-lodge-at-scale/final-review.md`, committed first as cc282be.
+PUB-1 is already fixed by e346776.
+DEC-1, DEC-2, STAT-1, DOC-1, and DOC-2 align the current plan and README with d-cqr414, d-3ck8km, d-bbhak7, and the built task steps.
+FIX-1 adds persisted-row codec coverage, and TEST-1 checks the WAL before truncation independently of the secure-delete default.
+Both mutants fail and are reverted; the item evidence and final gate are in `2026-10-31-lodge-at-scale/final-fix-report.md`.
+The final frozen gate exits 0: formatting, Ruff, strict mypy over 301 files, Vulture, 2,238 tests passed and two skipped in 212.54 s, and `lodge check --gate` prints `ok` with its existing area-order note.
