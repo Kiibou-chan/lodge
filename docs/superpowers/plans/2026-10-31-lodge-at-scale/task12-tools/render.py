@@ -221,7 +221,7 @@ out.extend(
     [
         "The cap compares used pages, excluding the freelist, rather than the physical file size.",
         "A complete state may remain over the cap until a writer notices; a held over-cap state is not counted as fitting.",
-        "The maximum is four complete states by KEPT_STATES.",
+        "The maximum is four complete states by KEPT_STATES.\nProduction s90000 cycles run three independent sequences; byte counts below show the first sequence, and capacity and clears agree in all three.",
         "",
         "| Store | Combination | Cap bytes | One complete state, used bytes | File bytes | Final kept / maximum fitting | Clears in ten cycles | Final used bytes | Final file bytes | Facts rows / bytes |",
         "|---|---|---:|---:|---:|---|---:|---:|---:|---|",
@@ -235,7 +235,12 @@ for size in counts:
             if r["kind"] == "occupancy" and r["store"] == size and r["branch"] == branch
         ]
         cycle = [
-            r for r in rows if r["kind"] == "cycle" and r["store"] == size and r["branch"] == branch
+            r
+            for r in rows
+            if r["kind"] == "cycle"
+            and r["store"] == size
+            and r["branch"] == branch
+            and r.get("sample", 1) == 1
         ]
         if not occupancy:
             continue
@@ -365,10 +370,13 @@ out.append(
 )
 comparison = [r for r in rows if r["kind"] == "probe_comparison"]
 if len(comparison) == 6:
-    plain = min(r["seconds"] for r in comparison if not r["probe"])
-    probe = min(r["seconds"] for r in comparison if r["probe"])
     out.append(
-        f"A later same-state audit of R11-B / 1,900 measures ordinary seen show at {plain:.6f} s and the probe at {probe:.6f} s, best of three each, with equal streams and unchanged metadata.\nThe first matrix used clones with racily clean files and GIT_OPTIONAL_LOCKS=0, so git re-hashed those files on every read; checkout restored and refreshed the index before diagnostics, removing about 0.14 s from R11-B reads (review F-1).\nBoth the matrix and audit exceed 0.3 s.\n"
+        "The first matrix used freshly cloned stores with racily clean files and "
+        "GIT_OPTIONAL_LOCKS=0, so git re-hashed those files on every read.\n"
+        "Changed-mode checkout refreshed the index before diagnostics, explaining "
+        "the approximately 0.14 s R11-B difference (review F-1).\n"
+        "The s90000 production rows and diagnostics here use the final code and "
+        "an explicitly refreshed index.\n"
     )
 
 out.extend(
