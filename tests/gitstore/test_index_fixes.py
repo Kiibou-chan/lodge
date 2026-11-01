@@ -41,7 +41,7 @@ class OneBadKey(sqlite3.Connection):
 
 def test_lookup_keeps_partial_hits(tmp_path: Path) -> None:
     initial = opened(tmp_path)
-    initial.keep_parses({KEY: None, ("last", "blob"): None})
+    initial.keep_parses({KEY: None, ("last", "blob"): None}, files=2)
     initial.close()
     db = sqlite3.connect(filename(tmp_path), isolation_level=None, factory=OneBadKey)
     index = IndexDB(db, None)
@@ -97,7 +97,7 @@ class FailedScan(sqlite3.Connection):
 def test_scan_keeps_hits_before_sql_error(tmp_path: Path) -> None:
     initial = opened(tmp_path)
     keys = [(f"unit-{n}", "blob") for n in range(1500)]
-    initial.keep_parses(dict.fromkeys(keys))
+    initial.keep_parses(dict.fromkeys(keys), files=len(keys))
     initial.close()
     db = sqlite3.connect(filename(tmp_path), isolation_level=None, factory=FailedScan)
     index = IndexDB(db, None)

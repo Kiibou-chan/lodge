@@ -1,9 +1,9 @@
 """The operations every command and the viewer call."""
 
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from typing import Literal
 
-from lodge.app import confirm, reads, threads, writes
+from lodge.app import confirm, indexed, reads, threads, writes
 from lodge.app.ports import Clock, IdSource, Index, Store
 from lodge.app.results import (
     Added,
@@ -29,8 +29,17 @@ class Lodge:
         ids: IdSource,
         settings: CoreSettings,
         index: Index | None = None,
+        *,
+        read_model: bool = True,
     ) -> None:
         self._w = Wiring(store, clock, ids, settings, index)
+        self._read_model = read_model
+        self._keep: Callable[[], None] | None = None
+
+    def after_output(self) -> None:
+        keep, self._keep = self._keep, None
+        if keep is not None:
+            keep()
 
     def release(self) -> None:
         if self._w.index is not None:
@@ -48,15 +57,26 @@ class Lodge:
         self, ref: str, reasoning: bool = False, provenance: bool = False, *, context: bool = True
     ) -> Shown:
         """Read a record; callers omitting siblings and citers must pass context=False."""
+        if self._w.index is not None and self._read_model and context:
+            result = self.show_many([ref], reasoning, provenance).items[0][1]
+            if isinstance(result, Exception):
+                raise result
+            return result
         return reads.show(self._w, ref, reasoning, provenance, context=context)
 
     def show_many(
         self, refs: Sequence[str], reasoning: bool = False, provenance: bool = False
     ) -> ShownMany:
+        if self._w.index is not None and self._read_model:
+            result, self._keep = indexed.show_many(self._w, refs, reasoning, provenance)
+            return result
         return reads.show_many(self._w, refs, reasoning, provenance)
 
     def waiting_all(self) -> tuple[Listed, ThreadsWaiting]:
         """Decisions and threads waiting, checked in the same snapshot."""
+        if self._w.index is not None and self._read_model:
+            result, self._keep = indexed.waiting_all(self._w)
+            return result
         return reads.waiting_all(self._w)
 
     def timeline(self, limit: int = 50) -> Listed:
@@ -126,9 +146,15 @@ class Lodge:
         )
 
     def threads(self) -> ThreadList:
+        if self._w.index is not None and self._read_model:
+            result, self._keep = indexed.threads(self._w)
+            return result
         return threads.list_open(self._w)
 
     def thread(self, ref: str) -> ThreadShown:
+        if self._w.index is not None and self._read_model:
+            result, self._keep = indexed.thread(self._w, ref)
+            return result
         return threads.show(self._w, ref)
 
     def threads_waiting(self) -> ThreadsWaiting:

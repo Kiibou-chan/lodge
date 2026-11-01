@@ -57,11 +57,13 @@ def find_parses(db: sqlite3.Connection, keys: Collection[FileKey]) -> dict[FileK
 
 
 def insert_parses(db: sqlite3.Connection, parsed: Mapping[FileKey, Parsed | None]) -> None:
+    written = 0
     for (path, blob), value in parsed.items():
         try:
-            db.execute(
+            written += db.execute(
                 "INSERT OR IGNORE INTO parses(path,blob,value) VALUES(?,?,?)",
                 (path, blob, json.dumps(to_plain(value), ensure_ascii=True, separators=(",", ":"))),
-            )
+            ).rowcount
         except UnicodeEncodeError:
             continue
+    db.execute("UPDATE meta SET written=written+?", (written,))

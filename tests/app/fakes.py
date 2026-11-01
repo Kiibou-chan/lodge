@@ -4,9 +4,10 @@ from collections.abc import Collection, Mapping, Sequence
 from datetime import datetime, timedelta, timezone
 
 from builders import files_of
+from fake_index import MemoryIndex as MemoryIndex
 
-from lodge.app import CommitOutcome, Committed, FileKey, Gate, PublishOutcome
-from lodge.core import ATTACHMENTS, Area, Decision, Listing, Parsed, SpecEntry, Tree, blob_id
+from lodge.app import CommitOutcome, Committed, Gate, PublishOutcome
+from lodge.core import ATTACHMENTS, Area, Decision, Listing, SpecEntry, Tree, blob_id
 
 START = datetime(2026, 10, 29, 9, 30, tzinfo=timezone(timedelta(hours=1)))
 
@@ -147,27 +148,3 @@ class CountingIds:
         value = self.next
         self.next += self.step
         return bytes([value]) * 6
-
-
-class MemoryIndex:
-    """A parse-only index with the same immutable key contract as SQLite."""
-
-    def __init__(self) -> None:
-        self.values: dict[FileKey, Parsed | None] = {}
-        self.lookups = 0
-        self.epochs = 0
-
-    def close(self) -> None:
-        pass
-
-    def epoch(self) -> int:
-        self.epochs += 1
-        return 1
-
-    def parses(self, keys: Collection[FileKey]) -> dict[FileKey, Parsed | None]:
-        self.lookups += 1
-        return {key: self.values[key] for key in keys if key in self.values}
-
-    def keep_parses(self, parsed: Mapping[FileKey, Parsed | None]) -> None:
-        for key, value in parsed.items():
-            self.values.setdefault(key, value)

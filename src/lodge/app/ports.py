@@ -4,9 +4,9 @@ from collections.abc import Collection, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
-from typing import Protocol
+from typing import ContextManager, Protocol  # noqa: UP035
 
-from lodge.app.index_types import FileKey
+from lodge.app.index_types import FileKey, Row, StateFacts, StoredState
 from lodge.core import Listing, Parsed, Tree
 
 
@@ -103,6 +103,45 @@ class Index(Protocol):
 
     def parses(self, keys: Collection[FileKey]) -> dict[FileKey, Parsed | None]: ...
 
-    def keep_parses(self, parsed: Mapping[FileKey, Parsed | None]) -> None: ...
+    def keep_parses(self, parsed: Mapping[FileKey, Parsed | None], *, files: int) -> None: ...
 
     def epoch(self) -> int: ...
+
+    def reading(self) -> ContextManager[None]: ...
+
+    def state(self, key: str) -> StoredState | None: ...
+
+    def rows(self, key: str, ids: Collection[str]) -> dict[str, Row]: ...
+
+    def all_rows(self, key: str) -> dict[str, Row]: ...
+
+    def answer(self, key: str, name: str) -> object | None: ...
+
+    def citing(self, key: str, code: str, limit: int | None) -> tuple[str, ...] | None: ...
+
+    def facts(self, ident: str) -> StateFacts | None: ...
+
+    def seen(self, key: str) -> bool: ...
+
+    def mark_seen(
+        self,
+        key: str,
+        parses: Mapping[FileKey, Parsed | None],
+        facts: Mapping[str, StateFacts],
+        *,
+        files: int,
+    ) -> None: ...
+
+    def keep_state(
+        self,
+        state: StoredState,
+        rows: Mapping[str, Row],
+        answers: Mapping[str, object],
+        citing: Mapping[str, tuple[str, ...]],
+        facts: Mapping[str, StateFacts],
+        parses: Mapping[FileKey, Parsed | None],
+        misses: Collection[FileKey],
+        epoch: int,
+        *,
+        files: int,
+    ) -> None: ...

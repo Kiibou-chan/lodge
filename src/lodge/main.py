@@ -49,14 +49,14 @@ def _settings(root: Path) -> ProjectSettings:
     return settings
 
 
-def _make_lodge() -> Lodge:
+def _make_lodge(*, read_model: bool = True) -> Lodge:
     root = repo_root(Path.cwd())
     settings = _settings(root)
     clock = _Clock()
     common = common_dir(root)
     store = open_store(root, settings.store, clock, common=common)
     index = None if os.environ.get("LODGE_INDEX") == "off" else project_index(common)
-    return Lodge(store, clock, _Entropy(), settings.core, index)
+    return Lodge(store, clock, _Entropy(), settings.core, index, read_model=read_model)
 
 
 def _init() -> str:
@@ -65,9 +65,12 @@ def _init() -> str:
 
 
 def _view(port: int, allow_hosts: tuple[str, ...]) -> int:
-    lodge = _make_lodge()
+    def factory() -> Lodge:
+        return _make_lodge(read_model=False)
+
+    lodge = factory()
     lodge.release()
-    return serve(_make_lodge, port, allow_hosts, secrets.token_urlsafe(32))
+    return serve(factory, port, allow_hosts, secrets.token_urlsafe(32))
 
 
 def _existing_folder(edited: Path) -> Path:

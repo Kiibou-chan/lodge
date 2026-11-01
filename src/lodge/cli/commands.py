@@ -65,7 +65,12 @@ def run(
             results = make_lodge().search_many(parsed, filters, limit)
             print(search_text(results, brief, filters.status == "current"))
         case Show(refs, reasoning, provenance):
-            return _show(make_lodge(), refs, reasoning, provenance)
+            lodge = make_lodge()
+            status = _show(lodge, refs, reasoning, provenance)
+            sys.stdout.flush()
+            sys.stderr.flush()
+            lodge.after_output()
+            return status
         case Draft(ref):
             text = make_lodge().draft(ref)
             if is_decision_file(text):
@@ -82,8 +87,15 @@ def run(
         case Waiting():
             lodge = make_lodge()
             print(waiting_text(*lodge.waiting_all()))
+            sys.stdout.flush()
+            lodge.after_output()
         case Threads() | ThreadCommand() | Ask() | Reply() | Close():
-            return run_thread(command, make_lodge())
+            lodge = make_lodge()
+            status = run_thread(command, lodge)
+            if isinstance(command, (Threads, ThreadCommand)):
+                sys.stdout.flush()
+                lodge.after_output()
+            return status
         case Guide(read):
             name = "guide-read.md" if read else "guide.md"
             print(files("lodge.cli").joinpath(name).read_text(encoding="utf-8"), end="")
