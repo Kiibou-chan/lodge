@@ -53,3 +53,18 @@ The same sentence is placed in Task 10c of the plan; no test or code change is r
 
 The combined code regression run passes `98 passed in 25.20s`, including persistent-folder properties, recovery, committed helpers, app facts, and structure.
 Formatting, Ruff, and strict mypy over 300 source files pass.
+After the code commit, the same s90000 probe measures new-commit 2.097658 s / 15 processes and cold-index 2.076388 s / 15 processes, against 8.188227 s and 8.262224 s / 2,268 processes before.
+The probe times `identities()` on a newly constructed store, with the source revision changed in `lodge/`, an explicit refreshed git index, and a separate cold index file.
+
+## Measurement tooling
+
+10. F-1 / F-3 / F-4: `task12-tools/` now retains setup, measurement, probe, rendering, and audit scripts from the synthetic benchmark area.
+Benchmark paths take `LODGE_BENCH_ROOT`, default `/var/tmp/lodge-bench`, with the workspace derived from the script location or `LODGE_BENCH_WORKSPACE`; setup also accepts arguments.
+Historical four-way sources can be recreated from `bb9fe48`; production setup takes the committed current R11-B / 1,900 sources directly.
+The replay refreshes git's index once before any timed read; setup does so once for each new or reused store copy, and the matrix refreshes after restoration.
+The regression runs red before implementation: replay `AssertionError: Expected 'mock' to have been called once. Called 0 times.`, and both new/reused setup cases `NotImplementedError`, `3 failed in 0.17s`.
+Green: `20 passed in 0.18s` across refresh, replay options, and cleanup.
+Two existing mocked-main tests stub the newly required refresh subprocess; their tested behaviour is unchanged.
+The original R11-B inflation comes from git re-hashing racily clean files in freshly cloned checkouts while `GIT_OPTIONAL_LOCKS=0` prevents the reads from refreshing the index.
+The changed-mode cleanup refreshed that index before the diagnostics; the review reproduces an approximately 0.14 s difference.
+The rerun uses three samples for every targeted s90000 row and seen diagnostic, and three independent ten-edit/read/read/read sequences.
