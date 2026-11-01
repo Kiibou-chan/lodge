@@ -7,7 +7,6 @@ import pytest
 
 from gitstore.repos import write
 from gitstore.test_folders import cached as cached
-from gitstore.test_folders import mode as mode
 from gitstore.test_folders import opened, seed
 from gitstore.test_identity import agrees
 from lodge.gitstore.index_db import IndexDB

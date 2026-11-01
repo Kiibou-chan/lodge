@@ -4,10 +4,7 @@ import time
 from pathlib import Path
 from unittest.mock import patch
 
-import pytest
-
 from gitstore import test_identity_property as oracle
-from gitstore.identity_rules import r11b
 from gitstore.repos import CHECKOUT, Ticker
 from gitstore.test_identity import prepared
 from lodge.app import Store
@@ -32,11 +29,5 @@ def check_histories(tmp_path: Path) -> None:
         index.close()
 
 
-def test_folder_property_r11a(tmp_path: Path) -> None:
+def test_folder_property(tmp_path: Path) -> None:
     check_histories(tmp_path)
-
-
-@pytest.mark.skip(reason="awaits the author's STALE-1")
-def test_folder_property_r11b(tmp_path: Path) -> None:
-    with r11b():
-        check_histories(tmp_path)

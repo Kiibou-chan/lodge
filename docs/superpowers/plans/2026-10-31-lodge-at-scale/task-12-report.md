@@ -1,5 +1,7 @@
 # Task 12 report
 
+Production now runs R11-B (d-jwpwe7) and 1,900 bytes per file (d-j51qmy), so the R11-B / 1,900 columns are the production figures.
+
 ## Task 10c fix round, complete
 
 B-2 and B-1 have app and end-to-end regressions written before their fixes.

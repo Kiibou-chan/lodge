@@ -8,9 +8,9 @@ from lodge.gitstore.index_words import create_words
 def create(db: sqlite3.Connection) -> None:
     db.execute(
         "CREATE TABLE IF NOT EXISTS meta(epoch INTEGER NOT NULL, kept INTEGER NOT NULL, "
-        "written INTEGER NOT NULL, folder_count INTEGER NOT NULL)"
+        "written INTEGER NOT NULL)"
     )
-    db.execute("INSERT INTO meta SELECT 1,0,0,0 WHERE NOT EXISTS (SELECT 1 FROM meta)")
+    db.execute("INSERT INTO meta SELECT 1,0,0 WHERE NOT EXISTS (SELECT 1 FROM meta)")
     db.execute(
         "CREATE TABLE IF NOT EXISTS parses(rowid INTEGER PRIMARY KEY, "
         "path TEXT NOT NULL, blob TEXT NOT NULL, value BLOB NOT NULL, "
@@ -41,7 +41,12 @@ def create(db: sqlite3.Connection) -> None:
     create_words(db)
 
     db.execute(
-        "CREATE TABLE IF NOT EXISTS folders(path TEXT PRIMARY KEY, ino INTEGER NOT NULL, "
+        "CREATE TABLE IF NOT EXISTS folders(root TEXT NOT NULL, path TEXT NOT NULL, "
+        "ino INTEGER NOT NULL, "
         "mtime_ns INTEGER NOT NULL, ctime_ns INTEGER NOT NULL, listed_at_ns INTEGER NOT NULL, "
-        "base TEXT NOT NULL, added TEXT NOT NULL, removed TEXT NOT NULL)"
+        "base TEXT NOT NULL, added TEXT NOT NULL, removed TEXT NOT NULL, PRIMARY KEY(root,path))"
+    )
+    db.execute(
+        "CREATE TABLE IF NOT EXISTS folder_roots(root TEXT PRIMARY KEY, "
+        "folder_count INTEGER NOT NULL)"
     )

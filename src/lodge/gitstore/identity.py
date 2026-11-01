@@ -1,13 +1,13 @@
 """Checkout identity from a pinned committed base and a descriptor-read overlay."""
 
+from dataclasses import dataclass
 from hashlib import sha1
 from pathlib import Path
 
 from lodge.core import ATTACHMENTS, Listing, blob_id
 from lodge.gitstore import disk, git
 from lodge.gitstore.attributes import Conversions
-from lodge.gitstore.committed import EMPTY_TREE, CommittedListing
-from lodge.gitstore.committed import Committed as Committed
+from lodge.gitstore.committed import EMPTY_TREE, Committed, CommittedListing
 from lodge.gitstore.flags import Flags, scan
 from lodge.gitstore.folders import Folders, FolderWalk
 from lodge.gitstore.trees import decode, encode
@@ -15,11 +15,16 @@ from lodge.gitstore.trees import decode, encode
 _DIFF = ["-c", "core.fsmonitor=false", "-c", "core.checkStat=default", "-c", "core.trustctime=true"]
 
 
+@dataclass(frozen=True)
+class LazyListing(Listing):
+    """A placeholder requiring this identity's pending overlay to materialise."""
+
+
 def candidates(
     identity: "CheckoutIdentity", rev: str | None, trunk: str | None
-) -> tuple[Listing, dict[str, str]] | None:
-    """Interim R11-A; R11-B switches only this body to identity.stat_current(rev, trunk)."""
-    return None
+) -> tuple[Listing, dict[str, str]]:
+    """Production R11-B, as ruled by d-jwpwe7."""
+    return identity.stat_current(rev, trunk)
 
 
 class CheckoutIdentity:
@@ -34,21 +39,10 @@ class CheckoutIdentity:
 
     def current(self, rev: str | None, trunk: str | None = None) -> tuple[Listing, dict[str, str]]:
         self._pending = None
-        candidate = candidates(self, rev, trunk)
-        if candidate is not None:
-            return candidate
-        merged = git.attempt(["merge-base", rev or EMPTY_TREE, trunk or EMPTY_TREE], self.root)
-        self.published = decode(merged.stdout).strip() if merged.returncode == 0 else None
-        self.committed.tree_id(self.published)
-        base = self.committed.listing(rev)
-        walked = self._walk(rev)
-        try:
-            return self._overlay(base, walked, {*base.blobs, *base.attachments, *walked.names})
-        finally:
-            walked.close()
+        return candidates(self, rev, trunk)
 
     def stat_current(self, rev: str | None, trunk: str | None) -> tuple[Listing, dict[str, str]]:
-        """R11-B's coherent git candidates, ready for the author's ruling."""
+        """Take coherent stat candidates, reading all paths with a conversion source."""
         for _ in range(3):
             before = self.flags.key()
             calls = [
@@ -117,8 +111,13 @@ class CheckoutIdentity:
                     if isinstance(walked, FolderWalk)
                     else set()
                 )
-                base = self.committed.selected(rev, changed, nonblobs)
-                listing, texts = self._overlay(base, walked, changed, lazy=True)
+                absent = (
+                    walked.names.keys() - walked.removed.keys()
+                    if isinstance(walked, FolderWalk)
+                    else set()
+                )
+                base = self.committed.selected(rev, changed - absent, nonblobs)
+                listing, texts = self._overlay(base, walked, changed)
             finally:
                 walked.close()
             if before == self.flags.key():
@@ -136,7 +135,7 @@ class CheckoutIdentity:
         }
 
     def _overlay(
-        self, base: CommittedListing, walked: disk.DiskWalk, paths: set[str], *, lazy: bool = False
+        self, base: CommittedListing, walked: disk.DiskWalk, paths: set[str]
     ) -> tuple[Listing, dict[str, str]]:
         overlay: dict[str, str | None] = {}
         texts: dict[str, str] = {}
@@ -155,23 +154,21 @@ class CheckoutIdentity:
         if overlay:
             changes = "\n".join(f"{path}\0{key or ''}" for path, key in sorted(overlay.items()))
             ident = sha1(encode(f"{base.ident}\0{changes}")).hexdigest()
-        listing = Listing(base.rev, ident, {}, frozenset())
-        if lazy:
-            self._pending = base.rev, overlay
-        else:
-            listing = self._apply(listing, base, overlay)
-        return listing, texts
+        self._pending = base.rev, overlay
+        return LazyListing(base.rev, ident, {}, frozenset()), texts
 
     def _walk(self, rev: str | None) -> disk.DiskWalk:
         if self.folders is None:
             return disk.walk(self.root)
         return self.folders.walk(
-            self.root, self.committed.tree_id(rev), lambda: self.committed.listing(rev).kinds
+            self.root, self.committed.tree_id(rev), lambda path: self.committed.folder(rev, path)
         )
 
     def materialise(self, listing: Listing) -> Listing:
-        if self._pending is None:
+        if not isinstance(listing, LazyListing):
             return listing
+        if self._pending is None:
+            raise RuntimeError("lazy listing has no pending overlay")
         rev, overlay = self._pending
         return self._apply(listing, self.committed.listing(rev), overlay)
 

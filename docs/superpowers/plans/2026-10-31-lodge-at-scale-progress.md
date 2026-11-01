@@ -22,7 +22,7 @@ Rechecked again: `plan-recheck-2.md` (V1 to V3 Important, V4 to V8 Minor).
 Fix round 3 (`plan-fix-3.md`): every finding taken, none parked; the index's consistency rewritten so nothing a kept state depends on is ever deleted.
 The coordinator's ruling for fix round 3, recorded: d-t3afj1 (replaces d-6hb3yd).
 The planner's calls for fix round 3, recorded: d-4j98ph (replaces d-aej8rs), d-gvz66f, d-n6tqzq.
-The index's size cap follows SCALE-1's option A through `INDEX_BYTES_PER_FILE`; her answer changes that one constant.
+The index's size cap follows DISK-1 (d-j51qmy): `INDEX_BYTES_PER_FILE = 1_900`, about 305 MB at 160,000 files, keeping four states, replacing d-4pbeax's byte allowance and narrowing d-a8gkrh without changing its formula.
 Rechecked a third time: `plan-recheck-3.md` (R1 Blocking, R2 and R4 Important, R3 and R5 Minor).
 Fix round 4 (`plan-fix-4.md`): every finding taken, none parked; generations dropped for one file per build, cleared in place.
 The coordinator's ruling for fix round 4, recorded: d-e3stjn (replaces the generations of d-gvz66f).
@@ -86,11 +86,11 @@ Plan fix 7b (Task 9c's ordered scan with each row decoded and admitted on its ow
 Pasted into the plan from `tasks-6b.md` and `tasks-7b.md`: calls 22 to 25, the cost table's rows, the build order line, Task 8c and Task 9c after Task 9, Task 10a and Task 10c amended, Task 11 and Task 12 replaced.
 Task 9's hand-offs now in the plan: I4 in Task 10a's Step 3a with the cap's new condition (a working set inserted since the last clear, or a state kept); M9 answered by Task 9c; `sha1(repr(settings).encode()).hexdigest()` added for the stored state's key in Step 3a; the stale `marshal` mentions replaced by JSON, as built.
 Build order from here: Task 8c, Task 9c, Task 10a, Task 10b, Task 10c, Task 11, Task 12.
-Decisions to record before building: R11-A or R11-B (STALE-1, with the author) and CONV-1 before Task 8c; FOLD-1 before Task 11 (the task records it); SECOND-1 before Task 10a; none before Task 9c, 10b, 10c, or 12.
+STALE-1 is ruled by d-jwpwe7 for production R11-B; CONV-1 is d-egknpk, FOLD-1 is d-eg5nra, and SECOND-1 was required before Task 10a; no further record is needed for this fix round.
 
 ## Task 8c
 
-Built with the dispatch's interim R11-A full-file rule; STALE-1 remains with the author, and no R11 decision is inferred.
+Originally built with interim R11-A; the Task 11 fix round applies the author's STALE-1 answer A (d-jwpwe7), production R11-B with stat-clean files at git's index blob and the stated conversion-history exception, while the gate and `add` read every file exactly.
 CONV-1 is recorded as d-egknpk.
 The report is `2026-10-31-lodge-at-scale/task-8c-report.md`.
 The R11-B scratch alternative's new-store, one-edit identity at `s90000` measured 0.485094 s best of three in the initial diagnostic, above Task 8c's 0.45 s reporting threshold; the final rerun measured 0.448099 s, just below it.
@@ -180,26 +180,26 @@ The complete implementation, red evidence, gate, phase table, replay table, and 
 I1 separates query fallback from damaged state data, and I2 ignores historical candidates absent from current state rows.
 The regression suite counts zero keeps and unchanged epochs over six repeated searches, including a real deleted record file.
 M1 retains the CRLF property history and compares parsed texts; M2 fetches only shown parses for empty searches; M3 uses proven exact-ID absence; M5 repeats 300 queries against SQLite with non-ASCII and numeric words.
-M4's cap is unchanged pending DISK-1 and Task 12, and M6's dormant production R11-B alternative and every parameter remain dictated by the plan.
-The six R11-A-only cases to revisit with STALE-1 are test_removed_attributes_agree's four parameters (ident, working-tree-encoding=UTF-16, filter=berth, and text eol=crlf), test_every_file_read_without_a_conversion_source, and test_r11a_does_not_compute_git_candidates.
+The Task 11 fix round settles M4 through DISK-1 (d-j51qmy), 1,900 bytes per file and four states, and M6 through STALE-1 (d-jwpwe7), production R11-B in every test run.
+STALE-1 (d-jwpwe7): the four test_removed_attributes_agree parameters become the unskipped test_removed_attributes_follow_the_index; test_every_file_read_without_a_conversion_source is removed; test_r11a_does_not_compute_git_candidates becomes test_production_uses_stat_candidates; test_folders.py's R11-A-only base-name assertion becomes the production no-base-names assertion.
 The Task 10b Files list includes the extracted lookup helper and review regressions.
 The full gate passes 2,158 tests, with six skipped, plus formatting, Ruff, strict mypy, Vulture, and `lodge check --gate`.
 Evidence and validation are in `2026-10-31-lodge-at-scale/task-11-report.md`.
 
 ## Task 11
 
-The coordinator resolves the earlier context question: no-base-names and no-mapping folder hits bind R11-B only; interim R11-A retains its full-file comparison mapping.
+The author resolves STALE-1 through d-jwpwe7: no-base-names and no-mapping folder hits are the production R11-B rule, and the R11-A full-file branch is removed.
 FOLD-1 is read as d-eg5nra, and no record operation is run.
-The folder cache and construction hand-offs are built, with R11-A active and R11-B still a switch of Task 8c's one function.
+The folder cache and construction hand-offs use production R11-B, with no test switch or STALE-1 skips; rows and their completeness counts are scoped to the checkout's absolute git dir, under schema 8.
 The task's Files list includes its required schema, construction, committed-helper extraction, disk-listing, and test hand-offs.
-The gate passes 2,189 tests, with 39 skipped, plus formatting, Ruff, strict mypy, Vulture, and `lodge check --gate`.
+The Task 11 fix-round frozen gate passes 2,228 tests, with two skipped, plus formatting, Ruff, strict mypy, Vulture, and `lodge check --gate`; collection changes from 2,254 to 2,230 after removing obsolete and duplicate cases and adding thirteen regressions.
 Twenty scratch R11-B property runs pass, and the supported FUSE cases agree with the exact reader in both branches.
 All 96 native 160,800-file replay samples match the exact reader's stdout, stderr, and exit status; all 78 indexed samples retain a kept state and an unchanged epoch.
 No-conversion new-store identity is 1.750162 s for production R11-A and 0.157595 s for scratch R11-B, best of three; R11-B takes no base names or full mapping on a hit.
 `show {code}` is 1.996342 s under R11-A and 0.395327 s under R11-B; both branches still miss the seen target, and broad searches remain above their target.
-The production cap and R11 switch are unchanged, with STALE-1, DISK-1, and the Task 12 stop still pending.
+Production now runs R11-B (d-jwpwe7), with 1,900 bytes per file and four kept states (d-j51qmy); the recorded Task 12 stop remains in effect.
 The report records the red evidence, full timings including conversions, FUSE capability skips, and the incomplete construction-signature skeleton as a process deviation.
-Complete evidence is in `2026-10-31-lodge-at-scale/task-11-report.md`; Task 11 is ready for review.
+Initial evidence is in `2026-10-31-lodge-at-scale/task-11-report.md`, and the completed fix round, all red evidence, and the 1,500-level hit improvement from 2.929157 s to 0.123253 s are in `2026-10-31-lodge-at-scale/task-11-fix-report.md`; Task 11 is ready for recheck.
 
 
 ## Task 10c fix round before Task 12
@@ -237,7 +237,7 @@ The server question goes to the coordinator under every combination; Task 12 bui
 
 During measurement, d-jwpwe7 rules STALE-1 for R11-B, and d-j51qmy rules DISK-1 for 1,900 bytes per file.
 The chosen combination is already measured and still triggers the stop, including a later same-state ordinary show audit at 0.335951 s.
-The dispatched production source remains R11-A/1,500; applying the new rulings is a coordinator hand-off.
+The Task 11 fix round applies both rulings to production: the recorded R11-B / 1,900 columns are now the production figures; the measured table and its stop are unchanged.
 The Task 1 base completes 210 of 288 bounded attempts, with 78 large-store timeouts and no unexpected completed differences.
 Its CPython 3.13.5/SQLite 3.47.1 runtime differs from the completed-build native CPython 3.13.16/SQLite 3.53.1 runtime, so no code-only speed-up ratio is claimed.
 Successful-thread timing and the optional FUSE timing are unavailable on these synthetic stores.

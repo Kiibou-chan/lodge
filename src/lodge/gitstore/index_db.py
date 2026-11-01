@@ -20,7 +20,7 @@ from lodge.gitstore.index_states import IndexStates
 from lodge.gitstore.index_transactions import transaction as transaction
 from lodge.gitstore.index_words import find_candidates
 
-SCHEMA = 7
+SCHEMA = 8
 
 
 def build_digest(source: Path | None = None) -> str:
