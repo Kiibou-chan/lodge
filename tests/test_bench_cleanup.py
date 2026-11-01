@@ -47,7 +47,7 @@ def test_benchmark_timeout_restores_edit(tmp_path: Path, monkeypatch: pytest.Mon
         timeout=0.01,
     )
     assert results == [[(0.01, None, None)]]
-    assert calls == [0.01, 0.01]
+    assert calls == [0.01, 0.01, 0.01]
     assert checkout.call_args.args[0] == ["git", "checkout", "--", "lodge"]
     assert entry.read_text() == "A berth has a crane.\n"
     assert not list(tmp_path.glob("read-cache-*"))

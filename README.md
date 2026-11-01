@@ -72,6 +72,12 @@ Within each area, entries follow the entries they rest on, using the written ord
 `waiting` has two groups: open threads whose last message is by the author wait for an agent; agent decisions awaiting confirmation and open threads whose last message is by an agent wait for the author.
 Read through lodge, never by opening record files.
 
+lodge speeds reads with a disposable SQLite index in `<git common dir>/lodge/`, with one file per lodge build.
+Past its size cap it clears that file in place, and later reads rebuild what they need.
+Removing that folder with `rm -r "$(git rev-parse --git-common-dir)/lodge"` is safe at any time and reclaims all its space.
+The git common directory may be shared by worktrees.
+Set `LODGE_INDEX=off` to read without the index.
+
 ## Writing
 
 Never edit a record file by hand; decisions, entries, and areas go through `lodge add`, and thread messages use the commands below.
