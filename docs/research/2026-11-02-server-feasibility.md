@@ -35,3 +35,12 @@ Found in none of them: a decision record as an object of its own, a third-party 
 
 Whether a teleported session can be read as structured events rather than rendered text, and how teleport behaves after a session has pushed a branch.
 Seven smaller tools named in the prior-art file.
+
+## A cloud session calling lodge
+
+From the cloud environments page (https://code.claude.com/docs/en/cloud-environments.md), read 2026-11-02:
+- Network access is per environment: None, Trusted (package registries, GitHub, cloud SDKs), Full, or Custom, where Custom lists one's own allowed domains.
+- A network secret (Pro, Max, Ultra, Team, and Enterprise) is a key Anthropic's proxy adds as a header to requests for the hosts it names; the session never sees the key, and those hosts become reachable.
+- Environment variables are readable by anyone who uses the environment.
+- MCP connectors travel through Anthropic's servers rather than the session's network.
+- So lodge has to be reachable from Anthropic's cloud on a public name; a server reachable only inside a private network is out of reach for cloud sessions.
