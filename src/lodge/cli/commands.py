@@ -84,8 +84,9 @@ def run(
             print(waiting_text(*lodge.waiting_all()))
         case Threads() | ThreadCommand() | Ask() | Reply() | Close():
             return run_thread(command, make_lodge())
-        case Guide():
-            print(files("lodge.cli").joinpath("guide.md").read_text(encoding="utf-8"), end="")
+        case Guide(read):
+            name = "guide-read.md" if read else "guide.md"
+            print(files("lodge.cli").joinpath(name).read_text(encoding="utf-8"), end="")
         case View(port, allow_hosts):
             if any(not h or "/" in h or any(c.isspace() for c in h) for h in allow_hosts):
                 print("lodge: --allow-host needs a host without whitespace or /", file=sys.stderr)

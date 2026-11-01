@@ -76,6 +76,7 @@ Read through lodge, never by opening record files.
 
 Never edit a record file by hand; decisions, entries, and areas go through `lodge add`, and thread messages use the commands below.
 `lodge guide` prints the rules for agents, so a project's `CLAUDE.md` can point at it instead of copying it.
+`lodge guide --read` prints a short reading guide with examples, status words, and flags for agents that only read.
 
 1. `lodge id s` prints a new ID for each new specification entry, so a decision can name it.
 2. Write each record as a draft file outside `lodge/`: Markdown with a YAML header, the body being the statement and `## Reasoning` starting the why.
