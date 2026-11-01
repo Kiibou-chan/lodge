@@ -2,8 +2,11 @@
 
 from pathlib import Path
 
+import pytest
+
 from gitstore.index_helpers import KEY, opened
 from lodge.core import Area, parse_file
+from lodge.gitstore import index_db
 
 
 def test_hit_after_keep(tmp_path: Path) -> None:
@@ -37,4 +40,31 @@ def test_undecodable_row_is_a_miss(tmp_path: Path) -> None:
     index = opened(tmp_path)
     index.db.execute("INSERT INTO parses(path,blob,value) VALUES(?,?,?)", (*KEY, b"garbage"))
     assert index.parses([KEY]) == {}
+    index.close()
+
+
+def test_unencodable_key_skips_only_that_unit(tmp_path: Path) -> None:
+    index = opened(tmp_path)
+    bad = ("lodge/decisions/stray-\udcff.md", "blob")
+    index.keep_parses({bad: None, KEY: None, ("last", "blob"): None})
+    assert index.parses([bad, KEY, ("last", "blob")]) == {KEY: None, ("last", "blob"): None}
+    index.close()
+
+
+@pytest.mark.parametrize("method", ["parses", "keep_parses", "epoch"])
+def test_any_adapter_exception_is_a_miss(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, method: str
+) -> None:
+    index = opened(tmp_path)
+
+    def fail(*args: object, **kwargs: object) -> None:
+        raise RuntimeError("injected adapter failure")
+
+    monkeypatch.setattr(index_db, "transaction", fail)
+    if method == "parses":
+        assert index.parses([KEY]) == {}
+    elif method == "keep_parses":
+        index.keep_parses({KEY: None})
+    else:
+        assert index.epoch() == 0
     index.close()

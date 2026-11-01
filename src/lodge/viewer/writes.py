@@ -190,8 +190,10 @@ def handle_post(
     if isinstance(fields, Reply):
         return fields
     post = None
+    lodge = None
     try:
-        post = _Post(make_lodge(), fields)
+        lodge = make_lodge()
+        post = _Post(lodge, fields)
         with _LOCK:
             if path == "/confirm":
                 return post.confirm()
@@ -205,3 +207,6 @@ def handle_post(
     except Exception as error:
         print(f"lodge: viewer: {type(error).__name__}: {error}", file=sys.stderr)
         return Reply(HTTPStatus.INTERNAL_SERVER_ERROR, "lodge could not answer")
+    finally:
+        if lodge is not None:
+            lodge.release()

@@ -54,10 +54,13 @@ def test_locked_at_open_does_not_delete(tmp_path: Path) -> None:
     index.keep_parses({KEY: None})
     index.db.execute("PRAGMA wal_checkpoint(TRUNCATE)")
     before = filename(tmp_path).read_bytes()
-    index.db.execute("BEGIN EXCLUSIVE")
+    index.db.execute("BEGIN IMMEDIATE")
     start = time.monotonic()
     other = open_index(tmp_path, "settings")
     assert time.monotonic() - start < 1
+    assert isinstance(other, IndexDB)
+    other.keep_parses({("locked", "blob"): None})
+    assert other.parses([("locked", "blob")]) == {}
     assert filename(tmp_path).read_bytes() == before
     index.db.execute("ROLLBACK")
     if isinstance(other, IndexDB):

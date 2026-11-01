@@ -32,6 +32,10 @@ class Lodge:
     ) -> None:
         self._w = Wiring(store, clock, ids, settings, index)
 
+    def release(self) -> None:
+        if self._w.index is not None:
+            self._w.index.close()
+
     def search(self, query: str, filters: Filters, limit: int = 20) -> Listed:
         return reads.search_records(self._w, query, filters, limit)
 

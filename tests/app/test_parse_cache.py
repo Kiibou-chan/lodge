@@ -1,6 +1,7 @@
 """Exact reads may reuse only parses keyed by the bytes they actually read."""
 
 from dataclasses import replace
+from pathlib import Path
 
 import pytest
 from builders import area, decision, entry
@@ -9,6 +10,7 @@ from fakes import CountingIds, FixedClock, MemoryIndex, MemoryStore
 from lodge import core
 from lodge.app import Gate, Lodge, state
 from lodge.core import CoreSettings, Filters, Parsed, Raises
+from lodge.gitstore import open_index
 
 
 def application(store: MemoryStore, index: MemoryIndex | None) -> Lodge:
@@ -112,3 +114,79 @@ def test_gate_caches_each_exact_tree(monkeypatch: pytest.MonkeyPatch) -> None:
 
     monkeypatch.setattr(core, "parse_file", forbidden)
     assert app.check(gate=True) == without
+
+
+@pytest.mark.parametrize("operation", ["show", "gate", "add"])
+def test_surrogate_path_with_real_index(tmp_path: Path, operation: str) -> None:
+    record = decision(id="d-aaaaaa")
+    store = MemoryStore(record, staged=True)
+    store.files["lodge/decisions/stray-\udcff.md"] = "broken"
+    index = open_index(tmp_path, "settings")
+    assert index is not None
+    before = application(store, None)
+    after = Lodge(store, FixedClock(), CountingIds(), CoreSettings(), index=index)
+    draft = before.draft(record.id)
+    if operation == "show":
+        assert after.show(record.id) == before.show(record.id)
+    elif operation == "gate":
+        assert after.check(gate=True) == before.check(gate=True)
+    else:
+        assert after.add([("draft", draft)], dry_run=True) == before.add(
+            [("draft", draft)], dry_run=True
+        )
+    tree = store.trees()[0]
+    path = next(p for p in tree.files if "stray" not in p)
+    assert (path, tree.blobs[path]) in index.parses([(path, tree.blobs[path])])
+    index.close()
+
+
+@pytest.mark.parametrize("operation", ["add", "ask", "reply", "close"])
+def test_derived_tree_parses_only_changed_files(
+    operation: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    record = decision(id="d-aaaaaa")
+    store, index = MemoryStore(record, staged=True), MemoryIndex()
+    app = application(store, index)
+    draft = app.draft(record.id)
+    asked = app.ask(record.id, Raises.QUESTION, "builder", "Which berth?")
+    app.show(record.id)
+    original = core.parse_file
+    parsed: list[str] = []
+
+    def spy(path: str, text: str) -> Parsed | None:
+        parsed.append(path)
+        return original(path, text)
+
+    monkeypatch.setattr(core, "parse_file", spy)
+    if operation == "add":
+        app.add([("draft", draft)], dry_run=True)
+    elif operation == "ask":
+        app.ask(record.id, Raises.QUESTION, "builder", "Which crane?")
+    elif operation == "reply":
+        app.reply(asked.ids[0], "builder", "Berth one.")
+    else:
+        app.close(asked.ids[0], "builder", "Resolved.")
+    assert all(p.startswith("lodge/threads/") for p in parsed), parsed
+    assert len(parsed) <= 1
+
+
+def test_checked_read_looks_up_shared_keys_once(monkeypatch: pytest.MonkeyPatch) -> None:
+    one, two = decision(id="d-aaaaaa"), decision(id="d-bbbbbb")
+    store, index = MemoryStore(one, two, staged=True), MemoryIndex()
+    store.files.update(MemoryStore(replace(two, title="Changed")).files)
+    seen: list[tuple[str, str]] = []
+    original = index.parses
+
+    def spy(keys: tuple[tuple[str, str], ...]) -> dict[tuple[str, str], Parsed | None]:
+        seen.extend(keys)
+        return original(keys)
+
+    monkeypatch.setattr(index, "parses", spy)
+    application(store, index).show(one.id)
+    assert len(seen) == len(set(seen))
+
+
+def test_epoch_is_kept_for_the_build() -> None:
+    store, index = MemoryStore(decision()), MemoryIndex()
+    built = state.read_state(store, index)
+    assert built.epoch == 1 and index.epochs == 1

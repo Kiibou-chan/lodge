@@ -52,3 +52,27 @@ def test_read_only_common_dir_reads(project: Project) -> None:
     finally:
         for path, mode in modes.items():
             path.chmod(mode)
+
+
+@pytest.mark.parametrize(
+    "command", [("show", "BERTH-1"), ("check",), ("check", "--gate"), ("add",)]
+)
+def test_non_utf8_path_same_output(
+    project: Project, monkeypatch: pytest.MonkeyPatch, command: tuple[str, ...]
+) -> None:
+    prepared(project)
+    path = os.fsencode(project.root) + b"/lodge/decisions/stray-\xff.md"
+    with open(path, "wb") as stray:
+        stray.write(b"broken")
+    if command == ("add",):
+        draft = project.draft(
+            "new.md",
+            "---\nkind: decision\ntitle: Keep cranes\nscope: product\n"
+            "decided_by: coordinator\n---\n\nKeep cranes.\n",
+        )
+        command = ("add", "--dry-run", draft)
+    monkeypatch.setenv("LODGE_INDEX", "off")
+    off = project.run(*command)
+    monkeypatch.delenv("LODGE_INDEX")
+    for _ in range(2):
+        assert project.run(*command) == off

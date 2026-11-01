@@ -1,6 +1,7 @@
 """Only the real, one-shot entry point disables cyclic collection."""
 
 import gc
+from unittest.mock import Mock
 
 import pytest
 
@@ -27,7 +28,7 @@ def test_view_keeps_the_collector(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     monkeypatch.setattr(entrypoint, "_exit_on_signals", lambda: None)
-    monkeypatch.setattr(entrypoint, "_make_lodge", lambda: None)
+    monkeypatch.setattr(entrypoint, "_make_lodge", Mock())
     seen = []
 
     def serve(*args: object) -> int:

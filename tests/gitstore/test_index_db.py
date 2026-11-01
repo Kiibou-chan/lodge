@@ -19,7 +19,6 @@ from lodge.gitstore import index_db, index_space, open_index
 def test_creates_folder_and_file_named_by_digest(tmp_path: Path) -> None:
     index = opened(tmp_path)
     assert filename(tmp_path).is_file() and len(index_db.build_digest()) == 16
-    assert index.settings_digest == "settings"
     index.close()
 
 

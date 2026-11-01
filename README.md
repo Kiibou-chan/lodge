@@ -224,3 +224,10 @@ A structure test, run with the others, enforces the allowed imports, no cycles, 
 lodge keeps its own decisions in this repository, in `lodge/`.
 
 No licence has been chosen yet.
+
+## Disposable read index
+
+lodge keeps a rebuildable SQLite index under `lodge/` in the repository's git common directory.
+Set `LODGE_INDEX=off` to read without it.
+To reclaim all of its space, stop lodge commands and the viewer, find the directory with `git rev-parse --path-format=absolute --git-common-dir`, and remove only its `lodge/` subdirectory.
+Old build databases are pruned under locks; their empty lock files remain, one per build, until that folder is removed.
