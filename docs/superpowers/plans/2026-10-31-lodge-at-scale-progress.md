@@ -188,6 +188,15 @@ Evidence and validation are in `2026-10-31-lodge-at-scale/task-11-report.md`.
 
 ## Task 11
 
-NEEDS_CONTEXT before the skeleton: does the no-base-names, no-mapping requirement apply only to R11-B, while interim R11-A retains its full-file comparison and uses folder caching for traversal?
-The folder delta rows contain no base file hashes, but the current R11-A identity compares every file's hash with the base mapping, including on a new store object.
-The question is in `2026-10-31-lodge-at-scale/task-11-report.md`; no Task 11 implementation or benchmark is claimed.
+The coordinator resolves the earlier context question: no-base-names and no-mapping folder hits bind R11-B only; interim R11-A retains its full-file comparison mapping.
+FOLD-1 is read as d-eg5nra, and no record operation is run.
+The folder cache and construction hand-offs are built, with R11-A active and R11-B still a switch of Task 8c's one function.
+The task's Files list includes its required schema, construction, committed-helper extraction, disk-listing, and test hand-offs.
+The gate passes 2,189 tests, with 39 skipped, plus formatting, Ruff, strict mypy, Vulture, and `lodge check --gate`.
+Twenty scratch R11-B property runs pass, and the supported FUSE cases agree with the exact reader in both branches.
+All 96 native 160,800-file replay samples match the exact reader's stdout, stderr, and exit status; all 78 indexed samples retain a kept state and an unchanged epoch.
+No-conversion new-store identity is 1.750162 s for production R11-A and 0.157595 s for scratch R11-B, best of three; R11-B takes no base names or full mapping on a hit.
+`show {code}` is 1.996342 s under R11-A and 0.395327 s under R11-B; both branches still miss the seen target, and broad searches remain above their target.
+The production cap and R11 switch are unchanged, with STALE-1, DISK-1, and the Task 12 stop still pending.
+The report records the red evidence, full timings including conversions, FUSE capability skips, and the incomplete construction-signature skeleton as a process deviation.
+Complete evidence is in `2026-10-31-lodge-at-scale/task-11-report.md`; Task 11 is ready for review.

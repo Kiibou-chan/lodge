@@ -1,8 +1,10 @@
 """The stored model follows checkout edits, commits, branch tips, and viewer wiring."""
 
 import os
+import time
 from collections.abc import Callable
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 from builders import decision, files_of
@@ -94,6 +96,9 @@ def test_viewer_factory_has_no_read_model(
 
 def test_git_status_refresh_does_not_write_a_seen_state(project: Project) -> None:
     path = prepared(project)
+    # A seen folder hit must be outside the signature cache's racy window.
+    with patch("lodge.gitstore.folders.time_ns", return_value=time.time_ns() + 3_000_000_000):
+        assert "Synthetic berth" in project.run("show", "A").out
     before = (project.root / ".git/index").read_bytes()
     stat = path.stat()
     os.utime(path, ns=(stat.st_atime_ns, stat.st_mtime_ns + 2_000_000_000))

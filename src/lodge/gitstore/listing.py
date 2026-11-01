@@ -9,6 +9,7 @@ from lodge.core import Listing, blob_id
 from lodge.gitstore import git
 from lodge.gitstore.accepted import accept, rewritten
 from lodge.gitstore.errors import NOT_INITIALISED, NotInitialised
+from lodge.gitstore.folders import Folders
 from lodge.gitstore.identity import CheckoutIdentity, Committed
 from lodge.gitstore.lock import LockHeld, locked
 from lodge.gitstore.published import _not_found
@@ -17,11 +18,17 @@ from lodge.gitstore.trees import decode
 
 
 class CheckoutListing:
-    def __init__(self, root: Path, settings: StoreSettings, exists: Callable[[Path], bool]) -> None:
+    def __init__(
+        self,
+        root: Path,
+        settings: StoreSettings,
+        exists: Callable[[Path], bool],
+        folders: Folders | None = None,
+    ) -> None:
         self.root = root
         self.settings = settings
         self.exists = exists
-        self.identity = CheckoutIdentity(root)
+        self.identity = CheckoutIdentity(root, folders)
         self.missing: str | None = None
         self._states: tuple[Listing, Listing] | None = None
         self._disk_texts: dict[str, str] = {}
@@ -48,7 +55,9 @@ class CheckoutListing:
         if self._states is None:
             self.identities()
         assert self._states is not None
-        return self._states[0], self.identity.committed.listing(self._published_rev)
+        return self.identity.materialise(self._states[0]), self.identity.committed.listing(
+            self._published_rev
+        )
 
     def texts(self, listing: Listing, paths: Collection[str]) -> dict[str, str]:
         return _texts(self.root, listing, paths, self._disk_texts)

@@ -63,6 +63,41 @@ class DiskWalk:
                 os.close(fd)
 
 
+def folder_stat(walked: DiskWalk, path: str) -> os.stat_result | None:
+    """Take a descriptor-relative lstat, with no traversal through links."""
+    parent = walked.parent(path)
+    if parent is None:
+        return None
+    try:
+        return os.stat(path.rpartition("/")[2], dir_fd=parent, follow_symlinks=False)
+    except OSError:
+        return None
+
+
+def folder_entries(walked: DiskWalk, path: str) -> dict[str, str] | None:
+    """List one real folder through its parent's descriptor."""
+    parent = walked.parent(path)
+    if parent is None:
+        return None
+    fd = -1
+    try:
+        fd = os.open(path.rpartition("/")[2], _FOLDER, dir_fd=parent)
+        with os.scandir(fd) as entries:
+            return {
+                e.name: "folder"
+                if e.is_dir(follow_symlinks=False)
+                else "link"
+                if e.is_symlink()
+                else "file"
+                for e in entries
+            }
+    except OSError:
+        return None
+    finally:
+        if fd >= 0:
+            os.close(fd)
+
+
 def walk(root: Path) -> DiskWalk:
     """List real folders with an explicit stack and a constant descriptor bound."""
     walked = DiskWalk({}, set(), set(), os.open(root, _FOLDER & ~os.O_NOFOLLOW))

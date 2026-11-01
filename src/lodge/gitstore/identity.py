@@ -1,76 +1,18 @@
 """Checkout identity from a pinned committed base and a descriptor-read overlay."""
 
-from collections.abc import Mapping
-from dataclasses import dataclass
-from functools import partial
 from hashlib import sha1
 from pathlib import Path
 
 from lodge.core import ATTACHMENTS, Listing, blob_id
 from lodge.gitstore import disk, git
 from lodge.gitstore.attributes import Conversions
+from lodge.gitstore.committed import EMPTY_TREE, CommittedListing
+from lodge.gitstore.committed import Committed as Committed
 from lodge.gitstore.flags import Flags, scan
+from lodge.gitstore.folders import Folders, FolderWalk
 from lodge.gitstore.trees import decode, encode
 
-EMPTY_TREE = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
 _DIFF = ["-c", "core.fsmonitor=false", "-c", "core.checkStat=default", "-c", "core.trustctime=true"]
-
-
-@dataclass(frozen=True)
-class CommittedListing(Listing):
-    kinds: Mapping[str, str]
-
-
-class Committed:
-    """Per-store mappings for at most the two most recently used pinned commits."""
-
-    def __init__(self, root: Path) -> None:
-        self.root = root
-        self._trees: dict[str | None, str] = {}
-        self._listings: dict[str | None, CommittedListing] = {}
-
-    def remember(self, rev: str | None, ident: str) -> None:
-        self._trees.pop(rev, None)
-        self._trees[rev] = ident
-        while len(self._trees) > 2:
-            oldest = next(iter(self._trees))
-            self._trees.pop(oldest)
-            self._listings.pop(oldest, None)
-
-    def tree_id(self, rev: str | None) -> str:
-        if rev not in self._trees:
-            done = (
-                None
-                if rev is None
-                else git.attempt(["rev-parse", "--verify", f"{rev}:lodge/"], self.root)
-            )
-            ident = EMPTY_TREE if done is None or done.returncode else decode(done.stdout).strip()
-            self.remember(rev, ident)
-        return self._trees[rev]
-
-    def listing(self, rev: str | None) -> CommittedListing:
-        ident = self.tree_id(rev)
-        if rev not in self._listings:
-            blobs, attachments, kinds = {}, set(), {}
-            raw = (
-                b""
-                if rev is None or ident == EMPTY_TREE
-                else git.run_bytes(
-                    ["ls-tree", "-r", "-z", "--full-tree", rev, "--", "lodge"], self.root
-                )
-            )
-            for item in raw.split(b"\0"):
-                meta, _, raw_path = item.partition(b"\t")
-                fields, path = meta.split(b" "), decode(raw_path)
-                if len(fields) != 3 or not path.startswith("lodge/"):
-                    continue
-                kinds[path] = decode(fields[1])
-                if path.startswith(ATTACHMENTS):
-                    attachments.add(path)
-                else:
-                    blobs[path] = decode(fields[2]) if fields[1] == b"blob" else blob_id(b"")
-            self._listings[rev] = CommittedListing(rev, ident, blobs, frozenset(attachments), kinds)
-        return self._listings[rev]
 
 
 def candidates(
@@ -81,14 +23,17 @@ def candidates(
 
 
 class CheckoutIdentity:
-    def __init__(self, root: Path) -> None:
+    def __init__(self, root: Path, folders: Folders | None = None) -> None:
         self.root = root
+        self.folders = folders
+        self._pending: tuple[str | None, dict[str, str | None]] | None = None
         self.flags = Flags(root)
         self.conversions = Conversions(root, self.flags)
         self.committed = Committed(root)
         self.published: str | None = None
 
     def current(self, rev: str | None, trunk: str | None = None) -> tuple[Listing, dict[str, str]]:
+        self._pending = None
         candidate = candidates(self, rev, trunk)
         if candidate is not None:
             return candidate
@@ -96,7 +41,7 @@ class CheckoutIdentity:
         self.published = decode(merged.stdout).strip() if merged.returncode == 0 else None
         self.committed.tree_id(self.published)
         base = self.committed.listing(rev)
-        walked = disk.walk(self.root)
+        walked = self._walk(rev)
         try:
             return self._overlay(base, walked, {*base.blobs, *base.attachments, *walked.names})
         finally:
@@ -135,30 +80,45 @@ class CheckoutIdentity:
             if rev is not None and resolved.returncode == 0:
                 self.committed.remember(rev, decode(resolved.stdout).strip())
             self.committed.tree_id(self.published)
-            base = self.committed.listing(rev)
             flagged = scan(results[2].stdout)
-            walked = disk.walk(self.root)
+            walked = self._walk(rev)
             try:
-                base_paths = {*base.blobs, *base.attachments}
-                present = set(walked.names)
-                changed = base_paths ^ present
+
+                def all_paths(walked: disk.DiskWalk = walked) -> set[str]:
+                    base = self.committed.listing(rev)
+                    return {*base.blobs, *base.attachments, *walked.names}
+
+                changed = set(walked.names)
+                if isinstance(walked, FolderWalk):
+                    changed.update(walked.removed)
+                else:
+                    base = self.committed.listing(rev)
+                    changed = {*base.blobs, *base.attachments} ^ set(walked.names)
+                    changed.update(p for p, k in base.kinds.items() if k != "blob")
+                if walked.unlistable:
+                    changed.update(all_paths())
                 changed.update(flagged.paths)
-                changed.update(p for p, kind in base.kinds.items() if kind != "blob")
                 changed.update(
                     self.conversions.paths(
-                        partial(set.union, base_paths, present),
+                        all_paths,
                         flagged,
                         attributes={p for p in walked.names if p.endswith("/.gitattributes")},
                         config=(results[3], results[4]),
                     )
                 )
                 if results[2].returncode:
-                    changed.update(base_paths)
+                    changed.update(all_paths())
                 for done in results[:2]:
                     if done.returncode:
-                        changed.update(base_paths)
+                        changed.update(all_paths())
                     changed.update(decode(p) for p in done.stdout.split(b"\0") if p)
-                listing, texts = self._overlay(base, walked, changed)
+                nonblobs = (
+                    {p for p, k in walked.removed.items() if k == "other"}
+                    if isinstance(walked, FolderWalk)
+                    else set()
+                )
+                base = self.committed.selected(rev, changed, nonblobs)
+                listing, texts = self._overlay(base, walked, changed, lazy=True)
             finally:
                 walked.close()
             if before == self.flags.key():
@@ -166,6 +126,7 @@ class CheckoutIdentity:
             self.conversions.discard()
         merged = git.attempt(["merge-base", rev or EMPTY_TREE, trunk or EMPTY_TREE], self.root)
         self.published = decode(merged.stdout).strip() if merged.returncode == 0 else None
+        self._pending = None
         exact = disk.tree(self.root)
         pieces = "\n".join(f"{p}\0{k}" for p, k in sorted(exact.blobs.items()))
         pieces += "\0" + "\0".join(sorted(exact.attachments))
@@ -175,7 +136,7 @@ class CheckoutIdentity:
         }
 
     def _overlay(
-        self, base: CommittedListing, walked: disk.DiskWalk, paths: set[str]
+        self, base: CommittedListing, walked: disk.DiskWalk, paths: set[str], *, lazy: bool = False
     ) -> tuple[Listing, dict[str, str]]:
         overlay: dict[str, str | None] = {}
         texts: dict[str, str] = {}
@@ -190,6 +151,32 @@ class CheckoutIdentity:
                     overlay[path] = key
                     if key is not None and raw is not None:
                         texts[key] = decode(raw)
+        ident = base.ident
+        if overlay:
+            changes = "\n".join(f"{path}\0{key or ''}" for path, key in sorted(overlay.items()))
+            ident = sha1(encode(f"{base.ident}\0{changes}")).hexdigest()
+        listing = Listing(base.rev, ident, {}, frozenset())
+        if lazy:
+            self._pending = base.rev, overlay
+        else:
+            listing = self._apply(listing, base, overlay)
+        return listing, texts
+
+    def _walk(self, rev: str | None) -> disk.DiskWalk:
+        if self.folders is None:
+            return disk.walk(self.root)
+        return self.folders.walk(
+            self.root, self.committed.tree_id(rev), lambda: self.committed.listing(rev).kinds
+        )
+
+    def materialise(self, listing: Listing) -> Listing:
+        if self._pending is None:
+            return listing
+        rev, overlay = self._pending
+        return self._apply(listing, self.committed.listing(rev), overlay)
+
+    @staticmethod
+    def _apply(listing: Listing, base: Listing, overlay: dict[str, str | None]) -> Listing:
         blobs, attachments = dict(base.blobs), set(base.attachments)
         for path, change in overlay.items():
             if path.startswith(ATTACHMENTS):
@@ -198,8 +185,4 @@ class CheckoutIdentity:
                 blobs.pop(path, None)
             else:
                 blobs[path] = change
-        ident = base.ident
-        if overlay:
-            changes = "\n".join(f"{path}\0{key or ''}" for path, key in sorted(overlay.items()))
-            ident = sha1(encode(f"{base.ident}\0{changes}")).hexdigest()
-        return Listing(base.rev, ident, blobs, frozenset(attachments)), texts
+        return Listing(listing.rev, listing.ident, blobs, frozenset(attachments))
