@@ -99,11 +99,11 @@ def scan_index(tmp_path: Path) -> Iterator[index_db.IndexDB]:
     initial = opened(tmp_path)
     path = initial.db.execute("PRAGMA database_list").fetchone()[2]
     units: dict[FileKey, Parsed | None] = {
-        (f"lodge/spec/berths/s-{n:06d}.md", "current"): Problem(str(n), 1, "broken")
+        (f"lodge/spec/berths/s-{n:06d}.md", f"blob-{n}"): Problem(str(n), 1, "broken")
         for n in range(1500)
     }
-    units[("lodge/spec/berths/s-000000.md", "current")] = None
-    units[("lodge/spec/berths/s-000001.md", "current")] = Area("berths", "Berths", "Berths.", ())
+    units[("lodge/spec/berths/s-000000.md", "blob-0")] = None
+    units[("lodge/spec/berths/s-000001.md", "blob-1")] = Area("berths", "Berths", "Berths.", ())
     units.update({(key[0], "older"): None for key in list(units)[:500]})
     initial.keep_parses(units)
     initial.close()
@@ -117,14 +117,17 @@ def scan_index(tmp_path: Path) -> Iterator[index_db.IndexDB]:
 
 
 def requested_keys() -> list[FileKey]:
-    keys = [(f"lodge/spec/berths/s-{n:06d}.md", "current") for n in range(1480)]
+    keys = [(f"lodge/spec/berths/s-{n:06d}.md", f"blob-{n}") for n in range(1480)]
     keys.extend((f"absent-{n}", "current") for n in range(20))
     return keys
 
 
 def assert_one_scan(db: sqlite3.Connection) -> None:
     assert isinstance(db, CountingConnection)
-    assert db.selects == ["SELECT path, blob, value FROM parses ORDER BY rowid"]
+    assert db.selects == [
+        "SELECT max(rowid) FROM parses",
+        "SELECT path, blob, value FROM parses ORDER BY rowid",
+    ]
 
 
 def per_key(index: index_db.IndexDB, keys: Collection[FileKey]) -> dict[FileKey, Parsed | None]:
@@ -185,10 +188,8 @@ def test_scan_reads_once(scan_index: index_db.IndexDB, count: int) -> None:
     assert isinstance(scan_index.db, CountingConnection)
     if count < 1000:
         assert len(scan_index.db.selects) == count
-        # Exercise the new branch in this case too before implementing it.
-        scan_index.db.selects.clear()
-        scan_index.parses(requested_keys())
-    assert_one_scan(scan_index.db)
+    else:
+        assert_one_scan(scan_index.db)
 
 
 @pytest.mark.parametrize("pin_snapshot", [True, False], ids=["after-select", "before-select"])
@@ -221,3 +222,35 @@ def test_scan_inside_one_read_transaction(
         assert scan_index.epoch() == 2
     finally:
         writer.close()
+
+
+def test_scan_requires_the_requested_pair(
+    scan_index: index_db.IndexDB, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    keys = requested_keys()
+    cross = (keys[2][0], keys[3][1])
+    scan_index.keep_parses({cross: None})
+    # Both components occur in the request, but this path needs another blob.
+    keys[4] = (keys[4][0], keys[5][1])
+    expected = per_key(scan_index, keys)
+    decoded: list[str] = []
+    original = index_parses._parse_value
+
+    def counted(raw: str) -> Parsed | None:
+        decoded.append(raw)
+        return original(raw)
+
+    monkeypatch.setattr(index_parses, "_parse_value", counted)
+    assert scan_index.parses(keys) == expected
+    assert cross not in expected and keys[4] not in expected
+    assert len(decoded) == len(expected)
+
+
+def test_small_fraction_of_a_large_table_uses_per_key(scan_index: index_db.IndexDB) -> None:
+    scan_index.keep_parses({(f"old-{n}", "blob"): None for n in range(5000)})
+    keys = requested_keys()[:1000]
+    assert len(scan_index.parses(keys)) == 1000
+    assert isinstance(scan_index.db, CountingConnection)
+    assert len(scan_index.db.selects) == 1001
+    assert scan_index.db.selects[0] == "SELECT max(rowid) FROM parses"
+    assert all(sql.startswith("SELECT value") for sql in scan_index.db.selects[1:])

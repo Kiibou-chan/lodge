@@ -29,15 +29,22 @@ def _parse_value(raw: str) -> Parsed | None:
 
 def find_parses(db: sqlite3.Connection, keys: Collection[FileKey]) -> dict[FileKey, Parsed | None]:
     found: dict[FileKey, Parsed | None] = {}
-    if len(keys) >= SCAN_FROM:
+    if len(keys) >= SCAN_FROM and len(keys) * 4 >= (
+        db.execute("SELECT max(rowid) FROM parses").fetchone()[0] or 0
+    ):
         requested = set(keys)
-        for path, blob, raw in db.execute("SELECT path, blob, value FROM parses ORDER BY rowid"):
-            key = (path, blob)
-            if key in requested:
-                try:
-                    found[key] = _parse_value(raw)
-                except Exception:
-                    continue
+        try:
+            for path, blob, raw in db.execute(
+                "SELECT path, blob, value FROM parses ORDER BY rowid"
+            ):
+                key = (path, blob)
+                if key in requested:
+                    try:
+                        found[key] = _parse_value(raw)
+                    except Exception:
+                        continue
+        except sqlite3.Error:
+            pass
         return found
     for key in keys:
         try:
