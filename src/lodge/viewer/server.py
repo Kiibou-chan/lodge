@@ -164,8 +164,10 @@ def render(
     ref = _record_ref(path)
     if path not in {"/", "/spec", "/timeline", "/waiting", "/problems"} and ref is None:
         return HTTPStatus.NOT_FOUND, pages.error_page("there is nothing at this address"), HTML
+    lodge = None
     try:
-        return HTTPStatus.OK, _page(make_lodge(), path, ref, parse_qs(url.query), token), HTML
+        lodge = make_lodge()
+        return HTTPStatus.OK, _page(lodge, path, ref, parse_qs(url.query), token), HTML
     except NotFound as error:
         return HTTPStatus.NOT_FOUND, pages.error_page(str(error)), HTML
     except LodgeError as error:
@@ -173,6 +175,9 @@ def render(
     except Exception as error:
         print(f"lodge: viewer: {type(error).__name__}: {error}", file=sys.stderr)
         return HTTPStatus.INTERNAL_SERVER_ERROR, pages.error_page("lodge could not answer"), HTML
+    finally:
+        if lodge is not None:
+            lodge.release()
 
 
 def _record_ref(path: str) -> str | None:

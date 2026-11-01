@@ -12,12 +12,11 @@ from typing import IO
 import yaml
 
 from lodge.app import FileKey, Index
-from lodge.core import CoreSettings, Parsed, to_plain
-from lodge.gitstore.git import run
+from lodge.core import CoreSettings, Parsed
 from lodge.gitstore.index_parses import find_parses, insert_parses
 from lodge.gitstore.index_space import exclusive, open_lock, prune, share
 
-SCHEMA = 1
+SCHEMA = 2
 
 
 def build_digest(source: Path | None = None) -> str:
@@ -28,6 +27,7 @@ def build_digest(source: Path | None = None) -> str:
         sys.version,
         yaml.__version__,
         yaml.__with_libyaml__,
+        yaml._yaml.get_version_string() if yaml.__with_libyaml__ else None,
         sqlite3.sqlite_version,
     ):
         digest.update(repr(value).encode() + b"\0")
@@ -40,12 +40,14 @@ def build_digest(source: Path | None = None) -> str:
 
 
 def settings_key(settings: CoreSettings) -> str:
-    return sha1(repr(to_plain(settings)).encode()).hexdigest()
+    return sha1(repr(settings).encode()).hexdigest()
 
 
-def project_index(root: Path, settings: CoreSettings) -> Index | None:
-    common = Path(run(["rev-parse", "--path-format=absolute", "--git-common-dir"], root))
-    return open_index(common, settings_key(settings))
+def project_index(common: Path, settings: CoreSettings) -> Index | None:
+    try:
+        return open_index(common, settings_key(settings))
+    except Exception:
+        return None
 
 
 @contextmanager
@@ -124,7 +126,7 @@ def open_index(common_dir: Path, settings_digest: str) -> Index | None:
             db = _connect(path, False)
             share(lock)
         return IndexDB(db, lock, settings_digest)
-    except (OSError, sqlite3.Error):
+    except Exception:
         if lock is not None:
             lock.close()
         return None
@@ -134,13 +136,12 @@ class IndexDB:
     def __init__(self, db: sqlite3.Connection, lock: IO[bytes] | None, settings: str) -> None:
         self.db = db
         self.lock = lock
-        self.settings_digest = settings
 
     def parses(self, keys: Collection[FileKey]) -> dict[FileKey, Parsed | None]:
         try:
             with transaction(self.db):
                 return find_parses(self.db, keys)
-        except sqlite3.Error:
+        except Exception:
             return {}
 
     def keep_parses(self, parsed: Mapping[FileKey, Parsed | None]) -> None:
@@ -149,14 +150,14 @@ class IndexDB:
         try:
             with transaction(self.db, write=True):
                 insert_parses(self.db, parsed)
-        except (sqlite3.Error, ValueError, TypeError, RecursionError):
+        except Exception:
             pass
 
     def epoch(self) -> int:
         try:
             with transaction(self.db):
                 return int(self.db.execute("SELECT epoch FROM meta").fetchone()[0])
-        except (sqlite3.Error, TypeError, ValueError):
+        except Exception:
             return 0
 
     def close(self) -> None:

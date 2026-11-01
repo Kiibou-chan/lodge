@@ -52,27 +52,25 @@ def prune(folder: Path, current: Path) -> None:
     """Delete old builds only while their persistent lock is exclusively held."""
     if fcntl is None:
         return
-    try:
-        builds = sorted(
-            {*folder.glob("index-*.sqlite"), current},
-            key=lambda p: p.with_suffix(".lock").stat().st_mtime,
-            reverse=True,
-        )
-        for number, path in enumerate(builds):
-            lock_path = path.with_suffix(".lock")
-            if path == current or (
-                number < 4 and time.time() - lock_path.stat().st_mtime < 7 * 86400
-            ):
-                continue
-            try:
-                with lock_path.open("rb") as lock:
-                    if exclusive(lock):
-                        for suffix in ("", "-wal", "-shm"):
-                            Path(str(path) + suffix).unlink(missing_ok=True)
-            except OSError:
-                pass
-    except OSError:
-        pass
+    builds: list[tuple[float, Path]] = []
+    for path in {*folder.glob("index-*.sqlite"), current}:
+        try:
+            age = path.with_suffix(".lock").stat().st_mtime
+        except FileNotFoundError:
+            age = 0.0
+        except OSError:
+            continue
+        builds.append((age, path))
+    for number, (age, path) in enumerate(sorted(builds, reverse=True)):
+        if path == current or (number < 4 and time.time() - age < 7 * 86400):
+            continue
+        try:
+            with path.with_suffix(".lock").open("a+b") as lock:
+                if exclusive(lock):
+                    for suffix in ("", "-wal", "-shm"):
+                        Path(str(path) + suffix).unlink(missing_ok=True)
+        except OSError:
+            continue
 
 
 def used_bytes(db: sqlite3.Connection) -> int:
@@ -87,19 +85,11 @@ def used_bytes(db: sqlite3.Connection) -> int:
 
 def clear(db: sqlite3.Connection) -> None:
     """Clear inside the caller's write transaction, preserving WAL snapshots and file identity."""
-    # FTS appears in Task 10b; its shadow tables belong to the virtual table.
-    tables = db.execute("SELECT name,sql FROM sqlite_master WHERE type='table'").fetchall()
-    virtual = [name for name, sql in tables if sql and "CREATE VIRTUAL TABLE" in sql.upper()]
-    for name, sql in tables:
-        if name in virtual:
-            db.execute(f'DROP TABLE "{name}"')
-            db.execute(sql)
-        elif (
-            name != "meta"
-            and not name.startswith("sqlite_")
-            and not any(name.startswith(v + "_") for v in virtual)
-        ):
-            db.execute(f'DELETE FROM "{name}"')
+    tables = db.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()
+    for (name,) in tables:
+        if name != "meta" and not name.startswith("sqlite_"):
+            escaped = name.replace('"', '""')
+            db.execute(f'DELETE FROM "{escaped}"')
     db.execute("UPDATE meta SET epoch=epoch+1, kept=0")
 
 

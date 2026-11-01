@@ -91,11 +91,17 @@ def write(
             raise LodgeError(str(error)) from None
         after = snapshot_of(
             Tree(
-                state.current.rev, {**state.current.files, path: content}, state.current.attachments
+                state.current.rev,
+                {**state.current.files, path: content},
+                state.current.attachments,
+                {p: b for p, b in state.current.blobs.items() if p != path},
             ),
             w.index,
+            state.parses,
         )
-        check = core.check_change(snapshot_of(state.published, w.index), after, w.settings, now, s)
+        check = core.check_change(
+            snapshot_of(state.published, w.index, state.parses), after, w.settings, now, s
+        )
         if not check.ok:
             return Written((thread.id,), AddOutcome.CHECK_FAILED, check, about=thread.about)
         commit_message = f"Thread {thread.id}: {description}"

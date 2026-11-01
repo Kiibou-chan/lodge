@@ -157,6 +157,9 @@ class MemoryIndex:
         self.lookups = 0
         self.epochs = 0
 
+    def close(self) -> None:
+        pass
+
     def epoch(self) -> int:
         self.epochs += 1
         return 1

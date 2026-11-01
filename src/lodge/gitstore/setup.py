@@ -30,8 +30,9 @@ def open_store(
     clock: Clock,
     *,
     lock_wait_seconds: float = LOCK_WAIT_SECONDS,
+    common: Path | None = None,
 ) -> Store:
-    common = _common_dir(root)
+    common = common or common_dir(root)
     if settings.mode == "branch":
         return BranchStore(root, settings, clock, common, lock_wait_seconds)
     return CheckoutStore(root, settings, common, lock_wait_seconds)
@@ -39,7 +40,7 @@ def open_store(
 
 def init_store(root: Path, settings: StoreSettings) -> str:
     """Create the empty store, refusing when it exists; says what it made."""
-    common = _common_dir(root)
+    common = common_dir(root)
     if settings.mode == "branch":
         return init_branch(root, settings, common, LOCK_WAIT_SECONDS)
     with locked(common, LOCK_WAIT_SECONDS):
@@ -67,5 +68,5 @@ def holds_records(root: Path, settings: StoreSettings) -> bool:
     return all((root / DATA / name).is_dir() for name in ("decisions", "spec"))
 
 
-def _common_dir(root: Path) -> Path:
+def common_dir(root: Path) -> Path:
     return Path(run(["rev-parse", "--path-format=absolute", "--git-common-dir"], root))

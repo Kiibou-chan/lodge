@@ -14,6 +14,7 @@ from lodge.app import Lodge, LodgeError
 from lodge.cli import run
 from lodge.gitstore import (
     ProjectSettings,
+    common_dir,
     data_root,
     holds_records,
     init_store,
@@ -52,8 +53,10 @@ def _make_lodge() -> Lodge:
     root = repo_root(Path.cwd())
     settings = _settings(root)
     clock = _Clock()
-    index = None if os.environ.get("LODGE_INDEX") == "off" else project_index(root, settings.core)
-    return Lodge(open_store(root, settings.store, clock), clock, _Entropy(), settings.core, index)
+    common = common_dir(root)
+    store = open_store(root, settings.store, clock, common=common)
+    index = None if os.environ.get("LODGE_INDEX") == "off" else project_index(common, settings.core)
+    return Lodge(store, clock, _Entropy(), settings.core, index)
 
 
 def _init() -> str:
@@ -62,7 +65,8 @@ def _init() -> str:
 
 
 def _view(port: int, allow_hosts: tuple[str, ...]) -> int:
-    _make_lodge()
+    lodge = _make_lodge()
+    lodge.release()
     return serve(_make_lodge, port, allow_hosts, secrets.token_urlsafe(32))
 
 
@@ -113,11 +117,21 @@ def main(argv: list[str] | None = None) -> int:
     args = sys.argv[1:] if argv is None else argv
     if argv is None and args[:1] != ["view"]:
         gc.disable()
+    opened: list[Lodge] = []
+
+    def make() -> Lodge:
+        lodge = _make_lodge()
+        opened.append(lodge)
+        return lodge
+
     try:
-        return run(args, _make_lodge, _init, _view, _hook)
+        return run(args, make, _init, _view, _hook)
     except LodgeError as error:
         print(f"lodge: {error}", file=sys.stderr)
         return error.exit_code
+    finally:
+        for lodge in opened:
+            lodge.release()
 
 
 if __name__ == "__main__":

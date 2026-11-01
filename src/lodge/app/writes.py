@@ -88,11 +88,18 @@ def _attempt(w: Wiring, state: State, first: Snapshot, request: _Request) -> Add
     current = state.current
     files = {p: t for p, t in applied.files.items() if current.files.get(p) != t}
     placed = {attachment_path(new_ids[0], name): text for name, text in request.attached.items()}
-    after_tree = Tree(current.rev, {**current.files, **files}, current.attachments | placed.keys())
-    after = snapshot_of(after_tree, w.index)
+    after_tree = Tree(
+        current.rev,
+        {**current.files, **files},
+        current.attachments | placed.keys(),
+        {p: b for p, b in current.blobs.items() if p not in files},
+    )
+    after = snapshot_of(after_tree, w.index, state.parses)
     if request.attached:
         _require_listed(after.decisions[new_ids[0]], request.attached)
-    check = core.check_change(snapshot_of(state.published, w.index), after, w.settings, now, s)
+    check = core.check_change(
+        snapshot_of(state.published, w.index, state.parses), after, w.settings, now, s
+    )
     notes = tuple(
         core.feedback(_written(s, after, applied.ids), after, core.derive(after), w.settings.length)
         + core.area_feedback(after, files.keys())

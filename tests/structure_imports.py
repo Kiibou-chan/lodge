@@ -84,6 +84,11 @@ def _lodge_edge(pkg: str, target: str) -> str | None:
 
 
 def _outside_edge(pkg: str, target: str) -> str | None:
+    top = target.split(".")[0]
+    if top in {"marshal", "pickle", "shelve"}:
+        return f"forbidden serialisation module: {top}"
+    if pkg != "gitstore" and top in {"sqlite3", "dbm"}:
+        return f"index I/O outside gitstore: {top}"
     if pkg in PURE:
         if any(target == ok or target.startswith(f"{ok}.") for ok in CORE_MODULES):
             return None

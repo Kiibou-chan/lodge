@@ -1,9 +1,10 @@
 """One reading of the store: the snapshot, what derives from it, and what the check finds."""
 
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 
 from lodge import core
 from lodge.app.errors import LodgeError, NotFound
+from lodge.app.index_types import FileKey
 from lodge.app.ports import Clock, IdSource, Index, Store
 from lodge.app.results import Read
 from lodge.core import (
@@ -48,19 +49,28 @@ class State:
     failing: frozenset[str]
     read: Read
     published_state: Checked | None = None
+    epoch: int = 0
+    parses: dict[FileKey, core.Parsed | None] = field(default_factory=dict)
 
 
-def snapshot_of(tree: Tree, index: Index | None) -> Snapshot:
+def snapshot_of(
+    tree: Tree, index: Index | None, memo: dict[FileKey, core.Parsed | None] | None = None
+) -> Snapshot:
     if index is None:
         return load(tree)
     keys = {path: (path, blob) for path, blob in tree.blobs.items() if path in tree.files}
-    cached = index.parses(tuple(keys.values()))
+    memo = memo if memo is not None else {}
+    cached = {key: memo[key] for key in keys.values() if key in memo}
+    cached.update(index.parses(tuple(key for key in keys.values() if key not in memo)))
     missing = {
         path: core.parse_file(path, text)
         for path, text in tree.files.items()
         if path not in keys or keys[path] not in cached
     }
-    index.keep_parses({keys[path]: value for path, value in missing.items() if path in keys})
+    kept = {keys[path]: value for path, value in missing.items() if path in keys}
+    index.keep_parses(kept)
+    memo.update(cached)
+    memo.update(kept)
     return core.assemble(
         {**{path: cached[key] for path, key in keys.items() if key in cached}, **missing},
         tree.attachments,
@@ -70,9 +80,9 @@ def snapshot_of(tree: Tree, index: Index | None) -> Snapshot:
 def read_state(store: Store, index: Index | None = None) -> State:
     """The current state read once, with the one-state checks run on it."""
     current, published = store.trees()
-    if index is not None:
-        index.epoch()
-    snapshot = snapshot_of(current, index)
+    epoch = index.epoch() if index is not None else 0
+    parses: dict[FileKey, core.Parsed | None] = {}
+    snapshot = snapshot_of(current, index, parses)
     derived = core.derive(snapshot)
     result = core.check_state(snapshot, derived=derived)
     return State(
@@ -84,6 +94,8 @@ def read_state(store: Store, index: Index | None = None) -> State:
         result,
         failing_ids(snapshot, result),
         Read(store.freshness(), unrecorded_problems(snapshot, result), derived.status),
+        epoch=epoch,
+        parses=parses,
     )
 
 
@@ -98,7 +110,7 @@ def read_checked(w: Wiring) -> State:
     state = read_state(w.store, w.index)
     if same_listing(state.current, state.published):
         return replace(state, published_state=Checked(state.snapshot, state.derived, state.result))
-    published = snapshot_of(state.published, w.index)
+    published = snapshot_of(state.published, w.index, state.parses)
     before = core.derive(published)
     published_result = core.check_state(published, derived=before)
     facts = core.change_facts(

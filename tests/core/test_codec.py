@@ -65,17 +65,17 @@ def test_round_trip_of_mappings_and_read() -> None:
 @pytest.mark.parametrize(
     "plain",
     [
-        ("Unknown", "x"),
-        ("Problem", "x"),
-        ("Problem", 1, "bad", "x", None),
-        ("=Action", "unknown"),
-        ("=Action", "edit", "extra"),
+        ["Unknown", "x"],
+        ["Problem", "x"],
+        ["Problem", 1, "bad", "x", None],
+        ["=Action", "unknown"],
+        ["=Action", "edit", "extra"],
         {1: "bad"},
         {"bad": 1.2},
         b"bad",
         {"bad"},
         (1, 2),
-        ("=Problem", "x"),
+        ["=Problem", "x"],
     ],
 )
 def test_refuses_unknown_class_and_bad_shapes(plain: object) -> None:
@@ -94,3 +94,37 @@ def test_no_pickle_or_marshal_in_core() -> None:
                 assert not {a.name for a in node.names} & {"pickle", "marshal"}
             if isinstance(node, ast.ImportFrom):
                 assert node.module not in {"pickle", "marshal"}
+
+
+def test_compact_form_is_json_native() -> None:
+    plain = to_plain(Problem("x", 1, "bad"))
+    assert plain == ["Problem", "x", 1, "bad", None]
+    assert from_plain(plain, CORE_CLASSES) == Problem("x", 1, "bad")
+
+
+@pytest.mark.parametrize(
+    "plain",
+    [["Unknown", "x"], ["Problem", "x"], ["=Action", "wrong"], ["Problem", b"x", 1, "bad", None]],
+)
+def test_compact_form_rejects_bad_tags_and_shapes(plain: object) -> None:
+    with pytest.raises(ValueError):
+        from_plain(plain, CORE_CLASSES)
+
+
+@pytest.mark.parametrize(
+    "plain", [["Problem", 1, 1, "bad", None], ["Problem", "x", True, "bad", None]]
+)
+def test_compact_scalar_types_are_preserved(plain: object) -> None:
+    with pytest.raises(ValueError):
+        from_plain(plain, CORE_CLASSES)
+
+
+@pytest.mark.parametrize(
+    "position,bad", [(3, ["=Action", "edit"]), (9, None), (9, ["", 1]), (16, ["", 3])]
+)
+def test_compact_nested_shapes_are_checked(position: int, bad: object) -> None:
+    plain = to_plain(decision())
+    assert isinstance(plain, list)
+    plain[position] = bad
+    with pytest.raises(ValueError):
+        from_plain(plain, CORE_CLASSES)
