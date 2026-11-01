@@ -34,6 +34,10 @@ The workflow is adaptable, not fixed: "On the one hand I like opinionated toolin
 Starting agent sessions is flexible as well: "I think the tool would start it or suggest starting it, if it runs on the server or on a machine connected to it should be flexible."
 lodge also works the other way round with cloud agent sessions: "Ideally this can also interact with Claude cloud sessions, spawning and using them."
 
+## Users
+
+lodge is for other people too: "Collaboration on projects sounds interesting. But also generally other people being able to use this would be good."
+
 ## Relation to other work
 
 The product stays separate from an existing editor for academic writing that shares much of this ground (threads backed by sessions, agent backends, knowledge records, coordination between sessions); sharing logic between the two should be considered.
@@ -42,6 +46,5 @@ lodge was written in Python because of its first constraints; reimplementing it 
 ## Open points
 
 1. Workflow: which concerns get a place of their own; the author is not sure yet.
-2. How tasks and decisions relate to code, which stays in git: branches, merges, and review.
-3. Who uses it: the author and her agents only, or other people too.
-4. Architecture and language, proposed once the points above are settled.
+2. How tasks and decisions relate to code, which stays in git: branches, merges, and review; the author is not sure yet.
+3. Architecture and language, proposed once the points above are settled.
