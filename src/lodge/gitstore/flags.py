@@ -28,24 +28,12 @@ class Flags:
     def __init__(self, root: Path) -> None:
         self.root = root
         self.index: Path | None = None
-        self._cached: tuple[IndexStat, Flagged] | None = None
 
     def key(self) -> IndexStat:
         if self.index is None:
             index = Path(git.run(["rev-parse", "--git-path", "index"], self.root))
             self.index = index if index.is_absolute() else self.root / index
         return stat_key(self.index)
-
-    def read(self) -> Flagged:
-        before = self.key()
-        if self._cached is not None and self._cached[0] == before:
-            return self._cached[1]
-        raw = git.run_bytes(
-            ["ls-files", "-t", "-v", "-z", "--", "lodge", ".gitattributes"], self.root
-        )
-        result = scan(raw)
-        self._cached = (before, result) if before == self.key() else None
-        return result
 
 
 def scan(raw: bytes) -> Flagged:

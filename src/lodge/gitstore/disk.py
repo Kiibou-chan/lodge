@@ -3,7 +3,7 @@
 import errno
 import os
 import stat
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 from lodge.core import ATTACHMENTS, Tree, blob_id
@@ -15,82 +15,90 @@ _FILE = os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK | os.O_CLOEXEC
 
 @dataclass
 class DiskWalk:
-    root: Path
     names: dict[str, str]
     folders: set[str]
     unlistable: set[str]
     _root_fd: int
     _parent: str = ""
-    _held: list[int] = field(default_factory=list)
+    _parent_fd: int = -1
 
     def close(self) -> None:
-        for fd in reversed(self._held):
-            os.close(fd)
-        self._held.clear()
+        if self._parent_fd >= 0:
+            os.close(self._parent_fd)
+            self._parent_fd = -1
         if self._root_fd >= 0:
             os.close(self._root_fd)
             self._root_fd = -1
 
     def parent(self, path: str) -> int | None:
-        """Keep only the most recently read ancestor chain, bounding descriptors by depth."""
+        """Reopen ancestors with two transient descriptors, caching only the last parent."""
         parent = path.rpartition("/")[0]
-        if parent not in self.folders or self._root_fd < 0:
+        if self._root_fd < 0:
             return None
-        if self._parent == parent and self._held:
-            return self._held[-1]
-        for fd in reversed(self._held):
-            os.close(fd)
-        self._held.clear()
-        self._parent = ""
-        current, fd = "", self._root_fd
+        if not parent:
+            return self._root_fd
+        if parent not in self.folders:
+            return None
+        if self._parent == parent and self._parent_fd >= 0:
+            return self._parent_fd
+        if self._parent_fd >= 0:
+            os.close(self._parent_fd)
+            self._parent_fd = -1
+        current, fd = "", os.dup(self._root_fd)
         try:
             for part in parent.split("/"):
                 current = f"{current}/{part}" if current else part
                 if current not in self.folders:
                     return None
-                fd = os.open(part, _FOLDER, dir_fd=fd)
-                self._held.append(fd)
+                child = os.open(part, _FOLDER, dir_fd=fd)
+                os.close(fd)
+                fd = child
+            self._parent, self._parent_fd = parent, fd
+            fd = -1
+            return self._parent_fd
         except OSError:
             return None
-        self._parent = parent
-        return fd
+        finally:
+            if fd >= 0:
+                os.close(fd)
 
 
 def walk(root: Path) -> DiskWalk:
-    """Names and kinds, the real folders reached, and folders that could not be listed."""
-    walked = DiskWalk(root, {}, set(), set(), os.open(root, _FOLDER))
-
-    def visit(parent: int, name: str, path: str) -> None:
-        try:
-            fd = os.open(name, _FOLDER, dir_fd=parent)
-        except OSError as error:
-            if error.errno in (errno.ENOTDIR, errno.ELOOP):
-                walked.names[path] = "link" if _link(parent, name) else "file"
-            else:
+    """List real folders with an explicit stack and a constant descriptor bound."""
+    walked = DiskWalk({}, set(), set(), os.open(root, _FOLDER & ~os.O_NOFOLLOW))
+    pending = ["lodge"]
+    try:
+        while pending:
+            path = pending.pop()
+            parent = walked.parent(path)
+            if parent is None:
                 walked.unlistable.add(path)
-            return
-        try:
+                continue
+            name = path.rpartition("/")[2]
+            try:
+                fd = os.open(name, _FOLDER, dir_fd=parent)
+            except OSError as error:
+                if error.errno in (errno.ENOTDIR, errno.ELOOP):
+                    walked.names[path] = "link" if _link(parent, name) else "file"
+                else:
+                    walked.unlistable.add(path)
+                continue
             try:
                 with os.scandir(fd) as entries:
                     names = [
-                        (entry.name, entry.is_dir(follow_symlinks=False), entry.is_symlink())
-                        for entry in entries
+                        (e.name, e.is_dir(follow_symlinks=False), e.is_symlink()) for e in entries
                     ]
+                walked.folders.add(path)
+                for child, folder, link in names:
+                    child_path = f"{path}/{child}"
+                    if folder:
+                        pending.append(child_path)
+                    else:
+                        walked.names[child_path] = "link" if link else "file"
             except OSError:
                 walked.unlistable.add(path)
-                return
-            walked.folders.add(path)
-            for child, folder, link in names:
-                child_path = f"{path}/{child}"
-                if folder:
-                    visit(fd, child, child_path)
-                else:
-                    walked.names[child_path] = "link" if link else "file"
-        finally:
-            os.close(fd)
-
-    try:
-        visit(walked._root_fd, "lodge", "lodge")
+            finally:
+                os.close(fd)
         walked.names.pop("lodge", None)
         return walked
     except BaseException:

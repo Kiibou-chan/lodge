@@ -6,7 +6,7 @@ from collections.abc import Callable, Collection
 from dataclasses import dataclass
 from pathlib import Path
 
-from lodge.gitstore import disk, git
+from lodge.gitstore import git
 from lodge.gitstore.flags import Flagged, Flags, IndexStat, config_values, stat_key
 from lodge.gitstore.trees import decode, encode
 
@@ -33,12 +33,6 @@ class ConversionKey:
     failed: bool
 
 
-def configuration(
-    root: Path,
-) -> tuple[subprocess.CompletedProcess[bytes], subprocess.CompletedProcess[bytes]]:
-    return git.attempt(["config", "--list", "-z"], root), git.attempt(["var", "-l"], root)
-
-
 class Conversions:
     def __init__(self, root: Path, flags: Flags) -> None:
         self.root = root
@@ -54,16 +48,9 @@ class Conversions:
         paths: PathSource,
         flagged: Flagged,
         *,
-        attributes: Collection[str] | None = None,
-        config: tuple[subprocess.CompletedProcess[bytes], subprocess.CompletedProcess[bytes]]
-        | None = None,
+        attributes: Collection[str],
+        config: tuple[subprocess.CompletedProcess[bytes], subprocess.CompletedProcess[bytes]],
     ) -> frozenset[str]:
-        if attributes is None:
-            walked = disk.walk(self.root)
-            try:
-                attributes = {p for p in walked.names if p.endswith("/.gitattributes")}
-            finally:
-                walked.close()
         before = self._key(flagged, attributes, config)
         if self._cached is not None and self._cached[0] == before:
             return self._cached[1]
@@ -116,14 +103,13 @@ class Conversions:
         self,
         flagged: Flagged,
         attributes: Collection[str],
-        config: tuple[subprocess.CompletedProcess[bytes], subprocess.CompletedProcess[bytes]]
-        | None,
+        config: tuple[subprocess.CompletedProcess[bytes], subprocess.CompletedProcess[bytes]],
     ) -> ConversionKey:
         index = self.flags.key()
         if self.info is None:
             info = Path(git.run(["rev-parse", "--git-path", "info/attributes"], self.root))
             self.info = info if info.is_absolute() else self.root / info
-        configured, variables = config or configuration(self.root)
+        configured, variables = config
         values = config_values(configured.stdout)
         known = dict(
             line.split("=", 1) for line in decode(variables.stdout).splitlines() if "=" in line

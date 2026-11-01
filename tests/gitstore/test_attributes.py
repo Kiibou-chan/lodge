@@ -11,14 +11,22 @@ from gitstore.repos import git, write
 from gitstore.test_identity import RECORD, agrees, prepared
 from lodge.gitstore import git as runner
 from lodge.gitstore.attributes import Conversions
-from lodge.gitstore.flags import Flags
+from lodge.gitstore.flags import Flags, scan
 
 OTHER = "lodge/spec/plain.txt"
 
 
 def converting(repo: Path) -> frozenset[str]:
     flags = Flags(repo)
-    return Conversions(repo, flags).paths([RECORD, OTHER], flags.read())
+    return Conversions(repo, flags).paths(
+        [RECORD, OTHER],
+        scan(runner.run_bytes(["ls-files", "-t", "-v", "-z"], repo)),
+        attributes={p.relative_to(repo).as_posix() for p in repo.rglob(".gitattributes")},
+        config=(
+            runner.attempt(["config", "--list", "-z"], repo),
+            runner.attempt(["var", "-l"], repo),
+        ),
+    )
 
 
 @pytest.mark.parametrize("system_disabled", [False, True])
@@ -130,8 +138,10 @@ def test_text_attribute_on_one_pattern(tmp_path: Path, legacy: bool) -> None:
         git(repo, "config", "core.eol", "crlf")
     path = "lodge/legacy.md" if legacy else RECORD
     write(repo, path, "Original berth.\r\n")
-    flags = Flags(repo)
-    assert Conversions(repo, flags).paths([path, OTHER], flags.read()) == {path}
+    assert converting(repo) == ({path} if path == RECORD else set())
+    if legacy:
+        store.identities()
+        assert path in store.listings()[0].blobs
     agrees(store)
 
 

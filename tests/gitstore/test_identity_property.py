@@ -43,6 +43,13 @@ def test_random_edits_agree(tmp_path: Path) -> None:
     listing = agrees(store)
     remember(listing.ident, store.trees()[0])
     for sequence in range(200):
+        # Remove the source only after eliminating staged CRLF/index-LF histories.
+        for path in paths:
+            target = repo / path
+            if target.is_file():
+                raw = target.read_bytes()
+                if b"\r\n" in raw:
+                    target.write_bytes(raw.replace(b"\r\n", b"\n"))
         (repo / ".gitattributes").unlink(missing_ok=True)
         tracked = list(filter(None, git(repo, "ls-files", "-z", "--", "lodge").split("\0")))
         for flag in ("--no-assume-unchanged", "--no-skip-worktree"):
