@@ -60,6 +60,8 @@ def check_change(
 ) -> CheckResult:
     """Every problem of 4, 5, and 6, and those of 1, 2, 3, 7, and 8 that `after` alone has.
 
+    A state compared with itself finds nothing: with `published` equal to `after`,
+    no check adds a problem; reads rely on this rule (d-zyqzkg).
     A problem of `after` that `published` has too, by path, check, and message, is a note.
     `current` is the state this change starts from when it is not the published one: a decision
     it adds is dated after the decisions of `current` as well, and one that `current` holds is

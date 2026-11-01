@@ -55,7 +55,15 @@ from lodge.core.ranking import Candidate, Query, needs_memory, parse_query, rank
 from lodge.core.render import Placed, SpecArea, render_spec, spec_view
 from lodge.core.search import AmbiguousRef, related, resolve, search, search_counted
 from lodge.core.settings import CoreSettings, LengthGuidance, SettingsError, parse_core_settings
-from lodge.core.snapshot import ATTACHMENTS, Files, Snapshot, Tree, attachment_path, load
+from lodge.core.snapshot import (
+    ATTACHMENTS,
+    Files,
+    Snapshot,
+    Tree,
+    attachment_path,
+    load,
+    same_listing,
+)
 from lodge.core.threads import (
     THREADS,
     appended,
@@ -176,6 +184,7 @@ __all__ = [
     "render_spec",
     "resolve",
     "rests_on_tree",
+    "same_listing",
     "search",
     "search_counted",
     "slug",

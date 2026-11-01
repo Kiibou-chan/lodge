@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from lodge.app import Gate
-from lodge.core import Tree
+from lodge.core import Tree, same_listing
 from lodge.gitstore.git import attempt, resolve
 from lodge.gitstore.settings import StoreSettings
 from lodge.gitstore.trees import read_tree
@@ -38,7 +38,7 @@ def committed_gate(root: Path, current: Tree, published: Tree) -> Gate:
     """`published` against `HEAD`'s tree and the working tree, or against `current` if the same."""
     head = resolve(root, "HEAD")
     committed = Tree(None, {}) if head is None else read_tree(root, head)
-    if (committed.files, committed.attachments) == (current.files, current.attachments):
+    if same_listing(committed, current):
         return Gate(published, (("", current),))
     states = (("committed", committed), ("working tree", current))
     return Gate(published, states, (UNCOMMITTED,))
