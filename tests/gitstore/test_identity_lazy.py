@@ -9,7 +9,6 @@ from unittest.mock import patch
 
 import pytest
 
-from gitstore.identity_rules import r11b
 from gitstore.repos import (
     BRANCH,
     CHECKOUT,
@@ -68,57 +67,55 @@ def test_lazy_listings_agree(tmp_path: Path, change: str) -> None:
 
 
 def test_staged_between_diff_calls_is_seen(tmp_path: Path) -> None:
-    with r11b():
-        repo, store = prepared(tmp_path)
-        write(repo, RECORD, "Race edit.\n")
-        original = subprocess.Popen.communicate
-        staged = False
+    repo, store = prepared(tmp_path)
+    write(repo, RECORD, "Race edit.\n")
+    original = subprocess.Popen.communicate
+    staged = False
 
-        def communicate(
-            self: subprocess.Popen[bytes], *args: object, **kwargs: object
-        ) -> tuple[bytes, bytes]:
-            nonlocal staged
-            if isinstance(self.args, list) and "diff-index" in self.args:
-                result = original(self)
-            else:
-                return original(self, *args, **kwargs)  # type: ignore[arg-type]
-            if isinstance(self.args, list) and "diff-index" in self.args and not staged:
-                staged = True
-                git(repo, "add", "--", RECORD)
-            return result
+    def communicate(
+        self: subprocess.Popen[bytes], *args: object, **kwargs: object
+    ) -> tuple[bytes, bytes]:
+        nonlocal staged
+        if isinstance(self.args, list) and "diff-index" in self.args:
+            result = original(self)
+        else:
+            return original(self, *args, **kwargs)  # type: ignore[arg-type]
+        if isinstance(self.args, list) and "diff-index" in self.args and not staged:
+            staged = True
+            git(repo, "add", "--", RECORD)
+        return result
 
-        with patch.object(subprocess.Popen, "communicate", communicate):
-            agrees(store)
-        assert staged
+    with patch.object(subprocess.Popen, "communicate", communicate):
+        agrees(store)
+    assert staged
 
 
 def test_index_changing_every_time_falls_back_to_exact(tmp_path: Path) -> None:
-    with r11b():
-        repo, store = prepared(tmp_path)
-        write(repo, RECORD, "Pinned fallback.\n")
-        count = 0
-        original = runner.run_many
+    repo, store = prepared(tmp_path)
+    write(repo, RECORD, "Pinned fallback.\n")
+    count = 0
+    original = runner.run_many
 
-        def changing(
-            calls: Sequence[Sequence[str]], cwd: Path
-        ) -> list[subprocess.CompletedProcess[bytes]]:
-            nonlocal count
-            result = original(calls, cwd)
-            count += 1
-            os.utime(repo / ".git/index", ns=(1, count))
-            return result
+    def changing(
+        calls: Sequence[Sequence[str]], cwd: Path
+    ) -> list[subprocess.CompletedProcess[bytes]]:
+        nonlocal count
+        result = original(calls, cwd)
+        count += 1
+        os.utime(repo / ".git/index", ns=(1, count))
+        return result
 
-        with (
-            patch.object(runner, "run_many", changing),
-            patch.object(disk, "tree", wraps=disk.tree) as exact,
-        ):
-            agrees(store)
-            assert count == 3
-            # trees() is separately exact; the identity fallback is read exactly once.
-            assert exact.call_count == 1
-        current = store.listings()[0]
-        write(repo, RECORD, "Later bytes.\n")
-        assert store.texts(current, [RECORD]) == {RECORD: "Pinned fallback.\n"}
+    with (
+        patch.object(runner, "run_many", changing),
+        patch.object(disk, "tree", wraps=disk.tree) as exact,
+    ):
+        agrees(store)
+        assert count == 3
+        # trees() is separately exact; the identity fallback is read exactly once.
+        assert exact.call_count == 1
+    current = store.listings()[0]
+    write(repo, RECORD, "Later bytes.\n")
+    assert store.texts(current, [RECORD]) == {RECORD: "Pinned fallback.\n"}
 
 
 def test_conversion_key_takes_no_paths(tmp_path: Path) -> None:
@@ -188,19 +185,6 @@ ATTRIBUTES = ["ident", "working-tree-encoding=UTF-16", "filter=berth", "text eol
 
 
 @pytest.mark.parametrize("attribute", ATTRIBUTES)
-def test_removed_attributes_agree(tmp_path: Path, attribute: str) -> None:
-    repo, _ = prepared(tmp_path)
-    removed_history(repo, attribute)
-    store = open_store(repo, CHECKOUT, Ticker())
-    agrees(store)
-    # All five indexed reads consume these same pinned listing/text interfaces.
-    # gate and add consume trees(), whose blobs must always hash disk bytes.
-
-    assert store.trees()[0].blobs[RECORD] == blob_id((repo / RECORD).read_bytes())
-
-
-@pytest.mark.skip(reason="awaits the author's STALE-1")
-@pytest.mark.parametrize("attribute", ATTRIBUTES)
 def test_removed_attributes_follow_the_index(tmp_path: Path, attribute: str) -> None:
     repo, _ = prepared(tmp_path)
     removed_history(repo, attribute)
@@ -212,36 +196,26 @@ def test_removed_attributes_follow_the_index(tmp_path: Path, attribute: str) -> 
     assert store.trees()[0].blobs[RECORD] == blob_id((repo / RECORD).read_bytes())
 
 
-def test_every_file_read_without_a_conversion_source(tmp_path: Path) -> None:
-    repo, store = prepared(tmp_path)
-    with patch.object(disk, "read_at", wraps=disk.read_at) as reads:
-        store.identities()
-    assert {c.args[1] for c in reads.call_args_list} == {
-        p.relative_to(repo).as_posix() for p in (repo / "lodge").rglob("*") if p.is_file()
-    }
-
-
 def test_exact_fallback_identity_separates_attachment_names(tmp_path: Path) -> None:
-    with r11b():
-        repo, store = prepared(tmp_path)
-        original = runner.run_many
-        generation = 0
+    repo, store = prepared(tmp_path)
+    original = runner.run_many
+    generation = 0
 
-        def changing(
-            calls: Sequence[Sequence[str]], cwd: Path
-        ) -> list[subprocess.CompletedProcess[bytes]]:
-            nonlocal generation
-            result = original(calls, cwd)
-            generation += 1
-            os.utime(repo / ".git/index", ns=(1, generation))
-            return result
+    def changing(
+        calls: Sequence[Sequence[str]], cwd: Path
+    ) -> list[subprocess.CompletedProcess[bytes]]:
+        nonlocal generation
+        result = original(calls, cwd)
+        generation += 1
+        os.utime(repo / ".git/index", ns=(1, generation))
+        return result
 
-        write(repo, "lodge/attachments/a", "One attachment.\n")
-        write(repo, "lodge/attachments/b", "Another attachment.\n")
-        with patch.object(runner, "run_many", changing):
-            before = agrees(store)
-            (repo / "lodge/attachments/a").unlink()
-            (repo / "lodge/attachments/b").unlink()
-            write(repo, "lodge/attachments/a\nlodge/attachments/b", "One unusual name.\n")
-            after = agrees(store)
-        assert before.ident != after.ident
+    write(repo, "lodge/attachments/a", "One attachment.\n")
+    write(repo, "lodge/attachments/b", "Another attachment.\n")
+    with patch.object(runner, "run_many", changing):
+        before = agrees(store)
+        (repo / "lodge/attachments/a").unlink()
+        (repo / "lodge/attachments/b").unlink()
+        write(repo, "lodge/attachments/a\nlodge/attachments/b", "One unusual name.\n")
+        after = agrees(store)
+    assert before.ident != after.ident

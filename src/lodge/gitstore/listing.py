@@ -8,9 +8,10 @@ from lodge.app import LodgeError
 from lodge.core import Listing, blob_id
 from lodge.gitstore import git
 from lodge.gitstore.accepted import accept, rewritten
+from lodge.gitstore.committed import Committed
 from lodge.gitstore.errors import NOT_INITIALISED, NotInitialised
 from lodge.gitstore.folders import Folders
-from lodge.gitstore.identity import CheckoutIdentity, Committed
+from lodge.gitstore.identity import CheckoutIdentity
 from lodge.gitstore.lock import LockHeld, locked
 from lodge.gitstore.published import _not_found
 from lodge.gitstore.settings import StoreSettings

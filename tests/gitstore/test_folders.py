@@ -11,35 +11,24 @@ from unittest.mock import patch
 
 import pytest
 
-from gitstore.identity_rules import r11b
 from gitstore.repos import CHECKOUT, Ticker, git, write
 from gitstore.test_identity import ATTACHMENT, RECORD, agrees, prepared
 from gitstore.test_index_failures import Interrupted as SQLInterrupted
 from lodge.app import Store
 from lodge.gitstore import disk, folders, open_index, open_store
 from lodge.gitstore import git as runner
-from lodge.gitstore.identity import CheckoutIdentity, Committed
+from lodge.gitstore.committed import Committed
+from lodge.gitstore.identity import CheckoutIdentity
 from lodge.gitstore.index_db import IndexDB
 
 
-@pytest.fixture(
-    params=["a", pytest.param("b", marks=pytest.mark.skip(reason="awaits the author's STALE-1"))]
-)
-def mode(request: pytest.FixtureRequest) -> str:
-    return str(request.param)
-
-
 @pytest.fixture
-def cached(tmp_path: Path, mode: str) -> Iterator[tuple[Path, IndexDB]]:
+def cached(tmp_path: Path) -> Iterator[tuple[Path, IndexDB]]:
     repo, _ = prepared(tmp_path)
     index = open_index(repo / ".git")
     assert isinstance(index, IndexDB)
     with patch.object(folders, "time_ns", lambda: time.time_ns() + 3_000_000_000, create=True):
-        if mode == "b":
-            with r11b():
-                yield repo, index
-        else:
-            yield repo, index
+        yield repo, index
     index.close()
 
 
@@ -61,16 +50,12 @@ def test_unchanged_folders_are_not_listed(cached: tuple[Path, IndexDB]) -> None:
     agrees(opened(repo, index))
 
 
-def test_seen_identity_takes_no_base_names(cached: tuple[Path, IndexDB], mode: str) -> None:
+def test_seen_identity_takes_no_base_names(cached: tuple[Path, IndexDB]) -> None:
     repo, index = seed(cached)
     with patch.object(Committed, "listing", wraps=None, side_effect=AssertionError("base names")):
-        if mode == "a":
-            with pytest.raises(AssertionError, match="base names"):
-                opened(repo, index).identities()
-        else:
-            with patch.object(runner, "run_bytes", wraps=runner.run_bytes) as calls:
-                opened(repo, index).identities()
-            assert not any(c.args[0][0] == "ls-tree" for c in calls.call_args_list)
+        with patch.object(runner, "run_bytes", wraps=runner.run_bytes) as calls:
+            opened(repo, index).identities()
+        assert not any(c.args[0][0] == "ls-tree" for c in calls.call_args_list)
     agrees(opened(repo, index))
 
 
@@ -102,13 +87,12 @@ def test_rename_within_a_folder(cached: tuple[Path, IndexDB]) -> None:
     assert RECORD not in listing.blobs and "lodge/decisions/renamed.md" in listing.blobs
 
 
-def test_deleted_attachment_is_absent(cached: tuple[Path, IndexDB], mode: str) -> None:
+def test_deleted_attachment_is_absent(cached: tuple[Path, IndexDB]) -> None:
     repo, index = cached
     (repo / ATTACHMENT).unlink()
     seed(cached)
-    if mode == "b":
-        with patch.object(Committed, "listing", side_effect=AssertionError("base names")):
-            opened(repo, index).identities()
+    with patch.object(Committed, "listing", side_effect=AssertionError("base names")):
+        opened(repo, index).identities()
     assert ATTACHMENT not in agrees(opened(repo, index)).attachments
 
 
@@ -186,7 +170,15 @@ def test_read_only_index_falls_back_to_the_walk(cached: tuple[Path, IndexDB]) ->
 
 
 @pytest.mark.parametrize(
-    "damage", ["missing", "undecodable", "bad_kind", "traversal", "deep_json", "missing_meta"]
+    "damage",
+    [
+        "missing",
+        "undecodable",
+        "bad_kind",
+        "traversal",
+        "deep_json",
+        "missing_root",
+    ],
 )
 def test_damaged_folder_row_is_a_miss(cached: tuple[Path, IndexDB], damage: str) -> None:
     repo, index = cached
@@ -194,8 +186,8 @@ def test_damaged_folder_row_is_a_miss(cached: tuple[Path, IndexDB], damage: str)
     seed(cached)
     if damage == "missing":
         index.db.execute("DELETE FROM folders WHERE path='lodge/decisions/sub'")
-    elif damage == "missing_meta":
-        index.db.execute("DELETE FROM meta")
+    elif damage == "missing_root":
+        index.db.execute("DELETE FROM folder_roots")
     else:
         value = {
             "undecodable": "?",
@@ -211,7 +203,7 @@ def test_interrupted_folder_write_lists_again(cached: tuple[Path, IndexDB]) -> N
     repo, index = seed(cached)
     write(repo, "lodge/decisions/interrupted.md", "Interrupted berth.\n")
     from_snapshot = index.db.execute("SELECT * FROM folders").fetchall()
-    count = index.db.execute("SELECT folder_count FROM meta").fetchone()[0]
+    count = index.db.execute("SELECT folder_count FROM folder_roots").fetchone()[0]
     statements: list[str] = []
     index.db.set_trace_callback(statements.append)
     agrees(opened(repo, index))
@@ -222,8 +214,8 @@ def test_interrupted_folder_write_lists_again(cached: tuple[Path, IndexDB]) -> N
     path = index.db.execute("PRAGMA database_list").fetchone()[2]
     for stop in range(1, total + 1):
         index.db.execute("DELETE FROM folders")
-        index.db.executemany("INSERT INTO folders VALUES (?,?,?,?,?,?,?,?)", from_snapshot)
-        index.db.execute("UPDATE meta SET folder_count=?", (count,))
+        index.db.executemany("INSERT INTO folders VALUES (?,?,?,?,?,?,?,?,?)", from_snapshot)
+        index.db.execute("UPDATE folder_roots SET folder_count=?", (count,))
         db = sqlite3.connect(path, isolation_level=None, factory=Interrupted)
         failed = IndexDB(db, None)
         db.after = stop
@@ -278,7 +270,6 @@ def test_unencodable_folder_path_is_a_cache_miss(cached: tuple[Path, IndexDB]) -
     assert not index.db.in_transaction
 
 
-@pytest.mark.skip(reason="awaits the author's STALE-1")
 def test_index_race_after_overlay_keeps_exact_fallback(cached: tuple[Path, IndexDB]) -> None:
     repo, index = seed(cached)
     original = CheckoutIdentity._overlay
@@ -292,6 +283,6 @@ def test_index_race_after_overlay_keeps_exact_fallback(cached: tuple[Path, Index
         os.utime(repo / ".git/index", ns=(count, count))
         return value
 
-    with r11b(), patch.object(CheckoutIdentity, "_overlay", changed):
+    with patch.object(CheckoutIdentity, "_overlay", changed):
         agrees(opened(repo, index))
     assert count == 3

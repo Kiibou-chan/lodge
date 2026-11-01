@@ -6,7 +6,7 @@ from pathlib import Path
 
 from lodge.core import ATTACHMENTS, Listing, blob_id
 from lodge.gitstore import git
-from lodge.gitstore.trees import decode
+from lodge.gitstore.trees import decode, encode
 
 EMPTY_TREE = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
 
@@ -67,6 +67,29 @@ class Committed:
             self._listings[rev] = CommittedListing(rev, ident, blobs, frozenset(attachments), kinds)
         return self._listings[rev]
 
+    def folder(self, rev: str | None, path: str) -> Mapping[str, str]:
+        """List only the immediate base entries of one relisted folder."""
+        if rev is None or self.tree_id(rev) == EMPTY_TREE:
+            return {}
+        done = git.attempt(["ls-tree", "-z", f"{rev}:{path}"], self.root)
+        if done.returncode:
+            return {}
+        entries = {}
+        for item in done.stdout.split(b"\0"):
+            meta, _, name = item.partition(b"\t")
+            fields = meta.split(b" ")
+            if len(fields) == 3:
+                entries[decode(name)] = (
+                    "folder"
+                    if fields[1] == b"tree"
+                    else "link"
+                    if fields[0] == b"120000"
+                    else "file"
+                    if fields[1] == b"blob"
+                    else "other"
+                )
+        return entries
+
     def selected(
         self, rev: str | None, paths: Collection[str], nonblobs: Collection[str] = ()
     ) -> CommittedListing:
@@ -74,14 +97,40 @@ class Committed:
         if rev in self._listings:
             return self._listings[rev]
         blobs, attachments, kinds = {}, set(), {}
-        for path in sorted(paths):
-            if rev is None:
+        selected = sorted(paths) if rev is not None else []
+        queries = [p for p in selected if p not in nonblobs]
+        # Ordinary queries are rev:path lines; NUL input admits names with line breaks.
+        nul = any("\n" in p for p in queries)
+        separator = b"\0" if nul else b"\n"
+        raw = (
+            git.run_bytes(
+                ["cat-file", "--batch-check", *(["-z"] if nul else [])],
+                self.root,
+                input=b"".join(encode(f"{rev}:{p}") + separator for p in queries),
+            )
+            if queries
+            else b""
+        )
+        objects = {}
+        offset = 0
+        for path in queries:
+            missing = encode(f"{rev}:{path} missing\n")
+            if raw.startswith(missing, offset):
+                offset += len(missing)
                 continue
-            done = git.attempt(["rev-parse", "--verify", f"{rev}:{path}"], self.root)
-            if done.returncode:
+            end = raw.find(b"\n", offset)
+            fields = raw[offset:end].split(b" ")
+            offset = end + 1
+            if len(fields) != 3:
+                raise ValueError("invalid git batch-check output")
+            objects[path] = decode(fields[0]), decode(fields[1])
+        for path in selected:
+            if path in nonblobs:
+                key, kind = blob_id(b""), "commit"
+            elif path in objects:
+                key, kind = objects[path]
+            else:
                 continue
-            key = decode(done.stdout).strip()
-            kind = "commit" if path in nonblobs else git.run(["cat-file", "-t", key], self.root)
             if kind == "tree":
                 continue
             kinds[path] = kind

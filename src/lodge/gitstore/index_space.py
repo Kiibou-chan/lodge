@@ -14,7 +14,7 @@ try:
 except ImportError:
     fcntl = None  # type: ignore[assignment]
 
-INDEX_BYTES_PER_FILE = 1_500
+INDEX_BYTES_PER_FILE = 1_900
 MIN_FILE_CAP = 16 * 1024 * 1024
 
 
@@ -94,7 +94,7 @@ def clear(db: sqlite3.Connection) -> None:
     db.execute("DROP TABLE IF EXISTS words")
     tables = db.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()
     for (name,) in tables:
-        if name != "meta" and not name.startswith("sqlite_"):
+        if name not in {"meta", "folders", "folder_roots"} and not name.startswith("sqlite_"):
             escaped = name.replace('"', '""')
             db.execute(f'DELETE FROM "{escaped}"')
     create_words(db)

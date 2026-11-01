@@ -3,7 +3,7 @@
 import errno
 import os
 import stat
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from lodge.core import ATTACHMENTS, Tree, blob_id
@@ -13,25 +13,29 @@ _FOLDER = os.O_RDONLY | os.O_NOFOLLOW | os.O_DIRECTORY | os.O_CLOEXEC
 _FILE = os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK | os.O_CLOEXEC
 
 
+def open_root(root: Path) -> int:
+    """Open the checkout root for descriptor-relative traversal."""
+    return os.open(root, _FOLDER & ~os.O_NOFOLLOW)
+
+
 @dataclass
 class DiskWalk:
     names: dict[str, str]
     folders: set[str]
     unlistable: set[str]
     _root_fd: int
-    _parent: str = ""
-    _parent_fd: int = -1
+    _stack: list[tuple[str, int]] = field(default_factory=list)
 
     def close(self) -> None:
-        if self._parent_fd >= 0:
-            os.close(self._parent_fd)
-            self._parent_fd = -1
+        for _, fd in self._stack:
+            os.close(fd)
+        self._stack.clear()
         if self._root_fd >= 0:
             os.close(self._root_fd)
             self._root_fd = -1
 
     def parent(self, path: str) -> int | None:
-        """Reopen ancestors with two transient descriptors, caching only the last parent."""
+        """Reuse up to 64 descriptors along the current path, reopening only on a miss."""
         parent = path.rpartition("/")[0]
         if self._root_fd < 0:
             return None
@@ -39,28 +43,25 @@ class DiskWalk:
             return self._root_fd
         if parent not in self.folders:
             return None
-        if self._parent == parent and self._parent_fd >= 0:
-            return self._parent_fd
-        if self._parent_fd >= 0:
-            os.close(self._parent_fd)
-            self._parent_fd = -1
-        current, fd = "", os.dup(self._root_fd)
+        # Retain the deepest open ancestor; siblings pop only the departed suffix.
+        while self._stack and not (
+            parent == self._stack[-1][0] or parent.startswith(self._stack[-1][0] + "/")
+        ):
+            os.close(self._stack.pop()[1])
+        current, fd = self._stack[-1] if self._stack else ("", self._root_fd)
+        suffix = parent[len(current) :].lstrip("/")
         try:
-            for part in parent.split("/"):
+            for part in suffix.split("/") if suffix else ():
                 current = f"{current}/{part}" if current else part
                 if current not in self.folders:
                     return None
-                child = os.open(part, _FOLDER, dir_fd=fd)
-                os.close(fd)
-                fd = child
-            self._parent, self._parent_fd = parent, fd
-            fd = -1
-            return self._parent_fd
+                fd = os.open(part, _FOLDER, dir_fd=fd)
+                self._stack.append((current, fd))
+                if len(self._stack) > 64:
+                    os.close(self._stack.pop(0)[1])
+            return fd
         except OSError:
             return None
-        finally:
-            if fd >= 0:
-                os.close(fd)
 
 
 def folder_stat(walked: DiskWalk, path: str) -> os.stat_result | None:
@@ -99,8 +100,8 @@ def folder_entries(walked: DiskWalk, path: str) -> dict[str, str] | None:
 
 
 def walk(root: Path) -> DiskWalk:
-    """List real folders with an explicit stack and a constant descriptor bound."""
-    walked = DiskWalk({}, set(), set(), os.open(root, _FOLDER & ~os.O_NOFOLLOW))
+    """List real folders with an explicit stack and at most 66 descriptors."""
+    walked = DiskWalk({}, set(), set(), open_root(root))
     pending = ["lodge"]
     try:
         while pending:

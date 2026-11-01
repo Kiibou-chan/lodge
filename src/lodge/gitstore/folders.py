@@ -1,4 +1,13 @@
-"""Base-relative folder signatures for indexed checkout reads."""
+"""Base-relative folder signatures for indexed checkout reads.
+
+Hits assume directory mutations update inode, mtime, or ctime, a local wall clock
+comparable with the file system's, and no directory attribute caching. The two
+second margin covers timestamp rounding through two seconds, with its reference
+taken before lstat. Network file systems such as NFS and SMB can violate these
+assumptions through server clock skew or attribute caching; inode reuse across
+mounts is also outside the key, which has no device number. FUSE, NFS, and SMB
+need separate validation of these assumptions before relying on cache hits.
+"""
 
 import json
 import os
@@ -9,7 +18,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from time import time_ns
 
-from lodge.gitstore import disk
+from lodge.gitstore import disk, git
 from lodge.gitstore.index_transactions import transaction
 
 
@@ -61,10 +70,15 @@ def _delta(raw: object) -> dict[str, str]:
     return value
 
 
-def _rows(db: sqlite3.Connection) -> dict[str, Row]:
+def _rows(db: sqlite3.Connection, root: str) -> dict[str, Row]:
     with transaction(db):
-        raw = db.execute("SELECT * FROM folders").fetchall()
-        count = db.execute("SELECT folder_count FROM meta").fetchone()[0]
+        raw = db.execute(
+            "SELECT path,ino,mtime_ns,ctime_ns,listed_at_ns,base,added,removed "
+            "FROM folders WHERE root=?",
+            (root,),
+        ).fetchall()
+        held = db.execute("SELECT folder_count FROM folder_roots WHERE root=?", (root,)).fetchone()
+        count = held[0] if held is not None else -1
     if len(raw) != count:
         return {}
     rows = {}
@@ -87,36 +101,28 @@ def _rows(db: sqlite3.Connection) -> dict[str, Row]:
     return rows
 
 
-def _base_folders(names: Mapping[str, str]) -> dict[str, dict[str, str]]:
-    folders: dict[str, dict[str, str]] = {}
-    for path, kind in names.items():
-        parent, _, name = path.rpartition("/")
-        folders.setdefault(parent, {})[name] = "file" if kind == "blob" else "other"
-        while parent != "lodge" and parent:
-            parent, _, name = parent.rpartition("/")
-            folders.setdefault(parent, {})[name] = "folder"
-    return folders
-
-
 class Folders:
     def __init__(self, db: sqlite3.Connection) -> None:
         self.db = db
 
-    def walk(self, root: Path, base: str, names: Callable[[], Mapping[str, str]]) -> disk.DiskWalk:
+    def walk(
+        self, root: Path, base: str, names: Callable[[str], Mapping[str, str]]
+    ) -> disk.DiskWalk:
         try:
-            rows = _rows(self.db)
+            checkout = git.run(["rev-parse", "--absolute-git-dir"], root)
+            rows = _rows(self.db, checkout)
         except Exception:
             return disk.walk(root)
-        walked = FolderWalk({}, set(), set(), os.open(root, disk._FOLDER & ~os.O_NOFOLLOW))
+        walked = FolderWalk({}, set(), set(), disk.open_root(root))
         children: dict[str, list[str]] = {}
         for path in rows:
             children.setdefault(path.rpartition("/")[0], []).append(path)
-        base_folders: dict[str, dict[str, str]] | None = None
         kept: dict[str, Row] = {}
         pending = ["lodge"]
         try:
             while pending:
                 path = pending.pop()
+                listed = time_ns()
                 held = disk.folder_stat(walked, path)
                 if held is None:
                     walked.unlistable.add(path)
@@ -130,7 +136,6 @@ class Folders:
                 else:
                     walked.listed = True
                     entries = disk.folder_entries(walked, path)
-                    listed = time_ns()
                     if entries is None:
                         # A folder may have become a link after its lstat.
                         held = disk.folder_stat(walked, path)
@@ -139,9 +144,7 @@ class Folders:
                         else:
                             walked.unlistable.add(path)
                         continue
-                    if base_folders is None:
-                        base_folders = _base_folders(names())
-                    before = base_folders.get(path, {})
+                    before = names(path)
                     added = {n: k for n, k in entries.items() if before.get(n) != k}
                     removed = {n: k for n, k in before.items() if entries.get(n) != k}
                     row = Row(
@@ -163,17 +166,25 @@ class Folders:
                 walked.removed.update((f"{path}/{n}", k) for n, k in row.removed.items())
             walked.names.pop("lodge", None)
             if not walked.unlistable and (walked.listed or kept.keys() != rows.keys()):
-                self._keep(kept)
+                self._keep(checkout, kept)
             return walked
         except BaseException:
             walked.close()
             raise
 
-    def _keep(self, rows: Mapping[str, Row]) -> None:
+    def _keep(self, root: str, rows: Mapping[str, Row]) -> None:
         try:
             with transaction(self.db, write=True):
-                self.db.execute("DELETE FROM folders")
+                # Compare inside the write lock: another reader may have relisted meanwhile.
+                earlier = _rows(self.db, root)
+                paths = {
+                    p[0] for p in self.db.execute("SELECT path FROM folders WHERE root=?", (root,))
+                }
+                for path in paths - rows.keys():
+                    self.db.execute("DELETE FROM folders WHERE root=? AND path=?", (root, path))
                 for row in rows.values():
+                    if row == earlier.get(row.path):
+                        continue
                     values = (
                         row.path,
                         row.ino,
@@ -187,8 +198,11 @@ class Folders:
                         for delta in (row.added, row.removed)
                     )
                     self.db.execute(
-                        "INSERT INTO folders VALUES (?,?,?,?,?,?,?,?)", (*values, added, removed)
+                        "INSERT OR REPLACE INTO folders VALUES (?,?,?,?,?,?,?,?,?)",
+                        (root, *values, added, removed),
                     )
-                self.db.execute("UPDATE meta SET folder_count=?", (len(rows),))
+                self.db.execute(
+                    "INSERT OR REPLACE INTO folder_roots VALUES (?,?)", (root, len(rows))
+                )
         except Exception:
             pass
