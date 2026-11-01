@@ -14,7 +14,7 @@ from lodge import core
 from lodge.app import read_model, reads
 from lodge.app import threads as thread_reads
 from lodge.app.errors import LodgeError
-from lodge.app.index_lookups import Lookups, Miss
+from lodge.app.index_lookups import Lookups, Miss, QueryFallback
 from lodge.app.index_types import FileKey, level1_of
 from lodge.app.results import Listed, Read, ShownMany, ThreadList, ThreadShown, ThreadsWaiting
 from lodge.app.state import Checked, State, Wiring, finish_checked
@@ -91,6 +91,7 @@ def _run[T](
     current, published = w.store.identities()
     key, now, epoch = state_key(current, published, w.settings), w.clock.now(), index.epoch()
     seen = False
+    query_fallback = False
     try:
         with index.reading():
             stored = index.state(key)
@@ -103,6 +104,8 @@ def _run[T](
                     Lookups(index, stored, Read(w.store.freshness(), stored.unrecorded))
                 ), _nothing
             seen = index.seen(key)
+    except QueryFallback:
+        query_fallback = True
     except LodgeError:
         raise
     except Exception:
@@ -110,6 +113,8 @@ def _run[T](
         seen = index.seen(key)
     state, misses = _built(w, now, epoch)
     result = memory(replace(w, checked=state))
+    if query_fallback:
+        return result, _nothing
     files = len(state.current.blobs)
     if not seen:
         index.mark_seen(
@@ -199,13 +204,13 @@ def search_many(
 ) -> tuple[tuple[Listed, ...], Callable[[], None]]:
     def cached(lookups: Lookups) -> tuple[Listed, ...]:
         if any(core.needs_memory(q) for q in queries):
-            raise Miss
+            raise QueryFallback
         seen: set[str] = set()
         results: list[Listed] = []
         for query in queries or [core.parse_query("")]:
             words = lookups.index.candidates(query.words, False)
             if words is None:
-                raise Miss
+                raise QueryFallback
             members = (
                 lookups.family(query.text.strip()) if core.is_code_token(query.text.strip()) else ()
             )
@@ -234,8 +239,7 @@ def search_many(
             if (
                 rows is None
                 or (not query.text.strip() and not rows)
-                or not ids <= rows.keys()
-                or not extras <= rows.keys()
+                or not {*members, *citing} <= rows.keys()
             ):
                 raise Miss
             assert rows is not None
@@ -246,7 +250,9 @@ def search_many(
                     records.add(record.id)
                     lookups.loaded[record.id] = rows[record.id], record
             candidates: list[core.Candidate] = []
-            wanted = set(rows) if not query.text.strip() else set(records) | (extras & rows.keys())
+            if not query.text.strip():
+                candidates = lookups.empty_candidates(rows)
+            wanted = set() if not query.text.strip() else records | (extras & rows.keys())
             for ident in wanted:
                 if ident not in lookups.loaded:
                     # Resolve exact IDs, codes, and citers absent from the word candidates.

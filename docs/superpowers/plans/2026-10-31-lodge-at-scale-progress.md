@@ -173,3 +173,21 @@ The no-clear `show A` phase probe measures 8.415025 s with published facts and 9
 A new current ident adds 3,329,571 JSON value bytes of facts on that store; a published-facts miss adds 6,659,142 in all.
 DISK-1, the unchanged cap's inability to fit one complete state with words, W6's deferred facts policy, and the Task 12 stop remain as reported.
 The complete implementation, red evidence, gate, phase table, replay table, and concerns are in `2026-10-31-lodge-at-scale/task-10c-report.md`.
+
+
+## Task 10b fix round before Task 11
+
+I1 separates query fallback from damaged state data, and I2 ignores historical candidates absent from current state rows.
+The regression suite counts zero keeps and unchanged epochs over six repeated searches, including a real deleted record file.
+M1 retains the CRLF property history and compares parsed texts; M2 fetches only shown parses for empty searches; M3 uses proven exact-ID absence; M5 repeats 300 queries against SQLite with non-ASCII and numeric words.
+M4's cap is unchanged pending DISK-1 and Task 12, and M6's dormant production R11-B alternative and every parameter remain dictated by the plan.
+The six R11-A-only cases to revisit with STALE-1 are test_removed_attributes_agree's four parameters (ident, working-tree-encoding=UTF-16, filter=berth, and text eol=crlf), test_every_file_read_without_a_conversion_source, and test_r11a_does_not_compute_git_candidates.
+The Task 10b Files list includes the extracted lookup helper and review regressions.
+The full gate passes 2,158 tests, with six skipped, plus formatting, Ruff, strict mypy, Vulture, and `lodge check --gate`.
+Evidence and validation are in `2026-10-31-lodge-at-scale/task-11-report.md`.
+
+## Task 11
+
+NEEDS_CONTEXT before the skeleton: does the no-base-names, no-mapping requirement apply only to R11-B, while interim R11-A retains its full-file comparison and uses folder caching for traversal?
+The folder delta rows contain no base file hashes, but the current R11-A identity compares every file's hash with the base mapping, including on a new store object.
+The question is in `2026-10-31-lodge-at-scale/task-11-report.md`; no Task 11 implementation or benchmark is claimed.

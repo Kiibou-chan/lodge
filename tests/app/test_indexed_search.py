@@ -27,12 +27,13 @@ def opened(folder: Path) -> IndexDB:
 def search_store() -> MemoryStore:
     store = large_store()
     rng = random.Random(1042)
+    titles = ["Berth crane café 42", "Crane berth 港口", "Tide Straße", "Quay 123"]
     for n, (path, text) in enumerate(list(store.files.items())):
         record = core.parse_file(path, text)
         if isinstance(record, (core.Decision, core.SpecEntry)):
             record = replace(
                 record,
-                title=f"{rng.choice(['Berth crane', 'Crane berth', 'Tide', 'Quay'])} {n}",
+                title=f"{rng.choice(titles)} {n}",
                 statement=f"See B.1, E, THE, and A. {rng.choice(['berth', 'crane', 'tide'])}.",
             )
             if isinstance(record, core.Decision) and n == 490:
@@ -42,11 +43,16 @@ def search_store() -> MemoryStore:
     return store
 
 
-def test_search_prints_as_in_memory() -> None:
-    store, index = search_store(), MemoryIndex()
+@pytest.mark.parametrize("sqlite", [False, True])
+def test_search_prints_as_in_memory(tmp_path: Path, sqlite: bool) -> None:
+    store, index = search_store(), opened(tmp_path) if sqlite else MemoryIndex()
     seed(store, index)
     rng = random.Random(1042)
     queries = [
+        "café",
+        "港口",
+        "42",
+        "Straße",
         "berth",
         "berth crane",
         "tide",
@@ -73,7 +79,10 @@ def test_search_prints_as_in_memory() -> None:
         ["--by", "author"],
         ["--by", "coordinator"],
     ]
-    with patch.object(index, "candidates", wraps=index.candidates) as calls:
+    with (
+        patch.object(index, "candidates", wraps=index.candidates) as calls,
+        patch.object(index, "keep_state", wraps=index.keep_state) as keeps,
+    ):
         for n in range(300):
             query = queries[n % len(queries)]
             args = ["search", *(["--phrase", query] if n % 4 == 0 else [query])]
@@ -84,6 +93,7 @@ def test_search_prints_as_in_memory() -> None:
                 args += [rng.choice(queries)]
             assert printed(app(store, index), args) == printed(app(store), args), (1042, n, args)
         assert calls.call_count > 100
+        assert keeps.call_count == 0
     with patch.object(
         store, "listings", side_effect=AssertionError("stored search must not build")
     ):
@@ -91,6 +101,8 @@ def test_search_prints_as_in_memory() -> None:
             app(store, index).search("berth", core.Filters()).items
             == app(store).search("berth", core.Filters()).items
         )
+
+    index.close()
 
 
 def test_older_parse_of_a_record_is_not_a_candidate() -> None:
@@ -200,7 +212,7 @@ def test_incomplete_rows_discard_the_cached_search(empty: bool) -> None:
     args = ["search", "" if empty else "berth", "--brief"]
     expected = printed(app(store), args)
     method = "all_rows" if empty else "rows"
-    with patch.object(index, method, return_value={}):
+    with patch.object(index, method, return_value={} if empty else None):
         assert printed(app(store, index), args) == expected
 
 
@@ -226,5 +238,5 @@ def test_missing_exact_id_row_discards_the_cached_search() -> None:
     seed(store, index)
     args = ["search", "d-aaaaaa", "--brief"]
     expected = printed(app(store), args)
-    with patch.object(index, "rows", return_value={}):
+    with patch.object(index, "rows", return_value=None):
         assert printed(app(store, index), args) == expected
