@@ -97,22 +97,22 @@ def change_facts_of(state: State, before: StateFacts) -> core.ChangeFacts | None
         return None
     return core.ChangeFacts(
         {ident: allowed[status] for ident, status in before.status.items()},
-        frozenset((p.path, p.check, p.message) for p in before.problems),
+        frozenset(),
         state.derived,
         state.standing.problems,
     )
 
 
 def build_facts(state: State, current: str, published: str) -> dict[str, StateFacts]:
-    facts = {current: StateFacts(state.derived.status, state.standing.problems)}
+    if current == published:
+        return {published: StateFacts(state.derived.status)}
     if state.published_state is not None:
         before = state.published_state
         if before.facts is not None:
-            facts[published] = before.facts
-        else:
-            assert before.derived is not None
-            facts[published] = StateFacts(before.derived.status, before.result.problems)
-    return facts
+            return {published: before.facts}
+        assert before.derived is not None
+        return {published: StateFacts(before.derived.status)}
+    return {}
 
 
 def build_state(

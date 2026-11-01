@@ -8,7 +8,7 @@ import pytest
 from builders import decision, files_of
 from builders import entry as make_entry
 from fakes import CountingIds, FixedClock, MemoryIndex, MemoryStore
-from indexed_support import app, printed
+from indexed_support import app, checked, printed
 from support import AREA, ENTRY, FIRST, project
 
 from lodge import core
@@ -30,7 +30,7 @@ def published_facts(store: MemoryStore) -> tuple[str, StateFacts]:
     ident = store.identities()[1]
     snapshot = core.load(store.trees()[1])
     derived = core.derive(snapshot)
-    return ident, StateFacts(derived.status, core.check_state(snapshot, derived=derived).problems)
+    return ident, StateFacts(derived.status)
 
 
 def changed(store: MemoryStore, text: str) -> None:
@@ -73,19 +73,17 @@ def problematic(case: str) -> tuple[MemoryStore, str]:
 def test_published_facts_equal_full(case: str) -> None:
     store, path = problematic(case)
     ident, facts = published_facts(store)
-    assert any(p.path == path for p in facts.problems)
-    full = build(store, MemoryIndex())
+    published_problems = core.check_state(core.load(store.trees()[1])).problems
+    assert any(p.path == path for p in published_problems)
+    full = checked(store)
     assert any(
         p.path == path
         and (p.path, p.check, p.message)
-        not in {(q.path, q.check, q.message) for q in facts.problems}
+        not in {(q.path, q.check, q.message) for q in published_problems}
         for p in full.result.problems
     )
     index = MemoryIndex()
-    # Problem identity excludes source lines, exactly as core's sort keys do.
-    index.fact_values[ident] = replace(
-        facts, problems=tuple(replace(p, line=99) for p in facts.problems)
-    )
+    index.fact_values[ident] = facts
     with (
         patch.object(core, "derive", wraps=core.derive) as derive,
         patch.object(core, "check_state", wraps=core.check_state) as check,
@@ -129,7 +127,7 @@ def test_absent_facts_are_computed_and_kept() -> None:
         for _ in range(2):
             printed(app(store, index), ["show", FIRST.id])
     assert first not in index.states and index.facts(ident) == expected
-    assert all(index.facts(s.current) is not None for s in index.states.values())
+    assert set(index.fact_values) == {ident}
 
 
 def test_facts_written_on_the_first_read() -> None:
@@ -142,11 +140,7 @@ def test_facts_written_on_the_first_read() -> None:
     assert derive.call_count == 2 and not index.states
     assert index.facts(ident) == expected
     current = store.identities()[0]
-    current_snapshot = core.load(store.trees()[0])
-    own = core.derive(current_snapshot)
-    assert index.facts(current) == StateFacts(
-        own.status, core.check_state(current_snapshot, derived=own).problems
-    )
+    assert index.facts(current) is None
     changed(store, "second logs")
     expected_output = printed(app(store), ["show", FIRST.id])
     with patch.object(core, "derive", wraps=core.derive) as derive:
@@ -202,9 +196,9 @@ def test_invalid_status_is_a_miss() -> None:
     store, index = project(True), MemoryIndex()
     changed(store, "new logs")
     state = build(store, index)
-    assert read_model.change_facts_of(state, StateFacts({FIRST.id: "invalid"}, ())) is None
+    assert read_model.change_facts_of(state, StateFacts({FIRST.id: "invalid"})) is None
     ident, _ = published_facts(store)
-    index.fact_values[ident] = StateFacts({FIRST.id: "invalid"}, ())
+    index.fact_values[ident] = StateFacts({FIRST.id: "invalid"})
     with patch.object(core, "derive", wraps=core.derive) as derive:
         rebuilt = build(store, index)
     assert rebuilt.result == state.result and derive.call_count == 2
@@ -231,7 +225,7 @@ def test_unencodable_facts_do_not_discard_parses(tmp_path: Path) -> None:
     index = open_index(tmp_path)
     assert index is not None
     key = ("lodge/decisions/d-aaaaaa-synthetic.md", "blob")
-    fact = StateFacts({FIRST.id: "current"}, ())
+    fact = StateFacts({FIRST.id: "current"})
     index.mark_seen("marker", {key: None}, {"bad\udcff": fact, "good": fact}, files=1)
     assert index.parses([key]) == {key: None}
     assert index.facts("good") == fact and index.facts("bad\udcff") is None

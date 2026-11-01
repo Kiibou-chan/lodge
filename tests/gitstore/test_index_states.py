@@ -92,7 +92,7 @@ def test_rekeep_replaces_the_state_whole(tmp_path: Path) -> None:
     assert index.state("two") is None and index.state("one") is not None
     assert index.all_rows("one") == changed_rows()
     assert index.facts("published") == FACT
-    keep(index, "six", facts={"published": StateFacts({}, ())})
+    keep(index, "six", facts={"published": StateFacts({})})
     assert index.facts("published") == FACT
     index.close()
 

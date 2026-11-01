@@ -565,7 +565,8 @@ Built after Task 8c and before Task 10a; it changes no port and no output.
 The fix round additionally modifies `app/reads.py`, `app/writes.py`, and `app/threads.py` to forward the build's starting epoch to subsequent `snapshot_of` calls, `app/index_lookups.py`, `gitstore/index_db.py`, `gitstore/index_schema.py`, and `tests/app/fake_index.py` for the existing lookup and writer hand-offs.
 Its regression tests are `tests/gitstore/test_index_shared_buckets.py` and `tests/gitstore/test_index_closed_streams.py`; existing writer interception and bucket-corruption tests in `tests/gitstore/test_indexed_cli_contract.py` follow the new storage layout.
 `index_file_cap(files: int) -> int` in `gitstore/index_space.py` names the unchanged cap formula and is used by the cap tests.
-Marker and parse-only writers receive the caller's used parses and starting epoch; after a clear they insert that complete working set, otherwise only misses.
+An empty parse-only write returns before taking the writer lock.
+Marker and non-empty parse-only writers receive the caller's used parses and starting epoch; after a clear they insert that complete working set, otherwise only misses.
 
 **Interfaces:**
 - Consumes: Task 8b's `identities`, `listings`, `texts` as Task 8c leaves them (`listings()` builds mappings on first use, so a stored-state hit calls `identities()` only); Task 9's `Index`, codec, and failure modes, with Task 9c's lookup; Task 4's shortcut; Task 5's `family`, `code_tokens`, `show_many`, and the `Shown` fields it adds.
@@ -583,7 +584,6 @@ Marker and parse-only writers receive the caller's used parses and starting epoc
   @dataclass(frozen=True)
   class StateFacts:                            # one state's own facts, keyed by its ident alone, immutable (d-dxqxsn, d-4j98ph)
       status: Mapping[str, str]
-      problems: tuple[Problem, ...]            # check_state's
   @dataclass(frozen=True)
   class StoredState:                         # its row is the completeness marker, written last in keep_state's transaction
       key: str                                 # sha1 of current ident, published ident, settings digest
@@ -697,14 +697,17 @@ Marker and parse-only writers receive the caller's used parses and starting epoc
 
 **Files:**
 - Modify: `src/lodge/app/read_model.py` (`ChangeFacts` from stored facts), `src/lodge/app/indexed.py`, `src/lodge/app/state.py` (`Checked` carries cached published facts without a derived object; `finish_checked` accepts the already-built change facts), `src/lodge/core/__init__.py` (exports the existing `Status` type for the validated facts-to-change-facts hand-off), `src/lodge/gitstore/index_states.py` (skip an unencodable facts key without discarding other marker units)
-- Test: `tests/app/test_published_facts.py` (new)
+- Test: `tests/app/test_published_facts.py` (new), `tests/app/test_index_review_facts.py`, `tests/e2e/test_index_review_regressions.py`
+- Fix-round hand-offs: `app/index_types.py`, `app/index_lookups.py`, `gitstore/index_db.py` (empty parse write and schema 7), `tests/gitstore/state_helpers.py`, and `tests/gitstore/test_index_states.py` follow the status-only facts and required-thread shapes.
 
 **Interfaces:**
 - Consumes: Task 2's `ChangeFacts` and `check_change(..., facts=)`; Task 10a's `StateFacts`, `facts`, and `keep_state`.
-- Produces: building a state whose published ident has stored `StateFacts` passes `ChangeFacts(published_status, published_problems from those facts' sort keys, after_derived, after_problems)` to `check_change`, so `derive` and `check_state` run on the current snapshot only; every build stores the current snapshot's own facts under its ident, and the published snapshot's when it computed them.
-  The published snapshot itself is `snapshot_of(published, index, parses)` as today, or the current snapshot when Task 4's identical-listing shortcut holds, since checks 4, 5, and 6 compare records; no other reuse, and `check_change` and its helpers do not change (plan fix 7b).
-  Facts are units like parse units, content-keyed by the published ident and immutable; a read that computed the published facts writes them in its marker transaction (SECOND-1) or its keep, so the published `derive` and `check_state` (1.564 s at `s90000`) run once per published ident, not once per changed read.
-  This is an optimisation of the read after one changed record only; the gate never uses it (d-q0tb8r).
+- Produces: building a state whose published ident has stored `StateFacts` passes its validated status map to `ChangeFacts`, with an empty published-problems set and the current derived state and problems.
+  The Task 10c fix-round dispatch explicitly narrows the original facts policy: store only published identities and their statuses, never dirty current identities or problem lists.
+  The indexed path derives missing published statuses without running published `check_state`; `finish_checked` already restores all current standing problems and discards the published-problem notes.
+  The exact readers and gate retain their complete computations and use only the parse cache (d-q0tb8r).
+  The published snapshot is still assembled in full, and the full change check still runs.
+  Facts remain immutable, keyed by published ident, retained through markers and keeps, and rewritten with the build's used units after an epoch change.
 
 - [ ] **Step 1: Write the failing tests:** `test_published_facts_equal_full` (the `CheckResult` of a state built with stored facts equals one built without, for published states holding a duplicate code, a hand-edited published decision, an out-of-order entry, and a cycle, each with a new problem on the same path in the current state); `test_facts_keyed_by_ident_alone` (two stored states sharing a published ident read the same facts); `test_absent_facts_are_computed_and_kept` (and the published facts survive the `keep_state` that wrote them and every later eviction, since facts are immutable); `test_facts_written_on_the_first_read` (the first read of a changed state with no published facts writes them in its marker transaction; the next read of another changed state with the same published ident runs no published `derive`, by a patched counter); `test_other_published_ident_reads_other_facts` (a commit moves the published ident: the old ident's facts are not selected, and the new ones are computed).
 - [ ] **Step 2:** run; expected FAIL.

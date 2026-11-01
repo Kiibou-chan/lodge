@@ -5,7 +5,7 @@ from dataclasses import replace
 
 from gitstore.index_helpers import KEY
 from lodge.app import FileKey, Index, Row, StateFacts, StoredState
-from lodge.core import Parsed, Problem
+from lodge.core import Parsed
 
 ROW = Row(
     KEY,
@@ -20,13 +20,13 @@ ROW = Row(
     (),
     frozenset(),
 )
-FACT = StateFacts({"s-aaaaaa": "current"}, (Problem("x", 1, "synthetic"),))
+FACT = StateFacts({"s-aaaaaa": "current"})
 
 
 def stored(key: str = "one", rows: Mapping[str, Row] | None = None) -> StoredState:
     rows = rows or {"s-aaaaaa": ROW}
     return StoredState(
-        key, key, "published", (1024, 1, 1), None, None, {"a": tuple(rows)}, {"a": 0}, ()
+        key, key, "published", (1024, 1, 1), None, None, {"a": tuple(rows)}, {"a": 0}, (), ()
     )
 
 
