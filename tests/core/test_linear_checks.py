@@ -7,6 +7,7 @@ from dataclasses import replace
 import pytest
 from builders import area, at, decision, entry, snapshot_of
 from checks import NOTES, NOW, OLD, SETTINGS, SPEC, creates, published, state
+from linear_change_oracle import old_check_change
 from linear_check_oracles import old_check_areas, old_check_cycles, old_dates
 from linear_fixtures import Counted, ReadDecision, chain, fifty_areas, tracked_decision
 from samples import EXAMPLE
@@ -122,7 +123,7 @@ def test_dates_same_as_before() -> None:
     assert ReadDecision.changes_reads <= 300, "earlier changes must be indexed once"
 
 
-def test_check_change_with_facts_equals_without() -> None:
+def test_check_change_with_facts_equals_old_oracle() -> None:
     bad = decision(id="d-bbbbbb", decided_by="author", quote=None, date=at(1))
     new = entry(id="s-bbbbbb", title="Another")
     cases = [
@@ -148,9 +149,9 @@ def test_check_change_with_facts_equals_without() -> None:
     cases.append((before, after))
     for before, after in cases:
         facts = change_facts(before, after)
-        assert check_change(before, after, SETTINGS, NOW, facts=facts) == check_change(
+        assert check_change(before, after, SETTINGS, NOW, facts=facts) == old_check_change(
             before, after, SETTINGS, NOW
         )
-        assert check_change(before, after, SETTINGS, NOW, after, facts=facts) == check_change(
+        assert check_change(before, after, SETTINGS, NOW, after, facts=facts) == old_check_change(
             before, after, SETTINGS, NOW, after
         )

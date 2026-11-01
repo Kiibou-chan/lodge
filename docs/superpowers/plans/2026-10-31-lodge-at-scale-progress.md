@@ -56,3 +56,8 @@ Each task's Produces against the later tasks' Consumes and their use in the task
 
 No mismatch is left open.
 
+
+Tasks 1 and 2 fix round: I1 centralises change-check facts using `sort_key`, replaces the self-comparison by a pre-Task-2 oracle, and tests the already-published gate note even when the key changes.
+M1 reuses published snapshot facts when the gate returns the same tree; M2 adds per-run timeouts, SIGTERM cleanup, and a clean-store requirement for every benchmark mode; M4 exercises flagged decisions in the shape probe and uses `datetime.UTC`; M5 moves the app call-budget test into the app suite.
+M6 is closed: the earlier concern in `task-1-2-report.md` compared combined derivation and state checks with an estimate for state checks alone; the measured 0.424 s state check meets the plan's separate estimate, alongside 0.950 s derivation (review M6, Expected cost).
+M3 remains a reported plan gap: whole-spec and large-area ordering need a separate authorised rewrite within the fixed core import rules.

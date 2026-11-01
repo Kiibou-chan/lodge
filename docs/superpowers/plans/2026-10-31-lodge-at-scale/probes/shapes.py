@@ -7,18 +7,18 @@ Fixtures are synthetic snapshots, built without disk or a real repository.
 import argparse
 import gc
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from lodge.core import (
     Action,
     Area,
     Change,
-    ChangeFacts,
     CoreSettings,
     Decision,
     Scope,
     Snapshot,
     SpecEntry,
+    change_facts,
     check_change,
     check_state,
     derive,
@@ -38,13 +38,13 @@ def snapshot(entries, decisions):
     )
 
 
-def decision(number, entry, action=Action.EDIT):
+def decision(number, entry, action=Action.EDIT, *, author=False):
     return Decision(
         f"d-{number:06x}",
         "Schedule a berth",
         Scope.PRODUCT,
-        "coordinator",
-        (datetime(2026, 1, 1, tzinfo=timezone.utc) + timedelta(seconds=number)).isoformat(),
+        "author" if author else "coordinator",
+        (datetime(2026, 1, 1, tzinfo=UTC) + timedelta(seconds=number)).isoformat(),
         "A berth has a crane.",
         changes=(Change(entry, action),),
     )
@@ -56,7 +56,9 @@ def shapes(size):
     yield (
         "one entry, many decisions",
         empty,
-        snapshot(single, [decision(n, single[0].id) for n in range(size)]),
+        snapshot(
+            single, [decision(n, single[0].id, author=n % 3 == 0) for n in range(size)]
+        ),
     )
     chain = [
         SpecEntry(
@@ -70,7 +72,8 @@ def shapes(size):
     ]
     yield "chain, no doubts", empty, snapshot(chain, [])
     entries = [
-        SpecEntry(f"s-{n:06x}", "harbour", "Berth", "A berth has a crane.") for n in range(size)
+        SpecEntry(f"s-{n:06x}", "harbour", "Berth", "A berth has a crane.")
+        for n in range(size)
     ]
     published = [decision(n, e.id, Action.CREATE) for n, e in enumerate(entries)]
     added = [decision(n + size, e.id) for n, e in enumerate(entries)]
@@ -88,14 +91,16 @@ def measure(before, after):
     before_result = check_state(before, derived=before_d)
     after_result = check_state(after, derived=after_d)
     checked = time.perf_counter()
-    facts = ChangeFacts(
-        before_d.status,
-        frozenset((p.path, p.check, p.message) for p in before_result.problems),
-        after_d,
-        after_result.problems,
+    facts = change_facts(
+        before,
+        after,
+        before=before_d,
+        before_problems=before_result.problems,
+        after_derived=after_d,
+        after_problems=after_result.problems,
     )
     check_change(
-        before, after, CoreSettings(), datetime(2026, 12, 31, tzinfo=timezone.utc), facts=facts
+        before, after, CoreSettings(), datetime(2026, 12, 31, tzinfo=UTC), facts=facts
     )
     finished = time.perf_counter()
     return derived - start, checked - derived, finished - checked, finished - start
@@ -107,14 +112,18 @@ def main():
     parser.add_argument("--runs", type=int, default=3)
     args = parser.parse_args()
     gc.disable()
-    print("| Shape | Size | Derive (s) | State checks (s) | Change checks (s) | Total (s) |")
+    print(
+        "| Shape | Size | Derive (s) | State checks (s) | Change checks (s) | Total (s) |"
+    )
     print("|---|---:|---:|---:|---:|---:|")
     for size in args.sizes:
         for label, before, after in shapes(size):
             samples = [measure(before, after) for _ in range(args.runs)]
             best = [min(sample[i] for sample in samples) for i in range(4)]
             print(
-                f"| {label} | {size} | " + " | ".join(f"{value:.4f}" for value in best) + " |",
+                f"| {label} | {size} | "
+                + " | ".join(f"{value:.4f}" for value in best)
+                + " |",
                 flush=True,
             )
 

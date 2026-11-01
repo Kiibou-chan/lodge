@@ -1,37 +1,24 @@
 """Differential derivation and doubt tests, plus a checked-read call budget."""
 
-import importlib
 import random
-import sys
 from dataclasses import replace
-from pathlib import Path
 from typing import ClassVar
 
-import pytest
-from builders import area, at, decision, entry, snapshot_of, thread
+from builders import at, decision, entry, snapshot_of, thread
 from linear_check_oracles import old_doubt_marks
 from linear_derive_oracle import old_derive
 from linear_fixtures import Counted, chain
 
 from lodge import core
-from lodge.app.state import Wiring, read_checked
 from lodge.core import (
     Action,
     Change,
-    CoreSettings,
     Decision,
     Imported,
     Raises,
-    Snapshot,
     ThreadState,
 )
 from lodge.core.doubts import doubt_marks
-
-APP_TESTS = str(Path(__file__).resolve().parents[1] / "app")
-if APP_TESTS not in sys.path:
-    sys.path.insert(0, APP_TESTS)
-
-from fakes import CountingIds, FixedClock, MemoryStore  # noqa: E402
 
 
 class ComparedDecision(Decision):
@@ -117,28 +104,3 @@ def test_doubt_marks_same_as_before() -> None:
     counted = Counted(snapshot.entries)
     assert doubt_marks(replace(snapshot, entries=counted), {}) == {}
     assert counted.reads <= 8 * len(counted), "no doubts must not trigger a walk from every entry"
-
-
-def test_derive_once_per_checked_read(monkeypatch: pytest.MonkeyPatch) -> None:
-    spec = entry()
-    store = MemoryStore(area(order=(spec.id,)), spec, staged=True)
-    original = core.derive
-    calls: dict[int, int] = {}
-
-    def counted(snapshot: Snapshot) -> core.Derived:
-        calls[id(snapshot)] = calls.get(id(snapshot), 0) + 1
-        return original(snapshot)
-
-    for name in (
-        "lodge.core",
-        "lodge.core.check_change",
-        "lodge.core.check_state",
-        "lodge.core.check_areas",
-        "lodge.core.check_entries",
-    ):
-        module = importlib.import_module(name)
-        if hasattr(module, "derive"):
-            monkeypatch.setattr(module, "derive", counted)
-    read_checked(Wiring(store, FixedClock(), CountingIds(), CoreSettings()))
-    assert sum(calls.values()) == 1
-    assert sorted(calls.values()) == [1]
