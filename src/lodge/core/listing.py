@@ -6,7 +6,7 @@ from hashlib import sha1
 
 
 def blob_id(raw: bytes) -> str:
-    """Git's blob object ID for the given bytes."""
+    """Git's SHA-1 blob object ID for the given bytes."""
     return sha1(b"blob %d\0" % len(raw) + raw).hexdigest()
 
 

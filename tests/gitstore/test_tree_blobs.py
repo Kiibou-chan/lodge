@@ -78,3 +78,22 @@ def test_read_tree_blobs_are_git_object_ids(tmp_path: Path) -> None:
     assert committed.blobs == expected
     assert set(committed.blobs) == set(committed.files)
     assert committed.attachments == {ATTACHMENT} and ATTACHMENT not in committed.blobs
+
+
+def test_gitlink_keys_the_empty_text_read(tmp_path: Path) -> None:
+    _, repo = checkout_project(tmp_path)
+    path = "lodge/decisions/submodule"
+    git(
+        repo,
+        "update-index",
+        "--add",
+        "--cacheinfo",
+        f"160000,{git(repo, 'rev-parse', 'HEAD')},{path}",
+    )
+    git(repo, "commit", "-m", "Add a gitlink")
+    git(repo, "push", "origin", "main")
+    # A non-regular file on disk also reads as empty text.
+    os.mkfifo(repo / path)
+    disk, committed = open_store(repo, CHECKOUT, Ticker()).trees()
+    assert committed.files[path] == disk.files[path] == ""
+    assert committed.blobs[path] == disk.blobs[path] == blob_id(b"")

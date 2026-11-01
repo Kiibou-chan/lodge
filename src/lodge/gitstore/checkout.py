@@ -97,7 +97,7 @@ def disk_tree(root: Path) -> Tree:
     """Every file on disk under `lodge/`, tracked or not; links are not followed.
 
     A link reads as its target text, anything but a regular file or a link as empty text, and
-    attachments are listed, never read.
+    attachments are listed, never read; `blobs` hashes the exact bytes read with SHA-1.
     """
     files: dict[str, str] = {}
     blobs: dict[str, str] = {}

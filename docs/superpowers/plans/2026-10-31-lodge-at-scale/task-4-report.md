@@ -1,6 +1,6 @@
 # Task 4 build report
 
-Status: NEEDS_CONTEXT for Task 4, Step 4; implementation and the full gate are complete on `read-speed-build`.
+Status: complete; the fix round below closes Step 4 under d-xc4nz9.
 Only Task 4's application state, new test files, the explicitly named derivation test, and this report are in scope.
 No project records are opened directly, added, or edited.
 

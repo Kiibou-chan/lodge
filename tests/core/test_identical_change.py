@@ -131,9 +131,9 @@ CASE_IDS = [
     *(
         f"{verb}-{when}"
         for verb in ("replaces", "narrows", "confirms")
-        for when in ("earlier-day", "earlier-time", "later")
+        for when in ("same-instant", "same-instant-other-offset", "later")
     ),
-    "replacement-same-time",
+    "replacement-later-other-offset",
     "earlier-edit",
     "earlier-imported-replacement",
     "future-decision",

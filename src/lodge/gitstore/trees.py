@@ -4,7 +4,7 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from lodge.app import LodgeError
-from lodge.core import ATTACHMENTS, Tree
+from lodge.core import ATTACHMENTS, Tree, blob_id
 from lodge.gitstore.git import run_bytes
 
 DATA = "lodge"
@@ -23,7 +23,7 @@ def encode(text: str) -> bytes:
 def read_tree(root: Path, rev: str) -> Tree:
     """The files under `lodge/` at `rev`; attachments are listed, never read."""
     listing = run_bytes(["ls-tree", "-r", "-z", "--full-tree", rev, "--", DATA], root)
-    blobs: dict[str, str] = {}
+    blob_paths: dict[str, str] = {}
     object_ids: dict[str, str] = {}
     attachments: set[str] = set()
     other: dict[str, str] = {}
@@ -38,11 +38,12 @@ def read_tree(root: Path, rev: str) -> Tree:
         else:
             object_ids[path] = fields[2].decode()
             if fields[1] == b"blob":
-                blobs[path] = object_ids[path]
+                blob_paths[path] = object_ids[path]
             else:
                 other[path] = ""
-    contents = _contents(root, sorted(set(blobs.values())))
-    files = {**other, **{path: decode(contents[sha]) for path, sha in blobs.items()}}
+                object_ids[path] = blob_id(b"")
+    contents = _contents(root, sorted(set(blob_paths.values())))
+    files = {**other, **{path: decode(contents[sha]) for path, sha in blob_paths.items()}}
     return Tree(rev, files, frozenset(attachments), object_ids)
 
 

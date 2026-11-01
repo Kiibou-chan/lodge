@@ -29,7 +29,13 @@ def attachment_path(decision_id: str, name: str) -> str:
 
 @dataclass(frozen=True)
 class Tree:
-    """The files of one state of the store, and the revision they were read at."""
+    """The files of one state of the store, and the revision they were read at.
+
+    `blobs` keys every non-attachment file by the blob ID of its bytes read.
+    An empty mapping means the tree was built without keys.
+    Derived trees in writes, threads, and apply omit keys because they change files;
+    cache consumers must parse unkeyed files directly rather than trust stale keys.
+    """
 
     rev: str | None
     files: Files
