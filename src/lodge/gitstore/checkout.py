@@ -6,7 +6,7 @@ from collections.abc import Iterable, Mapping, Sequence
 from pathlib import Path
 
 from lodge.app import Committed, Gate, LodgeError, PublishOutcome
-from lodge.core import ATTACHMENTS, Tree
+from lodge.core import ATTACHMENTS, Tree, blob_id
 from lodge.gitstore.commit import commit_paths
 from lodge.gitstore.errors import NOT_INITIALISED, NotInitialised
 from lodge.gitstore.git import run
@@ -94,6 +94,7 @@ def disk_tree(root: Path) -> Tree:
     attachments are listed, never read.
     """
     files: dict[str, str] = {}
+    blobs: dict[str, str] = {}
     attachments: set[str] = set()
     for folder, dirs, names in os.walk(root / DATA):
         linked = [name for name in dirs if (Path(folder) / name).is_symlink()]
@@ -104,7 +105,8 @@ def disk_tree(root: Path) -> Tree:
                 attachments.add(path)
             else:
                 files[path] = _read(full)
-    return Tree(None, files, frozenset(attachments))
+                blobs[path] = blob_id(encode(files[path]))
+    return Tree(None, files, frozenset(attachments), blobs)
 
 
 def _read(full: Path) -> str:

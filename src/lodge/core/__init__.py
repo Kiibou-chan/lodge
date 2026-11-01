@@ -26,6 +26,7 @@ from lodge.core.fileformat import (
 )
 from lodge.core.filters import Filters
 from lodge.core.ids import is_id, mint_id
+from lodge.core.listing import Listing, blob_id
 from lodge.core.model import (
     Action,
     Area,
@@ -58,10 +59,13 @@ from lodge.core.settings import CoreSettings, LengthGuidance, SettingsError, par
 from lodge.core.snapshot import (
     ATTACHMENTS,
     Files,
+    Parsed,
     Snapshot,
     Tree,
+    assemble,
     attachment_path,
     load,
+    parse_file,
     same_listing,
 )
 from lodge.core.threads import (
@@ -114,8 +118,10 @@ __all__ = [
     "LengthGuidance",
     "Level1",
     "Level3",
+    "Listing",
     "Message",
     "NumberHandle",
+    "Parsed",
     "Placed",
     "Placement",
     "Problem",
@@ -138,8 +144,10 @@ __all__ = [
     "area_feedback",
     "area_names",
     "area_path",
+    "assemble",
     "attachment_path",
     "behind_area",
+    "blob_id",
     "change_facts",
     "check_change",
     "check_state",
@@ -175,6 +183,7 @@ __all__ = [
     "parse_area",
     "parse_core_settings",
     "parse_draft",
+    "parse_file",
     "parse_query",
     "parse_record",
     "parse_thread",
