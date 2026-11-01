@@ -24,6 +24,7 @@ from lodge.core.fileformat import (
     write_area,
     write_record,
 )
+from lodge.core.filters import Filters
 from lodge.core.ids import is_id, mint_id
 from lodge.core.model import (
     Action,
@@ -50,8 +51,9 @@ from lodge.core.order import (
     rests_on_tree,
     written_order,
 )
+from lodge.core.ranking import Candidate, Query, needs_memory, parse_query, rank
 from lodge.core.render import Placed, SpecArea, render_spec, spec_view
-from lodge.core.search import AmbiguousRef, Filters, related, resolve, search, search_counted
+from lodge.core.search import AmbiguousRef, related, resolve, search, search_counted
 from lodge.core.settings import CoreSettings, LengthGuidance, SettingsError, parse_core_settings
 from lodge.core.snapshot import ATTACHMENTS, Files, Snapshot, Tree, attachment_path, load
 from lodge.core.threads import (
@@ -89,6 +91,7 @@ __all__ = [
     "Applied",
     "Area",
     "Branch",
+    "Candidate",
     "Change",
     "ChangeFacts",
     "CheckResult",
@@ -108,6 +111,7 @@ __all__ = [
     "Placed",
     "Placement",
     "Problem",
+    "Query",
     "Quote",
     "Raises",
     "Record",
@@ -157,13 +161,16 @@ __all__ = [
     "load",
     "load_yaml",
     "mint_id",
+    "needs_memory",
     "new_record_path",
     "newest_last",
     "parse_area",
     "parse_core_settings",
     "parse_draft",
+    "parse_query",
     "parse_record",
     "parse_thread",
+    "rank",
     "record_from_draft",
     "related",
     "render_spec",

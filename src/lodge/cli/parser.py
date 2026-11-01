@@ -24,10 +24,11 @@ class NewId:
 
 @dataclass(frozen=True)
 class Search:
-    query: str
+    queries: tuple[str, ...]
     filters: Filters
     limit: int = 20
     brief: bool = False
+    phrases: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -158,11 +159,11 @@ def _positive(text: str) -> int:
 
 def _search(sub: argparse.ArgumentParser) -> None:
     sub.add_argument(
-        "query",
-        nargs="?",
-        default="",
+        "queries",
+        nargs="*",
         help="words, an ID, or a code; empty lists records newest first, up to --limit",
     )
+    sub.add_argument("--phrase", action="append", default=[], metavar="WORDS")
     sub.add_argument("--kind", choices=("decision", "spec"))
     sub.add_argument("--scope", choices=[s.value for s in Scope])
     sub.add_argument(
@@ -209,7 +210,7 @@ def _search_of(args: argparse.Namespace) -> Command:
         area=args.area,
         decided_by=args.by,
     )
-    return Search(args.query, filters, args.limit, args.brief)
+    return Search(tuple(args.queries), filters, args.limit, args.brief, tuple(args.phrase))
 
 
 def _show_of(args: argparse.Namespace) -> Command:

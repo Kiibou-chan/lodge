@@ -1,11 +1,12 @@
 """Finding records by ID, code, or words, and the decisions related to one."""
 
-from dataclasses import dataclass
 from datetime import UTC, datetime
-from typing import Literal
 
+from lodge.core.codes import citers, family, is_code_token
 from lodge.core.derive import Derived
-from lodge.core.model import Decision, Scope, SpecEntry
+from lodge.core.filters import Filters
+from lodge.core.model import Decision, SpecEntry
+from lodge.core.ranking import Candidate, Query, parse_query, rank
 from lodge.core.snapshot import Snapshot
 from lodge.core.views import Level1, level1
 from lodge.core.words import words as _words
@@ -16,17 +17,6 @@ _RELATED_SCORE = 2
 _RELATED_WORDS = 2
 _COMMON_FROM = 5
 _NONE: frozenset[str] = frozenset()
-
-
-@dataclass(frozen=True)
-class Filters:
-    """A decision's areas are those of the entries it changes; an entry has no scope."""
-
-    kind: Literal["decision", "spec"] | None = None
-    scope: Scope | None = None
-    status: Literal["current", "replaced", "retired", "any"] = "current"
-    area: str | None = None
-    decided_by: str | None = None
 
 
 class AmbiguousRef(LookupError):
@@ -55,19 +45,21 @@ def search(s: Snapshot, d: Derived, query: str, filters: Filters, limit: int = 2
 
 
 def search_counted(
-    s: Snapshot, d: Derived, query: str, filters: Filters, limit: int
+    s: Snapshot, d: Derived, query: Query | str, filters: Filters, limit: int
 ) -> tuple[list[str], int]:
     """The first `limit` IDs of `search`, and how many matched in all."""
-    views = _newest_first(s, d, filters)
-    if not query.strip():
-        return [v.id for v in views[:limit]], len(views)
-    exact = query.strip().lower()
-    hits = [v for v in views if exact in (v.id, (v.code or "").lower())]
-    words = _words(query)
-    scored = [(v, _score(v, words)) for v in views if v not in hits]
-    ranked = sorted((pair for pair in scored if pair[1] > 0), key=lambda pair: -pair[1])
-    found = [v.id for v in [*hits, *(v for v, _ in ranked)]]
-    return found[:limit], len(found)
+    q = parse_query(query) if isinstance(query, str) else query
+    candidates = (
+        Candidate(
+            v, frozenset(_areas(s, v)), frozenset(_words(v.title)), frozenset(_words(v.statement))
+        )
+        for i in (*s.decisions, *s.entries)
+        for v in (level1(s, d, i, _NONE),)
+    )
+    code = q.text.strip()
+    members = family(s, code) if is_code_token(code) else ()
+    citing = citers(s, d, code) if members else ()
+    return rank(candidates, q, filters, members, citing, limit)
 
 
 def related(s: Snapshot, d: Derived, decision: Decision, limit: int = 3) -> list[str]:

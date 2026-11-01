@@ -18,7 +18,7 @@ from lodge.app.results import (
     Written,
 )
 from lodge.app.state import Wiring
-from lodge.core import CheckResult, CoreSettings, Filters, Raises, SpecArea
+from lodge.core import CheckResult, CoreSettings, Filters, Query, Raises, SpecArea
 
 
 class Lodge:
@@ -27,6 +27,11 @@ class Lodge:
 
     def search(self, query: str, filters: Filters, limit: int = 20) -> Listed:
         return reads.search_records(self._w, query, filters, limit)
+
+    def search_many(
+        self, queries: Sequence[Query], filters: Filters, limit: int = 20
+    ) -> tuple[Listed, ...]:
+        return reads.search_many(self._w, queries, filters, limit)
 
     def show(self, ref: str, reasoning: bool = False, provenance: bool = False) -> Shown:
         return reads.show(self._w, ref, reasoning, provenance)
