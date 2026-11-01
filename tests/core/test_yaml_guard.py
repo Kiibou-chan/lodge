@@ -24,8 +24,10 @@ from lodge.core import (
 )
 from lodge.core.document import split_document
 
+LIBYAML = bool(getattr(yaml, "__with_libyaml__", False))
 
-def test_every_written_header_is_admitted() -> None:
+
+def test_written_headers_without_bom_are_admitted() -> None:
     rich = decision(
         decided_by="author",
         code="PORT-1.why",
@@ -65,11 +67,15 @@ def test_every_written_header_is_admitted() -> None:
     headers += [block.split("\n\n")[1] for block in body.split("## Message ")[1:]]
     for header in headers:
         assert yamlfast.admitted(header), header
-        assert yamlfast.load_yaml(header) == yaml.load(header, Loader=yamlio._TextLoader)
+        assert yamlio.load_yaml(header) == yaml.load(header, Loader=yamlio._TextLoader)
+        if LIBYAML:
+            assert yamlfast.load_yaml(header) == yaml.load(header, Loader=yamlio._TextLoader)
     for title in ("Café 船 😀", 'quotes " \\ / # | > & * ! % ?'):
         header = split_document(write_record(decision(title=title)))[0]
         assert yamlfast.admitted(header), header
-        assert yamlfast.load_yaml(header) == yaml.load(header, Loader=yamlio._TextLoader)
+        assert yamlio.load_yaml(header) == yaml.load(header, Loader=yamlio._TextLoader)
+        if LIBYAML:
+            assert yamlfast.load_yaml(header) == yaml.load(header, Loader=yamlio._TextLoader)
 
 
 @pytest.mark.parametrize("line", ["title: x\t", "title:\tx", "- a\t", "title: x\t# c"])
@@ -95,6 +101,7 @@ def test_block_scalar_bom_and_nesting_not_admitted(header: str) -> None:
     assert not yamlfast.admitted(header)
 
 
+@pytest.mark.skipif(not LIBYAML, reason="libyaml is unavailable")
 def test_c_loader_used_for_admitted_headers(monkeypatch: pytest.MonkeyPatch) -> None:
     original = yamlfast.load_yaml
     calls: list[str] = []
@@ -147,7 +154,7 @@ def test_c_failures_fall_back_with_python_diagnostics(
         'a:\n  - {b: "c"}\n  - {d: 3}',
         'a: "# | > & * ! % ?"',
         'a: "\\u0000\\u0041\\uD7FF\\ue000"',
-        'a: "\\b\\f\\n\\r\\t\\/\\\\\\""',
+        'a: "\\b\\f\\n\\r\\t/\\\\\\""',
     ],
 )
 def test_writer_shapes_are_admitted(header: str) -> None:
@@ -198,3 +205,50 @@ def test_writer_shapes_are_admitted(header: str) -> None:
 )
 def test_other_shapes_are_not_admitted(header: str) -> None:
     assert not yamlfast.admitted(header)
+
+
+def test_value_constructors_are_shared() -> None:
+    assert issubclass(yamlio._TextLoader, yamlfast.TextConstructor)
+    if getattr(yaml, "__with_libyaml__", False):
+        assert issubclass(yamlfast._CTextLoader, yamlfast.TextConstructor)
+    for method in ("construct_scalar", "construct_mapping"):
+        assert getattr(yamlio._TextLoader, method) is getattr(yamlfast.TextConstructor, method)
+        if getattr(yaml, "__with_libyaml__", False):
+            assert getattr(yamlfast._CTextLoader, method) is getattr(
+                yamlfast.TextConstructor, method
+            )
+
+
+@pytest.mark.parametrize(
+    "header",
+    ["a: [a:b]", "a: {b: a:b}", "a:\n  - {b: a:b}", 'a: "\\/"'],
+)
+def test_version_sensitive_shapes_use_python(header: str, monkeypatch: pytest.MonkeyPatch) -> None:
+    assert not yamlfast.admitted(header)
+
+    def forbidden(text: str) -> object:
+        pytest.fail(f"C loader called for a version-sensitive shape: {text!r}")
+
+    monkeypatch.setattr(yamlfast, "load_yaml", forbidden)
+    assert yamlio.load_yaml(header) == yaml.load(header, Loader=yamlio._TextLoader)
+
+
+def test_written_bom_title_uses_python(monkeypatch: pytest.MonkeyPatch) -> None:
+    header = split_document(write_record(decision(title="a\ufeffb")))[0]
+    assert "a\ufeffb" in header
+    assert not yamlfast.admitted(header)
+
+    def forbidden(text: str) -> object:
+        pytest.fail(f"C loader called for a BOM title: {text!r}")
+
+    monkeypatch.setattr(yamlfast, "load_yaml", forbidden)
+    assert yamlio.load_yaml(header) == yaml.load(header, Loader=yamlio._TextLoader)
+    loaded = yamlio.load_yaml(header)
+    assert isinstance(loaded, dict)
+    assert loaded["title"] == "a\ufeffb"
+
+
+@pytest.mark.skipif(getattr(yaml, "__with_libyaml__", False), reason="libyaml is present")
+def test_bare_c_loader_reports_absence() -> None:
+    with pytest.raises(RuntimeError, match="libyaml is not available"):
+        yamlfast.load_yaml("a: b")
