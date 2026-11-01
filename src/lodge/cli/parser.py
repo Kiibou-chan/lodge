@@ -68,7 +68,7 @@ class Waiting:
 
 @dataclass(frozen=True)
 class Guide:
-    pass
+    read: bool = False
 
 
 @dataclass(frozen=True)
@@ -138,7 +138,8 @@ def _parser() -> argparse.ArgumentParser:
     )
     spec.add_argument("--area", help="only this area")
     add("waiting", "list what waits: for an agent, then for the author", lambda _: Waiting())
-    add("guide", "print the guide for agents", lambda _: Guide())
+    guide = add("guide", "print the guide for agents", lambda a: Guide(a.read))
+    guide.add_argument("--read", action="store_true", help="only the reading rules")
     view = add(
         "view", "serve the viewer on this machine: read, confirm, and raise doubts", _view_of
     )

@@ -1,6 +1,6 @@
 # Task 7 report
 
-Status: Task 5 fix round in progress, before Task 7.
+Status: Task 5 fix round committed and pushed as `e01a221`; Task 7 built and validated.
 The coordinator's d-32cvvz and s-7f10zc were read through `lodge show --reasoning`.
 There is nothing waiting for an agent.
 No record files were opened or written, and no product decision is needed from the builder.
@@ -75,3 +75,47 @@ The deferred `written_order` grouping needs no new import; only the standard pri
 `UV_FROZEN=true sh scripts/check.sh` passed: formatting, Ruff, strict mypy (222 source files), Vulture, 1,606 tests passed and 1 skipped in 50.43 s, and `lodge check --gate` printed `ok`.
 The first gate attempts found an import-order issue and four typing errors in test doubles, all corrected before the successful gate.
 Status: Task 5 fix round complete, ready for its separate commit and push.
+
+## Task 7: reading guide
+
+The fix round was committed and pushed as `e01a221` before Task 7 began.
+The interface skeleton adds `Guide.read` and the parser flag, with `NotImplementedError` for the short-guide branch.
+Before writing tests, `uv run --frozen pytest tests/test_structure.py -q` passed (39 tests), and `uv run --frozen mypy` passed (222 source files).
+The parser changes occupy three lines, within Task 7's limit.
+
+The three specified tests were written and run before implementation with `uv run --frozen pytest tests/e2e/test_guide_read.py -q`:
+
+```text
+FAILED tests/e2e/test_guide_read.py::test_guide_read_is_short_and_has_no_writing_rules
+E                   NotImplementedError
+src/lodge/cli/commands.py:89: NotImplementedError
+FAILED tests/e2e/test_guide_read.py::test_guide_read_examples_run
+E                   NotImplementedError
+src/lodge/cli/commands.py:89: NotImplementedError
+FAILED tests/e2e/test_guide_read.py::test_full_guide_points_at_read
+E       assert 'lodge guide --read' in ...
+3 failed in 0.63s
+```
+
+The first test also checks the required examples, status words, flags, and concepts, and runs outside a repository.
+The examples test seeds a synthetic project, including a dotted code sibling, both-word records, an ordered phrase, and a newer partial match.
+It substitutes IDs, codes, and words into every backticked command, executes each, and checks that the quoted-query first result holds both words and the phrase first result holds them in order.
+
+### Built
+
+`lodge guide --read` selects the new packaged `guide-read.md`, while `lodge guide` continues to select the full guide.
+The reading guide is 25 lines, covers decisions, entries, areas, waiting first, the required search and show examples, specification and thread reads, status words, and flags, and contains no writing rules.
+It distinguishes grouping words by quotes from matching a contiguous phrase, explains default brief status, and names siblings and citers.
+One existing full-guide line now points at the short guide without increasing the full guide's 60-line length, and README names the command.
+No existing Task 7 tests were edited, no dependencies or package edges were added, and no record changes were made.
+
+The focused run passed: `uv run --frozen pytest tests/e2e/test_guide_read.py tests/e2e/test_guide.py tests/test_structure.py -q`, 48 passed in 1.02 s.
+A wheel was built under the benchmark folder and installed in a separate native-disk virtual environment; its `lodge guide --read` output matched the source guide byte for byte and also ran successfully outside a repository.
+Task 7 requires no read-replay timings; the fix-round timing is recorded above.
+
+### Final gate and concerns
+
+`UV_FROZEN=true sh scripts/check.sh` passed: formatting (601 files), Ruff, strict mypy (223 source files), Vulture, 1,609 tests passed and 1 skipped in 50.85 s, and `lodge check --gate` printed `ok`.
+`git diff --check` passed.
+Task 7 has no outstanding concerns or context questions.
+The existing `written_order` and `derived_order` performance concerns remain deferred as corrected in the fix-round report and ledger; this round does not touch their implementation.

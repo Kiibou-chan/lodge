@@ -4,7 +4,7 @@ lodge holds a project's decisions and specification entries.
 A decision records a change and why, with a scope, who decided, and the entries it changes.
 An entry says what holds now, in one paragraph, and belongs to an area.
 An area is a named group with a title, an intro, and the order of its entries.
-Read through lodge, never by opening record files.
+Read through lodge, never by opening record files; agents that only read can use `lodge guide --read`.
 
 ## Reading
 
