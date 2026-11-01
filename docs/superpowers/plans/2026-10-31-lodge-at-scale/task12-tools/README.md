@@ -37,3 +37,20 @@ These explicit `git update-index --refresh` calls are outside all timed reads.
 The renderer replaces the remeasured s90000 R11-B / 1,900 groups in place, preserving the other combinations and the smaller-store rows.
 The audit checks sample coverage, exact-reader streams, seen metadata stability, and cycle output digests.
 `probe.py` wraps only the diagnostic child and adds an exclusive phase trailer to stderr; ordinary production reads contain no instrumentation.
+
+`relist.py` reproduces the I-A new-commit and cold-index identity measurements on an independent synthetic copy, with three samples and every git process counted through `subprocess.Popen`, including store construction.
+To compare the code before this round with production, extract only the old application sources into the benchmark area, compile them, and use the same frozen workspace Python for both runs:
+
+```sh
+tools=docs/superpowers/plans/2026-10-31-lodge-at-scale/task12-tools
+bench_root="${LODGE_BENCH_ROOT:-/var/tmp/lodge-bench}"
+mkdir -p "$bench_root/task12-fix/source-before"
+git archive 98cc34e src/lodge | tar -x -C "$bench_root/task12-fix/source-before"
+uv run --frozen python -m compileall -q "$bench_root/task12-fix/source-before/src"
+PYTHONPATH="$bench_root/task12-fix/source-before/src" \
+  uv run --frozen python "$tools/relist.py" --label before
+PYTHONPATH="$PWD/src" uv run --frozen python "$tools/relist.py" --label after
+```
+
+Each sample commits a distinct synthetic file edit, then measures a full relist against the changed base and a second full relist with a cold lodge index.
+The explicit git-index refresh is outside the timed region in both cases.
