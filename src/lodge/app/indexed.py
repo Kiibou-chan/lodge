@@ -76,10 +76,12 @@ def _built(w: Wiring, now: datetime, epoch: int) -> tuple[State, tuple[FileKey, 
     change = read_model.change_facts_of(state, cached_facts) if complete and cached_facts else None
     if change is not None:
         assert cached_facts is not None
-        checked = Checked(before, None, core.CheckResult(cached_facts.problems, ()), cached_facts)
+        checked = Checked(before, None, core.CheckResult((), ()), cached_facts)
         return finish_checked(w, state, checked, now, facts=change), tuple(misses)
     derived = core.derive(before)
-    checked = Checked(before, derived, core.check_state(before, derived=derived))
+    # Published problems only classify notes that finish_checked discards.
+    # Exact readers and the gate still compute the published check in full.
+    checked = Checked(before, derived, core.CheckResult((), ()))
     return finish_checked(w, state, checked, now), tuple(misses)
 
 

@@ -35,6 +35,7 @@ class Wiring:
 
 @dataclass(frozen=True)
 class Checked:
+    # Only indexed._built may leave derived empty, with validated published facts.
     snapshot: Snapshot
     derived: Derived | None
     result: CheckResult

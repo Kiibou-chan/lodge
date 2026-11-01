@@ -200,3 +200,15 @@ No-conversion new-store identity is 1.750162 s for production R11-A and 0.157595
 The production cap and R11 switch are unchanged, with STALE-1, DISK-1, and the Task 12 stop still pending.
 The report records the red evidence, full timings including conversions, FUSE capability skips, and the incomplete construction-signature skeleton as a process deviation.
 Complete evidence is in `2026-10-31-lodge-at-scale/task-11-report.md`; Task 11 is ready for review.
+
+
+## Task 10c fix round before Task 12
+
+B-2 restores the no-write path for empty parse misses, with over-cap exact-command regressions for spec, check, gate, and dry-run add.
+B-1 resolves ID-shaped codes after proven ID absence, including ambiguity, at app and end-to-end levels.
+I-1 kills the swapped-status mutant; I-2 follows the dispatch's status-only published-facts policy, removes dead dirty identities, and skips published state checks on indexed reads.
+M-2 requires thread IDs, M-3 pins exact-reader independence from poisoned facts, and M-4 documents the facts-backed constructor.
+M-1 remains a reported conflict with referenced-blob immutability, with memory fallback retained.
+The amended Task 10c Files list covers the value-shape, lookup, schema, and fixture hand-offs.
+Red evidence, gate results, and the forthcoming Task 12 measurements are in `2026-10-31-lodge-at-scale/task-12-report.md`.
+The final frozen gate passes 2,208 tests, with 39 skipped, plus formatting, Ruff, strict mypy, Vulture, and `lodge check --gate`.

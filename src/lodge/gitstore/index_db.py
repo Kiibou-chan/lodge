@@ -20,7 +20,7 @@ from lodge.gitstore.index_states import IndexStates
 from lodge.gitstore.index_transactions import transaction as transaction
 from lodge.gitstore.index_words import find_candidates
 
-SCHEMA = 6
+SCHEMA = 7
 
 
 def build_digest(source: Path | None = None) -> str:
@@ -142,7 +142,7 @@ class IndexDB(IndexStates):
         used: Mapping[FileKey, Parsed | None] | None = None,
         epoch: int | None = None,
     ) -> None:
-        if not parsed and used is None:
+        if not parsed:
             return
         try:
             with transaction(self.db, write=True):

@@ -26,7 +26,6 @@ class Row:
 @dataclass(frozen=True)
 class StateFacts:
     status: Mapping[str, str]
-    problems: tuple[Problem, ...]
 
 
 @dataclass(frozen=True)
@@ -40,7 +39,7 @@ class StoredState:
     codes: Mapping[str, tuple[str, ...]]
     citers: Mapping[str, int]
     unrecorded: tuple[Problem, ...]
-    threads: tuple[str, ...] = ()
+    threads: tuple[str, ...]
 
 
 def level1_of(row: Row, record: Decision | SpecEntry) -> Level1:

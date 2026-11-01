@@ -73,8 +73,12 @@ class Lookups:
     def resolve(self, ref: str) -> str:
         wanted = ref.strip().lower()
         if wanted.startswith(("d-", "s-")):
-            self.record(wanted, ref)
-            return wanted
+            try:
+                self.record(wanted, ref)
+            except NotFound:
+                pass
+            else:
+                return wanted
         coded = self.state.codes.get(wanted, ())
         if len(coded) > 1:
             raise LodgeError(f"the code {ref} names more than one record: {', '.join(coded)}")
