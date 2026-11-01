@@ -90,11 +90,13 @@ def clear(db: sqlite3.Connection) -> None:
         if name != "meta" and not name.startswith("sqlite_"):
             escaped = name.replace('"', '""')
             db.execute(f'DELETE FROM "{escaped}"')
-    db.execute("UPDATE meta SET epoch=epoch+1, kept=0")
+    db.execute("UPDATE meta SET epoch=epoch+1, kept=0, written=0")
 
 
 def prepare_keep(db: sqlite3.Connection, files: int) -> None:
     """Check used pages while holding BEGIN IMMEDIATE, before writing a state's units."""
-    cap = max(MIN_FILE_CAP, INDEX_BYTES_PER_FILE * files)
-    if db.execute("SELECT kept FROM meta").fetchone()[0] and used_bytes(db) > cap:
+    INDEX_FILE_CAP = max(MIN_FILE_CAP, INDEX_BYTES_PER_FILE * files)
+    over = used_bytes(db) > INDEX_FILE_CAP
+    kept, written = db.execute("SELECT kept,written FROM meta").fetchone()
+    if over and (kept or written >= files):
         clear(db)

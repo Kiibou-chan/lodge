@@ -434,7 +434,7 @@ Build order: Tasks 1 to 7, 8a, 8b, and 9 as built; then Task 8c, Task 9c, Task 1
   # app/ports.py
   class Index(Protocol):
       def parses(self, keys: Collection[FileKey]) -> dict[FileKey, Parsed | None]
-      def keep_parses(self, parsed: Mapping[FileKey, Parsed | None]) -> None
+      def keep_parses(self, parsed: Mapping[FileKey, Parsed | None], *, files: int) -> None
       def epoch(self) -> int   # meta.epoch; a build calls it once, before its first lookup (the fourth recheck's W1)
   # gitstore
   def open_index(common_dir: Path) -> Index | None
@@ -587,7 +587,12 @@ Built after Task 8c and before Task 10a; it changes no port and no output.
       unrecorded: tuple[Problem, ...]
   def level1_of(row: Row, record: Decision | SpecEntry) -> Level1     # equals core.level1 for that state
   class Index(Protocol):                       # in addition to Task 9's
+      def keep_parses(self, parsed: Mapping[FileKey, Parsed | None], *, files: int) -> None
       def reading(self) -> ContextManager[None]   # BEGIN ... COMMIT around a read's lookups, ROLLBACK in a finally
+      def seen(self, key: str) -> bool
+      def mark_seen(self, key: str, parses: Mapping[FileKey, Parsed | None],
+                    facts: Mapping[str, StateFacts], *, files: int) -> None
+          # `files` is the caller's tree file count, required for every writer
       def state(self, key: str) -> StoredState | None
       def rows(self, key: str, ids: Collection[str]) -> dict[str, Row]
       def all_rows(self, key: str) -> dict[str, Row]
@@ -596,7 +601,7 @@ Built after Task 8c and before Task 10a; it changes no port and no output.
       def facts(self, ident: str) -> StateFacts | None
       def keep_state(self, state: StoredState, rows: Mapping[str, Row], answers: Mapping[str, object],
                      citing: Mapping[str, tuple[str, ...]], facts: Mapping[str, StateFacts],
-                     parses: Mapping[FileKey, Parsed | None], misses: Collection[FileKey], epoch: int) -> None
+                     parses: Mapping[FileKey, Parsed | None], misses: Collection[FileKey], epoch: int, *, files: int) -> None
           # one BEGIN IMMEDIATE transaction: INSERT OR IGNORE of the parse units in misses and of the facts,
           # then the eviction (DELETE of the oldest state's own rows, by its key), then this state's own rows
           # (replacing them whole if the key exists), and last its state row (invariants 1 to 3);
@@ -607,7 +612,7 @@ Built after Task 8c and before Task 10a; it changes no port and no output.
   ```
 - A read (`show`, `waiting`, `threads`, `thread`) with an index and the read model on: `identities()`; the key; inside `reading()`, a stored state whose validity interval holds `clock.now()` answers through lookups (one bucket per ID, the parse rows of the records printed, and for a coded record the family from `codes` and the first ten citers from `citing` with the count from `citers`); any lookup that finds less than the state promised (a bucket, answer, citer row, or parse unit missing or undecodable) ends the transaction and the whole read runs in memory (invariant 6); otherwise the read answers from memory, built from `listings()` and the parse cache, and keeps by SECOND-1: when the index holds no marker for the state's key (the full stored-state key, in the build's own index file), the read writes one (`seen(key, at)`, the 64 newest kept, the oldest deleted in the transaction that adds one), in one short `BEGIN IMMEDIATE` transaction with the parse units it missed and any facts it computed (Task 10c), and builds no rows, buckets, answers, or citers; when it holds a marker, the read returns its answer together with a deferred keep (below), and the command runs that keep only after its whole output was written and flushed without error.
   The deferred keep (the review of 7b, B5): a closure over the read's checked `State`, its listings, its parses, its `now`, its epoch, and its stored-state key, all pinned when the read answered; it never reads the files, the listings, or git again, so an edit during the output or the keep only leads the next identity to another key; inside it, the whole construction of rows, buckets, answers, citers, and facts, their encoding, and `keep_state` run, in that order, all within one boundary that catches every ordinary exception (not `KeyboardInterrupt` or `SystemExit`), prints nothing, and leaves the command's own exit status, nonzero ones included; it is called from the command's success path after the explicit flush, never from a `finally`, an `atexit` hook, or a release hook, and never after a write or flush that failed.
-  `keep_state` keeps its signature; the read model's constructors are called only from inside the deferred keep, never while answering.
+  `keep_state` requires the caller's tree file count as keyword-only `files: int`; the read model's constructors are called only from inside the deferred keep, never while answering.
   A clear deletes the `seen` table with the others; eviction leaves markers alone; a marker never answers a read, it only lets the next read keep.
   The cap (the review of 7b, B2), replacing Task 9's condition "and at least one state kept since the last clear": every write transaction (a marker's, a parse-only writer's, and a keep) first compares the used pages with `INDEX_FILE_CAP`, and when over it clears, provided the units inserted since the last clear (parse units and facts, counted in `meta.written`, which the clear resets to 0 and each insert raises by the rows it inserted) number at least the tree's file count, or a state was kept since the last clear; so a read that writes a whole working set after a clear is not cleared away by the next writer, and growth stays within the cap plus one working set whether or not any state is ever kept.
   `meta.kept` keeps its meaning, a complete state kept (Task 9 fix report, I4).
@@ -643,7 +648,7 @@ Built after Task 8c and before Task 10a; it changes no port and no output.
 
 **Files:**
 - Create: `src/lodge/gitstore/index_words.py` (FTS5 candidates and word sets)
-- Modify: `src/lodge/app/indexed.py` (search), `src/lodge/core/words.py` (`parse_words(parsed) -> tuple[str, str]`, the title's and statement's words space-joined, a pure function in `core`, which `gitstore` may import, so no `app` module computes words and `app/state.py` and `app/read_model.py` need not import each other; the second recheck's V8), `src/lodge/core/__init__.py`, `tests/app/fakes.py` (the fake index's `candidates`), `src/lodge/app/ports.py` (`Index` gains the method below; `keep_parses` and `keep_state` keep their signatures, so no caller or earlier test changes), `src/lodge/gitstore/index_parses.py` and `src/lodge/gitstore/index_states.py` (words written with their parse unit), `src/lodge/gitstore/index_db.py` (the schema number rises, so Task 9's files are another build's)
+- Modify: `src/lodge/app/indexed.py` (search), `src/lodge/core/words.py` (`parse_words(parsed) -> tuple[str, str]`, the title's and statement's words space-joined, a pure function in `core`, which `gitstore` may import, so no `app` module computes words and `app/state.py` and `app/read_model.py` need not import each other; the second recheck's V8), `src/lodge/core/__init__.py`, `tests/app/fakes.py` (the fake index's `candidates`), `src/lodge/app/ports.py` (`Index` gains the method below; `keep_parses` and `keep_state` preserve Task 10a's required keyword-only `files: int`, so no caller or earlier test changes), `src/lodge/gitstore/index_parses.py` and `src/lodge/gitstore/index_states.py` (words written with their parse unit), `src/lodge/gitstore/index_db.py` (the schema number rises, so Task 9's files are another build's)
 - Test: `tests/gitstore/test_index_words.py` (new), `tests/gitstore/test_index_words_faults.py` (new), `tests/app/test_indexed_search.py` (new), `tests/e2e/test_index_property.py` (new)
 
 **Interfaces:**
@@ -651,7 +656,8 @@ Built after Task 8c and before Task 10a; it changes no port and no output.
 - Produces:
   ```python
   class Index(Protocol):                       # in addition to Task 10a's
-      # keep_parses(parsed) and keep_state(state, rows, answers, citing, facts, parses, misses, epoch), unchanged:
+      # keep_parses(parsed, *, files: int) and
+      # keep_state(state, rows, answers, citing, facts, parses, misses, epoch, *, files: int), unchanged:
       # gitstore computes words[key] = core.parse_words(parsed[key]) for each parse unit it inserts,
       # inserted with the same rowid as the parse row of that key, in its transaction, only when that row was inserted (invariant 1)
       def candidates(self, words: Collection[str], every: bool) -> dict[FileKey, tuple[frozenset[str], frozenset[str]]] | None

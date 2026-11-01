@@ -62,7 +62,7 @@ def test_two_builds_keep_their_files(tmp_path: Path, monkeypatch: pytest.MonkeyP
     for digest in ("a" * 16, "b" * 16):
         monkeypatch.setattr(index_db, "build_digest", lambda digest=digest: digest)
         index = opened(tmp_path)
-        index.keep_parses({KEY: Problem(digest, 1, "bad")})
+        index.keep_parses({KEY: Problem(digest, 1, "bad")}, files=1)
         index.close()
     for digest in ("a" * 16, "b" * 16):
         monkeypatch.setattr(index_db, "build_digest", lambda digest=digest: digest)
@@ -198,14 +198,14 @@ def test_two_clears_in_a_row_raise_the_epoch(tmp_path: Path) -> None:
     index = opened(tmp_path)
     assert index.epoch() == 1
     value = Problem("x", 1, "bad")
-    index.keep_parses({KEY: value})
+    index.keep_parses({KEY: value}, files=1)
     hits = index.parses([KEY])
     for _ in range(2):
         index.db.execute("BEGIN IMMEDIATE")
         index_space.clear(index.db)
         index.db.execute("COMMIT")
     assert index.epoch() == 3 and index.parses([KEY]) == {}
-    index.keep_parses(hits)
+    index.keep_parses(hits, files=len(hits))
     assert index.parses([KEY]) == hits
     index.close()
 
@@ -216,7 +216,7 @@ def test_connection_is_explicit_and_wal(tmp_path: Path) -> None:
     assert index.db.execute("PRAGMA journal_mode").fetchone()[0] == "wal"
     statements: list[tuple[str, bool]] = []
     index.db.set_trace_callback(lambda sql: statements.append((sql, index.db.in_transaction)))
-    index.keep_parses({KEY: None})
+    index.keep_parses({KEY: None}, files=1)
     assert index.parses([KEY]) == {KEY: None} and index.epoch() == 1
     selects = [active for sql, active in statements if sql.startswith("SELECT")]
     assert selects and all(selects)
@@ -243,7 +243,7 @@ def test_cap_counts_used_pages(tmp_path: Path) -> None:
 
 def test_clear_keeps_a_readers_snapshot(tmp_path: Path) -> None:
     reader, writer = opened(tmp_path), opened(tmp_path)
-    reader.keep_parses({KEY: None})
+    reader.keep_parses({KEY: None}, files=1)
     reader.db.execute("BEGIN")
     old = reader.db.execute("SELECT value FROM parses").fetchall()
     writer.db.execute("BEGIN IMMEDIATE")
@@ -264,7 +264,7 @@ def test_two_writers_over_the_cap_clear_once(tmp_path: Path) -> None:
         index.db.execute("BEGIN IMMEDIATE")
         index_space.prepare_keep(index.db, 1)
         index.db.execute("COMMIT")
-        index.keep_parses({KEY: None})
+        index.keep_parses({KEY: None}, files=1)
     assert first.epoch() == second.epoch() == 2
     assert first.parses([KEY]) == second.parses([KEY]) == {KEY: None}
     first.close()

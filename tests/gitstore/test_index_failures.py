@@ -18,7 +18,7 @@ def test_read_only_folder_reads_or_skips(tmp_path: Path) -> None:
     if os.geteuid() == 0:
         pytest.skip("root bypasses permission bits")
     index = opened(tmp_path)
-    index.keep_parses({KEY: None})
+    index.keep_parses({KEY: None}, files=1)
     index.close()
     path = filename(tmp_path)
     before = path.read_bytes()
@@ -28,7 +28,7 @@ def test_read_only_folder_reads_or_skips(tmp_path: Path) -> None:
         again = open_index(tmp_path)
         if again is not None:
             assert again.parses([KEY]) == {KEY: None}
-            again.keep_parses({("other", "blob"): None})
+            again.keep_parses({("other", "blob"): None}, files=1)
             assert again.parses([("other", "blob")]) == {}
             assert isinstance(again, IndexDB)
             again.close()
@@ -51,7 +51,7 @@ def test_read_only_and_missing_returns_none(tmp_path: Path) -> None:
 
 def test_locked_at_open_does_not_delete(tmp_path: Path) -> None:
     index = opened(tmp_path)
-    index.keep_parses({KEY: None})
+    index.keep_parses({KEY: None}, files=1)
     index.db.execute("PRAGMA wal_checkpoint(TRUNCATE)")
     before = filename(tmp_path).read_bytes()
     index.db.execute("BEGIN IMMEDIATE")
@@ -59,7 +59,7 @@ def test_locked_at_open_does_not_delete(tmp_path: Path) -> None:
     other = open_index(tmp_path)
     assert time.monotonic() - start < 1
     assert isinstance(other, IndexDB)
-    other.keep_parses({("locked", "blob"): None})
+    other.keep_parses({("locked", "blob"): None}, files=1)
     assert other.parses([("locked", "blob")]) == {}
     assert filename(tmp_path).read_bytes() == before
     index.db.execute("ROLLBACK")
@@ -72,7 +72,7 @@ def test_locked_at_open_does_not_delete(tmp_path: Path) -> None:
 def test_locked_write_is_skipped(tmp_path: Path) -> None:
     first, second = opened(tmp_path), opened(tmp_path)
     first.db.execute("BEGIN IMMEDIATE")
-    second.keep_parses({KEY: None})
+    second.keep_parses({KEY: None}, files=1)
     assert not second.db.in_transaction
     first.db.execute("COMMIT")
     assert second.parses([KEY]) == {}
@@ -92,7 +92,7 @@ def test_corrupt_file_is_rebuilt(tmp_path: Path) -> None:
     path = garbage(tmp_path)
     index = opened(tmp_path)
     assert path.read_bytes() != b"garbage"
-    index.keep_parses({KEY: None})
+    index.keep_parses({KEY: None}, files=1)
     assert index.parses([KEY]) == {KEY: None}
     index.close()
 
@@ -137,13 +137,13 @@ class Interrupted(sqlite3.Connection):
 @pytest.mark.parametrize("after", range(1, 5))
 def test_keep_parses_interrupted_at_each_statement(tmp_path: Path, after: int) -> None:
     initial = opened(tmp_path)
-    initial.keep_parses({KEY: None})
+    initial.keep_parses({KEY: None}, files=1)
     initial.close()
     db = sqlite3.connect(filename(tmp_path), isolation_level=None, factory=Interrupted)
     index = IndexDB(db, None)
     db.after = after
     values = {("one", "blob"): Problem("one", 1, "bad"), ("two", "blob"): None}
-    index.keep_parses(values)
+    index.keep_parses(values, files=len(values))
     assert not db.in_transaction
     assert index.parses([KEY, *values]) == {KEY: None}
     index.close()
@@ -157,13 +157,13 @@ def test_concurrent_keep_parses(tmp_path: Path) -> None:
     def interleave(sql: str) -> None:
         if sql.startswith("INSERT") and not attempted:
             attempted.append(True)
-            second.keep_parses({KEY: values[KEY], ("third", "blob"): None})
+            second.keep_parses({KEY: values[KEY], ("third", "blob"): None}, files=2)
 
     first.db.set_trace_callback(interleave)
-    first.keep_parses(values)
+    first.keep_parses(values, files=len(values))
     assert attempted and first.parses(list(values)) == values
     assert second.parses([("third", "blob")]) == {}
-    second.keep_parses({KEY: values[KEY], ("third", "blob"): None})
+    second.keep_parses({KEY: values[KEY], ("third", "blob"): None}, files=2)
     assert first.parses([*values, ("third", "blob")]) == {**values, ("third", "blob"): None}
     first.close()
     second.close()
@@ -171,9 +171,9 @@ def test_concurrent_keep_parses(tmp_path: Path) -> None:
 
 def test_parse_units_are_immutable(tmp_path: Path) -> None:
     index = opened(tmp_path)
-    index.keep_parses({KEY: None})
+    index.keep_parses({KEY: None}, files=1)
     rowid = index.db.execute("SELECT rowid FROM parses").fetchone()[0]
-    index.keep_parses({KEY: Problem("different", 1, "bad")})
+    index.keep_parses({KEY: Problem("different", 1, "bad")}, files=1)
     assert index.parses([KEY]) == {KEY: None}
     assert index.db.execute("SELECT rowid FROM parses").fetchone()[0] == rowid
     index.close()

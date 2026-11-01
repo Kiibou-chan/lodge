@@ -28,7 +28,7 @@ def test_hit_after_keep(tmp_path: Path) -> None:
     index = opened(tmp_path)
     value = parse_file(KEY[0], "broken")
     assert index.parses([KEY]) == {}
-    index.keep_parses({KEY: value, ("lodge/spec/.gitkeep", "empty"): None})
+    index.keep_parses({KEY: value, ("lodge/spec/.gitkeep", "empty"): None}, files=2)
     assert index.parses([KEY, ("lodge/spec/.gitkeep", "empty")]) == {
         KEY: value,
         ("lodge/spec/.gitkeep", "empty"): None,
@@ -46,7 +46,7 @@ def test_key_is_path_and_blob(tmp_path: Path) -> None:
     b = ("lodge/spec/cranes/_area.md", "same")
     first, second = parse_file(a[0], text), parse_file(b[0], text)
     assert isinstance(first, Area) and isinstance(second, Area) and first.name != second.name
-    index.keep_parses({a: first, b: second})
+    index.keep_parses({a: first, b: second}, files=2)
     assert index.parses([a, b, (a[0], "other")]) == {a: first, b: second}
     index.close()
 
@@ -61,7 +61,7 @@ def test_undecodable_row_is_a_miss(tmp_path: Path) -> None:
 def test_unencodable_key_skips_only_that_unit(tmp_path: Path) -> None:
     index = opened(tmp_path)
     bad = ("lodge/decisions/stray-\udcff.md", "blob")
-    index.keep_parses({bad: None, KEY: None, ("last", "blob"): None})
+    index.keep_parses({bad: None, KEY: None, ("last", "blob"): None}, files=3)
     assert index.parses([bad, KEY, ("last", "blob")]) == {KEY: None, ("last", "blob"): None}
     index.close()
 
@@ -79,7 +79,7 @@ def test_any_adapter_exception_is_a_miss(
     if method == "parses":
         assert index.parses([KEY]) == {}
     elif method == "keep_parses":
-        index.keep_parses({KEY: None})
+        index.keep_parses({KEY: None}, files=1)
     else:
         assert index.epoch() == 0
     index.close()
@@ -105,7 +105,7 @@ def scan_index(tmp_path: Path) -> Iterator[index_db.IndexDB]:
     units[("lodge/spec/berths/s-000000.md", "blob-0")] = None
     units[("lodge/spec/berths/s-000001.md", "blob-1")] = Area("berths", "Berths", "Berths.", ())
     units.update({(key[0], "older"): None for key in list(units)[:500]})
-    initial.keep_parses(units)
+    initial.keep_parses(units, files=len(units))
     initial.close()
     db = sqlite3.connect(path, isolation_level=None, factory=CountingConnection)
     db.selects = []
@@ -229,7 +229,7 @@ def test_scan_requires_the_requested_pair(
 ) -> None:
     keys = requested_keys()
     cross = (keys[2][0], keys[3][1])
-    scan_index.keep_parses({cross: None})
+    scan_index.keep_parses({cross: None}, files=1)
     # Both components occur in the request, but this path needs another blob.
     keys[4] = (keys[4][0], keys[5][1])
     expected = per_key(scan_index, keys)
@@ -247,7 +247,7 @@ def test_scan_requires_the_requested_pair(
 
 
 def test_small_fraction_of_a_large_table_uses_per_key(scan_index: index_db.IndexDB) -> None:
-    scan_index.keep_parses({(f"old-{n}", "blob"): None for n in range(5000)})
+    scan_index.keep_parses({(f"old-{n}", "blob"): None for n in range(5000)}, files=5000)
     keys = requested_keys()[:1000]
     assert len(scan_index.parses(keys)) == 1000
     assert isinstance(scan_index.db, CountingConnection)

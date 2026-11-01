@@ -1,6 +1,7 @@
 """One reading of the store: the snapshot, what derives from it, and what the check finds."""
 
 from dataclasses import dataclass, field, replace
+from datetime import datetime
 
 from lodge import core
 from lodge.app.errors import LodgeError, NotFound
@@ -29,6 +30,7 @@ class Wiring:
     ids: IdSource
     settings: CoreSettings
     index: Index | None = None
+    checked: "State | None" = None
 
 
 @dataclass(frozen=True)
@@ -68,7 +70,7 @@ def snapshot_of(
         if path not in keys or keys[path] not in cached
     }
     kept = {keys[path]: value for path, value in missing.items() if path in keys}
-    index.keep_parses(kept)
+    index.keep_parses(kept, files=len(tree.files))
     memo.update(cached)
     memo.update(kept)
     return core.assemble(
@@ -107,12 +109,23 @@ def read_checked(w: Wiring) -> State:
     Equal listings load to equal snapshots, and a state compared with itself finds nothing,
     so the comparison is skipped (d-zyqzkg).
     """
+    if w.checked is not None:
+        return w.checked
     state = read_state(w.store, w.index)
     if same_listing(state.current, state.published):
         return replace(state, published_state=Checked(state.snapshot, state.derived, state.result))
     published = snapshot_of(state.published, w.index, state.parses)
     before = core.derive(published)
     published_result = core.check_state(published, derived=before)
+    return finish_checked(w, state, Checked(published, before, published_result), w.clock.now())
+
+
+def finish_checked(w: Wiring, state: State, before_state: Checked, now: datetime) -> State:
+    published, before, published_result = (
+        before_state.snapshot,
+        before_state.derived,
+        before_state.result,
+    )
     facts = core.change_facts(
         published,
         state.snapshot,
@@ -121,7 +134,7 @@ def read_checked(w: Wiring) -> State:
         after_derived=state.derived,
         after_problems=state.result.problems,
     )
-    change = core.check_change(published, state.snapshot, w.settings, w.clock.now(), facts=facts)
+    change = core.check_change(published, state.snapshot, w.settings, now, facts=facts)
     known = set(state.result.problems)
     problems = (*state.result.problems, *(p for p in change.problems if p not in known))
     result = CheckResult(

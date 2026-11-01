@@ -106,3 +106,15 @@ The 1,000-key lookup against a full 278,177-row table measured 0.229595 s before
 Evidence and the gate are in `2026-10-31-lodge-at-scale/task-10a-report.md`.
 Task 10a is NEEDS_CONTEXT before its interface skeleton: Step 3a requires the caller's tree file count, but the specified writer signatures do not carry it and Task 10b preserves them.
 The report gives the exact interface question; no Task 10a implementation or timing claim is made.
+
+## Task 10a
+
+The coordinator resolved the earlier NEEDS_CONTEXT interface question: every writer requires keyword-only `files: int`, the caller's tree file count.
+The plan's interfaces and Task 10b hand-off are amended with the implementation.
+SECOND-1 is built to d-n65rhr, with Task 8c's interim R11 identity port unchanged.
+Task 10a adds stored reads for `show`, `waiting`, `threads`, and `thread`, a marker on first sight, and the complete keep after successful output flush on second sight.
+Immutable units, transactional state replacement and eviction, epoch recovery, and cap checks for every writer are covered by fault and concurrency tests.
+The final gate passes 2,076 tests, with six skipped, plus Ruff, strict mypy, Vulture, and `lodge check --gate`.
+All 216 indexed CLI replay samples match the exact reader's stdout, stderr, and exit status.
+The report is `2026-10-31-lodge-at-scale/task-10a-report.md`, with the red output, the gate, provisional timings, complete-keep phases, cap occupancy, and ten-cycle clears.
+The eventual seen and changed targets are still missed at s90000; d-26e6zj leaves the stop to Task 12.

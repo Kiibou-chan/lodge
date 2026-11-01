@@ -3,8 +3,8 @@
 import os
 import sqlite3
 import sys
-from collections.abc import Collection, Iterator, Mapping
-from contextlib import contextmanager, suppress
+from collections.abc import Collection, Mapping
+from contextlib import suppress
 from hashlib import sha1
 from pathlib import Path
 from typing import IO
@@ -14,9 +14,12 @@ import yaml
 from lodge.app import FileKey, Index
 from lodge.core import Parsed
 from lodge.gitstore.index_parses import find_parses, insert_parses
-from lodge.gitstore.index_space import exclusive, open_lock, prune, share
+from lodge.gitstore.index_schema import create
+from lodge.gitstore.index_space import exclusive, open_lock, prepare_keep, prune, share
+from lodge.gitstore.index_states import IndexStates
+from lodge.gitstore.index_transactions import transaction as transaction
 
-SCHEMA = 2
+SCHEMA = 3
 
 
 def build_digest(source: Path | None = None) -> str:
@@ -46,17 +49,6 @@ def project_index(common: Path) -> Index | None:
         return None
 
 
-@contextmanager
-def transaction(db: sqlite3.Connection, *, write: bool = False) -> Iterator[None]:
-    try:
-        db.execute("BEGIN IMMEDIATE" if write else "BEGIN")
-        yield
-        db.execute("COMMIT")
-    finally:
-        if db.in_transaction:
-            db.execute("ROLLBACK")
-
-
 def _connect(path: Path, readonly: bool) -> sqlite3.Connection:
     db = sqlite3.connect(
         path.as_uri() + ("?mode=ro" if readonly else "?mode=rwc"),
@@ -77,18 +69,10 @@ def _connect(path: Path, readonly: bool) -> sqlite3.Connection:
         with transaction(db):
             exists = db.execute("SELECT 1 FROM sqlite_master WHERE name='meta'").fetchone()
             if exists:
-                db.execute("SELECT epoch,kept FROM meta").fetchone()
+                db.execute("SELECT epoch,kept,written FROM meta").fetchone()
         if not exists:
             with transaction(db, write=True):
-                db.execute(
-                    "CREATE TABLE IF NOT EXISTS meta(epoch INTEGER NOT NULL, kept INTEGER NOT NULL)"
-                )
-                db.execute("INSERT INTO meta SELECT 1,0 WHERE NOT EXISTS (SELECT 1 FROM meta)")
-                db.execute(
-                    "CREATE TABLE IF NOT EXISTS parses(rowid INTEGER PRIMARY KEY, "
-                    "path TEXT NOT NULL, "
-                    "blob TEXT NOT NULL, value BLOB NOT NULL, UNIQUE(path,blob))"
-                )
+                create(db)
         return db
     except BaseException:
         db.close()
@@ -128,7 +112,7 @@ def open_index(common_dir: Path) -> Index | None:
         return None
 
 
-class IndexDB:
+class IndexDB(IndexStates):
     def __init__(self, db: sqlite3.Connection, lock: IO[bytes] | None) -> None:
         self.db = db
         self.lock = lock
@@ -140,11 +124,12 @@ class IndexDB:
         except Exception:
             return {}
 
-    def keep_parses(self, parsed: Mapping[FileKey, Parsed | None]) -> None:
+    def keep_parses(self, parsed: Mapping[FileKey, Parsed | None], *, files: int) -> None:
         if not parsed:
             return
         try:
             with transaction(self.db, write=True):
+                prepare_keep(self.db, files)
                 insert_parses(self.db, parsed)
         except Exception:
             pass
