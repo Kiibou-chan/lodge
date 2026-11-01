@@ -6,8 +6,9 @@ from collections.abc import Iterable, Mapping, Sequence
 from pathlib import Path
 
 from lodge.app import Committed, Gate, LodgeError, PublishOutcome
-from lodge.core import ATTACHMENTS, Tree, blob_id
+from lodge.core import Tree
 from lodge.gitstore.commit import commit_paths
+from lodge.gitstore.disk import tree
 from lodge.gitstore.errors import NOT_INITIALISED, NotInitialised
 from lodge.gitstore.git import run
 from lodge.gitstore.listing import CheckoutListing
@@ -16,6 +17,8 @@ from lodge.gitstore.plumbing import check_writes
 from lodge.gitstore.published import Published, committed_gate, published_state
 from lodge.gitstore.settings import StoreSettings
 from lodge.gitstore.trees import DATA, decode, encode
+
+disk_tree = tree
 
 _TEMPORARY_SUFFIX = ".lodge-tmp"
 
@@ -91,38 +94,6 @@ def data_folder_exists(root: Path) -> bool:
     if not stat.S_ISDIR(mode):
         raise LodgeError(f"{DATA} is a file, not a folder")
     return True
-
-
-def disk_tree(root: Path) -> Tree:
-    """Every file on disk under `lodge/`, tracked or not; links are not followed.
-
-    A link reads as its target text, anything but a regular file or a link as empty text, and
-    attachments are listed, never read; `blobs` hashes the exact bytes read with SHA-1.
-    """
-    files: dict[str, str] = {}
-    blobs: dict[str, str] = {}
-    attachments: set[str] = set()
-    for folder, dirs, names in os.walk(root / DATA):
-        linked = [name for name in dirs if (Path(folder) / name).is_symlink()]
-        for name in [*names, *linked]:
-            full = Path(folder) / name
-            path = full.relative_to(root).as_posix()
-            if path.startswith(ATTACHMENTS):
-                attachments.add(path)
-            else:
-                files[path] = _read(full)
-                blobs[path] = blob_id(encode(files[path]))
-    return Tree(None, files, frozenset(attachments), blobs)
-
-
-def _read(full: Path) -> str:
-    try:
-        mode = os.lstat(full).st_mode
-        if stat.S_ISLNK(mode):
-            return decode(os.fsencode(os.readlink(full)))
-        return decode(full.read_bytes()) if stat.S_ISREG(mode) else ""
-    except OSError:
-        return ""
 
 
 def _refuse_links(root: Path, path: str) -> None:

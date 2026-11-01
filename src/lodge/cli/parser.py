@@ -10,6 +10,25 @@ from lodge.core import Filters, Scope
 
 DEFAULT_PORT = 8787
 HOOK_EVENT = "post-tool-use"
+_COMMANDS = {
+    "init",
+    "id",
+    "search",
+    "show",
+    "draft",
+    "add",
+    "check",
+    "spec",
+    "waiting",
+    "guide",
+    "view",
+    "hook",
+    "threads",
+    "thread",
+    "ask",
+    "reply",
+    "close",
+}
 
 
 @dataclass(frozen=True)
@@ -91,7 +110,8 @@ def parse(argv: list[str]) -> Command | int:
     """The command `argv` names; the exit status instead when argparse has already answered."""
     if argv[:1] == ["hook"] and not {"-h", "--help"} & set(argv):
         return Hook(argv[1] if len(argv) > 1 else "")
-    parser = _parser()
+    named = argv[0] if argv and argv[0] in _COMMANDS else None
+    parser = _parser(None if {"-h", "--help", "--version"} & set(argv) else named)
     try:
         args, rest = parser.parse_known_args(argv)
         if rest:
@@ -104,7 +124,7 @@ def parse(argv: list[str]) -> Command | int:
     return command
 
 
-def _parser() -> argparse.ArgumentParser:
+def _parser(named: str | None = None) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="lodge",
         description="Decisions and specification entries for agent-built software.",
@@ -116,7 +136,11 @@ def _parser() -> argparse.ArgumentParser:
     )
 
     def add(name: str, summary: str, build: object) -> argparse.ArgumentParser:
-        sub = commands.add_parser(name, help=summary, description=summary)
+        sub = (
+            commands.add_parser(name, help=summary, description=summary)
+            if named is None or named == name
+            else _UnusedParser()
+        )
         sub.set_defaults(build=build)
         return sub
 
@@ -154,6 +178,19 @@ def _parser() -> argparse.ArgumentParser:
     hook.add_argument("event", choices=(HOOK_EVENT,))
     add_thread_commands(add)
     return parser
+
+
+class _UnusedParser(argparse.ArgumentParser):
+    """Skip argument construction for a subcommand that cannot be selected."""
+
+    def __init__(self) -> None:
+        pass
+
+    def add_argument(self, *args: object, **kwargs: object) -> None:  # type: ignore[override]
+        pass
+
+    def set_defaults(self, **kwargs: object) -> None:
+        pass
 
 
 def _positive(text: str) -> int:

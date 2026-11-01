@@ -86,3 +86,36 @@ def resolve(cwd: Path, ref: str) -> str | None:
     if done.returncode == 1:
         return None
     raise LodgeError(first_line(done.stderr) or "git rev-parse failed")
+
+
+def run_many(calls: Sequence[Sequence[str]], cwd: Path) -> list[subprocess.CompletedProcess[bytes]]:
+    """Start every call before waiting; cancellation waits for all started children."""
+    children: list[subprocess.Popen[bytes]] = []
+    results: list[subprocess.CompletedProcess[bytes]] = []
+    missing: FileNotFoundError | None = None
+    _running.count = getattr(_running, "count", 0) + 1
+    try:
+        try:
+            for args in calls:
+                children.append(
+                    subprocess.Popen(
+                        ["git", "-C", str(cwd), *args],
+                        stdin=subprocess.DEVNULL,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        env={**os.environ, **_FIXED_ENV},
+                    )
+                )
+        except FileNotFoundError as error:
+            missing = error
+        finally:
+            for args, child in zip(calls, children, strict=False):
+                stdout, stderr = child.communicate()
+                results.append(subprocess.CompletedProcess(args, child.returncode, stdout, stderr))
+    finally:
+        _running.count -= 1
+    if _pending is not None and threading.current_thread() is threading.main_thread():
+        raise SystemExit(_pending)
+    if missing is not None:
+        raise GitMissing("git is not installed or is not on the PATH") from missing
+    return results

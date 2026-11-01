@@ -1,16 +1,18 @@
-"""Conservative conversion detection, cached within a store object."""
+"""Conservative conversion detection, cached within a store object by its sources."""
 
 import os
-from collections.abc import Collection
+import subprocess
+from collections.abc import Callable, Collection
 from dataclasses import dataclass
 from pathlib import Path
 
-from lodge.gitstore import git
-from lodge.gitstore.flags import Flagged, Flags, IndexStat, stat_key
+from lodge.gitstore import disk, git
+from lodge.gitstore.flags import Flagged, Flags, IndexStat, config_values, stat_key
 from lodge.gitstore.trees import decode, encode
 
 _ATTRIBUTES = ("text", "eol", "crlf", "filter", "ident", "working-tree-encoding")
 _FALSE = {"", "false", "no", "off", "0"}
+PathSource = Collection[str] | Callable[[], Collection[str]]
 
 
 @dataclass(frozen=True)
@@ -24,11 +26,17 @@ class Source:
 @dataclass(frozen=True)
 class ConversionKey:
     index: IndexStat
-    config: tuple[str, str]
+    config: tuple[tuple[str, str | None], ...]
     variables: tuple[str | None, ...]
     sources: tuple[Source, ...]
-    paths: frozenset[str]
     attributes: frozenset[str]
+    failed: bool
+
+
+def configuration(
+    root: Path,
+) -> tuple[subprocess.CompletedProcess[bytes], subprocess.CompletedProcess[bytes]]:
+    return git.attempt(["config", "--list", "-z"], root), git.attempt(["var", "-l"], root)
 
 
 class Conversions:
@@ -38,53 +46,101 @@ class Conversions:
         self._cached: tuple[ConversionKey, frozenset[str]] | None = None
         self.info: Path | None = None
 
-    def paths(self, paths: Collection[str], flagged: Flagged) -> frozenset[str]:
-        before = self._key(paths, flagged)
+    def discard(self) -> None:
+        self._cached = None
+
+    def paths(
+        self,
+        paths: PathSource,
+        flagged: Flagged,
+        *,
+        attributes: Collection[str] | None = None,
+        config: tuple[subprocess.CompletedProcess[bytes], subprocess.CompletedProcess[bytes]]
+        | None = None,
+    ) -> frozenset[str]:
+        if attributes is None:
+            walked = disk.walk(self.root)
+            try:
+                attributes = {p for p in walked.names if p.endswith("/.gitattributes")}
+            finally:
+                walked.close()
+        before = self._key(flagged, attributes, config)
         if self._cached is not None and self._cached[0] == before:
             return self._cached[1]
-        if before.config[0].lower() not in _FALSE or None in before.variables:
-            result = before.paths
-        elif not flagged.attributes and not any(s.raw is not None for s in before.sources):
-            result = frozenset()
+        values = dict(before.config)
+        autocrlf = values.get("core.autocrlf", "false")
+        if (
+            not before.failed
+            and None not in before.variables
+            and autocrlf is not None
+            and autocrlf.lower() in _FALSE
+            and not flagged.attributes
+            and not any(s.raw is not None for s in before.sources)
+        ):
+            result = frozenset[str]()
         else:
-            raw = (
-                git.run_bytes(
-                    ["check-attr", "--stdin", "-z", *_ATTRIBUTES],
-                    self.root,
-                    input=b"\0".join(encode(p) for p in sorted(before.paths)) + b"\0",
+            names = frozenset(paths() if callable(paths) else paths)
+            if (
+                before.failed
+                or autocrlf is None
+                or autocrlf.lower() not in _FALSE
+                or None in before.variables
+            ):
+                result = names
+            else:
+                done = (
+                    git.attempt(
+                        ["check-attr", "--stdin", "-z", *_ATTRIBUTES],
+                        self.root,
+                        input=b"\0".join(encode(p) for p in sorted(names)) + b"\0",
+                    )
+                    if names
+                    else None
                 )
-                if before.paths
-                else b""
-            )
-            fields = raw.split(b"\0")
-            result = frozenset(
-                decode(fields[i])
-                for i in range(0, len(fields) - 2, 3)
-                if fields[i + 2] not in (b"unspecified", b"unset")
-            )
-        self._cached = (before, result) if before == self._key(paths, flagged) else None
+                fields = [] if done is None else done.stdout.split(b"\0")
+                result = (
+                    names
+                    if done is not None and done.returncode
+                    else frozenset(
+                        decode(fields[i])
+                        for i in range(0, len(fields) - 2, 3)
+                        if fields[i + 2] not in (b"unspecified", b"unset")
+                    )
+                )
+        self._cached = (
+            (before, result) if before == self._key(flagged, attributes, config) else None
+        )
         return result
 
-    def _key(self, paths: Collection[str], flagged: Flagged) -> ConversionKey:
+    def _key(
+        self,
+        flagged: Flagged,
+        attributes: Collection[str],
+        config: tuple[subprocess.CompletedProcess[bytes], subprocess.CompletedProcess[bytes]]
+        | None,
+    ) -> ConversionKey:
         index = self.flags.key()
         if self.info is None:
             info = Path(git.run(["rev-parse", "--git-path", "info/attributes"], self.root))
             self.info = info if info.is_absolute() else self.root / info
-        config = (self._config("core.autocrlf"), self._config("core.attributesFile", path=True))
+        configured, variables = config or configuration(self.root)
+        values = config_values(configured.stdout)
+        known = dict(
+            line.split("=", 1) for line in decode(variables.stdout).splitlines() if "=" in line
+        )
         names = ["GIT_ATTR_GLOBAL"]
         if not os.environ.get("GIT_ATTR_NOSYSTEM"):
             names.append("GIT_ATTR_SYSTEM")
-        variables = []
+        resolved: list[str | None] = []
         for name in names:
-            done = git.attempt(["var", name], self.root)
-            variables.append(decode(done.stdout).strip() if done.returncode == 0 else None)
+            if name in known:
+                resolved.append(known[name])
+            else:
+                done = git.attempt(["var", name], self.root)
+                resolved.append(decode(done.stdout).strip() if done.returncode == 0 else None)
         sources = {self.root / ".gitattributes", self.info}
-        sources.update(
-            self.root / p
-            for p in {*paths, *flagged.attributes}
-            if p.rsplit("/", 1)[-1] == ".gitattributes"
-        )
-        for text in (*variables, config[1]):
+        sources.update(self.root / p for p in {*attributes, *flagged.attributes})
+        for text in (*resolved, values.get("core.attributesfile")):
             if text:
                 path = Path(text).expanduser()
                 sources.add(path if path.is_absolute() else self.root / path)
@@ -97,10 +153,10 @@ class Conversions:
                 raw = None
             held.append(Source(str(path), before, raw, stat_key(path)))
         return ConversionKey(
-            index, config, tuple(variables), tuple(held), frozenset(paths), flagged.attributes
+            index,
+            tuple(sorted(values.items())),
+            tuple(resolved),
+            tuple(held),
+            flagged.attributes,
+            configured.returncode != 0 or variables.returncode != 0,
         )
-
-    def _config(self, name: str, *, path: bool = False) -> str:
-        args = ["config", *(["--path"] if path else []), "--get", name]
-        done = git.attempt(args, self.root)
-        return decode(done.stdout).strip() if done.returncode == 0 else ""

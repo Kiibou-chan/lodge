@@ -87,3 +87,12 @@ Pasted into the plan from `tasks-6b.md` and `tasks-7b.md`: calls 22 to 25, the c
 Task 9's hand-offs now in the plan: I4 in Task 10a's Step 3a with the cap's new condition (a working set inserted since the last clear, or a state kept); M9 answered by Task 9c; `settings_key` used for the stored state's key in Step 3a; the stale `marshal` mentions replaced by JSON, as built.
 Build order from here: Task 8c, Task 9c, Task 10a, Task 10b, Task 10c, Task 11, Task 12.
 Decisions to record before building: R11-A or R11-B (STALE-1, with the author) and CONV-1 before Task 8c; FOLD-1 before Task 11 (the task records it); SECOND-1 before Task 10a; none before Task 9c, 10b, 10c, or 12.
+
+## Task 8c
+
+Built with the dispatch's interim R11-A full-file rule; STALE-1 remains with the author, and no R11 decision is inferred.
+CONV-1 is recorded as d-egknpk.
+The report is `2026-10-31-lodge-at-scale/task-8c-report.md`.
+The R11-B scratch alternative's new-store, one-edit identity at `s90000` measured 0.485094 s best of three in the initial diagnostic, above Task 8c's 0.45 s reporting threshold; the final rerun measured 0.448099 s, just below it.
+The report gives every stage's share and all final samples.
+The production R11-A and the `core.autocrlf=input` rows are reported separately, with the targets and Task 12 stop unchanged.

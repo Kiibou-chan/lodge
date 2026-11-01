@@ -43,6 +43,7 @@ def test_random_edits_agree(tmp_path: Path) -> None:
     listing = agrees(store)
     remember(listing.ident, store.trees()[0])
     for sequence in range(200):
+        (repo / ".gitattributes").unlink(missing_ok=True)
         tracked = list(filter(None, git(repo, "ls-files", "-z", "--", "lodge").split("\0")))
         for flag in ("--no-assume-unchanged", "--no-skip-worktree"):
             git(repo, "update-index", flag, "--", *tracked)
