@@ -26,8 +26,10 @@ The plan argues from them, never over them; where `lodge spec` and a task disagr
 - An indexed read prints exactly what the in-memory read prints; where the index cannot prove it, the read takes the in-memory path (d-rs76ks).
 - The index's invariants (d-t3afj1, d-4j98ph, d-gvz66f, d-e3stjn, d-c6cegr, d-a8gkrh), which every task from Task 9 on keeps and tests by fault injection:
   1. A parse unit (a parse row and, from Task 10b, the FTS words row with the same rowid) and a state's facts are content-addressed by their key and immutable: inserted once with `INSERT OR IGNORE`, never updated, and never deleted except by a clear of the whole index (invariant 4); so no reference counting, and no unit or fact can vanish under a kept state.
+     Bucket blobs are content-addressed and immutable while referenced; states share identical blobs through per-state pointers.
+     Eviction deletes only the evicted state's pointers, then unreferenced bucket blobs, in the same transaction (the Task 10a fix-round coordinator ruling).
   2. A state owns only its own rows: its state row and its rows in the per-state tables (buckets, answers, citers), all keyed by the state's key; one write transaction writes the parse units and facts it needs that are absent, then its own rows, and last its state row, the completeness marker; re-keeping a key replaces its own rows whole in one write transaction, and the state becomes the newest.
-  3. Evicting a state deletes its own rows only, by its key, in the transaction that keeps the new state; FTS rows are never deleted, so no deletion by anything but rowid exists.
+  3. Evicting a state deletes its own rows by its key, and bucket blobs with no remaining kept-state pointer, in the transaction that keeps the new state; FTS rows are never deleted, so no deletion by anything but rowid exists.
   4. Growth is bounded by `INDEX_FILE_CAP` (Task 9); past it the writer that notices clears the index in place, the rows of every table but `meta` in one `BEGIN IMMEDIATE` transaction that also raises `meta.epoch` (1 when the file is created, so it never repeats within a file); WAL readers finish on their snapshot; the file is never swapped, renamed, or vacuumed on a read; states then rebuild lazily as cold reads (d-e3stjn); a build reads `Index.epoch()` once before its first lookup, and a `keep_state` that finds, inside its write transaction, another epoch than that one writes every parse unit and fact the build used (d-c6cegr; the fourth recheck's W1).
   5. Connections run with `isolation_level=None` in WAL mode; every read runs inside one explicit `BEGIN` ... `COMMIT` (or `ROLLBACK`, in a `finally`), so one read sees one snapshot, and every write inside `BEGIN IMMEDIATE` ... `COMMIT`.
   6. Every cached value carries the key of its inputs (a parse its path and blob; a folder signature its stat and base), and a different key is a miss; a reader treats anything missing, undecodable, or short of what the state row promised as a miss, ends its transaction, and runs the whole read in memory.
@@ -434,7 +436,9 @@ Build order: Tasks 1 to 7, 8a, 8b, and 9 as built; then Task 8c, Task 9c, Task 1
   # app/ports.py
   class Index(Protocol):
       def parses(self, keys: Collection[FileKey]) -> dict[FileKey, Parsed | None]
-      def keep_parses(self, parsed: Mapping[FileKey, Parsed | None], *, files: int) -> None
+      def keep_parses(self, parsed: Mapping[FileKey, Parsed | None], *, files: int,
+                      used: Mapping[FileKey, Parsed | None] | None = None,
+                      epoch: int | None = None) -> None
       def epoch(self) -> int   # meta.epoch; a build calls it once, before its first lookup (the fourth recheck's W1)
   # gitstore
   def open_index(common_dir: Path) -> Index | None
@@ -558,6 +562,11 @@ Built after Task 8c and before Task 10a; it changes no port and no output.
 - Modify: `src/lodge/app/index_types.py` (`Row`, `StoredState`, `StateFacts`), `src/lodge/app/ports.py` (`Index` gains the methods below), `src/lodge/app/__init__.py`, `src/lodge/app/lodge.py` (`read_model: bool = True`; the viewer's `Lodge` passes False), `src/lodge/app/state.py`, `src/lodge/main.py` (the viewer's factory without the read model), `src/lodge/cli/commands.py` (the four reads run the deferred keep after their explicit flush), `src/lodge/gitstore/index_space.py` (the cap's condition)
 - Test: `tests/app/test_read_model.py` (new), `tests/app/test_indexed_reads.py` (new), `tests/gitstore/test_index_states.py` (new), `tests/gitstore/test_index_concurrency.py` (new), `tests/e2e/test_indexed_reads.py` (new)
 
+The fix round additionally modifies `app/reads.py`, `app/writes.py`, and `app/threads.py` to forward the build's starting epoch to subsequent `snapshot_of` calls, `app/index_lookups.py`, `gitstore/index_db.py`, `gitstore/index_schema.py`, and `tests/app/fake_index.py` for the existing lookup and writer hand-offs.
+Its regression tests are `tests/gitstore/test_index_shared_buckets.py` and `tests/gitstore/test_index_closed_streams.py`; existing writer interception and bucket-corruption tests in `tests/gitstore/test_indexed_cli_contract.py` follow the new storage layout.
+`index_file_cap(files: int) -> int` in `gitstore/index_space.py` names the unchanged cap formula and is used by the cap tests.
+Marker and parse-only writers receive the caller's used parses and starting epoch; after a clear they insert that complete working set, otherwise only misses.
+
 **Interfaces:**
 - Consumes: Task 8b's `identities`, `listings`, `texts` as Task 8c leaves them (`listings()` builds mappings on first use, so a stored-state hit calls `identities()` only); Task 9's `Index`, codec, and failure modes, with Task 9c's lookup; Task 4's shortcut; Task 5's `family`, `code_tokens`, `show_many`, and the `Shown` fields it adds.
 - Produces:
@@ -585,16 +594,22 @@ Built after Task 8c and before Task 10a; it changes no port and no output.
       codes: Mapping[str, tuple[str, ...]]     # lower-cased code -> IDs
       citers: Mapping[str, int]                # lower-cased code or family root -> its number of citers; the IDs are in citer rows
       unrecorded: tuple[Problem, ...]
+      threads: tuple[str, ...]                 # complete thread IDs, including closed threads
   def level1_of(row: Row, record: Decision | SpecEntry) -> Level1     # equals core.level1 for that state
   class Index(Protocol):                       # in addition to Task 9's
-      def keep_parses(self, parsed: Mapping[FileKey, Parsed | None], *, files: int) -> None
+      def keep_parses(self, parsed: Mapping[FileKey, Parsed | None], *, files: int,
+                      used: Mapping[FileKey, Parsed | None] | None = None,
+                      epoch: int | None = None) -> None
       def reading(self) -> ContextManager[None]   # BEGIN ... COMMIT around a read's lookups, ROLLBACK in a finally
       def seen(self, key: str) -> bool
       def mark_seen(self, key: str, parses: Mapping[FileKey, Parsed | None],
-                    facts: Mapping[str, StateFacts], *, files: int) -> None
+                    facts: Mapping[str, StateFacts], *, files: int,
+                    used: Mapping[FileKey, Parsed | None] | None = None,
+                    epoch: int | None = None) -> None
           # `files` is the caller's tree file count, required for every writer
       def state(self, key: str) -> StoredState | None
-      def rows(self, key: str, ids: Collection[str]) -> dict[str, Row]
+      def rows(self, key: str, ids: Collection[str]) -> dict[str, Row] | None
+          # None for missing or undecodable buckets; {} proves the IDs absent in intact buckets
       def all_rows(self, key: str) -> dict[str, Row]
       def answer(self, key: str, name: str) -> object | None   # "waiting", "threads", "thread:<id>", decoded with the classes app passes
       def citing(self, key: str, code: str, limit: int | None) -> tuple[str, ...] | None   # newest first; None when the row is missing
@@ -622,7 +637,7 @@ Built after Task 8c and before Task 10a; it changes no port and no output.
 - Validity (d-faakge): `valid_from` is the latest date among decisions new against the published state that is not after the build's `now`, `valid_until` the earliest that is after it; compared as timezone-aware datetimes; a missing end is open.
 - What equals what (the correctness review's I4): indexed results print the same text through `cli/output.py` and `cli/thread_output.py` as in-memory results; their `Read.statuses` is empty and the viewer-only `Shown` fields keep their defaults; the differential tests compare printed text.
 - An answer's `Read` is rebuilt at read time with the store's live `freshness()` and the state's `unrecorded`.
-- Buckets (d-c4w7xy): 1,024 per state, by the ID's last two characters, compact JSON (`json.dumps(..., ensure_ascii=True, separators=(",", ":"))`, as Task 9 stores parses) of `{id: to_plain(row)}`; `KEPT_STATES = 4` (d-hf2fms, d-ytf272), first in first out by a sequence number set at each keep, so a re-kept state is the newest (d-gvz66f); the oldest is evicted in the transaction that keeps a fifth, as invariant 3 says: its state row, buckets, answers, and citer rows, each table keyed by the state's key, and nothing else; parse units and facts stay (invariant 1).
+- Buckets (d-c4w7xy, amended by the Task 10a fix-round coordinator ruling): 1,024 pointers per state to content-addressed shared immutable blobs, by the ID's last two characters, compact JSON (`json.dumps(..., ensure_ascii=True, separators=(",", ":"))`, as Task 9 stores parses) of `{id: to_plain(row)}`; `KEPT_STATES = 4` (d-hf2fms, d-ytf272), first in first out by a sequence number set at each keep, so a re-kept state is the newest (d-gvz66f); the oldest is evicted in the transaction that keeps a fifth, as invariant 3 says: its state row, bucket pointers, answers, and citer rows, each table keyed by the state's key, then bucket blobs with no remaining pointer; parse units and facts stay (invariant 1).
 - Why the hits need no check (the second recheck's V1 and V2): a parse unit or fact found in the file stays there until a clear, and a clear raises the epoch, so `keep_state` inserts only the misses its build found unless the epoch moved, and then writes everything it used.
 - The viewer, `spec`, `timeline`, `draft`, `check`, `id`, `add`, and the gate never read rows (d-m0g9tx).
 

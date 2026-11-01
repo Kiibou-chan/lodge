@@ -13,6 +13,7 @@ class MemoryIndex:
         self.lookups = 0
         self.epochs = 0
         self.states: dict[str, StoredState] = {}
+        self.row_ids: dict[str, set[str]] = {}
         self.row_values: dict[str, dict[str, Row]] = {}
         self.citer_values: dict[str, dict[str, tuple[str, ...]]] = {}
         self.answer_values: dict[str, dict[str, object]] = {}
@@ -42,7 +43,14 @@ class MemoryIndex:
         self.lookups += 1
         return {key: self.values[key] for key in keys if key in self.values}
 
-    def keep_parses(self, parsed: Mapping[FileKey, Parsed | None], *, files: int) -> None:
+    def keep_parses(
+        self,
+        parsed: Mapping[FileKey, Parsed | None],
+        *,
+        files: int,
+        used: Mapping[FileKey, Parsed | None] | None = None,
+        epoch: int | None = None,
+    ) -> None:
         for key, value in parsed.items():
             self.values.setdefault(key, value)
 
@@ -52,7 +60,9 @@ class MemoryIndex:
     def state(self, key: str) -> StoredState | None:
         return self.states.get(key)
 
-    def rows(self, key: str, ids: Collection[str]) -> dict[str, Row]:
+    def rows(self, key: str, ids: Collection[str]) -> dict[str, Row] | None:
+        if self.row_ids.get(key, set()) - self.row_values.get(key, {}).keys():
+            return None
         return {i: r for i, r in self.row_values.get(key, {}).items() if i in ids}
 
     def all_rows(self, key: str) -> dict[str, Row]:
@@ -78,6 +88,8 @@ class MemoryIndex:
         facts: Mapping[str, StateFacts],
         *,
         files: int,
+        used: Mapping[FileKey, Parsed | None] | None = None,
+        epoch: int | None = None,
     ) -> None:
         self.keep_parses(parses, files=files)
         for ident, fact in facts.items():
@@ -106,9 +118,16 @@ class MemoryIndex:
         self.states.pop(state.key, None)
         self.states[state.key] = state
         self.row_values[state.key] = dict(rows)
+        self.row_ids[state.key] = set(rows)
         self.citer_values[state.key] = dict(citing)
         self.answer_values[state.key] = dict(answers)
         if len(self.states) > 4:
             key = next(iter(self.states))
-            for table in (self.states, self.row_values, self.citer_values, self.answer_values):
+            for table in (
+                self.states,
+                self.row_values,
+                self.row_ids,
+                self.citer_values,
+                self.answer_values,
+            ):
                 table.pop(key)

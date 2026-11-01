@@ -103,7 +103,14 @@ class Index(Protocol):
 
     def parses(self, keys: Collection[FileKey]) -> dict[FileKey, Parsed | None]: ...
 
-    def keep_parses(self, parsed: Mapping[FileKey, Parsed | None], *, files: int) -> None: ...
+    def keep_parses(
+        self,
+        parsed: Mapping[FileKey, Parsed | None],
+        *,
+        files: int,
+        used: Mapping[FileKey, Parsed | None] | None = None,
+        epoch: int | None = None,
+    ) -> None: ...
 
     def candidates(
         self, words: Collection[str], every: bool
@@ -115,7 +122,7 @@ class Index(Protocol):
 
     def state(self, key: str) -> StoredState | None: ...
 
-    def rows(self, key: str, ids: Collection[str]) -> dict[str, Row]: ...
+    def rows(self, key: str, ids: Collection[str]) -> dict[str, Row] | None: ...
 
     def all_rows(self, key: str) -> dict[str, Row]: ...
 
@@ -134,6 +141,8 @@ class Index(Protocol):
         facts: Mapping[str, StateFacts],
         *,
         files: int,
+        used: Mapping[FileKey, Parsed | None] | None = None,
+        epoch: int | None = None,
     ) -> None: ...
 
     def keep_state(

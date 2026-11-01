@@ -4,6 +4,7 @@ import json
 import sqlite3
 from collections.abc import Collection, Mapping
 from contextlib import AbstractContextManager
+from hashlib import sha1
 
 from lodge.app import (
     FileKey,
@@ -89,27 +90,29 @@ class IndexStates:
                     self.db.execute(f"SELECT count(*) FROM {table} WHERE key=?", (key,)).fetchone()[
                         0
                     ]
-                    for table in ("buckets", "answers", "citers")
+                    for table in ("buckets JOIN bucket_blobs USING(hash)", "answers", "citers")
                 )
                 return value if counts == value.promised else None
         except Exception:
             return None
 
-    def rows(self, key: str, ids: Collection[str]) -> dict[str, Row]:
+    def rows(self, key: str, ids: Collection[str]) -> dict[str, Row] | None:
         try:
             with transaction(self.db):
                 found: dict[str, Row] = {}
                 for name in {i[-2:] for i in ids}:
-                    value = self._value("buckets", "key=? AND name=?", (key, name))
+                    value = self._value(
+                        "buckets JOIN bucket_blobs USING(hash)", "key=? AND name=?", (key, name)
+                    )
                     if not isinstance(value, dict) or not all(
                         isinstance(i, str) and isinstance(r, Row) and i[-2:] == name
                         for i, r in value.items()
                     ):
-                        return {}
+                        return None
                     found.update(value)
                 return {i: found[i] for i in ids if i in found}
         except Exception:
-            return {}
+            return None
 
     def all_rows(self, key: str) -> dict[str, Row]:
         try:
@@ -119,7 +122,8 @@ class IndexStates:
                     return {}
                 rows: dict[str, Row] = {}
                 for name, raw in self.db.execute(
-                    "SELECT name,value FROM buckets WHERE key=?", (key,)
+                    "SELECT name,value FROM buckets JOIN bucket_blobs USING(hash) WHERE key=?",
+                    (key,),
                 ):
                     value = decode(raw)
                     if not isinstance(value, dict) or not all(
@@ -161,11 +165,14 @@ class IndexStates:
         facts: Mapping[str, StateFacts],
         *,
         files: int,
+        used: Mapping[FileKey, Parsed | None] | None = None,
+        epoch: int | None = None,
     ) -> None:
         try:
             with transaction(self.db, write=True):
                 prepare_keep(self.db, files)
-                insert_parses(self.db, parses)
+                changed = self.db.execute("SELECT epoch FROM meta").fetchone()[0] != epoch
+                insert_parses(self.db, used if changed and used is not None else parses)
                 insert_facts(self.db, facts)
                 self.db.execute(
                     "INSERT OR REPLACE INTO seen SELECT ?,coalesce(max(at),0)+1 FROM seen", (key,)
@@ -192,6 +199,7 @@ class IndexStates:
     ) -> None:
         try:
             encoded = buckets(rows)
+            hashes = {raw: sha1(raw.encode()).hexdigest() for raw in set(encoded.values())}
             with transaction(self.db, write=True):
                 prepare_keep(self.db, files)
                 changed = self.db.execute("SELECT epoch FROM meta").fetchone()[0] != epoch
@@ -204,8 +212,15 @@ class IndexStates:
                 ).fetchall()
                 for (key,) in evicted:
                     self._remove(key)
+                for raw, digest in hashes.items():
+                    self.db.execute("INSERT OR IGNORE INTO bucket_blobs VALUES(?,?)", (digest, raw))
                 for name, raw in encoded.items():
-                    self.db.execute("INSERT INTO buckets VALUES(?,?,?)", (state.key, name, raw))
+                    self.db.execute(
+                        "INSERT INTO buckets VALUES(?,?,?)", (state.key, name, hashes[raw])
+                    )
+                self.db.execute(
+                    "DELETE FROM bucket_blobs WHERE hash NOT IN (SELECT hash FROM buckets)"
+                )
                 for table, values in (("answers", answers), ("citers", citing)):
                     for name, value in values.items():
                         self.db.execute(

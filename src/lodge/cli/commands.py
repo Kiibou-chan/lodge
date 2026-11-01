@@ -65,14 +65,13 @@ def run(
             lodge = make_lodge()
             results = lodge.search_many(parsed, filters, limit)
             print(search_text(results, brief, filters.status == "current"))
-            sys.stdout.flush()
-            lodge.after_output()
+            if _flushed():
+                lodge.after_output()
         case Show(refs, reasoning, provenance):
             lodge = make_lodge()
             status = _show(lodge, refs, reasoning, provenance)
-            sys.stdout.flush()
-            sys.stderr.flush()
-            lodge.after_output()
+            if _flushed() and _flushed(stderr=True):
+                lodge.after_output()
             return status
         case Draft(ref):
             text = make_lodge().draft(ref)
@@ -90,13 +89,12 @@ def run(
         case Waiting():
             lodge = make_lodge()
             print(waiting_text(*lodge.waiting_all()))
-            sys.stdout.flush()
-            lodge.after_output()
+            if _flushed():
+                lodge.after_output()
         case Threads() | ThreadCommand() | Ask() | Reply() | Close():
             lodge = make_lodge()
             status = run_thread(command, lodge)
-            if isinstance(command, (Threads, ThreadCommand)):
-                sys.stdout.flush()
+            if isinstance(command, (Threads, ThreadCommand)) and _flushed():
                 lodge.after_output()
             return status
         case Guide(read):
@@ -112,12 +110,20 @@ def run(
     return 0
 
 
+def _flushed(*, stderr: bool = False) -> bool:
+    stream = sys.stderr if stderr else sys.stdout
+    if stream is None:
+        return False
+    stream.flush()
+    return True
+
+
 def _show(lodge: Lodge, refs: Sequence[str], reasoning: bool, provenance: bool) -> int:
     result = lodge.show_many(refs, reasoning, provenance)
     if len(result.items) == 1:
         item = result.items[0][1]
         if isinstance(item, LodgeError):
-            sys.stdout.flush()
+            _flushed()
             raise item
         print(shown_text(item))
         return 0
@@ -131,7 +137,7 @@ def _show(lodge: Lodge, refs: Sequence[str], reasoning: bool, provenance: bool) 
         if position or isinstance(item, LodgeError):
             print(f"----- {ref}")
         if isinstance(item, LodgeError):
-            sys.stdout.flush()
+            _flushed()
             print(f"lodge: {item}", file=sys.stderr)
             status = max(status, item.exit_code)
         else:

@@ -135,7 +135,7 @@ def test_first_sightings_alone_stay_under_the_cap(tmp_path: Path, initial_clear:
 
     for n in range(50):
         index.mark_seen(str(n), {(str(n), "blob"): Problem("x", 1, "x" * 600000)}, {}, files=1)
-        assert index_space.used_bytes(index.db) <= index_space.MIN_FILE_CAP + 700000
+        assert index_space.used_bytes(index.db) <= index_space.index_file_cap(1) + 700000
         assert index.db.execute("SELECT kept FROM meta").fetchone()[0] == 0
     assert index.epoch() > epoch and index.seen("49")
     keep(index, "49")
@@ -152,7 +152,7 @@ def test_parse_only_writers_cross_the_cap(tmp_path: Path, with_state: bool) -> N
     epoch = index.epoch()
     for n in range(50):
         index.keep_parses({(str(n), "blob"): Problem("x", 1, "x" * 600000)}, files=1)
-        assert index_space.used_bytes(index.db) < index_space.MIN_FILE_CAP + 700000
+        assert index_space.used_bytes(index.db) < index_space.index_file_cap(1) + 700000
     assert index.epoch() > epoch
     assert index.db.execute("SELECT kept FROM meta").fetchone()[0] == 0
     index.close()

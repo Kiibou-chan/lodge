@@ -98,9 +98,14 @@ def write(
             ),
             w.index,
             state.parses,
+            epoch=state.epoch,
         )
         check = core.check_change(
-            snapshot_of(state.published, w.index, state.parses), after, w.settings, now, s
+            snapshot_of(state.published, w.index, state.parses, epoch=state.epoch),
+            after,
+            w.settings,
+            now,
+            s,
         )
         if not check.ok:
             return Written((thread.id,), AddOutcome.CHECK_FAILED, check, about=thread.about)
