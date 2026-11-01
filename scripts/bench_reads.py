@@ -208,6 +208,7 @@ def main() -> None:
     cache = Path(gitdir) / "lodge"
     if subprocess.check_output(["git", "status", "--porcelain", "--", "lodge"], cwd=store, env=env):
         parser.error("every mode requires a clean lodge folder")
+    subprocess.run(["git", "update-index", "--refresh"], cwd=store, check=True, env=env)
     results = [
         measure(store, build, commands, args.mode, args.runs, cache, entry, args.timeout, env)
         for build in builds

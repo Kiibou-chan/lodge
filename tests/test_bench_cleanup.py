@@ -155,6 +155,7 @@ def test_timeout_keeps_successful_samples_in_the_same_row(
         lambda args, **_: str(tmp_path) if "rev-parse" in args else "",
     )
     monkeypatch.setattr(module, "measure", lambda *_: [[(0.001, 0, "ok"), (0.01, None, None)]])
+    monkeypatch.setattr(module.subprocess, "run", Mock())
     monkeypatch.setattr(
         "sys.argv",
         [

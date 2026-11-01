@@ -192,6 +192,7 @@ def test_replay_observes_shared_common_cache(
     replay = Mock(return_value=[[(0.01, 0, "ok")]])
     monkeypatch.setattr(module.subprocess, "check_output", git)
     monkeypatch.setattr(module, "measure", replay)
+    monkeypatch.setattr(module.subprocess, "run", Mock())
     monkeypatch.setattr(
         "sys.argv",
         [
