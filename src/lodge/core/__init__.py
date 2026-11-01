@@ -12,7 +12,7 @@ from lodge.core.confirmation import (
     confirmable_ids,
     confirmation_draft,
 )
-from lodge.core.derive import Derived, derive, is_author
+from lodge.core.derive import Derived, Status, derive, is_author
 from lodge.core.drafts import Draft, parse_draft, record_from_draft
 from lodge.core.feedback import Feedback, area_feedback, feedback
 from lodge.core.fileformat import (
@@ -138,6 +138,7 @@ __all__ = [
     "SpecArea",
     "SpecEntry",
     "StaleBase",
+    "Status",
     "Thread",
     "ThreadState",
     "Tree",

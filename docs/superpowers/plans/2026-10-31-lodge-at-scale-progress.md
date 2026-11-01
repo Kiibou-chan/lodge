@@ -158,3 +158,18 @@ With FTS, the second s90000 state's added space falls from 59.59 MB to 8.39 MB, 
 Both layouts clear ten times in ten edit/read/read/read cycles at both sizes; the cap stays unchanged pending DISK-1.
 The larger stores' kept working sets exceed the production cap with FTS, so their clearing changed reads are cold, following Task 10b's wording.
 The red evidence, gate, space measurements, and concerns are in `2026-10-31-lodge-at-scale/task-10c-report.md`.
+
+
+## Task 10c
+
+Changed indexed reads take the published snapshot's own immutable facts by ident, while still assembling both snapshots and running the full change check.
+Only current `derive` and `check_state` run on a facts hit; missing, invalid, or incomplete facts are computed in full.
+First-sighting markers store current and published facts, including used hits for epoch recovery; later state evictions leave facts intact.
+The exact readers and gate still use only the parse cache.
+The required `Checked`, facts-conversion type, and unencodable-key adapter hand-offs are included in the amended Files list.
+The final gate passes 2,149 tests, with six skipped, plus formatting, Ruff, strict mypy, Vulture, and `lodge check --gate`.
+All 48 s90000 changed-mode replay samples match the exact reader's stdout, stderr, and exit status; all clear the over-cap baseline and are reported as cold.
+The no-clear `show A` phase probe measures 8.415025 s with published facts and 9.672830 s without, best of three, under interim R11-A.
+A new current ident adds 3,329,571 JSON value bytes of facts on that store; a published-facts miss adds 6,659,142 in all.
+DISK-1, the unchanged cap's inability to fit one complete state with words, W6's deferred facts policy, and the Task 12 stop remain as reported.
+The complete implementation, red evidence, gate, phase table, replay table, and concerns are in `2026-10-31-lodge-at-scale/task-10c-report.md`.

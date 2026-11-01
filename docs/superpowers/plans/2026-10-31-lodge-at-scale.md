@@ -696,7 +696,7 @@ Marker and parse-only writers receive the caller's used parses and starting epoc
 ### Task 10c: The published state's facts from the index
 
 **Files:**
-- Modify: `src/lodge/app/read_model.py` (`ChangeFacts` from stored facts), `src/lodge/app/indexed.py`
+- Modify: `src/lodge/app/read_model.py` (`ChangeFacts` from stored facts), `src/lodge/app/indexed.py`, `src/lodge/app/state.py` (`Checked` carries cached published facts without a derived object; `finish_checked` accepts the already-built change facts), `src/lodge/core/__init__.py` (exports the existing `Status` type for the validated facts-to-change-facts hand-off), `src/lodge/gitstore/index_states.py` (skip an unencodable facts key without discarding other marker units)
 - Test: `tests/app/test_published_facts.py` (new)
 
 **Interfaces:**
