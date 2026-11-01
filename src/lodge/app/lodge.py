@@ -11,6 +11,7 @@ from lodge.app.results import (
     Listed,
     Read,
     Shown,
+    ShownMany,
     ThreadList,
     ThreadShown,
     ThreadsWaiting,
@@ -29,6 +30,11 @@ class Lodge:
 
     def show(self, ref: str, reasoning: bool = False, provenance: bool = False) -> Shown:
         return reads.show(self._w, ref, reasoning, provenance)
+
+    def show_many(
+        self, refs: Sequence[str], reasoning: bool = False, provenance: bool = False
+    ) -> ShownMany:
+        return reads.show_many(self._w, refs, reasoning, provenance)
 
     def waiting_all(self) -> tuple[Listed, ThreadsWaiting]:
         """Decisions and threads waiting, checked in the same snapshot."""

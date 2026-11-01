@@ -4,6 +4,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 from enum import StrEnum
 
+from lodge.app.errors import LodgeError
 from lodge.app.ports import Committed
 from lodge.core import Branch, CheckResult, Feedback, Level1, Level3, Problem, Thread
 
@@ -36,6 +37,16 @@ class Shown:
     confirmable: bool = False
     rests_on: tuple[Branch, ...] = ()
     supports: tuple[Level1, ...] = ()
+    siblings: tuple[Level1, ...] = ()
+    citers: tuple[Level1, ...] = ()
+    left_out: tuple[int, int] = (0, 0)
+    repeat: bool = False
+
+
+@dataclass(frozen=True)
+class ShownMany:
+    items: tuple[tuple[str, Shown | LodgeError], ...]
+    read: Read
 
 
 @dataclass(frozen=True)

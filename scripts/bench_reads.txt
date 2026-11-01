@@ -10,3 +10,5 @@ threads
 spec --area area-001
 check
 check --gate
+show {code} {code2} {entry}
+show A

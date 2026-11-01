@@ -1,13 +1,13 @@
 """The read operations: each reads the store once and checks what it read."""
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from dataclasses import replace
 from datetime import datetime
 
 from lodge import core
 from lodge.app import threads
 from lodge.app.errors import LodgeError
-from lodge.app.results import Listed, Read, Shown, ThreadsWaiting
+from lodge.app.results import Listed, Read, Shown, ShownMany, ThreadsWaiting
 from lodge.app.state import Checked, State, Wiring, not_found, read_checked, read_state, resolve_ref
 from lodge.core import (
     CheckResult,
@@ -38,10 +38,16 @@ def search_records(w: Wiring, query: str, filters: Filters, limit: int) -> Liste
 
 def show(w: Wiring, ref: str, reasoning: bool, provenance: bool) -> Shown:
     state = read_checked(w)
-    record_id = resolve_ref(state, ref)
+    return _shown(state, resolve_ref(state, ref), reasoning, provenance)
+
+
+def _shown(state: State, record_id: str, reasoning: bool, provenance: bool) -> Shown:
     s, d = state.snapshot, state.derived
+    view = level1(s, d, record_id, state.failing)
+    siblings = tuple(i for i in core.family(s, view.code) if i != record_id) if view.code else ()
+    citing = core.citers(s, d, view.code) if view.code else ()
     return Shown(
-        level1(s, d, record_id, state.failing),
+        view,
         level2(s, d, record_id, state.failing) if reasoning else None,
         level3(s, d, record_id) if provenance else None,
         state.read,
@@ -50,7 +56,29 @@ def show(w: Wiring, ref: str, reasoning: bool, provenance: bool) -> Shown:
         record_id in core.confirmable_ids(s, d),
         core.rests_on_tree(s, d, record_id),
         _views(state, d.supports.get(record_id, ())),
+        siblings=_views(state, siblings[:10]),
+        citers=_views(state, citing[:10]),
+        left_out=(max(0, len(siblings) - 10), max(0, len(citing) - 10)),
     )
+
+
+def show_many(w: Wiring, refs: Sequence[str], reasoning: bool, provenance: bool) -> ShownMany:
+    """Each ref in order from one checked read, retaining failures and marking repeats."""
+    state = read_checked(w)
+    seen: dict[str, Shown] = {}
+    items: list[tuple[str, Shown | LodgeError]] = []
+    for ref in refs:
+        try:
+            ident = resolve_ref(state, ref)
+            if ident in seen:
+                shown = replace(seen[ident], repeat=True)
+            else:
+                shown = _shown(state, ident, reasoning, provenance)
+                seen[ident] = shown
+            items.append((ref, shown))
+        except LodgeError as error:
+            items.append((ref, error))
+    return ShownMany(tuple(items), state.read)
 
 
 def waiting_all(w: Wiring) -> tuple[Listed, ThreadsWaiting]:
