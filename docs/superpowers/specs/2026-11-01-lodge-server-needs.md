@@ -28,6 +28,7 @@ A workflow spans "how the whole project is coordinated and run to how each task 
 The author: "Conceptually the workflow is fine, but again everything is in files and chats. Interaction is only through chats."
 What is needed instead: "A UI that would make the state of each task and Dev part etc explicit and easy to interact with in a way that concerns are also separated (mocking and design is done somewhere else than implementation for example)."
 The workflow is adaptable, not fixed: "On the one hand I like opinionated tooling but I also don't know if this is the best way to do this and I'm sure that it does not fit every project. So it should be adaptable/not fixed."
+What went wrong with mocking was not that it mixed into implementation: "mocks got lost. And also sometimes I was mocking together with a session that also did coordination and that was annoying because of the other messages in between."
 
 ## Sessions
 
@@ -49,4 +50,4 @@ lodge was written in Python because of its first constraints; reimplementing it 
 
 1. Workflow: which concerns get a place of their own; the author is not sure yet.
 2. How tasks and decisions relate to code, which stays in git: branches, merges, and review; the author is not sure yet.
-3. Architecture and language, proposed once the points above are settled.
+3. Architecture and language: decided, see `2026-11-02-lodge-server-architecture-options.md`.
