@@ -1,3 +1,4 @@
+export { type Draft, parseDraft, recordFromDraft } from "./drafts.ts";
 export * from "./errors.ts";
 export {
   areaPath,

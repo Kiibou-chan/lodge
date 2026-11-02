@@ -1,11 +1,5 @@
 {
-  "entry": [
-    "tests/**/*.test.ts",
-    "scripts/*.ts",
-    "src/core/headers.ts",
-    "src/core/document.ts",
-    "src/core/fields.ts"
-  ],
+  "entry": ["tests/**/*.test.ts", "scripts/*.ts", "src/core/document.ts", "src/core/fields.ts"],
   "project": ["src/**/*.ts", "tests/**/*.ts", "scripts/**/*.ts"],
   "ignoreDependencies": []
 }

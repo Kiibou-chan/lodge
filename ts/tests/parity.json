@@ -188,7 +188,7 @@
     "ts": ["ts/tests/core/doubts.test.ts"]
   },
   "tests/core/test_drafts.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 1,
     "task": ["5b"],
     "ts": ["ts/tests/core/drafts.test.ts"]
@@ -230,7 +230,7 @@
     "ts": ["ts/tests/core/fileformat-problems.test.ts"]
   },
   "tests/core/test_fileformat_text.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 1,
     "task": ["5b"],
     "ts": ["ts/tests/core/fileformat-text.test.ts"]
