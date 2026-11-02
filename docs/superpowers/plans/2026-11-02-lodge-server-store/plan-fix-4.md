@@ -18,3 +18,7 @@ One rule they consume changed since `plan-fix-3.md`; the names are unchanged.
 - `threadsWaiting` and `waitingAll`: a held message changes no thread's waiting; a thread waits for a person or an agent by its last published message only, as before; a held relay is listed by `held()` and becomes the thread's last message when approved. This replaces `plan-fix-3.md`'s line that a thread with an open held `reply` or `close` waits for the person.
 - Plan 3's carried tests: `waiting_groups_threads` still approves the relayed author question through the person's session before its assertions, since a held `ask` makes no thread until it is approved; `author_words_are_recorded_exactly` likewise.
 - Plan 4: the import's check is d-n9nm8h's (the change check from an empty state), which plan 2 now cites; nothing plan 4 consumes from plan 2 changed.
+
+## Addendum: recheck 4
+
+- R4-1 (Minor, a mutation that leaves its test green): `one_person_cannot_write_as_another` acts as the person `bo`, and Task 12c holds only agents' messages, so placing the hold before the `Forbidden` changes nothing for it; Task 12c's Step 2 now names the mutation that replaces the other-person `Forbidden` with a hold of the message for the person it names, which turns the test red (no `Forbidden`, and a hold where it asserts none).
