@@ -1,3 +1,5 @@
+type WithDefaults<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+
 export const Scope = { PRODUCT: "product", PROCESS: "process" } as const;
 export type Scope = (typeof Scope)[keyof typeof Scope];
 export const Action = { CREATE: "create", EDIT: "edit", RETIRE: "retire", LINK: "link" } as const;
@@ -40,7 +42,7 @@ export interface Decision {
   readonly importedFrom: Imported | null;
 }
 export function decision(
-  value: Omit<
+  value: WithDefaults<
     Decision,
     | "reasoning"
     | "code"
@@ -54,24 +56,7 @@ export function decision(
     | "attachments"
     | "importedFrom"
     | "kind"
-  > &
-    Partial<
-      Pick<
-        Decision,
-        | "reasoning"
-        | "code"
-        | "changes"
-        | "replaces"
-        | "narrows"
-        | "confirms"
-        | "workItem"
-        | "quote"
-        | "numbers"
-        | "attachments"
-        | "importedFrom"
-        | "kind"
-      >
-    >,
+  >,
 ): Decision {
   return {
     kind: "decision",
@@ -100,8 +85,7 @@ export interface SpecEntry {
   readonly restsOn: readonly string[];
 }
 export function specEntry(
-  value: Omit<SpecEntry, "code" | "importedFrom" | "restsOn" | "kind"> &
-    Partial<Pick<SpecEntry, "code" | "importedFrom" | "restsOn" | "kind">>,
+  value: WithDefaults<SpecEntry, "code" | "importedFrom" | "restsOn" | "kind">,
 ): SpecEntry {
   return {
     kind: "spec",
@@ -119,9 +103,7 @@ export interface Area {
   readonly order: readonly string[];
   readonly rank: number | null;
 }
-export function area(
-  value: Omit<Area, "rank" | "kind"> & Partial<Pick<Area, "rank" | "kind">>,
-): Area {
+export function area(value: WithDefaults<Area, "rank" | "kind">): Area {
   return {
     kind: "area",
     rank: null,
@@ -135,9 +117,7 @@ export interface Problem {
   readonly message: string;
   readonly line: number | null;
 }
-export function problem(
-  value: Omit<Problem, "line" | "kind"> & Partial<Pick<Problem, "line" | "kind">>,
-): Problem {
+export function problem(value: WithDefaults<Problem, "line" | "kind">): Problem {
   return {
     kind: "problem",
     line: null,
@@ -154,7 +134,7 @@ export interface Message {
   readonly text: string;
   readonly where: string | null;
 }
-export function message(value: Omit<Message, "where"> & Partial<Pick<Message, "where">>): Message {
+export function message(value: WithDefaults<Message, "where">): Message {
   return {
     where: null,
     ...value,

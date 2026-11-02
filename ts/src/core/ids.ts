@@ -1,8 +1,9 @@
 import { ValueError } from "./errors.ts";
 
 const ALPHABET = "0123456789abcdefghjkmnpqrstvwxyz";
+const ID = new RegExp(`^[dsq]-[${ALPHABET}]{6}$`, "u");
 export function isId(text: string): boolean {
-  return /^[dsq]-[0123456789abcdefghjkmnpqrstvwxyz]{6}$/u.test(text);
+  return ID.test(text);
 }
 export function mintId(prefix: "d" | "s" | "q", entropy: Uint8Array): string {
   if (entropy.length < 6)

@@ -25,12 +25,15 @@ test("instant_respects_the_offset", () => {
   expect(instant("0001-01-01T00:00:00+00:00")).toBe(-62135596800000);
 });
 test("compare_orders_by_instant", () => {
+  expect(compareStamps("2026-10-29T11:00:00+00:00", "2026-10-29T12:00:01+01:00")).toBeLessThan(0);
   expect(compareStamps("2026-10-29T12:00:00+01:00", "2026-10-29T11:00:00+00:00")).toBe(0);
   expect(compareStamps("2026-10-29T12:00:01+01:00", "2026-10-29T11:00:00+00:00")).toBeGreaterThan(
     0,
   );
 });
 test("day_must_be_real", () => {
+  expect(isDay("1900-02-29")).toBe(false);
+  expect(isDay("2000-02-29")).toBe(true);
   expect(isDay("2024-02-29")).toBe(true);
   for (const s of ["2026-02-29", "0000-01-01", "2026-13-01", "2026-01-00"])
     expect(isDay(s)).toBe(false);

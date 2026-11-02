@@ -157,7 +157,7 @@ test.each(["", "-a", ".a", "a b", "a:b", "a\n", "\u00e9"].map((c) => [c] as cons
     const header = [
       "id: d-3m8qk2",
       "kind: decision",
-      `code: "${code}"`,
+      `code: ${JSON.stringify(code)}`,
       'title: "T"',
       "scope: product",
     ];

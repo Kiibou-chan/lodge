@@ -45,3 +45,7 @@ export function instant(stamp: string): number {
 export function compareStamps(a: string, b: string): number {
   return instant(a) - instant(b);
 }
+
+export function orderInstant(date: string): number {
+  return instant(isDay(date) ? `${date}T00:00:00+00:00` : date);
+}

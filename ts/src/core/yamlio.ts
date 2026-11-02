@@ -52,7 +52,7 @@ function checkReader(text: string): void {
         cp >= 0x10000
       )
     )
-      throw new YamlError(`unreadable character ${pyRepr(ch)}`, line);
+      throw new YamlError(`unreadable character ${cp}`, line);
     if (ch === "\n") line++;
   }
 }
@@ -79,7 +79,8 @@ export function loadYaml(text: string): unknown {
   const lines = new LineCounter();
   const docs = parseAllDocuments(pythonAliasKeys(text), {
     schema: "failsafe",
-    uniqueKeys: true,
+    uniqueKeys: false,
+    prettyErrors: false,
     lineCounter: lines,
   });
   const lineAt = (pos: number) => lines.linePos(pos).line;
@@ -90,14 +91,22 @@ export function loadYaml(text: string): unknown {
     );
   const doc = docs[0];
   if (!doc) return null;
+  const error = doc.errors[0];
+  if (error) throw new YamlError(error.message, lineAt(error.pos[0]));
   const document = doc;
+  const built = new Map<unknown, unknown>();
   function walk(node: unknown, depth: number): unknown {
+    if (built.has(node)) return built.get(node);
     if (depth >= 100 && !isScalar(node) && node !== null)
       throw new YamlError("the header is nested too deeply");
     if (node === null) return null;
     if (isAlias(node)) {
       const target = node.resolve(document);
-      if (!target) throw new YamlError("found undefined alias", lineAt(node.range?.[0] ?? 0));
+      if (!target)
+        throw new YamlError(
+          `found undefined alias ${pyRepr(node.source)}`,
+          lineAt(node.range?.[0] ?? 0),
+        );
       return walk(target, depth);
     }
     if (!isScalar(node) && !isMap(node) && !isSeq(node))
@@ -112,10 +121,25 @@ export function loadYaml(text: string): unknown {
       !(tag === "tag:yaml.org,2002:map" && isMap(node))
     )
       throw new YamlError(`unsupported tag ${tag}`, line);
-    if (isScalar(node)) return node.value === null ? "" : String(node.value);
-    if (isSeq(node)) return node.items.map((item) => walk(item, depth + 1));
+    if (isScalar(node)) {
+      const value = node.value === null ? "" : String(node.value);
+      built.set(node, value);
+      return value;
+    }
+    if (isSeq(node)) {
+      const result: unknown[] = [];
+      built.set(node, result);
+      for (const item of node.items) result.push(walk(item, depth + 1));
+      return result;
+    }
     const result = new Map<string, unknown>();
+    built.set(node, result);
     for (const pair of node.items) {
+      if (isAlias(pair.key) && !pair.key.resolve(document))
+        throw new YamlError(
+          `found undefined alias ${pyRepr(pair.key.source)}`,
+          lineAt(pair.key.range?.[0] ?? 0),
+        );
       const keyNode = isAlias(pair.key) ? pair.key.resolve(document) : pair.key;
       if (!isScalar(keyNode))
         throw new YamlError(
@@ -131,9 +155,5 @@ export function loadYaml(text: string): unknown {
     }
     return result;
   }
-  // Walk before package diagnostics so duplicate keys retain Python's message.
-  const result = walk(doc.contents, 0);
-  const error = doc.errors[0];
-  if (error) throw new YamlError(error.message, lineAt(error.pos[0]));
-  return result;
+  return walk(doc.contents, 0);
 }

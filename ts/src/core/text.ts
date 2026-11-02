@@ -1,28 +1,24 @@
 export const WORD_CLASS = "[\\p{L}\\p{N}_]";
 export const PY_SPACE_CLASS =
   "[\\u{9}-\\u{d}\\u{1c}-\\u{1f}\\u{20}\\u{85}\\u{a0}\\u{1680}\\u{2000}-\\u{200a}\\u{2028}\\u{2029}\\u{202f}\\u{205f}\\u{3000}]";
+const SPACE = new RegExp(PY_SPACE_CLASS, "u");
+const EDGES = new RegExp(`^${PY_SPACE_CLASS}+|${PY_SPACE_CLASS}+$`, "gu");
+const TRAILING = new RegExp(`${PY_SPACE_CLASS}+$`, "u");
+const RUN = new RegExp(`${PY_SPACE_CLASS}+`, "u");
+const LINE_BREAKS: ReadonlySet<number> = new Set([10, 11, 12, 13, 28, 29, 30, 133, 8232, 8233]);
 export function isPySpace(ch: string): boolean {
   const cp = ch.codePointAt(0);
-  return (
-    cp !== undefined &&
-    ((cp >= 9 && cp <= 13) ||
-      (cp >= 28 && cp <= 32) ||
-      cp === 133 ||
-      cp === 160 ||
-      cp === 5760 ||
-      (cp >= 8192 && cp <= 8202) ||
-      [8232, 8233, 8239, 8287, 12288].includes(cp))
-  );
+  return cp !== undefined && SPACE.test(String.fromCodePoint(cp));
 }
 export function strip(s: string): string {
-  return s.replace(new RegExp(`^${PY_SPACE_CLASS}+|${PY_SPACE_CLASS}+$`, "gu"), "");
+  return s.replace(EDGES, "");
 }
 export function rstrip(s: string): string {
-  return s.replace(new RegExp(`${PY_SPACE_CLASS}+$`, "u"), "");
+  return s.replace(TRAILING, "");
 }
 export function splitWords(s: string): string[] {
   const clean = strip(s);
-  return clean ? clean.split(new RegExp(`${PY_SPACE_CLASS}+`, "u")) : [];
+  return clean ? clean.split(RUN) : [];
 }
 export function splitLines(s: string): string[] {
   const result: string[] = [];
@@ -34,7 +30,7 @@ export function splitLines(s: string): string[] {
       continue;
     }
     const cp = ch.codePointAt(0);
-    if (cp !== undefined && [10, 11, 12, 13, 28, 29, 30, 133, 8232, 8233].includes(cp)) {
+    if (cp !== undefined && LINE_BREAKS.has(cp)) {
       result.push(line);
       line = "";
     } else line += ch;
