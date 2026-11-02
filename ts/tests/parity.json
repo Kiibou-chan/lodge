@@ -80,7 +80,7 @@
     "ts": ["ts/tests/core/checks.ts"]
   },
   "tests/core/derivation.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 1,
     "task": ["7a"],
     "ts": ["ts/tests/core/derivation.ts"]
@@ -164,19 +164,19 @@
     "ts": ["ts/tests/core/confirmation.test.ts"]
   },
   "tests/core/test_derive.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 1,
     "task": ["7a"],
-    "ts": ["ts/tests/core/derive.test.ts"]
+    "ts": ["ts/tests/core/derive.test.ts", "ts/tests/core/derive-imported.test.ts"]
   },
   "tests/core/test_derive_confirmed_retired.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 1,
     "task": ["7a"],
     "ts": ["ts/tests/core/derive-confirmed-retired.test.ts"]
   },
   "tests/core/test_derive_links.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 1,
     "task": ["7a"],
     "ts": ["ts/tests/core/derive-links.test.ts"]
