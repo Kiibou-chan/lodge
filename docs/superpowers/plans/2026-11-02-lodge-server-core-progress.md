@@ -50,3 +50,5 @@ Task 5a: built by Codex (1d57ad1), gate green outside the sandbox (356 TS tests)
 Task 4: fix round 1 by Codex (77993a1), gate green (379 TS tests); recheck running.
 Task 4: recheck 1: 15 of 15 closed, no new Blocking or Important (`task-4-recheck-1.md`); N-1 (Minor): `fileformat.test.ts:160` feeds an escaped newline where Python feeds a literal one, a listed YAML difference under d-p48gr1; parked for Task 5a's fix round to list it among that file's tests that cannot hold.
 Task 4: complete.
+Task 5b: built by Codex (7c3ab8b), gate green outside the sandbox (419 TS tests); Biome warns 16 times without failing.
+Task 5a: review 0 Blocking, 2 Important, 8 Minor (`task-5a-review.md`); writers agree with lodge 0.2 byte for byte on all 354 records under `lodge/`. Ruling: a rank beyond a safe integer is refused (d-4m6m35, C-1). Ruling: stored bytes decode as `surrogateescape` does, in the later plan that first decodes them (d-0q54zn, C-3; for the briefs of plans 2 and 4). Ruling: the gate fails on Biome warnings (d-f18pz7). Fix round 1 by Codex, with the parked Minors of Tasks 3 and 4.
