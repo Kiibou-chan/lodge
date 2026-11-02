@@ -1,0 +1,23 @@
+{
+  "name": "lodge",
+  "private": true,
+  "type": "module",
+  "packageManager": "bun@1.3.14",
+  "imports": {
+    "#core": "./src/core/index.ts"
+  },
+  "scripts": {
+    "check": "biome check . && tsc --noEmit -p . && depcruise src tests --config .dependency-cruiser.cjs && knip && bun test"
+  },
+  "dependencies": {
+    "@noble/hashes": "2.4.0",
+    "yaml": "2.9.1"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.15",
+    "@types/bun": "1.4.3",
+    "dependency-cruiser": "18.6.0",
+    "knip": "6.42.0",
+    "typescript": "6.0.3"
+  }
+}
