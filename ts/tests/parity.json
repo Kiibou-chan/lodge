@@ -74,7 +74,7 @@
     "ts": ["ts/tests/core/builders.ts"]
   },
   "tests/core/checks.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 1,
     "task": ["8a", "8b"],
     "ts": ["ts/tests/core/checks.ts"]
@@ -110,7 +110,7 @@
     "ts": ["ts/tests/core/area-feedback.test.ts"]
   },
   "tests/core/test_check_change.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 1,
     "task": ["8b"],
     "ts": ["ts/tests/core/check-change.test.ts"]
@@ -122,13 +122,13 @@
     "ts": ["ts/tests/core/check-compare.test.ts"]
   },
   "tests/core/test_check_current.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 1,
     "task": ["8b"],
     "ts": ["ts/tests/core/check-current.test.ts"]
   },
   "tests/core/test_check_immutable.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 1,
     "task": ["8b"],
     "ts": ["ts/tests/core/check-immutable.test.ts"]
@@ -140,7 +140,7 @@
     "ts": ["ts/tests/core/check-links.test.ts"]
   },
   "tests/core/test_check_retired.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 1,
     "task": ["8b"],
     "ts": ["ts/tests/core/check-retired.test.ts"]

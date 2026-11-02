@@ -1,4 +1,12 @@
-import { Action, type Area, coreSettings, type Decision, type SpecEntry } from "#core";
+import {
+  Action,
+  type Area,
+  checkChange,
+  coreSettings,
+  type Decision,
+  type Snapshot,
+  type SpecEntry,
+} from "#core";
 import { area, at, decision, entry, snapshotOf } from "./builders.ts";
 export const SPEC = "s-aaaaaa",
   OLD = "d-aaaaaa";
@@ -38,3 +46,10 @@ export const REMEDY_CHECK_4 = "; list it in the decision's changes";
 export const REMEDY_CHECK_3 =
   "; add quote: {text, where, when} with the author's words, or record it under your own role";
 export const REMEDY_ATTACH = "; pass the file with --attach";
+
+export function check(before: Snapshot, after: Snapshot) {
+  return checkChange(before, after, SETTINGS, NOW);
+}
+export function verdict(before: Snapshot, after: Snapshot): [number, string][] {
+  return check(before, after).problems.map((p) => [p.check, p.message]);
+}

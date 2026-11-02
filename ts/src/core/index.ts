@@ -1,3 +1,4 @@
+export { checkChange } from "./check-change.ts";
 export { type CheckResult, checkState } from "./check-state.ts";
 export {
   behindArea,
