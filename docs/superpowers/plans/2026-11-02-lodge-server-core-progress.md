@@ -46,3 +46,7 @@ Task 3: fix round 1 by Codex (30557fe): every finding fixed, `allowed-imports` a
 Parked (Task 3, Minor): config and test both read `PACKAGES`, so a wrong edge in `table.ts` passes; a test pinning the table to d-k5swcq goes to the next round touching `ts/tests/structure/`.
 Task 3: complete.
 Task 4: review 1 Blocking, 6 Important, 8 Minor (`task-4-review.md`); 29 mutations each turned a test red, and the stated code-point differences hold exactly. Ruling: the YAML layer keeps the enumerated refusals and lists its other differences from PyYAML (d-p48gr1, narrowing d-bkc7md, C-2). Ruling: the unreadable-character message names the decimal code point (d-fbhdvf, C-3). Ruling: plan 3's entry point clears `LOG_TOKENS` and `LOG_STREAM` (d-v9mw2d, C-6; for plan 3's brief). Ruling: a bare day orders as midnight UTC (d-g1hrmn, D-1). Fix round 1 by Codex after Task 5a.
+Task 5a: built by Codex (1d57ad1), gate green outside the sandbox (356 TS tests); the builder flags `contentHash` of a lone surrogate and ranks beyond a number's precision, for the review.
+Task 4: fix round 1 by Codex (77993a1), gate green (379 TS tests); recheck running.
+Task 4: recheck 1: 15 of 15 closed, no new Blocking or Important (`task-4-recheck-1.md`); N-1 (Minor): `fileformat.test.ts:160` feeds an escaped newline where Python feeds a literal one, a listed YAML difference under d-p48gr1; parked for Task 5a's fix round to list it among that file's tests that cannot hold.
+Task 4: complete.
