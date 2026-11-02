@@ -60,3 +60,4 @@ Parked (Task 5b, Minor): C-1, C-2, P-2, P-3, P-4, and D-1 to the next round touc
 Task 5b: complete.
 Task 6: built by Codex (a73a148), gate green outside the sandbox (480 TS tests, 2 `test.todo` for the review); a first Codex run hung on standard input from 17:54 to 18:32 and was rerun with stdin closed.
 Author decision d-xdqsmf ("Yes, parallelise", 18:40): after Task 7a the remaining tasks run in lanes by the import graph (7b, 8a, and 11 at once; then 8b to 8c beside 9a, 9b, and 10), each in its own worktree merged into `server-core`; plans 2 to 4 are planned now on branches `server-store`, `server-api`, and `server-import`.
+Task 7a: built by Codex (1660e45), gate green outside the sandbox (531 TS tests, 4 `test.todo`). Ruling: Task 11 runs in a lane now, its front-door test, `planned` check, and knip `entry` restore in a closing step after the lanes merge (d-442r2f).
