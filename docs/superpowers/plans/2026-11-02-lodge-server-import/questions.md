@@ -1,6 +1,6 @@
 # Questions for the author: plan 4 of the server build
 
-**IMP-1 · who the export names in `decided_by`**
+**IMP-1 · who the export names in `decided_by`** (answered: A, d-b61590)
 
 Question: when the export writes a decision you made, or a thread message of yours, does it name you as a person, or write `author` as lodge 0.2 does?
 
@@ -16,4 +16,5 @@ Recommendation: B.
 The design also asks that the export read like a lodge 0.2 store (line 284), and under A a project's own `lodge check --gate` on its exported copy fails from the first confirmation.
 The person can be named in the export later, when a project has a second person, without touching any record on the server.
 
-Until you answer, the plan follows A, the design as approved; B changes one function of Task 6 (`exportFiles` writes `author` for the owner) and the expectations of Task 10.
+Answered 2026-11-02: A, "it's okay if lodge 0.2 can't read this... no one needs the backwards compat" (author decision d-b61590).
+The plan follows A with no lodge 0.2 compatibility: the export keeps lodge 0.2's file layout, and lodge 0.2's check, `lodge spec`, and `lodge waiting` need not read it cleanly (probe 7).
