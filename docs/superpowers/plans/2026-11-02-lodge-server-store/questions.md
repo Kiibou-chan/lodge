@@ -1,6 +1,6 @@
 # Questions for the author: plan 2 of the server build
 
-**STORE-1 · who writes a thread message under your name**
+**STORE-1 · who writes a thread message under your name** (answered: C, d-2v8vtk)
 
 Question: may an agent session write your words into a thread as a message by you, as lodge 0.2 lets it with where and when, or do only you, signed in, write a message under your name?
 
@@ -13,4 +13,5 @@ Question: may an agent session write your words into a thread as a message by yo
 Recommendation: A.
 A thread whose last message is yours no longer waits for you (`src/lodge/app/threads.py:139-145`), so a relayed answer moves work on without you, which is what SRV-2 rules out for decisions.
 
-Until you answer, the plan follows A (d-x6vaw8); B removes one refusal from Task 11's thread writes, and plan 3's command tests that write `--by author` through an agent token keep lodge 0.2's form.
+Answered: C, an option the coordinator added in the session (2026-11-02, d-2v8vtk): an agent may relay your words into a thread under your name, with where and when; the message is held, and the thread keeps waiting for you until you approve it signed in; a message you write signed in under your own name is not held, and one person writing under another's name is refused.
+The plan applies it in Tasks 11 and 12c, on the hold machinery of Tasks 12a and 12b.
