@@ -3,7 +3,6 @@
     "tests/**/*.test.ts",
     "scripts/*.ts",
     "tests/core/builders.ts",
-    "src/core/derive.ts",
     "src/core/check-state.ts",
     "tests/core/checks.ts"
   ],

@@ -158,7 +158,7 @@
     "ts": ["ts/tests/core/check-threads.test.ts"]
   },
   "tests/core/test_confirmation.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 1,
     "task": ["7b"],
     "ts": ["ts/tests/core/confirmation.test.ts"]
@@ -242,7 +242,7 @@
     "ts": ["ts/tests/core/ids.test.ts"]
   },
   "tests/core/test_order.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 1,
     "task": ["7b"],
     "ts": ["ts/tests/core/order.test.ts"]
