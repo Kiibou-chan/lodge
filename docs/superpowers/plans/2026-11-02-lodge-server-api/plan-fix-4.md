@@ -29,3 +29,16 @@ Names plan 4 consumes that changed: none of its table's (`Store`, `Projects`, `A
 ## Addendum: recheck 4's N-8
 
 - Task 5's `agents_relay_is_held` first adds, through the token, `seed`'s three drafts by `coordinator`, so its `ask` is about an entry that exists and plan 2 holds the relay instead of answering `not-found`.
+
+## Round 5: preflight
+
+Planner, on `server-api` from 9ac93ac, answering the 7 mismatches of `preflight.md` (committed with this round); the notes N-1 to N-5 and preconditions P-1 and P-2 are the briefs' and the coordinator's, and the plan's text is not changed for them.
+
+- M-1: Task 4's migration is `MIGRATIONS[2]`, `user_version` 2 to 3; `ts/tests/store/database.test.ts` joins Task 4's Modify; `schema_is_created_once` expects 3, `schema_1_is_migrated_to_2` keeps its name and now expects 3 with `held` and the account tables, and a sibling `schema_2_is_migrated_to_3` opens a version-2 file at 3 with its event kept.
+- M-2: Task 3's Files say "Create or modify `ts/src/cli/index.ts` and `ts/package.json`'s `imports`", since lane B runs beside Task 2.
+- M-3: Task 3's `settings.test.ts` gains `server_is_needed` (`serverOf` of `server: null` throws `CliError` with `NO_SERVER`, exit 2).
+- M-4: "Names consumed from plan 2" cites `origin/server-store` 0244e79; the ledger gains its alignment line.
+- M-5: Task 6's `held` answers an entry's draft as `{name, kind, title, statement}` and an area's as `{name, kind, title, intro}`, read from the `SpecEntry` and `Area`; `held_shows_the_drafts_as_core_reads_them` pins `Transcripts are kept`, `Held.`, `Storage`, and `How data is kept.`; Task 9's page shows an area's `intro`; a problem draft keeps its raw `text`.
+- M-6: Task 5's `project-create` refuses a `settings` key other than `length` and `import` with `settings: unknown section [<name>]` or `settings: unknown key <name>`; `project_create_checks_the_settings` gains the `store` case, with no project created.
+- M-7: the ten Python handles corrected as the scan lists them (`parser.py:153`, `main.py:29-30` and `:38`, `apply.py:137`, `commands.py:71-73`, `:104-105`, and `:115-122`, `threads.py:104-106` and `:71-82`, `settings.py:30-35`), each checked with `sed -n` in this tree; `probes.md` item 8 names d-j28rp0.
+- Harness: `world.ts` and `testServer()` keep their shape; this round changes neither.

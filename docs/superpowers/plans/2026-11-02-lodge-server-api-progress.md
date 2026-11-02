@@ -33,3 +33,4 @@ Fix round 3 by the planner (`plan-fix-2.md`, Round 3): N-5 fixed with the rechec
 Fix round 4 by the planner (`plan-fix-4.md`): N-7 fixed (an entry's draft read with its own or a placeholder area); the author's STORE-1 answer C (d-2v8vtk) applied from plan 2 at a035344 (Task 12c).
 Ruling: carried tests that rewrote a decision write a new file, and a relayed message is approved like a held add (d-4qv0xb, replacing d-81ps01).
 Correction to fix round 4: a held message changes no thread's waiting state (coordinator's ruling on plan 2's R3-1); "Names consumed from plan 2" and `plan-fix-4.md` say so.
+Alignment: plan 2 read at 0244e79 (`origin/server-store`); fix round 5 (`plan-fix-4.md`, Round 5) answers the preflight scan's 7 mismatches.
