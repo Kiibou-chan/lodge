@@ -43,6 +43,21 @@ lodge also works the other way round with cloud agent sessions: "Ideally this ca
 Once a cloud session runs, it talks to lodge itself, "via a public API and tools", so lodge reads a session's state and results from what the session reports rather than from Claude Code.
 The author: "Tailscale funnel should work for that. And using a mailbox branch in a repo is also an option."
 
+## Tasks and code
+
+Code stays in git; what lodge shows about a task's code comes from git itself (branches, commits, merges, diffs, from a clone on any host), from what sessions report through the API, and from a host such as GitHub only for pull requests and its CI.
+The author asked: "Does it have to be state on github or would it be state recorded by the session(s) too?"
+The model is the desktop app's: "claude desktop does something a bit like this where sessions record current tasks and check them etc"; asked whether lodge should work that way, the author: "Yes I think so."
+A session's report is its word; lodge checks what it can itself (the commit exists, the branch is merged, a gate rerun by the runner is green).
+Agreed for the design (the author: "yes"), built in this order, the first three first:
+
+1. A session's artefacts (a mock, a report, a review) are uploaded to the task, not left in the session's folder.
+2. A new session starts from the task's steps, artefacts, and decisions, not from a chat summary.
+3. Every session's open question goes into one waiting list across projects, answerable from a phone.
+4. A session's task list starts from the project's workflow, so lodge sees a skipped step.
+5. A step a session reports is shown apart from a step lodge has checked.
+6. Usage is totalled per task and step, and a session that stopped reporting or a task in its third fix round is flagged.
+
 ## Users
 
 lodge is for other people too: "Collaboration on projects sounds interesting. But also generally other people being able to use this would be good."
@@ -55,5 +70,5 @@ lodge was written in Python because of its first constraints; reimplementing it 
 ## Open points
 
 1. Workflow: which concerns get a place of their own; so far mocking, as described under Workflow; asked for another kind of work that went wrong the same way, the author: "I don't think so".
-2. How tasks and decisions relate to code, which stays in git: branches, merges, and review; the author is not sure yet.
+2. How tasks and decisions relate to code: answered, see Tasks and code.
 3. Architecture and language: decided, see `2026-11-02-lodge-server-architecture-options.md`.
