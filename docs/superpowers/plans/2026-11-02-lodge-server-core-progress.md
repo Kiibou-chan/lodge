@@ -73,3 +73,7 @@ Task 7a: review 0 Blocking, 2 Important, 5 Minor (`task-7a-review.md`); `derive`
 Task 7a: fix round 1 by Codex in lane `server-core-t7afix` (5a24b52): C-1 and C-2 fixed with failing-first evidence, `derive-review.ts` folded back; gate green (726 TS tests); D-2 answered by ruling d-qe513h.
 Task 7b and 8a: review (`task-7b-8a-review.md`): 7b 0 Blocking, 0 Important, 2 Minor; 8a 0 Blocking, 1 Important (D-1, `ok` a getter on a literal), 3 Minor; both cores agree on the store and 10 edited variants. Ruling: one comparator of order keys exported from `derive.ts`, and a `checkResult` constructor (d-qe513h). Fix round 1 by Codex in a lane on 8a-D-1, 7a-D-2, and the Minors of 7b and 8a.
 Task 7b: complete (its Minors go into the 8a fix round).
+Task 7a: recheck 1: 6 closed, 0 open, D-2 handed to the 8a fix round under d-qe513h (`task-7a-recheck-1.md`); the fix merges with the 8a fix lane.
+Task 7a: complete.
+Task 8c: built by Codex (5cace5c): the 51 carried names each fail against a targeted mutation; Task 11's five `checkChange` assertions and 9a's fifteen thread-check names restored; gate green.
+Task 9b: built by Codex in lane `server-core-t9b` (c54d421); merged.
