@@ -18,3 +18,4 @@ Ruling: projects and members are events behind a `Projects` port (d-wx7d0f).
 Ruling: the import is checked by its own state check, since it publishes through the store (d-pprhpz, narrowing d-fv20kp after plan 4's d-y42b7b).
 Alignment: plan 3 read at f2dcc72 (`origin/server-api`), plan 4 at 34c12f1 (`origin/server-import`); `Store.attachmentTexts` added for plan 4's export.
 No value trade-off for the author, so no `questions.md`.
+Plan: reviews correctness 0B/9I/10M and practice 0B/7I/9M (`plan-review-correctness.md`, `plan-review-practice.md`). Fix round 1 by the planner.
