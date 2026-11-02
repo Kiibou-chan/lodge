@@ -1,6 +1,6 @@
 # Planner report: plan 2, the events store and the operations
 
-Status: first full draft committed; rulings being recorded in lodge.
+Status: plan written, eleven rulings recorded; self-review pass next.
 
 ## Done
 
@@ -8,9 +8,13 @@ Status: first full draft committed; rulings being recorded in lodge.
 - Probes 1 to 8 (`probes.md`): a `text` column loses a leading U+FEFF and corrupts lone surrogates, so file texts go in `blob`s; Kysely serialises transactions on one connection; a read-then-write transaction across two connections fails, a compare-and-set first statement does not; the app's default-filling functions; an edit of a decision through `add` is refused by check 5.
 - First draft: 14 tasks, lanes A (app, Tasks 2 to 6), B (store, Tasks 7 and 8), and C (core people and flags, Tasks 10 and 13).
 
+## Rulings
+
+d-59q4jc (asynchronous ports), d-ae1vn5 (the port's shape), d-wje1cn (events and the compare-and-set), d-vd3175 (options objects), d-t7er56 (lanes), d-rp74dr (thread fix paths), d-kj59bz (people), d-znagqe (held drafts), d-4spcem (flags per person), d-fv20kp (the check on every write), d-wx7d0f (projects); `lodge check` ok.
+
 ## Open
 
-- Record the eleven rulings with `lodge add` and put their IDs in the plan and ledger.
+- A self-review pass over the plan against the brief and plan 1.
 
 ## Concerns
 
