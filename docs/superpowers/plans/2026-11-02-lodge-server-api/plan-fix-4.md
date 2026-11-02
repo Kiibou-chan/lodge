@@ -25,3 +25,7 @@ Names plan 4 consumes that changed: none of its table's (`Store`, `Projects`, `A
 ## After the coordinator's ruling on plan 2's R3-1
 
 - "Names consumed from plan 2" now says a held message changes no thread's waiting state, which follows the last published message only; no test of this plan asserted the dropped rule, and `waiting_groups_threads` approves the held question before it asserts, as before.
+
+## Addendum: recheck 4's N-8
+
+- Task 5's `agents_relay_is_held` first adds, through the token, `seed`'s three drafts by `coordinator`, so its `ask` is about an entry that exists and plan 2 holds the relay instead of answering `not-found`.
