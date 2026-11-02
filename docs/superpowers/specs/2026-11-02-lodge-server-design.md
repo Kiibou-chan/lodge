@@ -1,6 +1,6 @@
 # lodge server design
 
-Status: draft for the author, 2026-11-02.
+Status: approved by the author, 2026-11-02 13:52 ("Approved"); her questions SRV-1 and SRV-2 answered.
 Sources: the needs (`2026-11-01-lodge-server-needs.md`), the architecture decisions (`2026-11-02-lodge-server-architecture-options.md`), and the research (`../../research/2026-11-02-server-feasibility.md`).
 Quotes are the author's; **[my call]** marks a choice made in writing this document, for her to check.
 The first design (`2026-10-29-lodge-design.md`) and the viewer design (`2026-10-31-lodge-viewer-interaction-design.md`) stay the authority for what records mean; this document changes where they live and adds what surrounds them.
