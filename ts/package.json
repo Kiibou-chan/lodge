@@ -7,6 +7,7 @@
     "#core": "./src/core/index.ts"
   },
   "scripts": {
+    "test:structure": "bun test tests/structure tests/parity.test.ts",
     "check": "biome check . && tsc --noEmit -p . && depcruise src tests --config .dependency-cruiser.cjs && knip && bun test"
   },
   "dependencies": {

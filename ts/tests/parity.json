@@ -1,0 +1,702 @@
+{
+  "tests/app/conftest.py": {
+    "status": "planned",
+    "plan": 2,
+    "ts": ["ts/tests/app/support.ts"]
+  },
+  "tests/app/fakes.py": {
+    "status": "planned",
+    "plan": 2,
+    "ts": ["ts/tests/app/fakes.ts"]
+  },
+  "tests/app/support.py": {
+    "status": "planned",
+    "plan": 2,
+    "ts": ["ts/tests/app/support.ts"]
+  },
+  "tests/app/test_confirm.py": {
+    "status": "planned",
+    "plan": 2,
+    "ts": ["ts/tests/app/confirm.test.ts"]
+  },
+  "tests/app/test_reads.py": {
+    "status": "planned",
+    "plan": 2,
+    "ts": ["ts/tests/app/reads.test.ts"]
+  },
+  "tests/app/test_reads_published.py": {
+    "status": "changed",
+    "plan": 2,
+    "ts": ["ts/tests/app/reads-published.test.ts"],
+    "why": "design line 79: the check runs on every write, and the published state becomes the server's current state"
+  },
+  "tests/app/test_thread_fix_paths.py": {
+    "status": "planned",
+    "plan": 2,
+    "ts": ["ts/tests/app/thread-fix-paths.test.ts"]
+  },
+  "tests/app/test_thread_ops.py": {
+    "status": "planned",
+    "plan": 2,
+    "ts": ["ts/tests/app/thread-ops.test.ts"]
+  },
+  "tests/app/test_writes.py": {
+    "status": "planned",
+    "plan": 2,
+    "ts": ["ts/tests/app/writes.test.ts"]
+  },
+  "tests/app/test_writes_attach.py": {
+    "status": "planned",
+    "plan": 2,
+    "ts": ["ts/tests/app/writes-attach.test.ts"]
+  },
+  "tests/app/test_writes_dates.py": {
+    "status": "planned",
+    "plan": 2,
+    "ts": ["ts/tests/app/writes-dates.test.ts"]
+  },
+  "tests/app/test_writes_retry.py": {
+    "status": "changed",
+    "plan": 2,
+    "ts": ["ts/tests/app/writes-retry.test.ts"],
+    "why": "design line 72: records live in the server's events, not in files in git; a write that loses a race is retried against the store, not a push"
+  },
+  "tests/core/applying.py": {
+    "status": "planned",
+    "plan": 1,
+    "task": ["11"],
+    "ts": ["ts/tests/core/applying.ts"]
+  },
+  "tests/core/builders.py": {
+    "status": "planned",
+    "plan": 1,
+    "task": ["6"],
+    "ts": ["ts/tests/core/builders.ts"]
+  },
+  "tests/core/checks.py": {
+    "status": "planned",
+    "plan": 1,
+    "task": ["8a", "8b"],
+    "ts": ["ts/tests/core/checks.ts"]
+  },
+  "tests/core/derivation.py": {
+    "status": "planned",
+    "plan": 1,
+    "task": ["7a"],
+    "ts": ["ts/tests/core/derivation.ts"]
+  },
+  "tests/core/samples.py": {
+    "status": "planned",
+    "plan": 1,
+    "task": ["5a"],
+    "ts": ["ts/tests/core/samples.ts"]
+  },
+  "tests/core/test_apply.py": {
+    "status": "planned",
+    "plan": 1,
+    "task": ["11"],
+    "ts": ["ts/tests/core/apply.test.ts"]
+  },
+  "tests/core/test_apply_refusals.py": {
+    "status": "planned",
+    "plan": 1,
+    "task": ["11"],
+    "ts": ["ts/tests/core/apply-refusals.test.ts"]
+  },
+  "tests/core/test_area_feedback.py": {
+    "status": "planned",
+    "plan": 1,
+    "task": ["10"],
+    "ts": ["ts/tests/core/area-feedback.test.ts"]
+  },
+  "tests/core/test_check_change.py": {
+    "status": "planned",
+    "plan": 1,
+    "task": ["8b"],
+    "ts": ["ts/tests/core/check-change.test.ts"]
+  },
+  "tests/core/test_check_compare.py": {
+    "status": "planned",
+    "plan": 1,
+    "task": ["8c"],
+    "ts": ["ts/tests/core/check-compare.test.ts"]
+  },
+  "tests/core/test_check_current.py": {
+    "status": "planned",
+    "plan": 1,
+    "task": ["8b"],
+    "ts": ["ts/tests/core/check-current.test.ts"]
+  },
+  "tests/core/test_check_immutable.py": {
+    "status": "planned",
+    "plan": 1,
+    "task": ["8b"],
+    "ts": ["ts/tests/core/check-immutable.test.ts"]
+  },
+  "tests/core/test_check_links.py": {
+    "status": "planned",
+    "plan": 1,
+    "task": ["8c"],
+    "ts": ["ts/tests/core/check-links.test.ts"]
+  },
+  "tests/core/test_check_retired.py": {
+    "status": "planned",
+    "plan": 1,
+    "task": ["8b"],
+    "ts": ["ts/tests/core/check-retired.test.ts"]
+  },
+  "tests/core/test_check_state.py": {
+    "status": "planned",
+    "plan": 1,
+    "task": ["8a"],
+    "ts": ["ts/tests/core/check-state.test.ts"]
+  },
+  "tests/core/test_check_threads.py": {
+    "status": "planned",
+    "plan": 1,
+    "task": ["8c", "9a"],
+    "ts": ["ts/tests/core/check-threads.test.ts"]
+  },
+  "tests/core/test_confirmation.py": {
+    "status": "planned",
+    "plan": 1,
+    "task": ["7b"],
+    "ts": ["ts/tests/core/confirmation.test.ts"]
+  },
+  "tests/core/test_derive.py": {
+    "status": "planned",
+    "plan": 1,
+    "task": ["7a"],
+    "ts": ["ts/tests/core/derive.test.ts"]
+  },
+  "tests/core/test_derive_confirmed_retired.py": {
+    "status": "planned",
+    "plan": 1,
+    "task": ["7a"],
+    "ts": ["ts/tests/core/derive-confirmed-retired.test.ts"]
+  },
+  "tests/core/test_derive_links.py": {
+    "status": "planned",
+    "plan": 1,
+    "task": ["7a"],
+    "ts": ["ts/tests/core/derive-links.test.ts"]
+  },
+  "tests/core/test_doubts.py": {
+    "status": "planned",
+    "plan": 1,
+    "task": ["7a", "9a"],
+    "ts": ["ts/tests/core/doubts.test.ts"]
+  },
+  "tests/core/test_drafts.py": {
+    "status": "planned",
+    "plan": 1,
+    "task": ["5b"],
+    "ts": ["ts/tests/core/drafts.test.ts"]
+  },
+  "tests/core/test_feedback.py": {
+    "status": "planned",
+    "plan": 1,
+    "task": ["10"],
+    "ts": ["ts/tests/core/feedback.test.ts"]
+  },
+  "tests/core/test_feedback_links.py": {
+    "status": "planned",
+    "plan": 1,
+    "task": ["10"],
+    "ts": ["ts/tests/core/feedback-links.test.ts"]
+  },
+  "tests/core/test_feedback_revival.py": {
+    "status": "planned",
+    "plan": 1,
+    "task": ["10"],
+    "ts": ["ts/tests/core/feedback-revival.test.ts"]
+  },
+  "tests/core/test_fileformat.py": {
+    "status": "planned",
+    "plan": 1,
+    "task": ["5a"],
+    "ts": ["ts/tests/core/fileformat.test.ts"]
+  },
+  "tests/core/test_fileformat_links.py": {
+    "status": "planned",
+    "plan": 1,
+    "task": ["6"],
+    "ts": ["ts/tests/core/fileformat-links.test.ts"]
+  },
+  "tests/core/test_fileformat_problems.py": {
+    "status": "planned",
+    "plan": 1,
+    "task": ["5a"],
+    "ts": ["ts/tests/core/fileformat-problems.test.ts"]
+  },
+  "tests/core/test_fileformat_text.py": {
+    "status": "planned",
+    "plan": 1,
+    "task": ["5b"],
+    "ts": ["ts/tests/core/fileformat-text.test.ts"]
+  },
+  "tests/core/test_ids.py": {
+    "status": "planned",
+    "plan": 1,
+    "task": ["4"],
+    "ts": ["ts/tests/core/ids.test.ts"]
+  },
+  "tests/core/test_order.py": {
+    "status": "planned",
+    "plan": 1,
+    "task": ["7b"],
+    "ts": ["ts/tests/core/order.test.ts"]
+  },
+  "tests/core/test_render.py": {
+    "status": "planned",
+    "plan": 1,
+    "task": ["9b"],
+    "ts": ["ts/tests/core/render.test.ts"]
+  },
+  "tests/core/test_search.py": {
+    "status": "planned",
+    "plan": 1,
+    "task": ["9b"],
+    "ts": ["ts/tests/core/search.test.ts"]
+  },
+  "tests/core/test_settings.py": {
+    "status": "planned",
+    "plan": 1,
+    "task": ["4"],
+    "ts": ["ts/tests/core/settings.test.ts"]
+  },
+  "tests/core/test_snapshot.py": {
+    "status": "planned",
+    "plan": 1,
+    "task": ["6", "9a"],
+    "ts": ["ts/tests/core/snapshot.test.ts"]
+  },
+  "tests/core/test_thread_files.py": {
+    "status": "planned",
+    "plan": 1,
+    "task": ["6", "10"],
+    "ts": ["ts/tests/core/thread-files.test.ts"]
+  },
+  "tests/core/test_views.py": {
+    "status": "planned",
+    "plan": 1,
+    "task": ["9a"],
+    "ts": ["ts/tests/core/views.test.ts"]
+  },
+  "tests/core/test_views_links.py": {
+    "status": "planned",
+    "plan": 1,
+    "task": ["9a"],
+    "ts": ["ts/tests/core/views-links.test.ts"]
+  },
+  "tests/core/test_views_trust.py": {
+    "status": "planned",
+    "plan": 1,
+    "task": ["9a"],
+    "ts": ["ts/tests/core/views-trust.test.ts"]
+  },
+  "tests/core/test_yamlio.py": {
+    "status": "planned",
+    "plan": 1,
+    "task": ["4"],
+    "ts": ["ts/tests/core/yamlio.test.ts"]
+  },
+  "tests/e2e/__init__.py": {
+    "status": "changed",
+    "ts": [],
+    "why": "a package marker; TypeScript tests need none"
+  },
+  "tests/e2e/conftest.py": {
+    "status": "planned",
+    "plan": 3,
+    "ts": ["ts/tests/e2e/project.ts"]
+  },
+  "tests/e2e/support.py": {
+    "status": "planned",
+    "plan": 3,
+    "ts": ["ts/tests/e2e/support.ts"]
+  },
+  "tests/e2e/test_add_attach.py": {
+    "status": "planned",
+    "plan": 3,
+    "ts": ["ts/tests/e2e/add-attach.test.ts"]
+  },
+  "tests/e2e/test_add_bad_yaml_exits_2_naming_file_and_line.py": {
+    "status": "planned",
+    "plan": 3,
+    "ts": ["ts/tests/e2e/add-bad-yaml-exits-2-naming-file-and-line.test.ts"]
+  },
+  "tests/e2e/test_add_branch_mode_publishes.py": {
+    "status": "changed",
+    "ts": [],
+    "why": "design line 72: records live in the server's events, not in files in git"
+  },
+  "tests/e2e/test_add_dry_run.py": {
+    "status": "planned",
+    "plan": 3,
+    "ts": ["ts/tests/e2e/add-dry-run.test.ts"]
+  },
+  "tests/e2e/test_add_failing_check_exits_1.py": {
+    "status": "planned",
+    "plan": 3,
+    "ts": ["ts/tests/e2e/add-failing-check-exits-1.test.ts"]
+  },
+  "tests/e2e/test_add_import.py": {
+    "status": "planned",
+    "plan": 3,
+    "ts": ["ts/tests/e2e/add-import.test.ts"]
+  },
+  "tests/e2e/test_add_new_decision_entry_area.py": {
+    "status": "planned",
+    "plan": 3,
+    "ts": ["ts/tests/e2e/add-new-decision-entry-area.test.ts"]
+  },
+  "tests/e2e/test_add_non_string_scalar_exits_2.py": {
+    "status": "planned",
+    "plan": 3,
+    "ts": ["ts/tests/e2e/add-non-string-scalar-exits-2.test.ts"]
+  },
+  "tests/e2e/test_before_init_one_sentence_exit_2.py": {
+    "status": "planned",
+    "plan": 3,
+    "ts": ["ts/tests/e2e/before-init-one-sentence-exit-2.test.ts"]
+  },
+  "tests/e2e/test_broken_agent_decision_warns_above_show.py": {
+    "status": "planned",
+    "plan": 3,
+    "ts": ["ts/tests/e2e/broken-agent-decision-warns-above-show.test.ts"]
+  },
+  "tests/e2e/test_check_and_gate.py": {
+    "status": "changed",
+    "plan": 3,
+    "ts": ["ts/tests/e2e/check-and-gate.test.ts"],
+    "why": "design line 79: the check runs on every write, and the published state becomes the server's current state"
+  },
+  "tests/e2e/test_draft_then_add_edit.py": {
+    "status": "planned",
+    "plan": 3,
+    "ts": ["ts/tests/e2e/draft-then-add-edit.test.ts"]
+  },
+  "tests/e2e/test_gate_after_rewrite.py": {
+    "status": "changed",
+    "ts": [],
+    "why": "design line 72: records live in the server's events, not in files in git; no branch to rewrite"
+  },
+  "tests/e2e/test_gate_checkout_states.py": {
+    "status": "changed",
+    "ts": [],
+    "why": "design line 79: the check runs on every write, and the published state becomes the server's current state"
+  },
+  "tests/e2e/test_guide.py": {
+    "status": "planned",
+    "plan": 3,
+    "ts": ["ts/tests/e2e/guide.test.ts"]
+  },
+  "tests/e2e/test_help_lists_every_command.py": {
+    "status": "planned",
+    "plan": 3,
+    "ts": ["ts/tests/e2e/help-lists-every-command.test.ts"]
+  },
+  "tests/e2e/test_hook_feedback_after_hand_edits.py": {
+    "status": "changed",
+    "plan": 4,
+    "ts": ["ts/tests/hook/hand-edits.test.ts"],
+    "why": "design line 290: the hook's advice changes for a project that has moved"
+  },
+  "tests/e2e/test_hook_outside_repository_exit_0_silent.py": {
+    "status": "planned",
+    "plan": 4,
+    "ts": ["ts/tests/hook/outside-repository.test.ts"],
+    "why": "design line 290: the hook's advice changes for a project that has moved"
+  },
+  "tests/e2e/test_id.py": {
+    "status": "planned",
+    "plan": 3,
+    "ts": ["ts/tests/e2e/id.test.ts"]
+  },
+  "tests/e2e/test_init.py": {
+    "status": "changed",
+    "plan": 3,
+    "ts": ["ts/tests/e2e/init.test.ts"],
+    "why": "design line 72: records live in the server's events, not in files in git; `init` names the server and the project"
+  },
+  "tests/e2e/test_init_branch_mode.py": {
+    "status": "changed",
+    "ts": [],
+    "why": "design line 72: records live in the server's events, not in files in git"
+  },
+  "tests/e2e/test_killed_add.py": {
+    "status": "changed",
+    "ts": [],
+    "why": "design line 72: records live in the server's events, not in files in git; `add` runs no git"
+  },
+  "tests/e2e/test_malformed_settings_one_sentence_exit_2.py": {
+    "status": "planned",
+    "plan": 3,
+    "ts": ["ts/tests/e2e/malformed-settings-one-sentence-exit-2.test.ts"]
+  },
+  "tests/e2e/test_outside_repository_one_sentence_exit_2.py": {
+    "status": "planned",
+    "plan": 3,
+    "ts": ["ts/tests/e2e/outside-repository-one-sentence-exit-2.test.ts"]
+  },
+  "tests/e2e/test_same_second.py": {
+    "status": "planned",
+    "plan": 3,
+    "ts": ["ts/tests/e2e/same-second.test.ts"]
+  },
+  "tests/e2e/test_search.py": {
+    "status": "planned",
+    "plan": 3,
+    "ts": ["ts/tests/e2e/search.test.ts"]
+  },
+  "tests/e2e/test_search_limit.py": {
+    "status": "planned",
+    "plan": 3,
+    "ts": ["ts/tests/e2e/search-limit.test.ts"]
+  },
+  "tests/e2e/test_search_shows_unparsable_file.py": {
+    "status": "planned",
+    "plan": 3,
+    "ts": ["ts/tests/e2e/search-shows-unparsable-file.test.ts"]
+  },
+  "tests/e2e/test_show_ambiguous_code_one_line.py": {
+    "status": "planned",
+    "plan": 3,
+    "ts": ["ts/tests/e2e/show-ambiguous-code-one-line.test.ts"]
+  },
+  "tests/e2e/test_show_levels.py": {
+    "status": "planned",
+    "plan": 3,
+    "ts": ["ts/tests/e2e/show-levels.test.ts"]
+  },
+  "tests/e2e/test_spec.py": {
+    "status": "planned",
+    "plan": 3,
+    "ts": ["ts/tests/e2e/spec.test.ts"]
+  },
+  "tests/e2e/test_threads.py": {
+    "status": "planned",
+    "plan": 3,
+    "ts": ["ts/tests/e2e/threads.test.ts"]
+  },
+  "tests/e2e/test_view.py": {
+    "status": "later",
+    "ts": [],
+    "why": "later: step 3, the interface (design lines 275 and 298)"
+  },
+  "tests/e2e/test_waiting.py": {
+    "status": "planned",
+    "plan": 3,
+    "ts": ["ts/tests/e2e/waiting.test.ts"]
+  },
+  "tests/gitstore/__init__.py": {
+    "status": "changed",
+    "ts": [],
+    "why": "a package marker; TypeScript tests need none"
+  },
+  "tests/gitstore/conftest.py": {
+    "status": "planned",
+    "plan": 4,
+    "ts": ["ts/tests/git/isolated.ts"],
+    "why": "isolated git for the importer's and the export's tests"
+  },
+  "tests/gitstore/fakessh.py": {
+    "status": "changed",
+    "ts": [],
+    "why": "design line 72: records live in the server's events, not in files in git"
+  },
+  "tests/gitstore/repos.py": {
+    "status": "planned",
+    "plan": 4,
+    "ts": ["ts/tests/git/repos.ts"],
+    "why": "repositories in a temporary folder for the importer and the export"
+  },
+  "tests/gitstore/test_branch.py": {
+    "status": "changed",
+    "ts": [],
+    "why": "design line 72: records live in the server's events, not in files in git"
+  },
+  "tests/gitstore/test_branch_rewrite.py": {
+    "status": "changed",
+    "ts": [],
+    "why": "design line 72: records live in the server's events, not in files in git"
+  },
+  "tests/gitstore/test_checkout.py": {
+    "status": "changed",
+    "ts": [],
+    "why": "design line 72: records live in the server's events, not in files in git"
+  },
+  "tests/gitstore/test_checkout_gate.py": {
+    "status": "changed",
+    "ts": [],
+    "why": "design line 72: records live in the server's events, not in files in git"
+  },
+  "tests/gitstore/test_checkout_safety.py": {
+    "status": "changed",
+    "ts": [],
+    "why": "design line 72: records live in the server's events, not in files in git"
+  },
+  "tests/gitstore/test_commit.py": {
+    "status": "changed",
+    "ts": [],
+    "why": "design line 72: records live in the server's events, not in files in git"
+  },
+  "tests/gitstore/test_concurrent.py": {
+    "status": "changed",
+    "plan": 2,
+    "ts": ["ts/tests/store/concurrent.test.ts"],
+    "why": "design line 72: records live in the server's events, not in files in git; two writers at once against the events store"
+  },
+  "tests/gitstore/test_exit_request.py": {
+    "status": "changed",
+    "ts": [],
+    "why": "design line 72: records live in the server's events, not in files in git"
+  },
+  "tests/gitstore/test_push_race.py": {
+    "status": "changed",
+    "ts": [],
+    "why": "design line 72: records live in the server's events, not in files in git"
+  },
+  "tests/gitstore/test_setup.py": {
+    "status": "changed",
+    "ts": [],
+    "why": "design line 72: records live in the server's events, not in files in git"
+  },
+  "tests/hook/__init__.py": {
+    "status": "changed",
+    "ts": [],
+    "why": "a package marker; TypeScript tests need none"
+  },
+  "tests/hook/test_post_tool_use.py": {
+    "status": "changed",
+    "plan": 4,
+    "ts": ["ts/tests/hook/post-tool-use.test.ts"],
+    "why": "design line 290: the hook's advice changes for a project that has moved"
+  },
+  "tests/structure_calls.py": {
+    "status": "changed",
+    "plan": 1,
+    "task": ["3"],
+    "ts": ["ts/tests/structure/calls.ts"],
+    "why": "design line 58: the rules carry over as rules, enforced over the TypeScript import graph, not test by test"
+  },
+  "tests/structure_imports.py": {
+    "status": "changed",
+    "plan": 1,
+    "task": ["3"],
+    "ts": ["ts/.dependency-cruiser.cjs"],
+    "why": "design line 58: the rules carry over as rules, enforced over the TypeScript import graph, not test by test"
+  },
+  "tests/structure_rules.py": {
+    "status": "changed",
+    "plan": 1,
+    "task": ["3"],
+    "ts": ["ts/tests/structure/calls.ts", "ts/tests/structure/plant.ts"],
+    "why": "design line 58: the rules carry over as rules, enforced over the TypeScript import graph, not test by test"
+  },
+  "tests/structure_tables.py": {
+    "status": "changed",
+    "plan": 1,
+    "task": ["3"],
+    "ts": ["ts/tests/structure/table.ts"],
+    "why": "design line 58: the rules carry over as rules, enforced over the TypeScript import graph, not test by test"
+  },
+  "tests/structure_tree.py": {
+    "status": "changed",
+    "plan": 1,
+    "task": ["3"],
+    "ts": ["ts/tests/structure/plant.ts"],
+    "why": "design line 58: the rules carry over as rules, enforced over the TypeScript import graph, not test by test"
+  },
+  "tests/test_entry_point.py": {
+    "status": "planned",
+    "plan": 3,
+    "ts": ["ts/tests/e2e/binary.test.ts"],
+    "why": "design line 55: the command ships as a binary built with `bun build --compile`"
+  },
+  "tests/test_structure.py": {
+    "status": "changed",
+    "plan": 1,
+    "task": ["3"],
+    "ts": [
+      "ts/tests/structure/imports.test.ts",
+      "ts/tests/structure/layout.test.ts",
+      "ts/tests/structure/repository.test.ts"
+    ],
+    "why": "design line 58: the rules carry over as rules, enforced over the TypeScript import graph, not test by test"
+  },
+  "tests/test_structure_io.py": {
+    "status": "changed",
+    "plan": 1,
+    "task": ["3"],
+    "ts": ["ts/tests/structure/imports.test.ts", "ts/tests/structure/calls.test.ts"],
+    "why": "design line 58: the rules carry over as rules, enforced over the TypeScript import graph, not test by test"
+  },
+  "tests/test_wheel.py": {
+    "status": "changed",
+    "plan": 3,
+    "ts": ["ts/tests/e2e/binary.test.ts"],
+    "why": "design line 55: the command ships as a binary built with `bun build --compile`, not a wheel"
+  },
+  "tests/viewer/__init__.py": {
+    "status": "changed",
+    "ts": [],
+    "why": "a package marker; TypeScript tests need none"
+  },
+  "tests/viewer/conftest.py": {
+    "status": "later",
+    "ts": [],
+    "why": "later: step 3, the interface (design lines 275 and 298)"
+  },
+  "tests/viewer/test_forms.py": {
+    "status": "later",
+    "ts": [],
+    "why": "later: step 3, the interface (design lines 275 and 298)"
+  },
+  "tests/viewer/test_pages.py": {
+    "status": "later",
+    "ts": [],
+    "why": "later: step 3, the interface (design lines 275 and 298)"
+  },
+  "tests/viewer/test_pages_fix_round.py": {
+    "status": "later",
+    "ts": [],
+    "why": "later: step 3, the interface (design lines 275 and 298)"
+  },
+  "tests/viewer/test_pages_threads.py": {
+    "status": "later",
+    "ts": [],
+    "why": "later: step 3, the interface (design lines 275 and 298)"
+  },
+  "tests/viewer/test_post_gate.py": {
+    "status": "later",
+    "ts": [],
+    "why": "later: step 3, the interface (design lines 275 and 298)"
+  },
+  "tests/viewer/test_post_routes.py": {
+    "status": "later",
+    "ts": [],
+    "why": "later: step 3, the interface (design lines 275 and 298)"
+  },
+  "tests/viewer/test_request_gate.py": {
+    "status": "later",
+    "ts": [],
+    "why": "later: step 3, the interface (design lines 275 and 298)"
+  },
+  "tests/viewer/test_server.py": {
+    "status": "later",
+    "ts": [],
+    "why": "later: step 3, the interface (design lines 275 and 298)"
+  },
+  "tests/viewer/test_spec_outline.py": {
+    "status": "later",
+    "ts": [],
+    "why": "later: step 3, the interface (design lines 275 and 298)"
+  },
+  "tests/viewer/world.py": {
+    "status": "later",
+    "ts": [],
+    "why": "later: step 3, the interface (design lines 275 and 298)"
+  }
+}

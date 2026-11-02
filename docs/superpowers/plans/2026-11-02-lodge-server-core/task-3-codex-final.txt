@@ -1,0 +1,7 @@
+DONE
+
+`sh scripts/check-ts.sh` exits 0: 143 tests pass.
+No unresolved concerns.
+
+[Report](docs/superpowers/plans/2026-11-02-lodge-server-core/task-3-report.md) written.
+Nothing committed or pushed.
