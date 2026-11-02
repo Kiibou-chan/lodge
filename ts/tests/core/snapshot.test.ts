@@ -1,5 +1,14 @@
 import { expect, test } from "bun:test";
-import { load, newRecordPath, tree } from "#core";
+import {
+  checkState,
+  derive,
+  failingIds,
+  level1,
+  load,
+  newRecordPath,
+  tree,
+  unrecordedProblems,
+} from "#core";
 import { area, decision, entry, filesOf } from "./builders.ts";
 
 test("load_keeps_good_records_beside_problems", () => {
@@ -82,4 +91,16 @@ test("attachments_listed_not_parsed", () => {
   expect(s.problems).toEqual([]);
   expect(s.decisions.size).toBe(1);
 });
-test.todo("duplicate_id_marks_kept_record_failing");
+test("duplicate_id_marks_kept_record_failing", () => {
+  const first = decision({ id: "d-aaaaaa", title: "First", statement: "A holds." });
+  const second = decision({ id: "d-aaaaaa", title: "Second", statement: "B holds." });
+  const snap = load(
+    tree({ rev: "abc123", files: new Map([...filesOf(first), ...filesOf(second)]) }),
+  );
+  const result = checkState(snap);
+  expect(failingIds(snap, result)).toEqual(new Set(["d-aaaaaa"]));
+  expect(unrecordedProblems(snap, result).map((p) => p.path)).toEqual([newRecordPath(second)]);
+  expect(level1(snap, derive(snap), "d-aaaaaa", failingIds(snap, result)).flags).toContain(
+    "fails check",
+  );
+});

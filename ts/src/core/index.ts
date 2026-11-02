@@ -36,4 +36,17 @@ export * from "./snapshot.ts";
 export * from "./stamps.ts";
 export * from "./text.ts";
 export * from "./threads.ts";
+export {
+  failingIds,
+  formatLevel1,
+  formatLevel3,
+  headParts,
+  type Level1,
+  type Level3,
+  level1,
+  level2,
+  level2Views,
+  level3,
+  unrecordedProblems,
+} from "./views.ts";
 export { loadYaml, YamlError } from "./yamlio.ts";
