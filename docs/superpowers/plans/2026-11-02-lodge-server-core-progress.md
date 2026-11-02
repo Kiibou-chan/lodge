@@ -61,3 +61,8 @@ Task 5b: complete.
 Task 6: built by Codex (a73a148), gate green outside the sandbox (480 TS tests, 2 `test.todo` for the review); a first Codex run hung on standard input from 17:54 to 18:32 and was rerun with stdin closed.
 Author decision d-xdqsmf ("Yes, parallelise", 18:40): after Task 7a the remaining tasks run in lanes by the import graph (7b, 8a, and 11 at once; then 8b to 8c beside 9a, 9b, and 10), each in its own worktree merged into `server-core`; plans 2 to 4 are planned now on branches `server-store`, `server-api`, and `server-import`.
 Task 7a: built by Codex (1660e45), gate green outside the sandbox (531 TS tests, 4 `test.todo`). Ruling: Task 11 runs in a lane now, its front-door test, `planned` check, and knip `entry` restore in a closing step after the lanes merge (d-442r2f).
+Task 6: review 0 Blocking, 0 Important, 9 Minor (`task-6-review.md`); `writeThread` matches lodge 0.2 byte for byte on 1,207 threads built from the repository's records; the two `test.todo` are allowed, their files staying `planned` until Tasks 9a and 10.
+Parked (Task 6, Minor): C-2 (`UNESCAPE` with the `m` flag passes all tests) and the other Minors to the next round touching `threads.ts` or `snapshot.ts`; C-3 (YAML refusals at another line than PyYAML's, not listed under d-p48gr1) to the final fix wave.
+Task 6: complete.
+Task 7b: built by Codex in lane `server-core-t7b` (48e4a51), gate green; merged into `server-core`.
+Task 8a: built by Codex (b5f9f0b), gate green (595 TS tests after the 7b merge).
