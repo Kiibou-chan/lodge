@@ -18,3 +18,9 @@ Status: done; 6 fixed, 0 rejected, 0 parked; no new ruling, so nothing added to 
 - d-pmaw3a is replaced by d-j28rp0 on `server-store` (narrowed by d-n9nm8h, the import's check): the plan's six citations now name d-j28rp0 (Global Constraints' Porting bullet, Calls made 15, "Names consumed from plan 2", the parity rows of `test_broken_agent_decision_warns_above_show.py` and `test_check_and_gate.py`, and Task 7a's `handEdit`).
 - d-4zg8q3 is replaced by d-d0vca9 on `server-core`: the plan's four citations now name d-d0vca9 (Global Constraints, the Structure bullet, `ApiOptions.log`'s comment, and Task 8's `main.ts`).
 - The records d-81ps01 and d-amxk94 cite d-pmaw3a and plan 4's lines 64-76 in their reasoning; they are left as written, since a record never changes and neither statement depends on the citation.
+
+## Round 3
+
+Planner, fix round 3, on `server-api` from 6400ba9, answering `plan-recheck-2.md` (N-5 open, Important).
+
+- N-5: the recheck's verified fix, applied in Task 6's `held`: `recordFromDraft(draft, id, held.at, null)`, `id` being the draft's own `id` when its header holds a string and otherwise `d-000000` or `s-000000` by kind, so a held decision and an entry with its own `id` read without a problem (the recheck's run at `origin/server-core` 7d5ecbc); the placeholder ID and the date never reach the answer; `held_shows_the_drafts_as_core_reads_them` now holds a decision draft without an `id` and an entry draft with one, both answered without `problem`, the decision's `title`, `statement`, and `quote` given exactly.
