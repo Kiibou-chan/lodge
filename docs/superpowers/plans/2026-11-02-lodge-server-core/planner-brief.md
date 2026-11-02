@@ -1,6 +1,6 @@
 # Planner brief: lodge server, build step 1
 
-Write the implementation plan for build step 1 of the server design, in `docs/superpowers/plans/2026-11-02-lodge-server-core.md`, with its ledger `docs/superpowers/plans/2026-11-02-lodge-server-core-progress.md`, in the worktree `/var/tmp/lodge-server-core` on branch `server-core`.
+Write the implementation plan for build step 1 of the server design, in `docs/superpowers/plans/2026-11-02-lodge-server-core.md`, with its ledger `docs/superpowers/plans/2026-11-02-lodge-server-core-progress.md`, in the plan's worktree on branch `server-core`.
 
 ## Sources
 
