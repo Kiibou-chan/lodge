@@ -52,6 +52,6 @@ lodge was written in Python because of its first constraints; reimplementing it 
 
 ## Open points
 
-1. Workflow: which concerns get a place of their own; the author is not sure yet.
+1. Workflow: which concerns get a place of their own; so far mocking, as described under Workflow; asked for another kind of work that went wrong the same way, the author: "I don't think so".
 2. How tasks and decisions relate to code, which stays in git: branches, merges, and review; the author is not sure yet.
 3. Architecture and language: decided, see `2026-11-02-lodge-server-architecture-options.md`.
