@@ -14,7 +14,7 @@ Records cross every boundary as path and file text, as lodge 0.2 writes them (d-
 The plan argues from them, never over them; where they disagree with this plan, they win and the builder reports it.
 "Design line N" is a line of the design; "probe N" is an item of `docs/superpowers/plans/2026-11-02-lodge-server-import/probes.md`, whose sources are in `probes/` beside it; "plan 1", "plan 2", and "plan 3" are `docs/superpowers/plans/2026-11-02-lodge-server-core.md`, `…-server-store.md`, and `…-server-api.md`.
 
-**Aligned against:** plan 2 at `origin/server-store` c3541fc (after its fix round 2) and plan 3 at `origin/server-api` 7dfdf40 (after its fix round 1); the names this plan takes from them are listed below, and the coordinator checks each against the merged code before the task that consumes it.
+**Aligned against:** plan 2 at `origin/server-store` c3541fc (after its fix round 2) and plan 3 at `origin/server-api` 9988813 (after its fix round 3); the names this plan takes from them are listed below, and the coordinator checks each against the merged code before the task that consumes it.
 
 ## Global Constraints
 
