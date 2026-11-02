@@ -1,3 +1,4 @@
+export { type CheckResult, checkState } from "./check-state.ts";
 export { type Derived, derive, isAuthor } from "./derive.ts";
 export { type Draft, parseDraft, recordFromDraft } from "./drafts.ts";
 export * from "./errors.ts";

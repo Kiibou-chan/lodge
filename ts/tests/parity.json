@@ -146,7 +146,7 @@
     "ts": ["ts/tests/core/check-retired.test.ts"]
   },
   "tests/core/test_check_state.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 1,
     "task": ["8a"],
     "ts": ["ts/tests/core/check-state.test.ts"]

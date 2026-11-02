@@ -1,0 +1,7 @@
+DONE
+
+`sh scripts/check-ts.sh` exited 0: 568 passed, 4 existing todo, 0 failed.
+
+[Report](/var/tmp/lodge-server-core/docs/superpowers/plans/2026-11-02-lodge-server-core/task-8a-report.md) written.
+No concerns.
+Reviewer files untouched; nothing committed or pushed.
