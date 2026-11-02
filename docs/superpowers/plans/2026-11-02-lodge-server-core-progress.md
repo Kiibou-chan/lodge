@@ -35,3 +35,5 @@ Plan: recheck 2 closed 8 of 9 and narrowed N2 to N2-r, with 3 new Minor (`plan-r
 Plan: fix round 3 by the planner, N2-r, m-a, m-b, m-c, and the preflight mismatches answered in `plan-fix-3.md`, probes 26 and 27 added.
 Ruling: a dataclass gets a default-filling function only where a Python call leaves a default out; `Draft` and `Snapshot` get none, and `#core` exports nine (d-ca6wbw, narrowing d-hshapm).
 Still no value trade-off for the author.
+Plan: recheck 3 by the coordinator on 2e7acf6..6e9c0f7: N2-r closed, every `Snapshot(` call passes all seven fields (`tests/core/builders.py:94`, `src/lodge/core/snapshot.py:70`) and the only core `Draft(` call passes all five (`src/lodge/core/drafts.py:45`; `cli/parser.py:216` is the command's own `Draft`), the front-door test names the nine (plan line 716), and no U+200B, U+2028, or U+2029 is in the plan or ledger; 0 Blocking, 0 Important open.
+Preflight: the tables of `plan-recheck-1.md` and `plan-recheck-2.md`, with their mismatch rows answered in `plan-fix-2.md` and `plan-fix-3.md`.
