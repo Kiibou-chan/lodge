@@ -24,3 +24,10 @@ Ruling: the structure rules bind `ts/src`, and each adapter keeps its lodge 0.2 
 Ruling: Tasks 5, 7, 8, and 9 split into 5a and 5b, 7a and 7b, 8a, 8b, and 8c, and 9a and 9b, numbers kept (d-mfayy5).
 Ruling: plan 3's `api` serves a minimal page for passkeys, agent tokens, and approving drafted decisions, until step 3's interface (d-jtxwg3).
 Still no value trade-off for the author.
+Plan: recheck 1 closed the 40 findings and found 3 new Important and 6 Minor (`plan-recheck-1.md`, b5c8ad5).
+Plan: fix round 2 by the planner, every new finding and preflight mismatch answered in `plan-fix-2.md`, probes 21 to 25 added.
+Ruling: an export first read in a later task waits in `ts/knip.json`'s `entry` from the task that creates it to the task that reads it (d-tha8st).
+Ruling: `#core` exports `__all__`, the default-filling functions, and `errors.ts`, `text.ts`, and `stamps.ts`; `quoted` and `unreadableChar` stay inside the package (d-hshapm, narrowing d-s2rdn2).
+Ruling: a planted tree copies the dependencies and is cruised with `preserveSymlinks` (d-bxcave).
+Ruling: `text.ts` exports `PY_SPACE_CLASS` for Python's `\s` (d-87kzys).
+Still no value trade-off for the author.
