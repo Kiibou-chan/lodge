@@ -38,7 +38,17 @@ The plan argues from them, never over them; where they disagree with this plan, 
 Each is the planner's ruling, recorded in lodge with scope `process` and this plan as its work item; its reasoning there holds a handle per argument and the cost if wrong.
 Every task repeats what it needs of them, so no brief needs this section.
 
-CALLS-PENDING
+1. d-1skjw1: the `import` operation names a repository on the server's machine and a revision, the server reads it through `git`, and only the signed-in person may call it; step 1 gives it no command and no form (Tasks 3 and 8).
+2. d-ag8p8h: the importer runs lodge 0.2's state check on the store as read, with the store's own `.lodge.toml`, before it maps, and imports into an empty project only (Tasks 6 and 8).
+3. d-bh93bn: the importer maps only `decided_by: author`, through the writer, refusing a decision the writer would not give back byte for byte; thread messages keep `by: author` (Task 6).
+4. d-m31e0d: `decodeStored` and `encodeStored` live in `text.ts` (d-0q54zn), and the importer refuses an attachment that is not UTF-8 (Tasks 2 and 3).
+5. d-pv341r: the export writes only a branch holding nothing outside `lodge/` that no work tree has checked out, through a temporary index, without force, with no commit when nothing changed (Task 4).
+6. d-srfxj8: `app`'s `Exporter` batches the writes into at most one commit a minute behind clock and timer ports, retries a minute after a failure, flushes on start, and writes the two `.gitkeep` files back (Tasks 7 and 8).
+7. d-va3j7x: a project has moved when its `.lodge.toml` names its server; then every file under `lodge/` but the attachments gets the moved advice, and the hook gets its context and path resolution from `git` through the composition root (Tasks 3, 5, and 9).
+8. d-yng7m8: the server design goes into lodge whole, a decision per section, in three tasks, an unbuilt claim naming its build step; new areas `work` and `sessions` (Tasks 11a to 11c).
+
+One question is the author's, since two lines of her approved design pull apart (IMP-1 in `docs/superpowers/plans/2026-11-02-lodge-server-import/questions.md`): writing the person in `decided_by` (design line 78) makes lodge 0.2's check fail on the export, which is to read like a 0.2 store (design line 284; probe 3).
+The plan follows design line 78 until she answers; her answer changes one function of Task 7 and the expectations of Task 10.
 
 ## Names this plan consumes from plans 2 and 3
 
@@ -99,13 +109,13 @@ The coordinator does this task itself, outside the sandbox.
 - Consumes: plan 1, merged into `server-import`.
 - Produces: the ledger line naming the dependencies this plan adds: none.
 
-- No dependency is added (d-…, Calls made): git runs as the `git` program, `.lodge.toml` is parsed by plan 3's reader, and stored bytes are decoded by `text.ts` (probe 1); so `ts/package.json` and `ts/bun.lock` stay as plans 1 to 3 leave them, and only the `imports` map gains `#git` and `#hook` where Tasks 3 and 5 create those packages (or keeps plan 3's entries, if it created them).
+- No dependency is added: git runs as the `git` program, `.lodge.toml` is parsed by plan 3's reader, and stored bytes are decoded by `text.ts` (probe 1); so `ts/package.json` and `ts/bun.lock` stay as plans 1 to 3 leave them, and only the `imports` map gains `#git` and `#hook` where Tasks 3 and 5 create those packages (or keeps plan 3's entries, if it created them).
 - Merge points: plan 2's commit that creates `ts/src/app/index.ts` with `LodgeError` is merged into `server-import` before Tasks 3, 5, 6, and 7; all of plans 2 and 3 before Tasks 8 and 9; the ledger names each merged commit.
 
 - [ ] **Step 1:** Merge `server-core` into `server-import` once plan 1's last task is merged there; `sh scripts/check.sh` green.
 - [ ] **Step 2:** `git diff server-core -- ts/package.json ts/bun.lock` prints nothing; the ledger line says no dependency is added and why.
 
-### Task 2: Stored bytes as lodge 0.2 reads them (d-0q54zn)
+### Task 2: Stored bytes as lodge 0.2 reads them (d-0q54zn, d-m31e0d)
 
 **Files:**
 - Modify: `ts/src/core/text.ts` (two functions), `ts/src/core/fileformat.ts` (`contentHash`)
@@ -195,7 +205,7 @@ The coordinator does this task itself, outside the sandbox.
   // ExportTarget = { readonly repository: string; readonly branch: string; readonly remote: string | null }
   // ExportOutcome = { readonly kind: "committed"; readonly commit: string } | { readonly kind: "unchanged" } | { readonly kind: "moved" }
   ```
-- `exportStore` (d-…, Calls made):
+- `exportStore` (d-pv341r):
   1. Refuses a path of `files` outside `lodge/` as `check_writes` of `src/lodge/gitstore/plumbing.py:14-26` refuses it, with its message, and a branch name that is not a name of letters, digits, and `. _ / -` not starting with a symbol, as `_name` of `src/lodge/gitstore/settings.py:76-83` says it.
   2. Finds the tip: with a remote, `ls-remote <remote> refs/heads/<branch>` (`remote_tip`), and when there is one, `fetch --quiet --no-tags <remote> refs/heads/<branch>` so that its commit is local; without one, `resolveRev(repository, "refs/heads/<branch>")`, and a branch that a work tree of the repository has checked out (`worktree list --porcelain` names `branch refs/heads/<branch>`) is refused with `LodgeError("<branch> is checked out in a work tree of <repository>; the export writes only a branch no work tree has checked out")`.
   3. Refuses a tip whose tree holds a path outside `lodge/` (`ls-tree -r --name-only <tip>`), with `LodgeError("<branch> holds files outside lodge/, so it is not a branch lodge exports to; name a branch of its own")`, so the export never writes a project's main branch (design must-not 7).
@@ -240,7 +250,7 @@ The coordinator does this task itself, outside the sandbox.
   - `MOVED_RECORD_TEXT`: `{path} is a lodge record file from before this project moved to the lodge server at {server}: its records live on the server now, and an edit here changes nothing there. Run \`lodge draft REF\` (or \`lodge draft area:NAME\`) to get the record as a draft, edit the draft, check it with \`lodge add --dry-run FILE\`, then publish it with \`lodge add FILE\`; the command sends both to the server. ` and then `REVERSE`;
   - `MOVED_THREAD_TEXT`: `{path} is a lodge thread file from before this project moved to the lodge server at {server}: its threads live on the server now, and an edit here changes nothing there. Add a message with \`lodge reply Q --by ROLE FILE\`, or close it with \`lodge close Q --by ROLE\`; the command sends both to the server. ` and then `REVERSE`;
   - `MOVED_FROZEN_TEXT`: `{path} is frozen: lodge holds its content now, on the lodge server at {server}, so do not edit it. Record the change as a new decision instead: write a draft (\`lodge guide\` shows the draft format), check it with \`lodge add --dry-run FILE\`, then publish it with \`lodge add FILE\`, which sends it to the server. ` and then `ASKED`, ` Otherwise reverse your own edit now: `, and `RESTORE`.
-- For a moved project every file under `<repoRoot>/lodge/` but `lodge/attachments/` gets the moved record or thread text, whatever `dataRoot` says, since the files there are copies from before the move in either store mode (d-…, Calls made); a frozen file gets the moved frozen text.
+- For a moved project every file under `<repoRoot>/lodge/` but `lodge/attachments/` gets the moved record or thread text, whatever `dataRoot` says, since the files there are copies from before the move in either store mode (d-va3j7x); a frozen file gets the moved frozen text.
 - `parseHookSettings` throws `LodgeError` with Python's three messages.
 - Python's `_glob` becomes a pattern built with `new RegExp` and the `u` flag, its escape of each literal character the escape of every character that has a meaning in a JavaScript pattern, and `re.fullmatch` the test of `^(?:p)$`.
 
@@ -270,7 +280,7 @@ The coordinator does this task itself, outside the sandbox.
   }
   export function prepareImport(source: ImportSource, owner: string, settings: CoreSettings): PreparedImport
   ```
-- `prepareImport` (d-…, Calls made):
+- `prepareImport` (d-ag8p8h, d-bh93bn):
   1. Checks the store as lodge 0.2 checks its published state: `checkState(load(source.tree), settings)`, with the settings of the store's own `.lodge.toml`, so a record imported from a source that file does not list fails as it does in 0.2 (`tests/e2e/test_add_import.py`); any problem ends here, with `files` empty.
   2. Maps each decision whose `decidedBy` is `author` to `owner`: its new text is `writeRecord` of the decision with `decidedBy: owner`, and the decision is refused, as a problem of check 1 at its path with the message `lodge 0.2 did not write this file as it writes records, so the importer cannot change its decided_by alone`, when `writeRecord` of the unchanged decision does not give its text byte for byte.
   3. Gives every other file of the tree unchanged, but the paths ending `/.gitkeep`, which `load` skips (`src/lodge/core/snapshot.py:68`) and the export writes back (Task 7), and each attachment's text from `attachmentTexts`.
@@ -311,9 +321,9 @@ The coordinator does this task itself, outside the sandbox.
   export function exportMessage(files: ReadonlyMap<string, string>): string
   export class Exporter { constructor(ports: ExportPorts); written(): void; flush(): Promise<ExportOutcome | null> }
   ```
-- `exportFiles` gives every file of the tree but the `/.gitkeep` paths, each attachment's text, and `KEPT` with the empty text, as `lodge init` lays a store out (`src/lodge/gitstore/trees.py:10`, `src/lodge/gitstore/setup.py:47-56`), so the export is a lodge 0.2 store in either layout (d-…, Calls made).
+- `exportFiles` gives every file of the tree but the `/.gitkeep` paths, each attachment's text, and `KEPT` with the empty text, as `lodge init` lays a store out (`src/lodge/gitstore/trees.py:10`, `src/lodge/gitstore/setup.py:47-56`), so the export is a lodge 0.2 store in either layout (d-srfxj8).
 - `exportMessage` is `Export lodge records: <d> decisions, <e> entries, <a> areas, <t> threads`, counted from the paths.
-- `Exporter` (design line 285; d-…, Calls made):
+- `Exporter` (design line 285; d-srfxj8):
   - `written()` notes that a write happened; when no export is scheduled, it schedules one with `timer.after(wait)`, `wait` being 0 when no commit was made yet or the last one is `EXPORT_INTERVAL_SECONDS` or more ago by `clock.now()`, and otherwise the rest of that interval; further writes before it runs schedule nothing, so they go out together.
   - The scheduled run calls `flush()`: with no target, it does nothing; otherwise it writes `exportFiles(await current())` with `exportMessage`, and on `committed` notes the commit's time; on `moved`, or when `write` throws (handed to `failed`), it schedules another run `EXPORT_INTERVAL_SECONDS` later; on `unchanged` it notes nothing.
   - So two commits are at least a minute apart, and a write is exported within a minute of the last commit.
@@ -334,7 +344,7 @@ The coordinator does this task itself, outside the sandbox.
 **Interfaces:**
 - Consumes: Tasks 3, 4, 6, and 7; plan 2's store and model; plan 3's handler, sign-in, and test helpers.
 - Produces: the operations `import` and `export-target` of `POST /api/v1/<operation>` (d-sry12f), and the server's exporter.
-- `import`, the body `{"repository": string, "rev": string}` (d-…, Calls made):
+- `import`, the body `{"repository": string, "rev": string}` (d-1skjw1, d-ag8p8h):
   - only the signed-in person, by the session cookie: an agent's bearer token answers `forbidden` (403), since the import writes decisions in a person's name, which only that person may do (SRV-2, design line 75);
   - the server reads the repository on its own machine with `readStore`, parses `settings` with plan 3's reader of `.lodge.toml` into `CoreSettings`, and calls `prepareImport` with the project's first owner;
   - a project that holds any record answers `conflict` (409), `Conflict("the project already holds records; lodge imports a store into an empty project only")`;
@@ -406,7 +416,7 @@ Each part is its own brief, build, and review, in this order, each holding the r
 Rules for every part (as the viewer plan's Tasks 9a to 9c, `docs/superpowers/plans/done/2026-10-31-lodge-viewer.md:523-564`):
 - `lodge add` as in the Global Constraints; `uv run lodge id s` per new entry.
 - A coordinator decision per design section, `decided_by: coordinator`, `scope: product`, creating the entries for its section's claims, one per claim a reader would look up on its own, within 150 words, each with `rests_on` where it would not hold without another entry (the viewer plan's Task 8 rule).
-- An entry states the design's claim as the specification, in the present tense; a claim that build step 1 did not build says from which step it holds, as in "From build step 4, the runner…", and rests on the entry for the build order (d-…, Calls made).
+- An entry states the design's claim as the specification, in the present tense; a claim that build step 1 did not build says from which step it holds, as in "From build step 4, the runner…", and rests on the entry for the build order (d-yng7m8).
 - Areas: Intent, Goals, Non-goals, and Must nots in `purpose`; Constraints in `constraints`, but the structure rules in `structure`; the model and the new objects in `model`; Workflow as data, Tasks, the waiting list, Claimed and checked, Usage and stuck work, and Code and git in a new area `work` ("Tasks and workflows"); Sessions and Artefacts in a new area `sessions` ("Sessions and artefacts"); People and sign-in, Export to git, and Moving from lodge 0.2 in `storage`; the Interface in `reading`; the Build order and Open in `rollout`; a new area's draft and rank in the same add as its first entry.
 - Its reasoning carries the section's reasons, names her decision for each claim one settles, and says which claims are the design's **[my call]**.
 - It narrows the coordinator decisions whose statements it makes false, never an author decision, and answers any other "looks related" feedback no.
