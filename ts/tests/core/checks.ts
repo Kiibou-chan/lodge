@@ -29,7 +29,9 @@ function baseItems(): Item[] {
   ];
 }
 export function oldDecision(): Decision {
-  return baseItems()[2] as Decision;
+  const old = baseItems()[2];
+  if (old?.kind !== "decision") throw new Error("expected Decision");
+  return old;
 }
 export function state(items: readonly Item[] = [], drop: readonly string[] = []) {
   const merged = new Map(baseItems().map((i) => [key(i), i]));

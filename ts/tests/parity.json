@@ -149,7 +149,7 @@
     "status": "ported",
     "plan": 1,
     "task": ["8a"],
-    "ts": ["ts/tests/core/check-state.test.ts"]
+    "ts": ["ts/tests/core/check-state.test.ts", "ts/tests/core/check-state-order.test.ts"]
   },
   "tests/core/test_check_threads.py": {
     "status": "ported",

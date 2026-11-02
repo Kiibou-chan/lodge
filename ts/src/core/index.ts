@@ -1,6 +1,6 @@
 export { type Applied, applyDrafts, type StaleBase } from "./apply.ts";
 export { checkChange } from "./check-change.ts";
-export { type CheckResult, checkState } from "./check-state.ts";
+export { type CheckResult, checkResult, checkState } from "./check-state.ts";
 export {
   behindArea,
   confirmableIds,

@@ -1,4 +1,4 @@
-import { Action, Raises, ThreadState } from "./model.ts";
+import { Action, type Decision, Raises, ThreadState } from "./model.ts";
 import type { Snapshot } from "./snapshot.ts";
 import { byCodePoint } from "./text.ts";
 
@@ -25,8 +25,8 @@ export function doubtMarks(
     let changed = false;
     if (s.entries.has(ident)) {
       for (const id of [...doubts].filter((id) => s.decisions.has(id)).sort(byCodePoint)) {
-        const d = s.decisions.get(id);
-        const created = d?.changes.some((c) => c.entry === ident && c.action === Action.CREATE);
+        const d = s.decisions.get(id) as Decision;
+        const created = d.changes.some((c) => c.entry === ident && c.action === Action.CREATE);
         if (created || changedBy.get(ident)?.[0] === id) {
           changed = true;
           local.push(`changed by ${id}, in doubt`);
