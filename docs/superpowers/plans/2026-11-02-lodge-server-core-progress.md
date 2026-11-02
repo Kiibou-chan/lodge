@@ -97,3 +97,6 @@ Parked (Tasks 10 and 12, the 8a fix round, Minor) for the final fix wave: 12-D-1
 Task 10: complete.
 Task 12: complete.
 Task 8a: complete.
+Final review (`final-review.md`, 782bb67): 0 Blocking, 3 Important, 3 Minor; ruling d-4vhjtt (narrows d-d0vca9): an `open` without a flag is a read (F-1).
+Final fix wave, part A (structure rules) by Codex (`final-fix-a.md`, `final-fix-a-report.md`): d-d0vca9, d-4vhjtt, F-2, F-4, 11-D-1, 8afix-D-2, F-6 patterns; Task 3's `PACKAGES` Minor already pinned by `package_edges_match_ruling`.
+Ruling: the new catch-guard, `ok`-literal, and portable-pattern rules apply to `core` only, not `app` or the adapters (`ts/tests/structure/core-rules.test.ts`) — plans 2 to 4 were reviewed without them, and catching an error to answer it or an `ok` field in an HTTP answer is ordinary in `api` and `cli` — cost if wrong: plan 2's `app` may use a non-portable pattern; its review catches it, and plan 2 may extend the rule to `app`. Gate green (889 TS tests).

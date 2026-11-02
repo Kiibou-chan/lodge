@@ -147,15 +147,15 @@ test.each([
   ["cli", "Bun.write(x)"],
   ["cli", "writeFileSync(x)"],
   ["cli", 'createWriteStream("p")'],
-  ["cli", "write(x)"],
-  ["cli", "writeSync(x)"],
-  ["cli", "writev(x)"],
-  ["cli", "writevSync(x)"],
+  ["cli", 'import { write } from "node:fs"; write(x)'],
+  ["cli", 'import { writeSync } from "node:fs"; writeSync(x)'],
+  ["cli", 'import { writev } from "node:fs"; writev(x)'],
+  ["cli", 'import { writevSync } from "node:fs"; writevSync(x)'],
   ["cli", "link(x)"],
   ["cli", "linkSync(x)"],
   ["cli", "mkdtemp(x)"],
   ["cli", "mkdtempSync(x)"],
-  ["cli", 'open("p")'],
+  ["cli", 'open("p", "w")'],
   ["cli", 'openSync("p", flags)'],
   ["cli", 'fs.promises.open("p", "w")'],
   ["cli", 'openSync("p", "a")'],
@@ -214,4 +214,51 @@ test.each(["core", "app"])("property_names_are_not_globals %p", (pkg) => {
     class C { process = 1; console() {} }
     const { navigator: n } = o;`;
   expect(callViolations(plant({ [`src/${pkg}/a.ts`]: code }))).toEqual([]);
+});
+
+// The allowed half is mutation-tested by temporarily reporting every source node.
+test.each([
+  ['import { writeFileSync as save } from "node:fs"; save(p, x)', true],
+  ['import { writeSync as w } from "fs"; w(1, x)', true],
+  ['import * as fs from "node:fs"; fs.writeSync(1, x)', true],
+  ['import fs from "fs/promises"; fs.writeFile(p, x)', true],
+  ['import { promises as fs } from "node:fs"; fs.writeFile(p, x)', true],
+  ['import { openSync } from "node:fs"; openSync(p)', false],
+  ["io.open(data)", false],
+  ["process.stdout.write(x); process.stderr.write(x)", false],
+  ["port.write(x); port.writer(); port.delete(x); write(x)", false],
+])("file_import_resolution %p", (code, refused) => {
+  expect(callViolations(plant({ "src/cli/a.ts": code })).length > 0).toBe(refused);
+});
+test.each(["core", "app"])("new_purity_globals %p", (pkg) => {
+  for (const code of [
+    "import.meta.env",
+    "self.process",
+    "global.process",
+    "globalThis.process",
+    "self.Math.random()",
+    "self.crypto",
+    "self.Date.now()",
+    "window",
+    "setImmediate",
+    "clearImmediate",
+    "prompt",
+    "alert",
+    "confirm",
+  ]) {
+    expect(callViolations(plant({ [`src/${pkg}/a.ts`]: code })).length).toBeGreaterThan(0);
+  }
+  expect(
+    callViolations(
+      plant({ [`src/${pkg}/a.ts`]: "const o = { self: 1, global: 2, prompt: 3 }; o.self" }),
+    ),
+  ).toEqual([]);
+});
+test.each([
+  ["src/main.ts", "process.stdout.write(x)"],
+  ["src/api/a.ts", "process.stderr.write(x); io.open(data)"],
+  ["src/app/a.ts", "port.write(x)"],
+  ["src/cli/a.ts", 'import { openSync } from "node:fs"; openSync(p, "r")'],
+])("write_ports_and_read_opens_are_allowed %p", (path, code) => {
+  expect(callViolations(plant({ [path]: code }))).toEqual([]);
 });

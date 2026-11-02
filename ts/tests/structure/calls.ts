@@ -1,5 +1,6 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import ts from "typescript";
+import { fsImports, guardedCatch, unsafePattern } from "./guards.ts";
 import { MAX_LINES, PACKAGES } from "./table.ts";
 
 function files(root: string, folder: string): string[] {
@@ -26,6 +27,14 @@ const banned = new Set([
   "queueMicrotask",
   "navigator",
   "globalThis",
+  "self",
+  "global",
+  "window",
+  "setImmediate",
+  "clearImmediate",
+  "prompt",
+  "alert",
+  "confirm",
 ]);
 const local = new Set([
   "getTimezoneOffset",
@@ -71,12 +80,30 @@ export function callViolations(root: string): string[] {
       ts.ScriptTarget.Latest,
       true,
     );
+    const imported = fsImports(source);
     function report(node: ts.Node, message: string): void {
       found.push(
         `${path}:${source.getLineAndCharacterOfPosition(node.getStart(source)).line + 1}: ${message}`,
       );
     }
     function visit(node: ts.Node): void {
+      if (pkg === "core" && unsafePattern(node)) report(node, "use portable Unicode patterns");
+      if (pure && ts.isMetaProperty(node)) report(node, `${pkg} may not use import.meta`);
+      if (pkg === "core" && ts.isCatchClause(node) && !guardedCatch(node))
+        report(node, "catch must rethrow other errors");
+      if (
+        pkg === "core" &&
+        ts.isObjectLiteralExpression(node) &&
+        path !== "src/core/check-state.ts" &&
+        node.properties.some((p) => {
+          const name = p.name;
+          if (!name) return false;
+          if (ts.isComputedPropertyName(name))
+            return ts.isStringLiteral(name.expression) && name.expression.text === "ok";
+          return (ts.isIdentifier(name) || ts.isStringLiteral(name)) && name.text === "ok";
+        })
+      )
+        report(node, "build check results through checkResult");
       if (ts.isIdentifier(node)) {
         const parent = node.parent;
         const property =
@@ -133,10 +160,12 @@ export function callViolations(root: string): string[] {
           report(node, "process spawning outside git");
         if (pkg !== "git" && pkg !== "cli" && name === "Bun.file")
           report(node, "file reading outside git and cli");
+        const fsName = imported(expr);
         const flags = ts.isTaggedTemplateExpression(node) ? undefined : node.arguments?.[1];
         const writingOpen =
-          ["open", "openSync"].includes(attr) &&
-          (!flags || !ts.isStringLiteralLike(flags) || /[wa+]/u.test(flags.text));
+          ["open", "openSync"].includes(fsName ?? attr) &&
+          !!flags &&
+          (!ts.isStringLiteralLike(flags) || /[wa+]/u.test(flags.text));
         const bunFileWrite =
           ts.isPropertyAccessExpression(expr) &&
           ts.isCallExpression(expr.expression) &&
@@ -144,7 +173,12 @@ export function callViolations(root: string): string[] {
           ["write", "writer", "delete"].includes(attr);
         if (
           pkg !== "git" &&
-          (name === "Bun.write" || writes.has(attr) || writingOpen || bunFileWrite)
+          (name === "Bun.write" ||
+            (writes.has(fsName ?? attr) &&
+              (!["write", "writeSync", "writev", "writevSync"].includes(attr) ||
+                fsName !== undefined)) ||
+            writingOpen ||
+            bunFileWrite)
         )
           report(node, "file writing outside git");
         if (
