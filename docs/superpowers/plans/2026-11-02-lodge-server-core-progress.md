@@ -77,3 +77,5 @@ Task 7a: recheck 1: 6 closed, 0 open, D-2 handed to the 8a fix round under d-qe5
 Task 7a: complete.
 Task 8c: built by Codex (5cace5c): the 51 carried names each fail against a targeted mutation; Task 11's five `checkChange` assertions and 9a's fifteen thread-check names restored; gate green.
 Task 9b: built by Codex in lane `server-core-t9b` (c54d421); merged.
+Task 10: built by Codex (616b872), gate green.
+Task 8a: fix round 1 by Codex in lane `server-core-t8afix` (f344014), with 7a D-2 and 7b's Minors, under d-qe513h; the builder stopped on two tests importing `checkResult` past `#core`, and the coordinator exported it through `#core` (`CheckResult` is in `__all__`, so the closing front-door test allows it as its constructor); merged with the 7a fix at d625cf3, gate green (849 TS tests).
