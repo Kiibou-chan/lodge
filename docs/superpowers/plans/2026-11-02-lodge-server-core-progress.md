@@ -66,3 +66,7 @@ Parked (Task 6, Minor): C-2 (`UNESCAPE` with the `m` flag passes all tests) and 
 Task 6: complete.
 Task 7b: built by Codex in lane `server-core-t7b` (48e4a51), gate green; merged into `server-core`.
 Task 8a: built by Codex (b5f9f0b), gate green (595 TS tests after the 7b merge).
+Task 8b: built by Codex (c3a811e), gate green.
+Task 11: built by Codex in lane `server-core-t11` (854bebe); five apply tests lack their `checkChange` assertions, which wait for the closing step (`task-11-report.md`, lines 141 to 156); merged.
+Task 9a: built by Codex in lane `server-core-t9a` (9e40182); `check-threads.test.ts` holds 9a's view test only, and its row stays `planned` for Task 8c's fifteen names; merged; gate green at 73ab440 (725 TS tests).
+Task 7a: review 0 Blocking, 2 Important, 5 Minor (`task-7a-review.md`); `derive` matches lodge 0.2 on the repository's 222 decisions and 126 entries and on 6,000 random stores under three time zones. Fix round 1 by Codex in a lane (C-1, C-2, test-only, and the Minors).
