@@ -19,7 +19,7 @@ The plan argues from them, never over them; where they disagree with this plan, 
 Plan 1's Global Constraints hold for every task of this plan, and each brief repeats them; in short, with what this plan adds:
 
 - Builders are Codex (`codex exec`), one task per brief; Codex sees its brief, `CLAUDE.md`, and the repository, with no network, a read-only git index, and no sockets: the builder never stages, commits, or pushes, and never runs `bun install` or `bun add`; a package the task needs and `ts/package.json` lacks stops the task with BLOCKED and its name.
-- The builder's gate is `sh scripts/check-ts.sh` (Biome with `--error-on-warnings` (d-f18pz7), `tsc`, dependency-cruiser, knip, and `bun test`); the coordinator's gate after every task is `sh scripts/check.sh` outside the sandbox, then it stages with explicit paths, commits with `git -c user.name="Svenja Kernig" -c user.email=20756868+Kiibou-chan@users.noreply.github.com commit`, the message ending `Co-Authored-By: Claude <noreply@anthropic.com>`, and pushes `server-store` to `origin`; never `main`.
+- The builder's gate is `sh scripts/check-ts.sh` (Biome with `--error-on-warnings`, d-f18pz7; `tsc`, dependency-cruiser, knip, and `bun test`); the coordinator's gate after every task is `sh scripts/check.sh` outside the sandbox, then it stages with explicit paths, commits with `git -c user.name="Svenja Kernig" -c user.email=20756868+Kiibou-chan@users.noreply.github.com commit`, the message ending `Co-Authored-By: Claude <noreply@anthropic.com>`, and pushes `server-store` to `origin`; never `main`.
 - lodge 0.2 keeps working: `src/`, `tests/`, `pyproject.toml`, and `uv.lock` are not edited.
 - Test-first: each carried or new test is written and seen failing before its code (a missing module or export counts as failing); a carried test over code an earlier task ported is seen failing against a mutation of that code, which the report names and then reverts (d-mfayy5); every existing test keeps passing, edited only where a task says so.
 - Porting (d-88p8h9), as plan 1's Global Constraints say: each Python test becomes a test titled with its name without `test_`, in the file the parity table names, asserting no less; a parametrised test becomes `test.each(cases.map((c) => [c]))` or `test.each([[a, b], …])` with every case; a test that cannot hold keeps its title, asserts the TypeScript behaviour, and is listed in the report; the task's last step flips its rows of `ts/tests/parity.json`.
@@ -29,8 +29,8 @@ Plan 1's Global Constraints hold for every task of this plan, and each brief rep
 - Time (d-59q4jc): `Clock.now()` gives a `Now`, `{ epochMs, offsetMinutes }`, never a `Date`; `app/time.ts` (Task 2) turns it into stamps; `app` uses no clock, randomness, local time, or `Date` without `new` (d-mfskz3), so it may write `new Date(ms)` and call its UTC methods, and `core` still sees only stamps.
 - Structure (plan 1, Task 3; d-x6f9za; d-s5s2c3): `app` imports only `#core`; `store` imports `#app`, `#core`, `kysely`, and `bun:sqlite`, and uses no `fs`, no `fetch`, and no process; another package only through its front door (`#app`, `#store`); no file over 300 lines; a module nearing it is split by topic, as plan 1 says.
 - Exports read in a later task (d-tha8st): a file with an export whose first reader comes in a later task goes into `ts/knip.json`'s `entry` in the task that creates it and leaves in the task that gives it that reader; the files and tasks are listed in "Exports read in a later task" below.
-- Bytes (d-0q54zn, d-wje1cn): text crosses into the database only as UTF-8 bytes through `encodeUtf8` and back through `decodeUtf8` of `core/text.ts` (Task 7), which map a byte of an invalid sequence to U+DC00 plus the byte and back, as Python's `surrogateescape` does; a `text` column never holds a record's or a file's text, since it drops a leading U+FEFF and corrupts a lone surrogate (probes 1 and 2).
-- Tests never touch a real repository or the network; a database is `":memory:"` or a file under a folder from `mkdtempSync` in the system's temporary folder; fixtures are the made-up project of lodge 0.2's tests (the `storage` area), and the people in them are made up (`ada`, `bo`).
+- Bytes (d-0q54zn, d-wje1cn): text crosses into the database only as UTF-8 bytes through `encodeUtf8` and back through `decodeUtf8` of `core/text.ts` (Task 7a), which map a byte of an invalid sequence to U+DC00 plus the byte and back, as Python's `surrogateescape` does; a `text` column never holds a record's or a file's text, since it drops a leading U+FEFF and corrupts a lone surrogate (probes 1 and 2).
+- No test of this plan needs a socket, so the builder runs every one; tests never touch a real repository or the network; a database is `":memory:"` or a file under a folder from `mkdtempSync` in the system's temporary folder; fixtures are the made-up project of lodge 0.2's tests (the `storage` area), and the people in them are made up (`ada`, `bo`).
 - User-facing text and Markdown: British English, no em-dashes, the Oxford comma, one sentence per line; code comments state the fact.
 
 ### Exports read in a later task
@@ -43,6 +43,7 @@ From the import lines of `src/lodge/app/*.py` and `tests/app/*.py` (`grep -n '^f
 | `src/app/state.ts` | Task 3 | `readChecked`, `resolveRef`, `notFound` (4) | Task 4 |
 | `src/app/writes.ts` | Task 3 | `mintUnused` (4) | Task 4 |
 | `tests/app/support.ts` | Task 3 | `project`, `ENTRY`, `FIRST` (4) | Task 4 |
+| `src/store/events.ts` | Task 7a | `appendEvents`, `json` (7b) | Task 7b |
 
 ## Calls made
 
@@ -125,7 +126,7 @@ export class NotFound extends LodgeError {}                // 2
 export class Conflict extends LodgeError {}                // 1
 export class StaleList extends Conflict {}                 // 1
 export class Forbidden extends LodgeError {}               // added, Task 11: 2; the API's 403
-export function coreSettings(table: ReadonlyMap<string, unknown>): CoreSettings;  // shares its name with #core's default-filling coreSettings: import one under an alias
+export function coreSettings(table: Readonly<Record<string, unknown>>): CoreSettings;  // as parseCoreSettings takes it; shares its name with #core's default-filling coreSettings: import one under an alias
 
 // #app, results: AddOutcome (and HELD: "held for approval", Task 12), Read, Shown, Listed, Added, Written,
 // ThreadList, ThreadShown, ThreadsWaiting, Behind, as results.py, fields in camelCase;
@@ -163,7 +164,7 @@ export function openDatabase(path: string): Promise<LodgeDatabase>;   // ":memor
 export class SqliteStore implements Store { constructor(database: LodgeDatabase, project: string, actor: string, clock: Clock) }
 export class SqliteProjects implements Projects { constructor(database: LodgeDatabase, clock: Clock) }
 export function rebuild(database: LodgeDatabase): Promise<void>;       // every derived table from the events
-export interface Tables { events: EventsTable; heads: HeadsTable; files: FilesTable; members: MembersTable; held: HeldTable }
+export interface Tables { events: EventsTable; heads: HeadsTable; files: FilesTable; members: MembersTable; held: HeldTable }  // held: Task 12
 ```
 
 - The events table (d-wje1cn): `events(seq integer primary key autoincrement, project text not null, at text not null, actor text not null, kind text not null, path text, body blob not null, message text)`, refused `update` and `delete` by two triggers raising `events are append-only` (probe 3); plan 2's kinds are `project`, `member`, `file`, `held`, `approved`, and `declined`, a `file` event's body the file's bytes and every other body UTF-8 JSON.
@@ -182,8 +183,9 @@ export interface Tables { events: EventsTable; heads: HeadsTable; files: FilesTa
 | 4 | Reads, threads, and `Lodge`'s reads | 3 | A |
 | 5 | The thread tests | 4 | A |
 | 6 | Confirmations and `#app`'s front door | 5 | A |
-| 7 | The events store and the byte codec | 2 | B |
-| 8 | Projects, members, and two writers at once | 3, 7 | B |
+| 7a | The byte codec, the database, and its events | 2 | B |
+| 7b | The SQLite store and projects | 3, 7a | B |
+| 8 | Two writers at once | 7b | B |
 | 9 | The check on every write, over the events store | 4, 8 | |
 | 10 | People in the core | 1 | C |
 | 11 | People in the operations and the store | 6, 8, 10 | |
@@ -191,8 +193,8 @@ export interface Tables { events: EventsTable; heads: HeadsTable; files: FilesTa
 | 13 | Review flags per person | 10 | C |
 | 14 | Closing checks | every task | |
 
-Lanes A, B, and C run in parallel in their own worktrees, merged into `server-store` as each task passes its review (d-xdqsmf); within a lane, tasks run in order.
-The import graph decides the lanes: lane B needs only `#app`'s ports and `Lodge.add` (Tasks 2 and 3), and lane C touches only `ts/src/core` and `ts/tests/core`, which no task of lanes A and B edits except Task 7's `text.ts` and `fileformat.ts`, which lane C does not touch.
+Lanes A, B, and C run in parallel in their own worktrees, merged into `server-store` as each task passes its review, as plan 1's lanes are (d-xdqsmf, recorded on `server-core` and here once plan 1 merges); within a lane, tasks run in order.
+The import graph decides the lanes: lane B needs only `#app`'s ports and `Lodge.add` (Tasks 2 and 3), and lane C touches only `ts/src/core` and `ts/tests/core`, which no task of lanes A and B edits except Task 7a's `text.ts` and `fileformat.ts`, which lane C does not touch.
 Tasks 11 and 13 may also run in parallel, since Task 13 touches only the core's derivation, views, and feedback, and Task 11 only the operations, the store, and their tests.
 
 ---
@@ -202,7 +204,7 @@ Tasks 11 and 13 may also run in parallel, since Task 13 touches only the core's 
 The coordinator does this task outside the sandbox, since it installs a package (brief; d-4psbdv).
 
 **Files:**
-- Modify: `ts/package.json` (`dependencies` gains `"kysely": "0.29.7"`), `ts/knip.json` (`ignoreDependencies` gains `"kysely"`, since no code imports it before Task 7, which takes it out), `ts/bun.lock` (by `bun install`)
+- Modify: `ts/package.json` (`dependencies` gains `"kysely": "0.29.7"`), `ts/knip.json` (`ignoreDependencies` gains `"kysely"`, since no code imports it before Task 7a, which takes it out), `ts/bun.lock` (by `bun install`)
 
 **Interfaces:**
 - Produces: Kysely 0.29.7 installed, pinned exactly, published 2026-10-17 (plan 1's probe 11), at least two weeks before this plan (d-4psbdv).
@@ -226,7 +228,7 @@ The coordinator does this task outside the sandbox, since it installs a package 
 - `LodgeError` extends `Error` with `exitCode` 2 and `name` its class name; `Conflict` sets `exitCode` 1, and `StaleList` extends it; `NotFound` extends `LodgeError`.
 - `coreSettings(table)` calls `parseCoreSettings` and throws `new LodgeError(".lodge.toml: " + message)` for a `SettingsError`, as `src/lodge/app/errors.py:28-33`; it shares its name with `#core`'s default-filling `coreSettings`, so `errors.ts` imports that one as `import { coreSettings as defaultCoreSettings }` if it needs it.
 - `Actor`, `person`, `agent`, `actorText`, `Role`, `Projects`, `stampOf`, and `minuteOf` are additions (d-kj59bz, d-wx7d0f), declared here so that lanes B and C build on one port: `actorText(person("ada"))` is `"ada"`, `actorText(agent())` is `"agent"`, and `actorText(agent("builder"))` is `"agent builder"`.
-- `time.ts`, exported through `#app` as additions, since the store stamps its events with them (Task 7):
+- `time.ts`, exported through `#app` as additions, since the store stamps its events with them (Task 7b):
   ```ts
   export function stampOf(now: Now): string    // datetime.isoformat(timespec="seconds"): "2026-10-29T09:30:00+01:00"
   export function minuteOf(now: Now): string   // strftime(MINUTE_FORMAT), "%Y-%m-%d %H:%M" in the offset's own time: "2026-10-29 09:30"
@@ -234,13 +236,13 @@ The coordinator does this task outside the sandbox, since it installs a package 
   Both compute from `new Date(now.epochMs + now.offsetMinutes * 60_000)` and its UTC methods (d-mfskz3), the offset written `+HH:MM` or `-HH:MM`, `+00:00` for zero.
 - `fakes.ts` carries `tests/app/fakes.py` (d-vd3175 for its constructors):
   - `START: Now`, 2026-10-29 09:30 at offset +01:00 (`epochMs` from `instant("2026-10-29T09:30:00+01:00")` of `#core`, `offsetMinutes` 60);
-  - `MemoryStore(items: (Area | Decision | SpecEntry)[] = [], options: { staged?: boolean } = {})`, with `files` and `published` as `Map`s, `staged`, `rev`, `commits`, `commitResult`, `stamp`, `publishes` (each `[Map, message]`), `attempts`, `gateFor`, and `movesAfterRead` and `rejectNext`, its methods `async` and otherwise line for line `fakes.py`'s;
+  - `MemoryStore(items: (Area | Decision | SpecEntry)[] = [], options: { staged?: boolean } = {})`, building its trees with `tree()` of `#core`, with `files` and `published` as `Map`s, `staged`, `rev`, `commits`, `commitResult`, `stamp`, `publishes` (each `[Map, message]`), `attempts`, `gateFor`, and `movesAfterRead` and `rejectNext`, its methods `async` and otherwise line for line `fakes.py`'s;
   - `FixedClock(start: Now = START, stepMs = 0)`, with `calls`, `slept` (seconds), `now()`, and `async sleep(seconds)`, which adds `seconds * 1000` to `start`;
   - `CountingIds(first = 1, step = 1)`, with `draws` and `entropy()` giving six equal bytes.
 - `filesOf` and the builders come from `ts/tests/core/builders.ts`, as `fakes.py` imports them from `builders`.
 
 - [ ] **Step 1: Write the failing tests.**
-  - `time.test.ts`: `stamp_keeps_the_offset` (`START` gives `2026-10-29T09:30:00+01:00`, and `isStamp` of `#core` accepts it); `stamp_drops_the_fraction` (`START` plus 999 ms gives the same stamp); `negative_and_zero_offsets` (offset −150 gives `-02:30`, offset 0 gives `+00:00`); `minute_is_local_to_the_offset` (`START` gives `2026-10-29 09:30`, and the same instant at offset 0 gives `2026-10-29 08:30`); `minute_crosses_midnight` (23:59 UTC at offset +60 gives the next day's `00:59`).
+  - `time.test.ts`: `stamp_keeps_the_offset` (`START` gives `2026-10-29T09:30:00+01:00`, and `isStamp` of `#core` accepts it); `stamp_drops_the_fraction` (`START` plus 999 ms gives the same stamp); `negative_and_zero_offsets` (offset -150 gives `-02:30`, offset 0 gives `+00:00`); `minute_is_local_to_the_offset` (`START` gives `2026-10-29 09:30`, and the same instant at offset 0 gives `2026-10-29 08:30`); `minute_crosses_midnight` (23:59 UTC at offset +60 gives the next day's `00:59`).
   - `ports.test.ts`: `actor_text_names_the_person_or_the_role`; `default_filling_functions_fill_python_defaults` (each of the six against the defaults above).
   - `errors.test.ts`: `exit_codes_follow_lodge_0_2` (`LodgeError` 2, `NotFound` 2, `Conflict` 1, `StaleList` 1, each `instanceof` its base); `core_settings_reports_a_bad_table_as_a_lodge_error` (a `[length]` table with a negative number throws a `LodgeError` whose message starts `.lodge.toml: `).
 - [ ] **Step 2: Run** `cd ts && bun test tests/app`; expected: the new tests FAIL.
@@ -263,7 +265,7 @@ The coordinator does this task outside the sandbox, since it installs a package 
 - `writes.ts` is line for line `writes.py`, with these readings:
   - `_after_newest` takes the newest decision's instant from `instant` of `#core` (a stored date is always a stamp, since `read_date` writes a bare day back as midnight UTC); `(newest - now).total_seconds() > _WAITS` is `(newestMs - now.epochMs) / 1000 > WAITS`; `now.replace(microsecond=0) > newest` is `Math.floor(now.epochMs / 1000) * 1000 > newestMs`; and `clock.sleep(1.0 - now.microsecond / 1_000_000)` is `await clock.sleep(1 - (now.epochMs % 1000) / 1000)`;
   - `now.isoformat(timespec="seconds")` is `stampOf(now)`, and `check_change`'s `now` is that stamp (plan 1, Task 8b);
-  - the after-state is built with `tree({ rev, files, attachments })` of `#core`, never a `Tree` literal, so that Task 10's `people` reaches it through the default and Task 11's change of that line is one place;
+  - the after-state is built with `tree({ rev, files, attachments })` of `#core`, never a `Tree` literal, so that it still compiles once Task 10 adds `people` to `Tree`, and Task 11 then passes `people: current.people` in that one place;
   - `_attached`'s `{name!r}` is `pyRepr(name)` of `#core`.
 - `lodge.ts` holds `Wiring` and delegates as `lodge.py` does; this task writes the constructor and the two methods, and Tasks 4 and 6 add the rest (d-t7er56).
 - `support.ts` carries `tests/app/support.py` and `conftest.py` (whose only content is the path to the core's test helpers, which TypeScript imports by path): `AREA`, `ENTRY`, `FIRST`, `project({ staged = false } = {})`, and `wired(store, clock = new FixedClock(), ids = new CountingIds())`.
@@ -334,12 +336,12 @@ The coordinator does this task outside the sandbox, since it installs a package 
 - [ ] **Step 4: Run** `sh scripts/check-ts.sh`; green; flip `tests/app/test_confirm.py` to `ported`; then every `tests/app/` row is `ported` or `changed`, but for `test_thread_fix_paths.py` (plan 3).
 - [ ] **Step 5: Coordinator:** `sh scripts/check.sh`, commit, push.
 
-### Task 7: The events store and the byte codec
+### Task 7a: The byte codec, the database, and its events
 
 **Files:**
-- Create: `ts/src/store/index.ts`, `ts/src/store/schema.ts`, `ts/src/store/events.ts`, `ts/src/store/sqlite-store.ts`, `ts/src/store/projects.ts`
-- Modify: `ts/src/core/text.ts` (`encodeUtf8`, `decodeUtf8`), `ts/src/core/fileformat.ts` (`contentHash` encodes through `encodeUtf8`, d-0q54zn), `ts/package.json` (`imports` gains `"#store": "./src/store/index.ts"`, no dependency), `ts/knip.json` (`kysely` leaves `ignoreDependencies`)
-- Test: `ts/tests/core/bytes.test.ts`, `ts/tests/store/database.test.ts`, `ts/tests/store/projects.test.ts`, `ts/tests/store/sqlite-store.test.ts`, `ts/tests/store/rebuild.test.ts` (new)
+- Create: `ts/src/store/index.ts`, `ts/src/store/schema.ts`, `ts/src/store/events.ts`
+- Modify: `ts/src/core/text.ts` (`encodeUtf8`, `decodeUtf8`), `ts/src/core/fileformat.ts` (`contentHash` encodes through `encodeUtf8`, d-0q54zn), `ts/package.json` (`imports` gains `"#store": "./src/store/index.ts"`, no dependency), `ts/knip.json` (`kysely` leaves `ignoreDependencies`; `src/store/events.ts` goes into `entry`)
+- Test: `ts/tests/core/bytes.test.ts`, `ts/tests/store/database.test.ts` (new)
 
 **Interfaces:**
 - Consumes: Task 2's ports; plan 1's `#core`.
@@ -349,52 +351,70 @@ The coordinator does this task outside the sandbox, since it installs a package 
   export function decodeUtf8(bytes: Uint8Array): string  // bytes.decode("utf-8", "surrogateescape"): each byte of an invalid sequence becomes U+DC00 + byte
   ```
   `decodeUtf8` refuses what Python refuses, byte by byte: overlong forms, encoded surrogates, values beyond U+10FFFF, and truncated sequences each give one U+DCxx per byte (probe 7); `contentHash` hashes `encodeUtf8` of the normalised text, so `contentHash("a\uDC80\n")` is `518254327818` and a lone U+D83D throws the `ValueError`, as Python's `UnicodeEncodeError` is one (probe 7).
-- Produces, through `#store`: `LodgeDatabase`, `Tables`, `openDatabase`, `SqliteStore`, `SqliteProjects`, `rebuild`, as in "Interfaces for plans 3 and 4".
+- Produces, through `#store`: `LodgeDatabase`, `Tables`, `openDatabase`, and `rebuild`, as in "Interfaces for plans 3 and 4".
 - `schema.ts` (d-wje1cn):
   - `openDatabase(path)` opens `new Database(path, { strict: true, create: true })` of `bun:sqlite` and wraps it for Kysely as `probes/db.ts` does (plan 1's probe 1); it sets `PRAGMA journal_mode=WAL` and `PRAGMA busy_timeout=5000`, reads `PRAGMA user_version`, runs each migration above it in one transaction, and sets `user_version` to the number of migrations; a database whose `user_version` is above that is closed and refused with `LodgeError("the database at <path> has schema <n>, newer than this lodge's <m>")`.
+  - It creates no folder: a file's folder must exist, so `store` keeps no file access of its own (d-x6f9za), and plan 3's entry point chooses the path.
   - `MIGRATIONS[0]` creates `events` (columns as in "Interfaces for plans 3 and 4"), the triggers `events_no_update` and `events_no_delete` (`before update` and `before delete on events`, `select raise(abort, 'events are append-only')`, probe 3), `heads(project text primary key, rev integer not null)`, `files(project text not null, path text not null, body blob not null, seq integer not null, primary key (project, path))`, and `members(project text not null, person text not null, role text not null, primary key (project, person))`.
   - The Kysely interfaces are `EventsTable` (`seq: Generated<number>`, `body: Uint8Array`, `path` and `message` `string | null`), `HeadsTable`, `FilesTable`, and `MembersTable`.
-- `events.ts`, module-internal:
+- `events.ts`, module-internal but `rebuild`:
   ```ts
   export interface NewEvent { readonly kind: string; readonly path: string | null; readonly body: Uint8Array; readonly message: string | null }
   export async function appendEvents(tx: Transaction<Tables>, project: string, actor: string, at: string, events: readonly NewEvent[]): Promise<number>  // the last seq
-  export async function applyEvent(tx: Transaction<Tables>, row: Selectable<EventsTable>): Promise<void>
   export function json(value: unknown): Uint8Array        // encodeUtf8(JSON.stringify(value))
+  export async function rebuild(database: LodgeDatabase): Promise<void>
   ```
-  `appendEvents` inserts each event and runs `applyEvent` on the inserted row, so a write and `rebuild` fill the derived tables with one function; `applyEvent` sets `heads.rev` to the row's `seq` for every kind (inserting the row for `project`), upserts `members` for `member` (`{ person, role }`), and upserts `files` for `file` (path and bytes); an unknown kind throws, so a later plan cannot forget its case.
+  `appendEvents` inserts each event and runs `applyEvent` (not exported) on the inserted row, so a write and `rebuild` fill the derived tables with one function; `applyEvent` sets `heads.rev` to the row's `seq` for every kind (inserting the row for `project`), upserts `members` for `member` (`{ person, role }`), and upserts `files` for `file` (path and bytes); an unknown kind throws, so a later plan cannot forget its case.
+  `appendEvents` and `json` are first read by Task 7b, so `events.ts` is in `ts/knip.json`'s `entry` until then (d-tha8st).
 - `rebuild(database)` deletes every row of `heads`, `files`, and `members` and replays every event in `seq` order through `applyEvent`, in one transaction; it never touches `events`.
+
+- [ ] **Step 1: Write the failing tests.**
+  - `bytes.test.ts`: `decode_utf8_like_surrogateescape` (`test.each` over probe 7's seven byte strings and their code points); `encode_utf8_reverses_decode` (each decoded text encodes back to its bytes); `encode_refuses_a_lone_surrogate_outside_the_escapes` (U+D83D and U+DC7F throw `ValueError`); `content_hash_encodes_escaped_bytes` (`518254327818`, probe 7).
+  - `database.test.ts`: `schema_is_created_once` (opening one file twice keeps one schema at `user_version` 1); `newer_schema_is_refused` (a file whose `user_version` a raw `bun:sqlite` connection set to 9); `events_are_append_only` (an `update` and a `delete` through `database.db` each throw `events are append-only`, probe 3); `rebuild_derives_the_tables_from_raw_events` (events inserted through `database.db` for a `project`, a `member`, and two `file`s of one path give, after `rebuild`, one `heads` row at the last `seq`, the member, and the second file's bytes).
+- [ ] **Step 2: Run** `cd ts && bun test tests/store tests/core/bytes.test.ts`; expected: the new tests FAIL.
+- [ ] **Step 3: Implement**; add `#store` to `package.json`'s `imports`, take `kysely` out of `ts/knip.json`'s `ignoreDependencies`, and put `src/store/events.ts` into its `entry`.
+- [ ] **Step 4: Run** `sh scripts/check-ts.sh`; green, dependency-cruiser reporting no `file-confinement` or `sqlite-confinement` violation.
+- [ ] **Step 5: Coordinator:** `sh scripts/check.sh`, commit, push.
+
+### Task 7b: The SQLite store and projects
+
+**Files:**
+- Create: `ts/src/store/sqlite-store.ts`, `ts/src/store/projects.ts`
+- Modify: `ts/src/store/index.ts`, `ts/knip.json` (`src/store/events.ts` leaves `entry`)
+- Test: `ts/tests/store/projects.test.ts`, `ts/tests/store/sqlite-store.test.ts`, `ts/tests/store/rebuild.test.ts` (new)
+
+**Interfaces:**
+- Consumes: Tasks 3 and 7a (`Lodge.add` for `lodge_adds_through_the_store`).
+- Produces, through `#store`: `SqliteStore` and `SqliteProjects`, as in "Interfaces for plans 3 and 4".
 - `SqliteStore(database, project, actor, clock)` implements `Store` (d-ae1vn5):
   - `trees()` reads `heads` and `files` of the project in one transaction; an unknown project throws `NotFound("no project named <project>")`; the tree is `tree({ rev: String(rev), files, attachments })` of `#core`, a path under `lodge/attachments/` listed in `attachments` and never decoded, every other path in `files` as `decodeUtf8` of its bytes; it returns that one tree as both the current and the published state.
-  - `publish(base, writes, message)` refuses a path not under `lodge/` with `LodgeError("<path> is outside lodge/")`, encodes every text with `encodeUtf8` first (a `ValueError` becomes `LodgeError("<path>: <message>")`), then in one transaction runs, as its first statement, `update heads set rev = rev where project = :project and rev = :base` (probes 4 and 8): no row matched, or a `base.rev` that is not a decimal, answers `REJECTED` and writes nothing; otherwise it appends one `file` event per path of `writes` in the map's order, each with the message, the actor, and `at` = `stampOf(clock.now())`, and answers `PUBLISHED`.
+  - `publish(base, writes, message)` refuses a path not under `lodge/` with `LodgeError("<path> is outside lodge/")`, encodes every text with `encodeUtf8` first (a `ValueError` becomes `LodgeError("<path>: <message>")`), then in one transaction runs, as its first statement, `update heads set rev = rev where project = :project and rev = :base` (probes 4 and 8): no row matched, or a `base.rev` that is not a decimal, answers `REJECTED` and writes nothing; otherwise it appends one `file` event per path of `writes` in the map's order, each with the message, the actor, and `at` = `stampOf(clock.now())` of `#app`, and answers `PUBLISHED`.
   - `freshness()` answers `null`, `gate(current)` `gate({ published: current, checked: [["", current]] })`, and `commit()` the `FAILED` outcome of "Interfaces for plans 3 and 4"; none reads or writes.
 - `SqliteProjects(database, clock)` implements `Projects` (d-wx7d0f):
   - `create(project, owner)` checks both names, then in one transaction refuses an existing project with `Conflict("a project named <project> exists")` and appends a `project` event (`{ owner }`) and a `member` event (`{ person: owner, role: "owner" }`), the actor being the owner;
   - `members(project)` gives the members by name in code-point order, `NotFound` for an unknown project;
-  - `addMember(project, person, role, by)` checks the name and refuses a member already there with `Conflict`, the actor being `actorText(by)`; so `Projects.addMember` takes a fourth parameter, `by: Actor`, which "Interfaces for plans 3 and 4" lists;
+  - `addMember(project, person, role, by)` checks the name and refuses a member already there with `Conflict`, the actor being `actorText(by)`;
   - `storeFor(project, actor)` gives `new SqliteStore(database, project, actorText(actor), clock)`;
   - a bad name throws `LodgeError("<name> is not a project name: …")` or `"… is not a person's name: …"`, with the pattern.
-- The store stamps its events with `stampOf` of `#app` (Task 2).
 
 - [ ] **Step 1: Write the failing tests.**
-  - `bytes.test.ts`: `decode_utf8_like_surrogateescape` (`test.each` over probe 7's seven byte strings and their code points); `encode_utf8_reverses_decode` (each decoded text encodes back to its bytes); `encode_refuses_a_lone_surrogate_outside_the_escapes` (U+D83D and U+DC7F throw `ValueError`); `content_hash_encodes_escaped_bytes` (`518254327818`, probe 7).
-  - `database.test.ts`: `schema_is_created_once` (opening one file twice keeps one schema at `user_version` 1); `newer_schema_is_refused` (a file whose `user_version` a raw `bun:sqlite` connection set to 9); `events_are_append_only` (an `update` and a `delete` through Kysely each throw `events are append-only`, probe 3).
   - `projects.test.ts`: `create_writes_the_project_and_its_owner` (two events in order, `members` gives `ada` as owner); `existing_project_conflicts`; `names_are_checked` (`Lodge`, `-x`, and a 64-character project name; `Ada` and `1ada` as persons); `add_member_needs_a_new_name`; `unknown_project_is_not_found`.
-  - `sqlite-store.test.ts`: `trees_give_one_state`; `a_write_is_one_event_per_file` (kind, path, message, actor `ada`, `at` the clock's stamp); `file_bytes_survive_exactly` (a text starting with U+FEFF, CRLF, U+0000, an astral character, and U+DC80, read back equal, the last stored as the byte 0x80; probes 1 and 2); `lone_surrogate_outside_the_escapes_is_refused` (no event written); `stale_base_is_rejected_and_writes_nothing`; `attachments_are_listed_not_read`; `gate_compares_the_current_state_with_itself`; `freshness_is_null_and_commit_is_refused`; `path_outside_lodge_is_refused`; `lodge_adds_through_the_store` (`Lodge` over a `SqliteStore` adds the pair of `ts/tests/app/writes.test.ts`, `PUBLISHED`, and `show` of the new entry reads it).
+  - `sqlite-store.test.ts`: `trees_give_one_state`; `a_write_is_one_event_per_file` (kind, path, message, actor `ada`, `at` the clock's stamp); `file_bytes_survive_exactly` (a text starting with U+FEFF, CRLF, U+0000, an astral character, and U+DC80, read back equal, the last stored as the byte 0x80; probes 1 and 2); `lone_surrogate_outside_the_escapes_is_refused` (no event written); `stale_base_is_rejected_and_writes_nothing`; `attachments_are_listed_not_read`; `gate_compares_the_current_state_with_itself`; `freshness_is_null_and_commit_is_refused`; `path_outside_lodge_is_refused`; `lodge_adds_through_the_store` (`Lodge` over a `SqliteStore` adds the pair of `ts/tests/app/writes-attach.test.ts`, `PUBLISHED`, and `show` of the new entry reads it).
   - `rebuild.test.ts`: `rebuild_gives_the_same_tables` (after a project, a member, three publishes, one rewriting a path, the rows of `heads`, `files`, and `members` before and after `rebuild` are equal); `rebuild_keeps_every_event`.
-- [ ] **Step 2: Run** `cd ts && bun test tests/store tests/core/bytes.test.ts`; expected: the new tests FAIL.
-- [ ] **Step 3: Implement**; add `#store` to `package.json`'s `imports` and take `kysely` out of `ts/knip.json`'s `ignoreDependencies`.
-- [ ] **Step 4: Run** `sh scripts/check-ts.sh`; green, dependency-cruiser reporting no `file-confinement` or `sqlite-confinement` violation.
+- [ ] **Step 2: Run** `cd ts && bun test tests/store`; expected: the new tests FAIL.
+- [ ] **Step 3: Implement**; take `src/store/events.ts` out of `ts/knip.json`'s `entry`.
+- [ ] **Step 4: Run** `sh scripts/check-ts.sh`; green.
 - [ ] **Step 5: Coordinator:** `sh scripts/check.sh`, commit, push.
 
 ### Task 8: Two writers at once
 
 **Files:**
 - Create: `ts/tests/store/interleaving.ts`
-- Modify: `ts/tests/parity.json` (`tests/gitstore/test_concurrent.py` stays `changed`); Task 7's modules only where a test finds them wrong
+- Modify: `ts/tests/parity.json` (`tests/gitstore/test_concurrent.py` stays `changed`); Tasks 7a and 7b's modules only where a test finds them wrong
 - Test: `ts/tests/store/concurrent.test.ts` (changed, design line 72)
 
 **Interfaces:**
-- Consumes: Tasks 3 and 7.
+- Consumes: Task 7b.
 - Produces, for Task 9's tests:
   ```ts
   export class Interleaved implements Store       // tests/gitstore/test_concurrent.py:29-58: runs another Lodge's add once, after the first trees()
@@ -408,7 +428,7 @@ The coordinator does this task outside the sandbox, since it installs a package 
 - The `Lodge`s are those of Python's `lodge_over`: `FixedClock`, `CountingIds(first)`, `coreSettings()`.
 
 - [ ] **Step 1: Write the failing tests:** the three tests as above, and `interleaving.ts`.
-- [ ] **Step 2: Run** `cd ts && bun test tests/store`; expected: the new tests FAIL until `interleaving.ts` exists, then pass on Task 7's store; a mutation of the compare-and-set (`rev = :base` dropped) makes each fail, which the report names, then it is reverted (d-mfayy5).
+- [ ] **Step 2: Run** `cd ts && bun test tests/store`; expected: the new tests FAIL until `interleaving.ts` exists, then pass on Task 7b's store; a mutation of the compare-and-set (`rev = :base` dropped) makes each fail, which the report names, then it is reverted (d-mfayy5).
 - [ ] **Step 3: Run** `sh scripts/check-ts.sh`; green.
 - [ ] **Step 4: Coordinator:** `sh scripts/check.sh`, commit, push.
 
@@ -416,7 +436,7 @@ The coordinator does this task outside the sandbox, since it installs a package 
 
 **Files:**
 - Create: `ts/tests/store/seed.ts`
-- Modify: `ts/tests/parity.test.ts` (a `changed` row of plan 2 is held to the rules of a `ported` row), `ts/tests/parity.json` (the two rows stay `changed`); Tasks 3 to 7's modules only where a test finds them wrong
+- Modify: `ts/tests/parity.test.ts` (a `changed` row of plan 2 is held to the rules of a `ported` row), `ts/tests/parity.json` (the two rows stay `changed`); Tasks 3 to 7b's modules only where a test finds them wrong
 - Test: `ts/tests/app/reads-published.test.ts`, `ts/tests/app/writes-retry.test.ts` (changed, as the parity table says); `ts/tests/store/checked-writes.test.ts` (new)
 
 **Interfaces:**
@@ -484,7 +504,7 @@ The coordinator does this task outside the sandbox, since it installs a package 
 ### Task 11: People in the operations and the store
 
 **Files:**
-- Modify: `ts/src/app/ports.ts` (nothing new; `Forbidden` goes in `errors.ts`), `ts/src/app/errors.ts`, `ts/src/app/lodge.ts`, `ts/src/app/writes.ts`, `ts/src/app/threads.ts`, `ts/src/app/confirm.ts`, `ts/src/app/index.ts`, `ts/src/store/sqlite-store.ts`, `ts/tests/app/fakes.ts` (`MemoryStore`'s `people` option), `ts/tests/app/support.ts` (`wired`'s actor), and every test that builds a `Lodge` without `wired` (`ts/tests/store/*.test.ts`)
+- Modify: `ts/src/app/errors.ts`, `ts/src/app/lodge.ts`, `ts/src/app/writes.ts`, `ts/src/app/threads.ts`, `ts/src/app/confirm.ts`, `ts/src/app/index.ts`, `ts/src/store/sqlite-store.ts`, `ts/tests/app/fakes.ts` (`MemoryStore`'s `people` option), `ts/tests/app/support.ts` (`wired`'s actor), and every test that builds a `Lodge` without `wired` (`ts/tests/store/*.test.ts`)
 - Test: `ts/tests/app/people.test.ts`, `ts/tests/store/people.test.ts` (new)
 
 **Interfaces:**
@@ -526,7 +546,7 @@ The coordinator does this task outside the sandbox, since it installs a package 
 
 - [ ] **Step 1: Write the failing tests.**
   - `app/held.test.ts`, over `MemoryStore` with `people` `{ada, bo}` and a draft decision `decided_by: ada` with her quote (made up): `an_agents_add_of_a_persons_decision_is_held`; `a_dry_run_names_who_must_approve`; `a_held_add_is_not_current` (`show` of the provisional ID is `NotFound`, `search` lists nothing, and no file is written); `the_person_approves_and_it_becomes_current` (as `ada`: `PUBLISHED`, dated at the approval, `held()` empty); `another_person_or_an_agent_cannot_approve` (`Forbidden` for `bo` and for an agent); `approval_runs_the_check_again` (a change landing between the hold and the approval makes it fail check 6, so `CHECK_FAILED` and still held); `decline_needs_the_person_and_a_reason`; `a_persons_own_decision_is_not_held`; `an_add_for_two_people_is_refused`; `a_failing_check_is_not_held` (no quote: check 3, nothing held).
-  - `store/held.test.ts`: `a_hold_is_an_event_and_not_a_file`; `approval_and_files_land_together` (one `approve` writes the `file` events and the `approved` event under one compare-and-set; one on a stale base writes neither); `holds_rebuild` (`rebuild` gives the `held` rows back); `schema_1_is_migrated_to_2` (a file with Task 7's schema and `user_version` 1 opens at 2 with `held`, its events kept).
+  - `store/held.test.ts`: `a_hold_is_an_event_and_not_a_file`; `approval_and_files_land_together` (one `approve` writes the `file` events and the `approved` event under one compare-and-set; one on a stale base writes neither); `holds_rebuild` (`rebuild` gives the `held` rows back); `schema_1_is_migrated_to_2` (a file with Task 7a's schema and `user_version` 1 opens at 2 with `held`, its events kept).
 - [ ] **Step 2: Run** `cd ts && bun test tests/app tests/store`; expected: the new tests FAIL.
 - [ ] **Step 3: Implement.**
 - [ ] **Step 4: Run** `sh scripts/check-ts.sh`; green.
@@ -553,7 +573,7 @@ The coordinator does this task outside the sandbox, since it installs a package 
 
 ### Task 14: Closing checks
 
-The coordinator runs this on `server-store` after every lane has merged, as d-442r2f does for plan 1.
+The coordinator runs this on `server-store` after every lane has merged, as d-442r2f has plan 1's closing step run (recorded on `server-core`).
 
 **Files:**
 - Modify: `ts/tests/parity.json` and `ts/knip.json` only where a check below finds them wrong
@@ -561,5 +581,5 @@ The coordinator runs this on `server-store` after every lane has merged, as d-44
 - [ ] **Step 1: Verify** every `tests/app/` row of `parity.json` is `ported` or `changed`, but `test_thread_fix_paths.py` (`planned`, plan 3); `tests/gitstore/test_concurrent.py` is `changed` and its file keeps the three names; `grep -c '"planned"' ts/tests/parity.json` counts only rows of plans 3 and 4.
 - [ ] **Step 2: Verify** `ts/knip.json`'s `entry` is plan 1's closing two patterns, and knip reports no unused export or dependency.
 - [ ] **Step 3: Verify** `ts/tests/app/front-door.test.ts` passes with every addition exported; `bun test` passes in process with no socket (`grep -rn "Bun.serve\|fetch(" ts/src/app ts/src/store` prints nothing).
-- [ ] **Step 4: Verify** with a scratch database: `openDatabase` on a fresh file, a project, two members, an add, a held add approved, a declined hold, then `rebuild`, gives the same rows of every derived table (Task 7's and Task 12's `rebuild` tests together cover it; this step runs them once more after the merge).
+- [ ] **Step 4: Verify** with a scratch database: `openDatabase` on a fresh file, a project, two members, an add, a held add approved, a declined hold, then `rebuild`, gives the same rows of every derived table (Task 7b's and Task 12's `rebuild` tests together cover it; this step runs them once more after the merge).
 - [ ] **Step 5:** `sh scripts/check.sh`; commit, push; the ledger line says the plan ends: the carried app tests and the model tests pass in process, with no HTTP.

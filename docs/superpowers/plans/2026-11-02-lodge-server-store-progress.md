@@ -3,7 +3,7 @@
 Branch `server-store`; authority for the build: the server design, approved by the author 2026-11-02 13:52 ("Approved").
 Briefs, reports, and reviews: `docs/superpowers/plans/2026-11-02-lodge-server-store/`; probes in `probes.md` there, their sources in `probes/`.
 
-Plan: written by the planner from `planner-brief.md`, 14 tasks in three lanes (A: Tasks 2 to 6; B: 7 and 8; C: 10 and 13); probes 1 to 8 in `probes.md`.
+Plan: written by the planner from `planner-brief.md`, 15 tasks (1 to 14, Task 7 split into 7a and 7b) in three lanes (A: Tasks 2 to 6; B: 7a, 7b, and 8; C: 10 and 13); probes 1 to 8 in `probes.md`.
 Ruling: the ports are asynchronous, and the clock gives milliseconds with an offset (d-59q4jc).
 Ruling: the `Store` port keeps lodge 0.2's methods, and the SQLite store gives one state (d-ae1vn5).
 Ruling: events hold file bytes in a `blob`, decoded as `surrogateescape` (d-0q54zn now this plan's), and a write is a compare-and-set on the project's newest event (d-wje1cn).
