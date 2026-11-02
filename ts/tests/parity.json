@@ -236,7 +236,7 @@
     "ts": ["ts/tests/core/fileformat-text.test.ts"]
   },
   "tests/core/test_ids.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 1,
     "task": ["4"],
     "ts": ["ts/tests/core/ids.test.ts"]
@@ -260,7 +260,7 @@
     "ts": ["ts/tests/core/search.test.ts"]
   },
   "tests/core/test_settings.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 1,
     "task": ["4"],
     "ts": ["ts/tests/core/settings.test.ts"]
@@ -296,7 +296,7 @@
     "ts": ["ts/tests/core/views-trust.test.ts"]
   },
   "tests/core/test_yamlio.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 1,
     "task": ["4"],
     "ts": ["ts/tests/core/yamlio.test.ts"]
