@@ -85,3 +85,9 @@ Parked (8c and 9b, Minor) for the final fix wave: 9b-C-1 (a carried render asser
 Task 8c: complete.
 Task 9b: complete.
 Task 12: built by Codex in lane `server-core-t12`, merged (9ac3208); the coordinator ran `sh scripts/differential.sh` outside the sandbox: "350 records, 10 areas, 0 threads, 0 problems, 112 queries, 360 rewritten files", "0 differences"; the store holds no threads, so the thread code rests on the carried tests and Task 6's comparison over 1,207 built threads.
+Task 8b, 9a, and 11: review (`task-8b-9a-11-review.md`): 8b 0 Blocking, 0 Important, 3 Minor; 9a 0, 0, 2; 11 0, 0, 5; Python and TypeScript agree byte for byte over 2,745 `checkChange` cases, 921 level states, and 1,539 `applyDrafts` cases, the 44 PyYAML message differences under d-p48gr1; 32 of 50 targeted mutations fail a carried test, ten of the survivors caught by tests later tasks carry.
+Parked (8b, 9a, and 11, Minor) for the final fix wave: 8b-P-1, 8b-P-2, 8b-D-1, 9a-P-1, 9a-D-1, 11-P-1, 11-P-2, 11-D-1 (a `catch` rule in `ts/tests/structure/calls.ts` for the `ValueError`-only catch at `apply.ts:163-164` and `apply-areas.ts:53-54`), 11-D-2, 11-D-3.
+Ruling for the final fix wave: d-d0vca9 (replaces d-4zg8q3): the file-writing rule in `ts/tests/structure/calls.ts` reports `write`, `writev`, and their `Sync` forms only as functions imported from `fs`, and `.write`, `.writer`, `.delete` only on a `Bun.file(…)` call (plans 3 and 4 depend on it); also check each locked package's age against plan 3's `minimumReleaseAge` (d-svv7gv).
+Task 8b: complete.
+Task 9a: complete.
+Task 11: complete.
