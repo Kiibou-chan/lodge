@@ -1,11 +1,23 @@
 import { expect, test } from "bun:test";
 import assert from "node:assert/strict";
-import { areaPath, contentHash, newRecordPath, parseArea, parseRecord, Scope } from "#core";
+import {
+  areaPath,
+  checkChange,
+  contentHash,
+  coreSettings,
+  load,
+  tree as makeTree,
+  newRecordPath,
+  parseArea,
+  parseRecord,
+  Scope,
+} from "#core";
 import {
   applied,
   apply,
   areaText,
   isStale,
+  NOW,
   present,
   problems,
   specText,
@@ -15,7 +27,6 @@ import { at, decision, entry, area as makeArea, snapshotOf } from "./builders.ts
 import { document } from "./samples.ts";
 
 test("decision_reasoning_edit_keeps_date_and_fails_check_5", () => {
-  // After the checking lane merges, also assert checkChange reports exactly check 5.
   const old = decision({
     id: "d-aaaaaa",
     title: "Keep transcripts",
@@ -44,10 +55,17 @@ test("decision_reasoning_edit_keeps_date_and_fails_check_5", () => {
   const written = parseRecord("x", present(result.files.get(newRecordPath(old))));
   assert(written.kind === "decision");
   expect(written.date).toEqual(at(3));
+  expect(
+    checkChange(
+      s,
+      load(makeTree({ rev: null, files: new Map([...tree.files, ...result.files]) })),
+      coreSettings(),
+      NOW,
+    ).problems.map((p) => p.check),
+  ).toEqual([5]);
 });
 
 test("decision_edit_changing_statement_is_judged_by_the_check", () => {
-  // After the checking lane merges, also assert checkChange refuses the written tree.
   const old = decision({
     id: "d-aaaaaa",
     title: "Keep transcripts",
@@ -72,6 +90,14 @@ test("decision_edit_changing_statement_is_judged_by_the_check", () => {
   const written = parseRecord("x", present(result.files.get(newRecordPath(old))));
   assert(written.kind === "decision");
   expect(written.statement).toBe("Changed.");
+  expect(
+    checkChange(
+      s,
+      load(makeTree({ rev: null, files: new Map([...tree.files, ...result.files]) })),
+      coreSettings(),
+      NOW,
+    ).ok,
+  ).toBe(false);
 });
 
 test("area_edit_needs_current_base_and_keeps_new_entries", () => {

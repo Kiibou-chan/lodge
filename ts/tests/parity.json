@@ -116,7 +116,7 @@
     "ts": ["ts/tests/core/check-change.test.ts"]
   },
   "tests/core/test_check_compare.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 1,
     "task": ["8c"],
     "ts": ["ts/tests/core/check-compare.test.ts"]
@@ -134,7 +134,7 @@
     "ts": ["ts/tests/core/check-immutable.test.ts"]
   },
   "tests/core/test_check_links.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 1,
     "task": ["8c"],
     "ts": ["ts/tests/core/check-links.test.ts"]
@@ -152,7 +152,7 @@
     "ts": ["ts/tests/core/check-state.test.ts"]
   },
   "tests/core/test_check_threads.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 1,
     "task": ["8c", "9a"],
     "ts": ["ts/tests/core/check-threads.test.ts"]

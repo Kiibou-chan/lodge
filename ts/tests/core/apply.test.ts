@@ -2,8 +2,12 @@ import { expect, test } from "bun:test";
 import assert from "node:assert/strict";
 import {
   Action,
+  checkChange,
   contentHash,
+  coreSettings,
+  load,
   area as makeCoreArea,
+  tree as makeTree,
   newRecordPath,
   parseArea,
   parseRecord,
@@ -22,7 +26,6 @@ import {
 import { at, decision, entry, area as makeArea } from "./builders.ts";
 
 test("new_decision_and_entry_and_area", () => {
-  // After the checking lane merges, also assert checkChange accepts the written tree.
   const [s, tree] = state();
   const result = applied(
     apply(
@@ -53,6 +56,14 @@ test("new_decision_and_entry_and_area", () => {
   expect(area).toEqual(
     makeCoreArea({ name: "storage", title: "Storage", intro: "Intro.", order: ["s-aaaaaa"] }),
   );
+  expect(
+    checkChange(
+      s,
+      load(makeTree({ rev: null, files: new Map([...tree.files, ...result.files]) })),
+      coreSettings(),
+      NOW,
+    ).ok,
+  ).toBe(true);
 });
 
 test("new_entry_appended_to_existing_area_order", () => {
@@ -129,7 +140,6 @@ test("edit_keeps_path_even_if_title_changes", () => {
 });
 
 test("retire_removes_from_order", () => {
-  // After the checking lane merges, also assert checkChange accepts the written tree.
   const [a, b] = [
     entry({ id: "s-aaaaaa", title: "A" }),
     entry({ id: "s-bbbbbb", title: "B" }),
@@ -147,10 +157,17 @@ test("retire_removes_from_order", () => {
   assert(area.kind === "area");
   expect(area.order).toEqual(["s-bbbbbb"]);
   assert(!result.files.has(newRecordPath(a)));
+  expect(
+    checkChange(
+      s,
+      load(makeTree({ rev: null, files: new Map([...tree.files, ...result.files]) })),
+      coreSettings(),
+      NOW,
+    ).ok,
+  ).toBe(true);
 });
 
 test("replacing_retirement_restores_order", () => {
-  // After the checking lane merges, also assert checkChange accepts the written tree.
   const [a, b] = [
     entry({ id: "s-aaaaaa", title: "A" }),
     entry({ id: "s-bbbbbb", title: "B" }),
@@ -170,6 +187,14 @@ test("replacing_retirement_restores_order", () => {
   );
   assert(area.kind === "area");
   expect(area.order).toEqual(["s-bbbbbb", "s-aaaaaa"]);
+  expect(
+    checkChange(
+      s,
+      load(makeTree({ rev: null, files: new Map([...tree.files, ...result.files]) })),
+      coreSettings(),
+      NOW,
+    ).ok,
+  ).toBe(true);
 });
 
 test("replacing_one_of_two_retirements_leaves_the_order", () => {
