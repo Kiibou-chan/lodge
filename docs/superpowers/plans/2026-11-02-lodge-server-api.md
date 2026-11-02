@@ -174,7 +174,7 @@ Where plan 2's model change holds an agent's add of a decision `decided_by` a pe
 The coordinator does this task outside the sandbox, since it installs packages (d-4psbdv).
 
 **Files:**
-- Create: `ts/bunfig.toml` (d-svv7gv)
+- `ts/bunfig.toml` exists already (d-svv7gv; added by plan 1's final fix wave, `server-core` 4f5d5fb); check it holds `minimumReleaseAge = 1209600`
 - Modify: `ts/package.json`, `ts/bun.lock` (by `bun install`), `ts/knip.json`
 
 **Interfaces:**
@@ -183,9 +183,9 @@ The coordinator does this task outside the sandbox, since it installs packages (
 
 - `ts/bunfig.toml` holds `[install]` with `minimumReleaseAge = 1209600` (two weeks in seconds), so `bun install` resolves every package, a dependency's own included, to a version published at least two weeks before (d-svv7gv; with it Bun 1.3.14 resolves `tslib` 2.8.1 where a plain install takes 2.9.1 of 2026-10-30, practice review I-7).
 
-- [ ] **Step 1:** Write `ts/bunfig.toml`; add the two dependencies and the version; in `ts/`, `bun install`, then `bun install --frozen-lockfile`, then `bun x biome format --write package.json`.
+- [ ] **Step 1:** Check `ts/bunfig.toml`; add the two dependencies and the version; in `ts/`, `bun install`, then `bun install --frozen-lockfile`, then `bun x biome format --write package.json`.
 - [ ] **Step 2: Verify** `grep -c '"[~^]' ts/package.json` prints 0; for each package version that `git diff ts/bun.lock` adds, `npm view <package>@<version> time --json` gives a publication date at least 14 days before the day of the install, one request at a time; `sh scripts/check.sh` exits 0.
-- [ ] **Step 3:** Commit `ts/bunfig.toml`, `ts/package.json`, `ts/bun.lock`, and `ts/knip.json`; push; the ledger line names the versions, the transitive ones with their dates.
+- [ ] **Step 3:** Commit `ts/package.json`, `ts/bun.lock`, and `ts/knip.json`; push; the ledger line names the versions, the transitive ones with their dates.
 
 ### Task 2: The command's grammar
 
