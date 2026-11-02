@@ -1,0 +1,1 @@
+{ "entry": ["src/cli/main.ts", "src/server/main.ts", "tests/**/*.test.ts"], "project": ["src/**/*.ts", "tests/**/*.ts"] }
