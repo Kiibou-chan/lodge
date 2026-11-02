@@ -142,10 +142,12 @@ export function checkState(s: Snapshot): CheckResult {
     ...checkAreas(s),
     ...checkCycles(s),
   ];
-  found.sort((a, b) => {
-    const x = sortKey(a),
-      y = sortKey(b);
-    return byCodePoint(x[0], y[0]) || x[1] - y[1] || byCodePoint(x[2], y[2]);
-  });
+  found.sort(compareProblems);
   return checkResult(found, []);
+}
+
+export function compareProblems(a: Problem, b: Problem): number {
+  const x = sortKey(a),
+    y = sortKey(b);
+  return byCodePoint(x[0], y[0]) || x[1] - y[1] || byCodePoint(x[2], y[2]);
 }

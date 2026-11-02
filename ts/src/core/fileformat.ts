@@ -7,6 +7,7 @@ import {
   REASONING_HEADING,
   readWith,
 } from "./document.ts";
+import { equal } from "./equal.ts";
 import { ValueError } from "./errors.ts";
 import { FormatError, readAreaName } from "./fields.ts";
 import { areaFrom, decisionFrom, specFrom } from "./headers.ts";
@@ -86,17 +87,6 @@ function folderOf(path: string): string {
       "an area's files lie in a folder named after the area, as in lodge/spec/<area>/",
     );
   return readAreaName(parts.at(-2), "area");
-}
-function equal(a: unknown, b: unknown): boolean {
-  if (a === b) return true;
-  if (Array.isArray(a) && Array.isArray(b))
-    return a.length === b.length && a.every((item, i) => equal(item, b[i]));
-  if (a !== null && b !== null && typeof a === "object" && typeof b === "object")
-    return (
-      Object.keys(a).length === Object.keys(b).length &&
-      Object.entries(a).every(([key, value]) => equal(value, Reflect.get(b, key)))
-    );
-  return false;
 }
 function differing(record: Record | Area, back: Record | Area): string | null {
   const fields = READ_BACK_FIELDS[record.kind];

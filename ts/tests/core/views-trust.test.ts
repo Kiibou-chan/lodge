@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { Action, derive, formatLevel1, level1, level2, level3 } from "#core";
+import { Action, derive, formatLevel1, level1, level2, level3, splitLines } from "#core";
 import { at, decision, entry, snapshotOf } from "./builders.ts";
 import { NOTES } from "./checks.ts";
 
@@ -43,7 +43,7 @@ test("level2_heads_and_entry_name_a_failing_decision", () => {
   const failing = new Set<string>(["d-aaaaaa"]);
   expect(level1(s, d, "s-aaaaaa", failing).flags).toEqual(["decision fails check"]);
   expect(
-    level2(s, d, "s-aaaaaa", failing).split("\n")[0]?.endsWith("· product · fails check"),
+    splitLines(level2(s, d, "s-aaaaaa", failing))[0]?.endsWith("· product · fails check"),
   ).toBeTruthy();
 });
 test("entry_whose_decision_is_replaced_or_narrowed", () => {
@@ -94,7 +94,7 @@ test("flag_order_in_full", () => {
 test("entry_without_decision_says_so", () => {
   const s = snapshotOf([entry({ id: "s-dddddd", area: "storage" })]);
   const got = formatLevel1(level1(s, derive(s), "s-dddddd", NONE));
-  expect(got.split("\n")[0]).toEqual("s-dddddd · current · no decision · storage");
+  expect(splitLines(got)[0]).toEqual("s-dddddd · current · no decision · storage");
 });
 test("level3_changes_carry_the_action", () => {
   const kill = decision({

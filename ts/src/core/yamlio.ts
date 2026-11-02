@@ -92,7 +92,21 @@ export function loadYaml(text: string): unknown {
   const doc = docs[0];
   if (!doc) return null;
   const error = doc.errors[0];
-  if (error) throw new YamlError(error.message, lineAt(error.pos[0]));
+  if (error) {
+    // A compact scalar used as a multiline mapping key ends at the offending colon.
+    const key =
+      error.code === "BLOCK_AS_IMPLICIT_KEY"
+        ? doc.errors.find(
+            (other) => other.code === "MULTILINE_IMPLICIT_KEY" && other.pos[0] === error.pos[0],
+          )
+        : undefined;
+    const implicitKey =
+      error.code === "MULTILINE_IMPLICIT_KEY" ||
+      (error.code === "MISSING_CHAR" && error.message.startsWith("Implicit map keys"));
+    let position = key?.pos[1] ?? (implicitKey ? error.pos[1] : error.pos[0]);
+    if (implicitKey && text[position] === "\n") position++;
+    throw new YamlError(error.message, lineAt(position));
+  }
   const document = doc;
   const built = new Map<unknown, unknown>();
   function walk(node: unknown, depth: number): unknown {

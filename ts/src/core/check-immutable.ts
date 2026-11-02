@@ -1,5 +1,6 @@
 import { problemAt } from "./check-state.ts";
 import { isAuthor } from "./derive.ts";
+import { equal } from "./equal.ts";
 import { type Decision, type Problem, ThreadState } from "./model.ts";
 import type { Snapshot } from "./snapshot.ts";
 import { byCodePoint } from "./text.ts";
@@ -7,17 +8,6 @@ import { byCodePoint } from "./text.ts";
 const REMEDY = "; a correction is a new decision that replaces it";
 const REASONING_REMEDY = "; a correction or a shorter reasoning is a new decision that replaces it";
 
-function equal(a: unknown, b: unknown): boolean {
-  if (a === b) return true;
-  if (Array.isArray(a) && Array.isArray(b))
-    return a.length === b.length && a.every((v, i) => equal(v, b[i]));
-  if (a !== null && b !== null && typeof a === "object" && typeof b === "object")
-    return (
-      Object.keys(a).length === Object.keys(b).length &&
-      Object.entries(a).every(([k, v]) => Object.hasOwn(b, k) && equal(v, Reflect.get(b, k)))
-    );
-  return false;
-}
 const FIELDS: readonly (readonly [keyof Decision, string])[] = [
   ["title", "title"],
   ["scope", "scope"],

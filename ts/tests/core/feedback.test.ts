@@ -163,11 +163,9 @@ test("number_in_reasoning_counts", () => {
     statement: "Retry.",
     reasoning: "It took 1.5 s.",
   });
-  expect(
-    given(snapshotOf([d]), d)
-      .map((f) => f.message)[0]
-      ?.startsWith("the text holds the number 1.5 "),
-  ).toBe(true);
+  expect(given(snapshotOf([d]), d).map((f) => f.message)[0]).toStartWith(
+    "the text holds the number 1.5 ",
+  );
 });
 test("numbers_in_backticks_ignored", () => {
   const d = decision({
@@ -196,7 +194,7 @@ test("number_in_a_word_that_is_not_a_code_is_flagged", () => {
     statement: "Show the top-10 hits and Python-3.",
   });
   const message = given(snapshotOf([d, other]), d).map((f) => f.message)[0];
-  expect(message?.startsWith("the text holds the numbers 10, 3 without")).toBe(true);
+  expect(message).toStartWith("the text holds the numbers 10, 3 without");
 });
 test("numbers_with_handle_are_clean", () => {
   const d = decision({
@@ -242,10 +240,10 @@ test("feedback_on_decision_with_changes_and_related", () => {
   const s = snapshotOf([old, added, entry({ id: "s-bbbbbb" })]);
   const messages = given(s, added, LENGTH).map((f) => f.message);
   expect(messages.length).toEqual(4);
-  expect(messages[0]?.startsWith("the title is")).toBe(true);
-  expect(messages[1]?.startsWith("the statement is 6 words")).toBe(true);
-  expect(messages[2]?.startsWith("it replaces and narrows nothing")).toBe(true);
-  expect(messages[3]?.startsWith("this decision will wait")).toBe(true);
+  expect(messages[0]).toStartWith("the title is");
+  expect(messages[1]).toStartWith("the statement is 6 words");
+  expect(messages[2]).toStartWith("it replaces and narrows nothing");
+  expect(messages[3]).toStartWith("this decision will wait");
 });
 test("one_call_covers_every_added_record", () => {
   const d = decision({ id: "d-aaaaaa", title: "A title that is much too long" });

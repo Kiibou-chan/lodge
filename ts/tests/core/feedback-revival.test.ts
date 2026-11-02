@@ -113,11 +113,7 @@ test("revival_of_an_unparsable_entry_does_not_crash", () => {
   const added = decision({ id: "d-cccccc", date: at(2), replaces: ["d-bbbbbb"] });
   const files = filesOf(...herCreation(), retire, added);
   unparsable(files, entry({ id: "s-aaaaaa" }));
-  expect(
-    !givenFiles(files, added)
-      .map((f) => f.message.startsWith("it replaces"))
-      .some(Boolean),
-  ).toBe(true);
+  expect(givenFiles(files, added).some((f) => f.message.startsWith("it replaces"))).toBe(false);
 });
 test("revival_of_a_dangling_entry_does_not_crash", () => {
   const ghost = decision({
@@ -128,7 +124,7 @@ test("revival_of_a_dangling_entry_does_not_crash", () => {
   });
   const added = decision({ id: "d-cccccc", date: at(2), replaces: ["d-bbbbbb"] });
   const found = given(snapshotOf([...herCreation(), ghost, added]), added);
-  expect(!found.map((f) => f.message.startsWith("it replaces")).some(Boolean)).toBe(true);
+  expect(found.some((f) => f.message.startsWith("it replaces"))).toBe(false);
 });
 test("revival_line_names_only_retirements_that_were_standing", () => {
   const first = decision({ id: "d-bbbbbb", decidedBy: "author", date: at(1), changes: RETIRE });

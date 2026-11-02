@@ -23,7 +23,28 @@ export {
   writeRecord,
 } from "./fileformat.ts";
 export * from "./ids.ts";
-export * from "./model.ts";
+export {
+  Action,
+  type Area,
+  area,
+  type Change,
+  type Decision,
+  decision,
+  type Imported,
+  type Message,
+  message,
+  type NumberHandle,
+  type Problem,
+  problem,
+  type Quote,
+  Raises,
+  type Record,
+  Scope,
+  type SpecEntry,
+  specEntry,
+  type Thread,
+  ThreadState,
+} from "./model.ts";
 export {
   areaNames,
   type Branch,

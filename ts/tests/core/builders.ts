@@ -88,11 +88,12 @@ export function filesOf(...items: Item[]): Map<string, string> {
     ),
   );
 }
+// Keeps items as given, without parsing, so tests can construct defects no store could hold.
 export function snapshotOf(
   items: readonly Item[],
   options: {
     attachments?: readonly string[];
-    paths?: ReadonlyMap<string, string>;
+    paths?: ReadonlyMap<string, string> | null;
     problems?: readonly Problem[];
   } = {},
 ): Snapshot {

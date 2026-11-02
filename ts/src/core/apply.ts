@@ -1,10 +1,11 @@
-import { type Add, areaFiles, refuse } from "./apply-areas.ts";
+import { type Add, areaFiles, refuse } from "./apply-state.ts";
 import { type Draft, recordFromDraft } from "./drafts.ts";
 import { ValueError } from "./errors.ts";
 import { areaPath, contentHash, newRecordPath, writeRecord } from "./fileformat.ts";
 import { isId } from "./ids.ts";
 import { Action, type Problem, problem, type Record } from "./model.ts";
 import type { Snapshot, Tree } from "./snapshot.ts";
+import { byCodePoint } from "./text.ts";
 import { valueRepr } from "./value-repr.ts";
 
 export interface StaleBase extends Problem {
@@ -29,15 +30,16 @@ export function applyDrafts(
     );
   const names = new Set(
     drafts
-      .filter((d) => d.kind === "area" && typeof d.header.get("name") === "string")
-      .map((d) => d.header.get("name")),
+      .filter((d) => d.kind === "area")
+      .map((d) => d.header.get("name"))
+      .filter((name): name is string => typeof name === "string"),
   );
   const add: Add = {
     current,
     tree,
     date,
     importing,
-    newIds: [...newDecisionIds].sort(),
+    newIds: [...newDecisionIds].sort(byCodePoint),
     draftedAreas: names,
     files: new Map(),
     ids: [],

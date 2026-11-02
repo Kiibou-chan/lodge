@@ -4,6 +4,7 @@ import { ValueError } from "./errors.ts";
 import { areaPath, writeArea } from "./fileformat.ts";
 import { type Area, type Problem, problem, type SpecEntry } from "./model.ts";
 import { load, type Snapshot, type Tree, tree } from "./snapshot.ts";
+import { byCodePoint } from "./text.ts";
 
 export interface Add {
   readonly current: Snapshot;
@@ -11,7 +12,7 @@ export interface Add {
   readonly date: string;
   readonly importing: boolean;
   readonly newIds: string[];
-  readonly draftedAreas: ReadonlySet<unknown>;
+  readonly draftedAreas: ReadonlySet<string>;
   readonly files: Map<string, string>;
   readonly ids: string[];
   readonly areas: Map<string, Area>;
@@ -35,7 +36,9 @@ export function areaFiles(add: Add): Problem[] {
     return entry ? [entry.area] : [];
   });
   const problems: Problem[] = [];
-  for (const name of [...new Set([...add.areas.keys(), ...gained.keys(), ...lost])].sort()) {
+  for (const name of [...new Set([...add.areas.keys(), ...gained.keys(), ...lost])].sort(
+    byCodePoint,
+  )) {
     const start = add.areas.get(name) ?? add.current.areas.get(name);
     if (!start) continue;
     const order = start.order.filter((id) => !add.retired.has(id));
@@ -66,5 +69,5 @@ function restored(add: Add): string[] {
   ).status;
   return [...add.current.entries.keys()]
     .filter((id) => was.get(id) === "retired" && now.get(id) === "current")
-    .sort();
+    .sort(byCodePoint);
 }

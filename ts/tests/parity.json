@@ -101,7 +101,8 @@
     "status": "ported",
     "plan": 1,
     "task": ["11"],
-    "ts": ["ts/tests/core/apply-refusals.test.ts"]
+    "ts": ["ts/tests/core/apply-refusals.test.ts", "ts/tests/core/apply-edges.test.ts"],
+    "why": "Additional TypeScript test pins the imported heading comparison, a gap shared with Python (11-D-3)."
   },
   "tests/core/test_area_feedback.py": {
     "status": "ported",
@@ -113,7 +114,8 @@
     "status": "ported",
     "plan": 1,
     "task": ["8b"],
-    "ts": ["ts/tests/core/check-change.test.ts"]
+    "ts": ["ts/tests/core/check-change.test.ts", "ts/tests/core/check-change-edges.test.ts"],
+    "why": "Additional TypeScript tests pin published status, ordering, and duplicate changes, gaps shared with Python (8b-D-1)."
   },
   "tests/core/test_check_compare.py": {
     "status": "ported",
@@ -197,7 +199,12 @@
     "status": "ported",
     "plan": 1,
     "task": ["10"],
-    "ts": ["ts/tests/core/feedback.test.ts", "ts/tests/core/feedback-edit-back.test.ts"]
+    "ts": [
+      "ts/tests/core/feedback.test.ts",
+      "ts/tests/core/feedback-edit-back.test.ts",
+      "ts/tests/core/feedback-edges.test.ts"
+    ],
+    "why": "Additional TypeScript tests kill the 21 mutations that survive the Python suite (10-D-1)."
   },
   "tests/core/test_feedback_links.py": {
     "status": "ported",
@@ -257,7 +264,8 @@
     "status": "ported",
     "plan": 1,
     "task": ["9b"],
-    "ts": ["ts/tests/core/search.test.ts"]
+    "ts": ["ts/tests/core/search.test.ts", "ts/tests/core/search-text.test.ts"],
+    "why": "Additional TypeScript tests pin undated ordering and underscore word splitting (9b-C-2)."
   },
   "tests/core/test_settings.py": {
     "status": "ported",
@@ -293,7 +301,8 @@
     "status": "ported",
     "plan": 1,
     "task": ["9a"],
-    "ts": ["ts/tests/core/views-trust.test.ts"]
+    "ts": ["ts/tests/core/views-trust.test.ts", "ts/tests/core/views-edges.test.ts"],
+    "why": "Additional TypeScript tests pin agent quote trust and duplicate changes, gaps shared with Python (9a-D-1)."
   },
   "tests/core/test_yamlio.py": {
     "status": "ported",

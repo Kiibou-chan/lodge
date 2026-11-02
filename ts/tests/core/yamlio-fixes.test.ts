@@ -30,7 +30,7 @@ test("unreadable_character_names_decimal_code_point", () => {
 test("parser_message_has_no_excerpt_or_embedded_line", () => {
   const error = failure("a: b\n  c: d");
   expect(error.message).toBe("Nested mappings are not allowed in compact mappings");
-  expect(error.line).toBe(1);
+  expect(error.line).toBe(2);
 });
 test.each([
   ["a: !!int 5\nb: [\n", 3],

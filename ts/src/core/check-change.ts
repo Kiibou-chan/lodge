@@ -4,12 +4,13 @@ import {
   type CheckResult,
   checkResult,
   checkState,
+  compareProblems,
   newDecisions,
   problemAt,
   sortKey,
 } from "./check-state.ts";
 import { derive } from "./derive.ts";
-import { Action, type Problem } from "./model.ts";
+import { Action, type Problem, uniqueChanges } from "./model.ts";
 import type { CoreSettings } from "./settings.ts";
 import type { Snapshot } from "./snapshot.ts";
 import { instant } from "./stamps.ts";
@@ -39,11 +40,7 @@ export function checkChange(
     ...linksToDead(published, after),
   );
   notes.push(...areaNotes(published, after));
-  problems.sort((a, b) => {
-    const x = sortKey(a),
-      y = sortKey(b);
-    return byCodePoint(x[0], y[0]) || x[1] - y[1] || byCodePoint(x[2], y[2]);
-  });
+  problems.sort(compareProblems);
   return checkResult(problems, notes);
 }
 
@@ -122,11 +119,7 @@ function* linksToDead(published: Snapshot, after: Snapshot): Generator<Problem> 
       for (const target of new Set(targets))
         if (status.get(target) === "replaced")
           yield problemAt(after, d.id, 6, `${verb} ${target}, which is replaced`);
-    const seen = new Set<string>();
-    for (const change of d.changes) {
-      const key = `${change.entry}:${change.action}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
+    for (const change of uniqueChanges(d.changes)) {
       const retired =
         status.get(change.entry) === "retired" && standing.get(change.entry) === "retired";
       if (change.action !== Action.RETIRE && retired)

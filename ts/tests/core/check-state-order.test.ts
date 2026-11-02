@@ -1,16 +1,12 @@
 import { expect, test } from "bun:test";
 import { checkResult, checkState, problem } from "#core";
 import { area, decision, entry, snapshotOf } from "./builders.ts";
-import { oldDecision } from "./checks.ts";
 
 test("check_result_computes_ok_from_problems", () => {
   const problems = [problem({ path: "lodge/x.md", check: 2, message: "x" })];
   const notes = ["already published"];
   expect(checkResult(problems, notes)).toEqual({ problems, notes, ok: false });
   expect(checkResult([], notes)).toEqual({ problems: [], notes, ok: true });
-});
-test("old_decision_requires_a_decision", () => {
-  expect(oldDecision().kind).toBe("decision");
 });
 test("problems_sort_by_path_check_and_message_and_deduplicate_links", () => {
   const d = decision({ id: "d-aaaaaa", attachments: ["missing.txt", "missing.txt"] });

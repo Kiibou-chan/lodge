@@ -2,6 +2,7 @@ import { expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import ts from "typescript";
 import { area, specEntry } from "#core";
+import { message, thread } from "./builders.ts";
 import { EXAMPLE } from "./samples.ts";
 
 test("read_back_fields_cover_model", () => {
@@ -27,6 +28,8 @@ test("read_back_fields_cover_model", () => {
   visit(source);
   for (const record of [
     EXAMPLE,
+    thread(),
+    { kind: "message", ...message() },
     specEntry({ id: "s-4kq1zm", area: "storage", title: "T", statement: "S." }),
     area({ name: "storage", title: "T", intro: "", order: [] }),
   ]) {

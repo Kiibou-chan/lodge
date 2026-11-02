@@ -15,11 +15,13 @@ import {
   parseArea,
   parseCoreSettings,
   parseRecord,
+  parseThread,
   renderSpec,
   search,
   splitWords,
   writeArea,
   writeRecord,
+  writeThread,
 } from "#core";
 
 const root = process.argv[2];
@@ -70,6 +72,10 @@ for (const [path, text] of files) {
     const record = parseRecord(path, text);
     if (record.kind === "problem") continue;
     written = writeRecord(record);
+  } else if (/^lodge\/threads\/[^/]+\.md$/u.test(path)) {
+    const thread = parseThread(path, text);
+    if (thread.kind === "problem") continue;
+    written = writeThread(thread);
   } else continue;
   rewrite[path] = [new Bun.CryptoHasher("sha256").update(written).digest("hex"), written === text];
 }

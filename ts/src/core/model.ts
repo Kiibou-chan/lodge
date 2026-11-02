@@ -13,6 +13,15 @@ export interface Change {
   readonly entry: string;
   readonly action: Action;
 }
+export function uniqueChanges(changes: readonly Change[]): readonly Change[] {
+  const seen = new Set<string>();
+  return changes.filter((change) => {
+    const key = `${change.entry}:${change.action}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
 export interface NumberHandle {
   readonly value: string;
   readonly handle: string;

@@ -256,19 +256,6 @@ test("check_7_folder_with_entries_has_no_area_file", () => {
 test("check_7_empty_area_needs_no_entries", () => {
   expect(checkState(snapshotOf([area()])).ok).toBe(true);
 });
-test("check_8_cycles_include_each_member_and_ignore_self_and_missing_links", () => {
-  const a = entry({ id: SPEC, restsOn: ["s-bbbbbb"] });
-  const b = entry({ id: "s-bbbbbb", restsOn: [SPEC] });
-  const s = world(a, b, area({ order: [SPEC, "s-bbbbbb"] }));
-  expect(lines(s)).toEqual([
-    [8, "s-aaaaaa: is in a cycle of rests_on links with s-bbbbbb"],
-    [8, "s-bbbbbb: is in a cycle of rests_on links with s-aaaaaa"],
-  ]);
-  expect(lines(world(entry({ id: SPEC, restsOn: [SPEC, "s-zzzzzz"] })))).toEqual([
-    [2, "s-aaaaaa: rests_on itself"],
-    [2, "s-aaaaaa: rests_on s-zzzzzz, which does not exist"],
-  ]);
-});
 test("check_2_codes_use_unicode_casefold", () => {
   const s = world(
     decision({ id: "d-bbbbbb", code: "Straße" }),

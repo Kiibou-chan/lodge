@@ -15,10 +15,9 @@ import { area, entry, filesOf, message, snapshotOf, thread } from "./builders.ts
 
 test.each([false, true].map((c) => [c]))("thread_problems_are_visible_in_reads %p", (wrongName) => {
   const t = thread();
-  const s = snapshotOf(
-    [t],
-    wrongName ? { paths: new Map([[t.id, "lodge/threads/wrong.md"]]) } : {},
-  );
+  const s = snapshotOf([t], {
+    paths: wrongName ? new Map([[t.id, "lodge/threads/wrong.md"]]) : null,
+  });
   const result = checkState(s);
   expect(result.problems.length).toBeGreaterThan(0);
   expect(unrecordedProblems(s, result)).toEqual(result.problems);
@@ -116,7 +115,7 @@ test.each([false, true].map((c) => [c]))(
     const t = thread();
     const result = checkChange(
       snapshotOf([t]),
-      snapshotOf([], stalePath ? { paths: new Map([[t.id, "lodge/threads/old.md"]]) } : {}),
+      snapshotOf([], { paths: stalePath ? new Map([[t.id, "lodge/threads/old.md"]]) : null }),
       coreSettings(),
       "2026-10-30T12:00:00+01:00",
     );

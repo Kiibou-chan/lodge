@@ -40,3 +40,12 @@ test.each([
 ])("portable_patterns %p", (code, refused) => {
   expect(callViolations(plant({ "src/core/a.ts": code })).length > 0).toBe(refused);
 });
+
+test.each([
+  ["xs.sort()", true],
+  ["xs.toSorted()", true],
+  ["xs.sort(byCodePoint)", false],
+  ["xs.toSorted(byCodePoint)", false],
+])("explicit_sort_comparator %p", (code, refused) => {
+  expect(callViolations(plant({ "src/core/a.ts": code })).length > 0).toBe(refused);
+});

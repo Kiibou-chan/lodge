@@ -23,10 +23,12 @@ from lodge.core import (
     parse_area,
     parse_core_settings,
     parse_record,
+    parse_thread,
     render_spec,
     search,
     write_area,
     write_record,
+    write_thread,
 )
 
 
@@ -65,6 +67,11 @@ def main() -> None:
             if isinstance(record, Problem):
                 continue
             written = write_record(record)
+        elif re.fullmatch(r"lodge/threads/[^/]+\.md", path):
+            thread = parse_thread(path, text)
+            if isinstance(thread, Problem):
+                continue
+            written = write_thread(thread)
         else:
             continue
         rewrite[path] = [hashlib.sha256(written.encode("utf-8")).hexdigest(), written == text]

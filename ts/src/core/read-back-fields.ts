@@ -19,5 +19,7 @@ export const READ_BACK_FIELDS = {
     "importedFrom",
   ],
   spec: ["id", "area", "title", "statement", "code", "importedFrom", "restsOn"],
+  thread: ["id", "about", "raises", "state", "opened", "messages"],
+  message: ["by", "when", "where", "text"],
   area: ["name", "title", "intro", "order", "rank"],
 } as const;

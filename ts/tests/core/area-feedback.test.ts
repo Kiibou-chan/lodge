@@ -3,7 +3,7 @@ import { areaFeedback, areaPath } from "#core";
 import { area, snapshotOf } from "./builders.ts";
 
 test("shared_rank_feedback", () => {
-  const s = snapshotOf([...["storage", "a", "b", "c"].map((n) => area({ name: n, rank: 2 }))]);
+  const s = snapshotOf(["storage", "a", "b", "c"].map((n) => area({ name: n, rank: 2 })));
   expect(areaFeedback(s, [areaPath("storage")])).toEqual([
     {
       recordId: "area:storage",

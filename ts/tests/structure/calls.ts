@@ -160,6 +160,14 @@ export function callViolations(root: string): string[] {
           report(node, "process spawning outside git");
         if (pkg !== "git" && pkg !== "cli" && name === "Bun.file")
           report(node, "file reading outside git and cli");
+        if (
+          pkg === "core" &&
+          ts.isCallExpression(node) &&
+          ts.isPropertyAccessExpression(expr) &&
+          ["sort", "toSorted"].includes(attr) &&
+          node.arguments.length === 0
+        )
+          report(node, "sort requires a code point comparator");
         const fsName = imported(expr);
         const flags = ts.isTaggedTemplateExpression(node) ? undefined : node.arguments?.[1];
         const writingOpen =

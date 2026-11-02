@@ -123,6 +123,11 @@ test("render_spec_escapes_indented_hashes_and_underline_headings", () => {
   );
 });
 
+function indexOfRequired(text: string, part: string): number {
+  const index = text.indexOf(part);
+  if (index < 0) throw new Error(`missing rendered text: ${part}`);
+  return index;
+}
 test("render_spec_follows_rank_then_derived_order", () => {
   const s = snapshotOf([
     area({ rank: 0, order: ["s-aaaaaa", "s-bbbbbb"] }),
@@ -131,8 +136,8 @@ test("render_spec_follows_rank_then_derived_order", () => {
     entry({ id: "s-bbbbbb", title: "First" }),
   ]);
   const text = renderSpec(s, derive(s), NONE);
-  expect(text.indexOf("# Storage")).toBeLessThan(text.indexOf("## First"));
-  expect(text.indexOf("## First")).toBeLessThan(text.indexOf("## Later"));
+  expect(indexOfRequired(text, "# Storage")).toBeLessThan(indexOfRequired(text, "## First"));
+  expect(indexOfRequired(text, "## First")).toBeLessThan(indexOfRequired(text, "## Later"));
   expect(specView(s, derive(s), NONE).map((a) => a.name)).toEqual(["storage", "access"]);
 });
 

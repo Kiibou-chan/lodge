@@ -99,3 +99,18 @@ test("scalar_alias_keys_are_allowed", () => {
     ]),
   );
 });
+
+// TypeScript addition: the offending nested mapping token, rather than its scalar start.
+test.each([
+  ["a: b\n  c: d", 2],
+  ["a: b\nc: d\n  e: f", 3],
+])("nested_mapping_error_points_at_offending_token %p", (text, line) => {
+  bad(text, /Nested mappings/u, line);
+});
+test.each([
+  ["a: b\nc d\ne: f", /Implicit map keys/u, 3],
+  ["a: b\nc d", /Implicit map keys/u, 2],
+  ["a:\n  b c\n  d: e", /Implicit keys/u, 3],
+])("implicit_mapping_key_error_uses_token_end %p", (text, pattern, line) => {
+  bad(text, pattern, line);
+});

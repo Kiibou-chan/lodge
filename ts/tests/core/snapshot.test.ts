@@ -1,5 +1,6 @@
 import { expect, test } from "bun:test";
 import {
+  byCodePoint,
   checkState,
   derive,
   failingIds,
@@ -38,11 +39,15 @@ test("duplicate_id_is_problem_2_with_both_paths", () => {
     dropped = newRecordPath(second);
   expect(s.decisions).toEqual(new Map([["d-aaaaaa", first]]));
   expect(s.paths).toEqual(new Map([["d-aaaaaa", kept]]));
-  expect(s.problems.map((p) => [p.path, p.check]).sort()).toEqual(
+  expect(
+    s.problems
+      .map((p) => [p.path, p.check])
+      .sort((a, b) => byCodePoint(String(a[0]), String(b[0])) || Number(a[1]) - Number(b[1])),
+  ).toEqual(
     [
       [kept, 2],
       [dropped, 2],
-    ].sort(),
+    ].sort((a, b) => byCodePoint(String(a[0]), String(b[0])) || Number(a[1]) - Number(b[1])),
   );
   expect(s.problems.every((p) => p.message.includes(kept) && p.message.includes(dropped))).toBe(
     true,
@@ -58,12 +63,12 @@ test("stray_file_is_problem_1", () => {
       "lodge/spec/storage/.gitkeep",
       "lodge/attachments/log.txt",
       "README.md",
-    ].map((p) => [p, "x"]),
+    ].map((p) => [p, p.endsWith("/.gitkeep") ? "" : "x"]),
   );
   expect(
     load(tree({ rev: "abc123", files }))
       .problems.map((p) => [p.path, p.check])
-      .sort(),
+      .sort((a, b) => byCodePoint(String(a[0]), String(b[0])) || Number(a[1]) - Number(b[1])),
   ).toEqual([
     ["lodge/decisions/readme.txt", 1],
     ["lodge/notes.txt", 1],

@@ -9,6 +9,7 @@ import {
   ValueError,
   writeRecord,
 } from "#core";
+import { refused } from "./refused.ts";
 import { BASE_HEADER, DECISION_PATH, document, replaced, SPEC_PATH } from "./samples.ts";
 
 const STAMP = "2026-10-28T23:48:10+01:00";
@@ -77,22 +78,23 @@ test.each(["where", "when"].map((c) => [c] as const))(
   (field) => {
     const parts = { text: "t", where: "w", when: "n", [field]: "a\nb" };
     const run = () => writeRecord(decision({ quote: parts }));
-    expect(run).toThrow(ValueError);
-    expect(run).toThrow(new RegExp(`quote.${field}`, "u"));
+    refused(run, ValueError, new RegExp(`quote.${field}`, "u"));
   },
 );
 test("quote_text_still_refuses_other_control_characters", () => {
   for (const text of ["a\x01b", "a\u2028b"]) {
     const run = () => writeRecord(decision({ quote: { text, where: "w", when: "n" } }));
-    expect(run).toThrow(ValueError);
-    expect(run).toThrow(/quote\.text/u);
+    refused(run, ValueError, /quote\.text/u);
   }
 });
 test("json_dumps_default_escapes_read_back_as_emoji", () => {
   const quote = "Ship it 😀";
-  // JSON.stringify emits literal emoji; spell Python json.dumps' ASCII escapes explicitly.
-  expect(JSON.stringify(quote)).toBe('"Ship it 😀"');
-  const escaped = '"Ship it \\ud83d\\ude00"';
+  const escaped = JSON.stringify(quote)
+    .split("")
+    .map((unit) =>
+      unit.charCodeAt(0) > 127 ? `\\u${unit.charCodeAt(0).toString(16).padStart(4, "0")}` : unit,
+    )
+    .join("");
   expect(escaped).toContain("\\ud83d");
   const result = parseRecord(
     DECISION_PATH,
@@ -114,8 +116,7 @@ test("write_names_the_field_that_would_read_back_differently", () => {
     [decision({ statement: "a\n \n" }), "statement"],
   ] as const) {
     const run = () => writeRecord(record);
-    expect(run).toThrow(ValueError);
-    expect(run).toThrow(new RegExp(field, "u"));
+    refused(run, ValueError, new RegExp(field, "u"));
   }
 });
 test("slug_is_capped_at_a_word_boundary", () => {

@@ -1,5 +1,5 @@
 import type { CheckResult } from "./check-state.ts";
-import { compareOrderKeys, type Derived, isAuthor } from "./derive.ts";
+import { type Derived, isAuthor } from "./derive.ts";
 import {
   Action,
   type Decision,
@@ -8,8 +8,10 @@ import {
   type Problem,
   type Quote,
   type SpecEntry,
+  uniqueChanges,
 } from "./model.ts";
 import type { Snapshot } from "./snapshot.ts";
+import { orderInstant } from "./stamps.ts";
 export interface Level1 {
   readonly id: string;
   readonly kind: string;
@@ -83,13 +85,7 @@ export function level3(s: Snapshot, d: Derived, id: string): Level3 {
   };
   const dec = s.decisions.get(id);
   if (dec) {
-    const seen = new Map<string, Set<string>>();
-    for (const c of dec.changes) {
-      const actions = seen.get(c.entry) ?? new Set<string>();
-      if (!actions.has(c.action)) add(`changes (${c.action})`, [c.entry]);
-      actions.add(c.action);
-      seen.set(c.entry, actions);
-    }
+    for (const c of uniqueChanges(dec.changes)) add(`changes (${c.action})`, [c.entry]);
     add("replaces", dec.replaces);
     add("narrows", dec.narrows);
     add("confirms", dec.confirms);
@@ -200,11 +196,8 @@ function flags(
         if (
           who &&
           changes?.length &&
-          // Equal IDs suppress the tie-break: changed-since compares instants only.
-          compareOrderKeys(s.decisions.get(changes[0] as string) as Decision, {
-            ...who,
-            id: changes[0] as string,
-          }) > 0
+          orderInstant((s.decisions.get(changes[0] as string) as Decision).date) >
+            orderInstant(who.date)
         )
           result.push(`rests on ${target}, changed since`);
       }

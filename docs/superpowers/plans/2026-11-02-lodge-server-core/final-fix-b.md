@@ -19,3 +19,7 @@ Each new or changed test is seen failing against the code before your fix, or ag
 
 Write your report to `final-fix-b-report.md` in this folder: per finding, what you changed (or why it was already done), the test, and its failing output; the commands you ran and their last lines.
 Your final message: DONE, DONE_WITH_CONCERNS, or BLOCKED, one line on the tests, and your concerns.
+
+## Added after part A
+
+7. 11-P-2: the three default sorts in `ts/src/core/apply.ts` and `apply-areas.ts` compare by code point as the plan's Text rule asks; then add part A's deferred F-6 check that `core` has no `sort()` without a comparator (in `ts/tests/structure/calls.ts`, `core` only, with a refusal and an allowed case in `ts/tests/structure/core-rules.test.ts`), each seen failing first.

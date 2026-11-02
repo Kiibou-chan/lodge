@@ -1,21 +1,11 @@
 import { newDecisions, problemAt } from "./check-state.ts";
 import { derive } from "./derive.ts";
-import { Action, type Problem, type SpecEntry } from "./model.ts";
+import { equal } from "./equal.ts";
+import { Action, type Problem, type SpecEntry, uniqueChanges } from "./model.ts";
 import type { CoreSettings } from "./settings.ts";
 import type { Snapshot } from "./snapshot.ts";
 import { byCodePoint } from "./text.ts";
 
-function equal(a: unknown, b: unknown): boolean {
-  if (a === b) return true;
-  if (Array.isArray(a) && Array.isArray(b))
-    return a.length === b.length && a.every((v, i) => equal(v, b[i]));
-  if (a !== null && b !== null && typeof a === "object" && typeof b === "object")
-    return (
-      Object.keys(a).length === Object.keys(b).length &&
-      Object.entries(a).every(([k, v]) => Object.hasOwn(b, k) && equal(v, Reflect.get(b, k)))
-    );
-  return false;
-}
 function onlyRestsOnDiffers(before: SpecEntry | undefined, entry: SpecEntry): boolean {
   return before !== undefined && equal({ ...before, restsOn: entry.restsOn }, entry);
 }
@@ -52,11 +42,7 @@ export function* checkEntries(
     }
   }
   for (const d of added) {
-    const seen = new Set<string>();
-    for (const change of d.changes) {
-      const key = `${change.entry}:${change.action}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
+    for (const change of uniqueChanges(d.changes)) {
       if (change.action === Action.LINK && after.entries.has(change.entry)) {
         if (
           added.some(

@@ -1,4 +1,5 @@
 import { assemble, keyLine, loadHeader, readWith, trimBlock } from "./document.ts";
+import { equal } from "./equal.ts";
 import { ValueError } from "./errors.ts";
 import {
   checkKeys,
@@ -12,8 +13,9 @@ import {
 } from "./fields.ts";
 import { isId } from "./ids.ts";
 import { type Message, type Problem, Raises, type Thread, ThreadState } from "./model.ts";
+import { READ_BACK_FIELDS } from "./read-back-fields.ts";
 import { instant } from "./stamps.ts";
-import { strip } from "./text.ts";
+import { byCodePoint, strip } from "./text.ts";
 import { quoted } from "./yamlio.ts";
 export const THREADS = "lodge/threads/";
 const HEADING = /^## Message [0-9]+$/u;
@@ -125,18 +127,11 @@ export function writeThread(thread: Thread): string {
   if (back.kind === "problem")
     throw new ValueError(`the thread would not read back: ${back.message}`);
   for (let i = 0; i < Math.min(thread.messages.length, back.messages.length); i++) {
-    for (const field of ["by", "when", "where", "text"] as const)
+    for (const field of READ_BACK_FIELDS.message)
       if (thread.messages[i]?.[field] !== back.messages[i]?.[field])
         throw new ValueError(`the thread would not read back unchanged: message ${i + 1} ${field}`);
   }
-  if (
-    thread.id !== back.id ||
-    thread.about !== back.about ||
-    thread.raises !== back.raises ||
-    thread.state !== back.state ||
-    thread.opened !== back.opened ||
-    thread.messages.length !== back.messages.length
-  )
+  if (READ_BACK_FIELDS.thread.some((field) => !equal(thread[field], back[field])))
     throw new ValueError("the thread would not read back unchanged: header or messages");
   return text;
 }
@@ -155,16 +150,6 @@ export function appended(thread: Thread, message: Message, close = false): Threa
 }
 export function newestLast(threads: Iterable<Thread>): readonly Thread[] {
   return [...threads].sort(
-    (a, b) => instant(a.opened) - instant(b.opened) || compareIds(a.id, b.id),
+    (a, b) => instant(a.opened) - instant(b.opened) || byCodePoint(a.id, b.id),
   );
-}
-
-function compareIds(a: string, b: string): number {
-  const left = Array.from(a, (c) => c.codePointAt(0) as number);
-  const right = Array.from(b, (c) => c.codePointAt(0) as number);
-  for (let i = 0; i < Math.min(left.length, right.length); i++) {
-    const difference = (left[i] as number) - (right[i] as number);
-    if (difference) return difference;
-  }
-  return left.length - right.length;
 }

@@ -13,7 +13,7 @@ import { pyRepr } from "./text.ts";
 import { valueRepr } from "./value-repr.ts";
 
 type DraftKind = "decision" | "spec" | "area";
-const KEYS = {
+const KEYS: { readonly [K in DraftKind]: readonly string[] } = {
   decision: [...DECISION_KEYS, "base"],
   spec: [...SPEC_KEYS, "area", "base"],
   area: [...AREA_KEYS, "name", "base"],
@@ -25,6 +25,7 @@ export interface Draft {
   readonly source: string;
   readonly headerText: string;
 }
+// Checks syntax and key names only.
 export function parseDraft(source: string, text: string): Draft | Problem {
   let headerText = "";
   try {
@@ -39,6 +40,9 @@ export function parseDraft(source: string, text: string): Draft | Problem {
     return problemFor(source, error, headerText);
   }
 }
+// New records receive date; only imports may carry their own date.
+// Existing records receive null and keep their draft date.
+// New entries and areas name themselves; existing ones receive area.
 export function recordFromDraft(
   draft: Draft,
   id: string,

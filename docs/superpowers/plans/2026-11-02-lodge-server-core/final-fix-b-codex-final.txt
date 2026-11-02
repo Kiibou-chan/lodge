@@ -1,0 +1,7 @@
+DONE_WITH_CONCERNS
+
+Final gate passed: 924 tests; differential: zero differences.
+
+Concern: plan 2 must consume the `StaleBase` handoff.
+
+[Report](docs/superpowers/plans/2026-11-02-lodge-server-core/final-fix-b-report.md)
