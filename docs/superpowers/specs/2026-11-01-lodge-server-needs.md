@@ -30,6 +30,8 @@ What is needed instead: "A UI that would make the state of each task and Dev par
 The workflow is adaptable, not fixed: "On the one hand I like opinionated tooling but I also don't know if this is the best way to do this and I'm sure that it does not fit every project. So it should be adaptable/not fixed."
 What went wrong with mocking was not that it mixed into implementation: "mocks got lost. And also sometimes I was mocking together with a session that also did coordination and that was annoying because of the other messages in between."
 A lost mock "was not commited or pushed and got lost when the session got lost. No session could find it again."
+Mocks are often visual.
+A mock's course, in the author's words: "I go through with a session working on the mock until I'm satisfied. Maybe I show it to someone else to get an opinion. Then it is sent for developement and implemented."
 
 ## Sessions
 
