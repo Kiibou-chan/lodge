@@ -31,6 +31,16 @@ export {
   restsOnTree,
   writtenOrder,
 } from "./order.ts";
+export { type Placed, renderSpec, type SpecArea, specView } from "./render.ts";
+export {
+  AmbiguousRef,
+  type Filters,
+  filters,
+  related,
+  resolve,
+  search,
+  searchCounted,
+} from "./search.ts";
 export * from "./settings.ts";
 export * from "./snapshot.ts";
 export * from "./stamps.ts";

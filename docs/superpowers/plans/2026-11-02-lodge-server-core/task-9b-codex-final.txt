@@ -1,0 +1,6 @@
+DONE
+
+`sh scripts/check-ts.sh` passed: 755 tests passed, one existing todo, zero failures.
+No unresolved concerns.
+
+[Report](docs/superpowers/plans/2026-11-02-lodge-server-core/task-9b-report.md)
