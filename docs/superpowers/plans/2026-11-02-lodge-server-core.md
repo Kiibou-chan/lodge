@@ -30,7 +30,7 @@ The plan argues from them, never over them; where they disagree with this plan, 
   - an assertion asserts what the Python one asserts, no weaker: `==` on values becomes `toEqual` or `toBe`, `pytest.raises(E, match=…)` becomes `toThrow` with the class and the pattern;
   - a test that cannot hold in TypeScript keeps its title, asserts the TypeScript behaviour, and is listed in the task's report with the reason, for the review and a coordinator ruling;
   - the task's last step flips its files in `ts/tests/parity.json` from `planned` to `ported`, and the parity test then checks every name.
-- Types: a frozen dataclass becomes an `interface` with `readonly` fields and, where Python fills defaults, a function of the same name in camelCase that fills them (`decision({…})`); `X | None` becomes `X | null`, never `undefined`; a tuple becomes `readonly T[]`, a `Mapping` a `ReadonlyMap`, a `frozenset` a `ReadonlySet`; a `StrEnum` becomes a `const` object and a union type of its values (`Action.CREATE === "create"`); a record, an area, a thread, and a problem each carry `kind` (`"decision"`, `"spec"`, `"area"`, `"thread"`, `"problem"`) where Python tells them apart with `isinstance`.
+- Types: a frozen dataclass becomes an `interface` with `readonly` fields and, where a call in `src/lodge` or `tests` leaves one of its defaulted fields out, a function of the same name in camelCase that fills them, defined beside the type (`decision({…})`; probe 26, d-ca6wbw); `X | None` becomes `X | null`, never `undefined`; a tuple becomes `readonly T[]`, a `Mapping` a `ReadonlyMap`, a `frozenset` a `ReadonlySet`; a `StrEnum` becomes a `const` object and a union type of its values (`Action.CREATE === "create"`); a record, an area, a thread, and a problem each carry `kind` (`"decision"`, `"spec"`, `"area"`, `"thread"`, `"problem"`) where Python tells them apart with `isinstance`.
 - Exceptions keep their Python names and base classes: `ts/src/core/errors.ts` (Task 4) holds `ValueError` and `LookupError`, each extending `Error`; `YamlError` and `SettingsError` extend `ValueError`, `AmbiguousRef` extends `LookupError`, and `FormatError` extends `Error`, as in Python (`grep -n '^class' src/lodge/core/*.py`); each sets `name` to its class name.
   `raise ValueError(m)` becomes `throw new ValueError(m)`, and `except E` becomes `catch (e) { if (!(e instanceof E)) throw e; … }`, never a bare `catch`.
 - Names: functions and fields in camelCase, types in PascalCase, module constants as in Python (`MINUTE_FORMAT`); the record file format keeps its keys (`decided_by`, `rests_on`, `work_item`, `imported_from`), since the export must write it unchanged (design line 284).
@@ -89,6 +89,7 @@ Every task repeats what it needs of them, so no brief needs this section.
 21. d-hshapm: `#core` exports the names of `__all__`, the default-filling functions of the dataclasses, and the names of `errors.ts`, `text.ts`, and `stamps.ts`, and nothing else; `quoted`, `unreadableChar`, and `LINE_BREAKS_AND_TABS` stay inside the package; it narrows d-s2rdn2.
 22. d-bxcave: a planted tree copies `ts/package.json`'s `dependencies` and is cruised with `preserveSymlinks`, so an npm import resolves as it does in `ts/`.
 23. d-87kzys: `text.ts` exports `PY_SPACE_CLASS`, Python's `\s` as a character class, for patterns built with `new RegExp`.
+24. d-ca6wbw: a dataclass gets a default-filling function only where a Python call leaves a defaulted field out, beside its type; `Draft` and `Snapshot` get none, and `#core` exports nine (probe 26); it narrows d-hshapm.
 
 ## Review Focus
 
@@ -427,7 +428,7 @@ The coordinator does this task outside the sandbox, since it installs packages (
 
 **Interfaces:**
 - Consumes: Task 3's rules.
-- Produces, through `#core`: `ValueError`, `LookupError`; `Scope`, `Action`, `Quote`, `Change`, `NumberHandle`, `Imported`, `Decision`, `SpecEntry`, `Area`, `Record`, `Problem`, `Raises`, `ThreadState`, `Message`, `Thread`, and the default-filling functions `decision`, `specEntry`, `area`, `problem`, and `message`; `isId`, `mintId`; `CoreSettings`, `LengthGuidance`, `SettingsError`, `parseCoreSettings`; `YamlError`, `loadYaml`; and every name of `errors.ts`, `text.ts`, and `stamps.ts` below (d-hshapm):
+- Produces, through `#core`: `ValueError`, `LookupError`; `Scope`, `Action`, `Quote`, `Change`, `NumberHandle`, `Imported`, `Decision`, `SpecEntry`, `Area`, `Record`, `Problem`, `Raises`, `ThreadState`, `Message`, `Thread`, and the default-filling functions `decision`, `specEntry`, `area`, `problem`, and `message`; `isId`, `mintId`; `CoreSettings`, `LengthGuidance`, `SettingsError`, `parseCoreSettings`, and the default-filling functions `coreSettings` and `lengthGuidance` of `settings.ts`, which `tests/core/test_settings.py:10` needs (d-ca6wbw); `YamlError`, `loadYaml`; and every name of `errors.ts`, `text.ts`, and `stamps.ts` below (d-hshapm):
   ```ts
   // errors.ts (Global Constraints, "Exceptions")
   export class ValueError extends Error {}
@@ -438,7 +439,7 @@ The coordinator does this task outside the sandbox, since it installs packages (
   export function rstrip(s: string): string        // str.rstrip()
   export function splitWords(s: string): string[]  // str.split()
   export function splitLines(s: string): string[]  // str.splitlines()
-  export function isDigit(s: string): boolean      // str.isdigit(): non-empty, each character \p{Nd} or one of the 20 ranges of probe 16, Python's 808 characters (probe 23)
+  export function isDigit(s: string): boolean      // str.isdigit(): non-empty, each character \p{Nd} or one of the 20 ranges of probe 16, Python's 808 characters and the 90 of the isDigit item below (probe 23)
   export function casefold(s: string): string      // str.casefold(), as toUpperCase().toLowerCase() with "ς" then made "σ"
   export function pyRepr(s: string): string        // repr() of a str
   export function codePointLength(s: string): number
@@ -494,7 +495,7 @@ The coordinator does this task outside the sandbox, since it installs packages (
 - [ ] **Step 1: Write the failing tests:** every test of `test_fileformat.py` and `test_fileformat_problems.py`, by name, with `samples.ts` from `samples.py`.
 - [ ] **Step 2: Run** `cd ts && bun test tests/core`; expected: the new tests FAIL.
 - [ ] **Step 3: Implement**; take `@noble/hashes` out of `ts/knip.json`'s `ignoreDependencies` and `src/core/yamlio.ts` out of its `entry`, and add `src/core/headers.ts`, `src/core/document.ts`, and `src/core/fields.ts` to its `entry`.
-- [ ] **Step 4: Run** `sh scripts/check-ts.sh`; green, and knip reports no unused dependency and no unused export; flip `samples.py` and the two test files to `ported`; green again.
+- [ ] **Step 4: Run** `sh scripts/check-ts.sh`; green, knip reports no unused dependency and no unused export, and `ts/knip.json`'s `entry` no longer names `src/core/yamlio.ts`; flip `samples.py` and the two test files to `ported`; green again.
 - [ ] **Step 5: Coordinator:** `sh scripts/check.sh`, commit, push.
 
 ### Task 5b: Drafts, and the text tests of record files
@@ -507,14 +508,14 @@ The coordinator does this task outside the sandbox, since it installs packages (
 
 **Interfaces:**
 - Consumes: Task 5a.
-- Produces, through `#core`: `Draft`, `parseDraft`, `recordFromDraft`.
+- Produces, through `#core`: `Draft`, `parseDraft`, `recordFromDraft`; `Draft` has no default-filling function and `headerText` is a required field, since every Python call passes it (`src/lodge/core/drafts.py:45`; probe 26, d-ca6wbw).
 - `drafts.py` imports only what Task 5a ports (`document`, `fields`, `headers`, and `model`), so its tests are written first and fail on the missing module.
 - `fileformat-text.test.ts` carries tests over Task 5a's code, so each of its tests is seen failing against a mutation of that code the report names (such as `rstrip` swapped for `trimEnd`, or `splitLines` for `split("\n")`), and the mutation is reverted (d-mfayy5).
 
 - [ ] **Step 1: Write the failing tests:** every test of `test_drafts.py` and `test_fileformat_text.py`, by name.
 - [ ] **Step 2: Run** `cd ts && bun test tests/core/drafts.test.ts`; expected: FAIL; then, for each test of `fileformat-text.test.ts`, apply its named mutation, run it, see it fail, and revert.
 - [ ] **Step 3: Implement** `drafts.ts`, which imports `splitDocument`, `problemFor`, `loadHeader`, and the three `*_KEYS` that Task 5a exported; take `src/core/headers.ts` out of `ts/knip.json`'s `entry` (`document.ts` stays until Task 6); fix in Task 5a's modules what a carried text test finds, each fix named in the report.
-- [ ] **Step 4: Run** `sh scripts/check-ts.sh`; green; flip `test_drafts.py` and `test_fileformat_text.py` to `ported`; green again.
+- [ ] **Step 4: Run** `sh scripts/check-ts.sh`; green, and `ts/knip.json`'s `entry` no longer names `src/core/headers.ts`; flip `test_drafts.py` and `test_fileformat_text.py` to `ported`; green again.
 - [ ] **Step 5: Coordinator:** `sh scripts/check.sh`, commit, push.
 
 ### Task 6: Thread files and snapshots
@@ -527,7 +528,7 @@ The coordinator does this task outside the sandbox, since it installs packages (
 
 **Interfaces:**
 - Consumes: Task 5b.
-- Produces, through `#core`: `THREADS`, `appended`, `cleanText`, `newestLast`, `parseThread`, `threadPath`, `writeThread`; `ATTACHMENTS`, `Files`, `Snapshot`, `Tree`, `attachmentPath`, `load`.
+- Produces, through `#core`: `THREADS`, `appended`, `cleanText`, `newestLast`, `parseThread`, `threadPath`, `writeThread`; `ATTACHMENTS`, `Files`, `Snapshot`, `Tree`, `attachmentPath`, `load`, and the default-filling function `tree` of `snapshot.ts`, which `Tree(None, files)` needs (`tests/core/test_check_threads.py:52`, `tests/core/test_apply.py:61`); `Snapshot` has none and `threads` is a required field, since every Python call passes it (`src/lodge/core/snapshot.py:70`, `tests/core/builders.py:101`; probe 26, d-ca6wbw).
 - `Tree` is `{ rev: string | null; files: ReadonlyMap<string, string>; attachments: ReadonlySet<string> }`, the state the server's events will give (d-smx3xf).
 - `newestLast` orders by `instant(opened)`, then by ID.
 - `_ESCAPE` and `_UNESCAPE` (`src/lodge/core/threads.py:25-26`) are `re.MULTILINE` patterns, so they follow the Global Constraints' rule: a line starts only after `\n`.
@@ -536,7 +537,7 @@ The coordinator does this task outside the sandbox, since it installs packages (
 - [ ] **Step 1: Write the failing tests:** every test of `test_thread_files.py`, `test_snapshot.py`, and `test_fileformat_links.py` by name, with `builders.ts` from `builders.py`, and `thread-text.test.ts`; `thread_id_is_not_number_feedback` is a `test.todo` until Task 10, and `duplicate_id_marks_kept_record_failing` until Task 9a.
 - [ ] **Step 2: Run** `cd ts && bun test tests/core`; expected: the new tests FAIL.
 - [ ] **Step 3: Implement**; `threads.ts` imports `keyLine` and `loadHeader` of `document.ts` and `readStamp` of `fields.ts`, which Task 5a exported; take `src/core/document.ts` and `src/core/fields.ts` out of `ts/knip.json`'s `entry`, and add `tests/core/builders.ts`, whose `treeOf` is first read by Task 11's `applying.ts`.
-- [ ] **Step 4: Run** `sh scripts/check-ts.sh`; green, and knip reports no unused export; flip `builders.py` and `test_fileformat_links.py` to `ported`; green again.
+- [ ] **Step 4: Run** `sh scripts/check-ts.sh`; green, knip reports no unused export, and `ts/knip.json`'s `entry` no longer names `src/core/document.ts` or `src/core/fields.ts`; flip `builders.py` and `test_fileformat_links.py` to `ported`; green again.
 - [ ] **Step 5: Coordinator:** `sh scripts/check.sh`, commit, push.
 
 ### Task 7a: Doubts and derived statuses
@@ -575,7 +576,7 @@ The coordinator does this task outside the sandbox, since it installs packages (
 - [ ] **Step 1: Write the failing tests:** every test of `test_confirmation.py` and `test_order.py` by name.
 - [ ] **Step 2: Run** `cd ts && bun test tests/core`; expected: the new tests FAIL.
 - [ ] **Step 3: Implement**; `confirmation.ts` imports `orderKey` of `derive.ts`, which Task 7a exported; take `src/core/derive.ts` out of `ts/knip.json`'s `entry`.
-- [ ] **Step 4: Run** `sh scripts/check-ts.sh`; green, and knip reports no unused export; flip `test_confirmation.py` and `test_order.py` to `ported`; green again.
+- [ ] **Step 4: Run** `sh scripts/check-ts.sh`; green, knip reports no unused export, and `ts/knip.json`'s `entry` no longer names `src/core/derive.ts`; flip `test_confirmation.py` and `test_order.py` to `ported`; green again.
 - [ ] **Step 5: Coordinator:** `sh scripts/check.sh`, commit, push.
 
 ### Task 8a: The state check
@@ -616,7 +617,7 @@ The coordinator does this task outside the sandbox, since it installs packages (
 - [ ] **Step 1: Write the failing tests:** every test of `test_check_change.py`, `test_check_current.py`, `test_check_retired.py`, and `test_check_immutable.py` by name, and `check` and `verdict` in `checks.ts`.
 - [ ] **Step 2: Run** `cd ts && bun test tests/core`; expected: the new tests FAIL.
 - [ ] **Step 3: Implement**; `check-entries.ts`, `check-immutable.ts`, and `check-change.ts` import `newDecisions`, `problemAt`, and `sortKey` of `check-state.ts`, which Task 8a exported; take `src/core/check-state.ts` out of `ts/knip.json`'s `entry`; `tests/core/checks.ts` stays in it, since `REMEDY_CHECK_4` is first read by Task 8c.
-- [ ] **Step 4: Run** `sh scripts/check-ts.sh`; green, and knip reports no unused export; flip `checks.py` and the four test files to `ported`; green again.
+- [ ] **Step 4: Run** `sh scripts/check-ts.sh`; green, knip reports no unused export, and `ts/knip.json`'s `entry` no longer names `src/core/check-state.ts`; flip `checks.py` and the four test files to `ported`; green again.
 - [ ] **Step 5: Coordinator:** `sh scripts/check.sh`, commit, push.
 
 ### Task 8c: The other check tests
@@ -633,7 +634,7 @@ The coordinator does this task outside the sandbox, since it installs packages (
 - [ ] **Step 1: Write the tests:** every test of `test_check_compare.py`, `test_check_links.py`, and `test_check_threads.py` by name; `thread_problems_are_visible_in_reads` of `check-threads.test.ts` is a `test.todo` until Task 9a.
 - [ ] **Step 2: Run** each test against its named mutation and see it fail; revert each mutation.
 - [ ] **Step 3: Fix** in Tasks 8a's and 8b's modules what a carried test finds, each fix named in the report with a test that failed before it.
-- [ ] **Step 4: Take** `tests/core/checks.ts` out of `ts/knip.json`'s `entry`, now that `check-compare.test.ts` reads `REMEDY_CHECK_4`; **run** `sh scripts/check-ts.sh`; green, and knip reports no unused export; flip `test_check_compare.py` and `test_check_links.py` to `ported`; green again.
+- [ ] **Step 4: Take** `tests/core/checks.ts` out of `ts/knip.json`'s `entry`, now that `check-compare.test.ts` reads `REMEDY_CHECK_4`; **run** `sh scripts/check-ts.sh`; green, knip reports no unused export, and `ts/knip.json`'s `entry` no longer names `tests/core/checks.ts`; flip `test_check_compare.py` and `test_check_links.py` to `ported`; green again.
 - [ ] **Step 5: Coordinator:** `sh scripts/check.sh`, commit, push.
 
 ### Task 9a: Levels
@@ -665,7 +666,7 @@ The coordinator does this task outside the sandbox, since it installs packages (
 
 **Interfaces:**
 - Consumes: Task 9a.
-- Produces, through `#core`: `Placed`, `SpecArea`, `renderSpec`, `specView`; `AmbiguousRef` (extending `LookupError`), `Filters`, `related`, `resolve`, `search`, `searchCounted`.
+- Produces, through `#core`: `Placed`, `SpecArea`, `renderSpec`, `specView`; `AmbiguousRef` (extending `LookupError`), `Filters`, `related`, `resolve`, `search`, `searchCounted`, and the default-filling function `filters` of `search.ts`, which `Filters()` needs (`tests/core/test_search.py:38`, d-ca6wbw).
 - `words.py`'s `[^\W_]+` becomes `[\p{L}\p{N}]+` with the `u` flag; its function words stay as they are.
 - `search`'s "never" date is the earliest instant, as Python's `datetime.min` with UTC (`src/lodge/core/search.py:13`); `related`'s `w.isdigit()` (`:79`) is `isDigit` of `text.ts`.
 - `_HEADING_LINE` (`src/lodge/core/render.py:11`) is a `re.MULTILINE` pattern with `$`, so it follows the Global Constraints' rule.
@@ -690,6 +691,7 @@ The coordinator does this task outside the sandbox, since it installs packages (
 - Consumes: Task 9b.
 - Produces, through `#core`: `Feedback`, `feedback`, `areaFeedback`.
 - The patterns of `src/lodge/core/feedback.py:15-20` follow the Global Constraints' rules for `\b`, `\d`, and `\s`: `\b` is built from `WORD_CLASS`, and `_NUMBER`'s `(?:\s?%)?` (`:20`) puts `PY_SPACE_CLASS` in a pattern built with `new RegExp` (d-87kzys); a word count follows `splitWords`, and the title length `codePointLength`.
+- `\p{Nd}` takes the 90 code points of probe 23 that Python's `\d` refuses, since `\d` on a `str` takes exactly what `isdecimal` takes (probe 27), so the report lists them for `_CODE`, `_DATE`, and `_NUMBER` as a known difference, as Task 4's report does for `isDigit`.
 
 - [ ] **Step 1: Write the failing tests:** every test of the four Python files by name, and `thread_id_is_not_number_feedback`.
 - [ ] **Step 2: Run** `cd ts && bun test tests/core`; expected: the new tests FAIL.
@@ -711,7 +713,7 @@ The coordinator does this task outside the sandbox, since it installs packages (
 - `StaleBase` is a `Problem` with `stale: true` where Python subclasses `Problem` (`src/lodge/core/apply.py:14`).
 - `applyDrafts(current, tree, drafts, newDecisionIds, date, importing)` takes `date` as a stamp, as Python's `apply_drafts` does (`src/lodge/core/apply.py:41-48`).
 - `except ValueError` at `src/lodge/core/apply.py:189` and `:233` becomes the Global Constraints' `catch` that throws on anything but a `ValueError`, so a bug in a writer is not turned into an add refusal.
-- `front-door.test.ts`: `front_door_exports_every_python_name` reads `__all__` of `../src/lodge/core/__init__.py` and the export names of `ts/src/core/index.ts` with TypeScript's parser, types included, and finds each Python name there, a `snake_case` name in camelCase and an `UPPER_CASE` or `PascalCase` name as it is; and `front_door_exports_nothing_else` finds every other exported name either defined in `errors.ts`, `text.ts`, or `stamps.ts`, which stand in for Python's standard library, or defined in `model.ts` as the default-filling function of a `PascalCase` name of `__all__`, its first letter lower case (`decision`, `specEntry`, `area`, `problem`, and `message`) (d-s2rdn2, d-hshapm).
+- `front-door.test.ts`: `front_door_exports_every_python_name` reads `__all__` of `../src/lodge/core/__init__.py` and the export names of `ts/src/core/index.ts` with TypeScript's parser, types included, and finds each Python name there, a `snake_case` name in camelCase and an `UPPER_CASE` or `PascalCase` name as it is; and `front_door_exports_nothing_else` finds every other exported name either defined in `errors.ts`, `text.ts`, or `stamps.ts`, which stand in for Python's standard library, or the default-filling function of a `PascalCase` name of `__all__`, its first letter lower case, defined in the module that defines the type: `decision`, `specEntry`, `area`, `problem`, and `message` of `model.ts`, `coreSettings` and `lengthGuidance` of `settings.ts`, `tree` of `snapshot.ts`, and `filters` of `search.ts` (d-s2rdn2, d-hshapm, d-ca6wbw).
 
 - [ ] **Step 1: Write the failing tests:** every test of the two Python files by name, with `applying.ts` from `applying.py`, and `front-door.test.ts`.
 - [ ] **Step 2: Run** `cd ts && bun test tests/core`; expected: the new tests FAIL.

@@ -31,3 +31,7 @@ Ruling: `#core` exports `__all__`, the default-filling functions, and `errors.ts
 Ruling: a planted tree copies the dependencies and is cruised with `preserveSymlinks` (d-bxcave).
 Ruling: `text.ts` exports `PY_SPACE_CLASS` for Python's `\s` (d-87kzys).
 Still no value trade-off for the author.
+Plan: recheck 2 closed 8 of 9 and narrowed N2 to N2-r, with 3 new Minor (`plan-recheck-2.md`, 2e7acf6).
+Plan: fix round 3 by the planner, N2-r, m-a, m-b, m-c, and the preflight mismatches answered in `plan-fix-3.md`, probes 26 and 27 added.
+Ruling: a dataclass gets a default-filling function only where a Python call leaves a default out; `Draft` and `Snapshot` get none, and `#core` exports nine (d-ca6wbw, narrowing d-hshapm).
+Still no value trade-off for the author.
