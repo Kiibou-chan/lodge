@@ -84,3 +84,4 @@ Task 8c and 9b: review (`task-8c-9b-review.md`): 8c 0 Blocking, 0 Important, 1 M
 Parked (8c and 9b, Minor) for the final fix wave: 9b-C-1 (a carried render assertion weaker than Python's, `indexOf` against `text.index`), 9b-C-2, 9b-P-1, and 8c-P-1.
 Task 8c: complete.
 Task 9b: complete.
+Task 12: built by Codex in lane `server-core-t12`, merged (9ac3208); the coordinator ran `sh scripts/differential.sh` outside the sandbox: "350 records, 10 areas, 0 threads, 0 problems, 112 queries, 360 rewritten files", "0 differences"; the store holds no threads, so the thread code rests on the carried tests and Task 6's comparison over 1,207 built threads.
