@@ -187,6 +187,15 @@ When a step starts a session, the server asks a runner to start it, with:
 A cloud session starts through `claude --cloud "<brief>"` in a pseudo-terminal; follow-ups go through `claude -p "<message>" --cloud <id> --output-format json` (research, items 2 to 4).
 The cloud environment needs lodge's public name in its allowed domains and lodge's project token as a network secret; lodge's setup page says so, and lodge never sets either itself.
 
+### Talking with a session
+
+Decided by the author (SRV-1, 2026-11-02 13:34): "C".
+A session lodge starts is talked to inside lodge: the task's thread, or the artefact's, is the conversation.
+The runner keeps a local session open as `claude -p --input-format stream-json --output-format stream-json` and relays messages both ways, so a mock can be worked on from a phone.
+A cloud session receives messages through `claude -p "<message>" --cloud <id>`; its replies appear in lodge only as the session reports them, through a hook at each stop **[my call]**; whether a cloud session's hook can read its own transcript is not checked.
+A session a person starts in Claude Code is talked to there, and only reports to lodge.
+This lifts the viewer design's exclusion of a live chat with an agent, for the server; the security of it rests on the sign-in and session tokens below.
+
 ### Reporting
 
 A session reports to lodge through the API: its steps and their state (as the desktop app's task list), its status, its artefacts, its questions, and its usage.
@@ -294,9 +303,7 @@ Until step 7, one person signs in; passkeys come in step 1 **[my call]**, since 
 
 Questions for the author, from the builder check:
 
-1. Whether a person talks with a session inside lodge, the thread being the conversation, or only answers what sessions report while the conversation stays in Claude Code.
-   It decides how the runner runs a local `claude` and what the interface's main view is.
-2. Who may write a decision a person made, and what `decided_by` holds once several people sign in: an agent quoting the person from chat, as today (LODGE-2), or only the person, signed in.
+1. Who may write a decision a person made, and what `decided_by` holds once several people sign in: an agent quoting the person from chat, as today (LODGE-2), or only the person, signed in.
 
 
 ## Left to the builder
