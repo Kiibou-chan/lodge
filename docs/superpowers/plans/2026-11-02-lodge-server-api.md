@@ -89,12 +89,14 @@ These need a socket, a built binary, or a browser, so the coordinator runs them 
 
 ## Names consumed from plan 2
 
-Plan 2's brief keeps `app`'s public names those of `src/lodge/app` in camelCase and names its additions in its Interfaces; this plan consumes the following, aligned against plan 2's plan as the ledger records.
+Aligned against plan 2 at `a3bee81` of `origin/server-store` (`docs/superpowers/plans/2026-11-02-lodge-server-store.md`, "Interfaces for plans 3 and 4"), whose names are those of `src/lodge/app` in camelCase with its additions marked; every operation of `Lodge` is `async` and takes its defaulted parameters as one trailing options object (d-59q4jc, d-vd3175).
 
-- `#app`: `Lodge` (`new Lodge(store, clock, ids, settings)`, with `search`, `show`, `waitingAll`, `timeline`, `spec`, `problems`, `check`, `draft`, `mint`, `add`, `ask`, `reply`, `close`, `threads`, `thread`, `confirm`, and `behindArea`), the errors `LodgeError`, `NotFound`, `Conflict`, and `StaleList`, the results `Added`, `AddOutcome`, `Behind`, `Listed`, `Read`, `Shown`, `ThreadList`, `ThreadShown`, `ThreadsWaiting`, and `Written`, and the ports `Clock` and `IdSource`.
-  `api` awaits every call, so a `Lodge` whose methods return promises and one whose methods return values both serve.
-- Plan 2's model changes: the operation that approves a decision drafted in a person's name, the read that lists the decisions waiting for a person's approval, and the form a person's name takes in `decided_by`.
-- `#store`: the function that opens the store on a path (`:memory:` in tests), the `Store` port it gives `Lodge` for one project, and a write of a record file's event that bypasses `app`, which RULE-E2E's hand edits use.
+- `#app`: `Lodge` (`new Lodge(store, clock, ids, settings, actor)`, with `search`, `show`, `waitingAll`, `timeline`, `spec`, `problems`, `check`, `draft`, `mint`, `add`, `ask`, `reply`, `close`, `threads`, `thread`, `threadsWaiting`, `confirm`, `behindArea`, `held`, `approve(seq)`, and `decline(seq, reason)`); the errors `LodgeError`, `NotFound`, `Conflict`, `StaleList`, and `Forbidden`, and `coreSettings(table)`, which words a bad table as `.lodge.toml: …`; the results `Added` (with `awaits` and `held`), `AddOutcome` (with `HELD`, `"held for approval"`), `Behind`, `Listed`, `Read`, `Shown`, `ThreadList`, `ThreadShown`, `ThreadsWaiting`, and `Written`, and `Held`; the ports `Clock` (`now(): Now`, `{ epochMs, offsetMinutes }`, and `sleep(seconds): Promise<void>`), `IdSource`, `Store`, and `Projects` (`create`, `members`, `addMember`, `storeFor(project, actor)`); `Actor`, `person(name)`, `agent(role)`, and `actorText`; `stampOf(now)`.
+- `#store`: `openDatabase(path)` (`":memory:"` or a file), `SqliteProjects(database, clock)`, `SqliteStore`, `rebuild`, and the events table with its `applyEvent` cases, to which a later plan adds kinds, derived tables, and a migration (plan 2, "Interfaces for plans 3 and 4").
+- A person's name is `^[a-z][a-z0-9-]{0,31}$` and a project's `^[a-z0-9][a-z0-9-]{0,62}$` (d-wx7d0f); lodge 0.2's words stay for a person named `author` (d-kj59bz), so the carried command tests run with the server's person named `author`.
+- An agent's add of a decision `decided_by` a person is held whole until that person approves it (d-znagqe): `add` answers `HELD`, its IDs provisional, and `approve(seq)` adds it again as that person, minting the decision's ID then; a carried test whose add is held approves it through the person's session and reads the IDs from the approval's answer (the parity section's last paragraph).
+- `test_thread_fix_paths.py` is this plan's row (d-rp74dr): plan 2 leaves `orphaned_thread_outputs` and `run_thread_outcomes` as `test.todo`s in `ts/tests/app/thread-fix-paths.test.ts`, and Task 7a turns them into tests.
+- What this plan adds to plan 2's packages is Task 4's: the accounts' events, and the project's settings in `Projects` (RULE-SETTINGS).
 
 ## Parity table, this plan's rows
 
@@ -132,10 +134,11 @@ A `changed` row keeps its file, gives its `why`, and lists in `dropped` the Pyth
 | `tests/e2e/test_spec.py` | 7a | `ts/tests/e2e/spec.test.ts` | ported |
 | `tests/e2e/test_threads.py` | 7b | `ts/tests/e2e/threads.test.ts` | changed; dropped `thread_files_are_staged_not_committed`; design line 72: a thread is written to the server's store, with nothing staged or committed; store for git in the others |
 | `tests/e2e/test_waiting.py` | 7a | `ts/tests/e2e/waiting.test.ts` | ported |
+| `tests/app/test_thread_fix_paths.py` | 7a | `ts/tests/app/thread-fix-paths.test.ts` | ported; plan 2 writes the file with `waiting_reads_one_snapshot` and leaves `orphaned_thread_outputs` and `run_thread_outcomes` as `test.todo`s for this plan (d-rp74dr) |
 | `tests/test_entry_point.py` | 8 | `ts/tests/e2e/binary.test.ts` | ported; the compiled binary's `--version` |
 | `tests/test_wheel.py` | 8 | `ts/tests/e2e/binary.test.ts` | changed; dropped `installed_wheel_runs`; design line 55: the command ships as a binary built with `bun build --compile`, which `compiled_binary_runs` builds and runs |
 
-Where plan 2's model change makes a decision `decided_by` a person a draft that waits for that person (SRV-2), a carried test that seeds one approves it through the person's session before it reads (`seed` in `support.ts` does so), and the task's report lists each such test; that is the model change, not a weakening.
+Where plan 2's model change holds an agent's add of a decision `decided_by` a person until that person approves it (SRV-2, d-znagqe), a carried test whose add is held (`seed` with `decided_by="author"`, and `test_add_import.py`'s import) approves it through the person's session and reads the decision's ID from the approval's answer; `support.ts`'s `seed` does so, and the task's report lists each such test; that is the model change, not a weakening.
 
 ---
 
@@ -254,15 +257,15 @@ The coordinator does this task outside the sandbox, since it installs packages (
 - [ ] **Step 4: Run** `sh scripts/check-ts.sh`; expected: green, knip reporting no unused dependency.
 - [ ] **Step 5: Coordinator:** `sh scripts/check.sh`, commit, push.
 
-### Task 4: Projects and accounts in the store
+### Task 4: Accounts and project settings in the store
 
 **Files:**
 - Create: `ts/src/app/accounts.ts`, `ts/src/store/accounts.ts`
-- Modify: `ts/src/app/index.ts`, `ts/src/store/index.ts`, and plan 2's store module that lists the event kinds (named in the ledger at alignment)
-- Test: `ts/tests/store/accounts.test.ts` (new)
+- Modify: `ts/src/app/ports.ts` (`Projects`), `ts/src/app/index.ts`, `ts/src/store/projects.ts`, `ts/src/store/events.ts` (the new kinds' `applyEvent` cases), `ts/src/store/schema.ts` (a migration and the derived tables), `ts/src/store/index.ts`, `ts/tests/app/front-door.test.ts` (the additions it allows)
+- Test: `ts/tests/store/accounts.test.ts`, `ts/tests/store/project-settings.test.ts` (new)
 
 **Interfaces:**
-- Consumes: plan 2's `store` (its events table and its opening function) and `app`; plan 1's `#core` (`compareStamps`).
+- Consumes: plan 2's `store` (`openDatabase`, `appendEvents`, `applyEvent`, `rebuild`, `SqliteProjects`) and `app` (`Projects`, `Clock`, `stampOf`); plan 1's `#core` (`compareStamps`).
 - Produces, through `#app` (types and a port only, so `app` stays pure):
   ```ts
   export interface ServerSetup { readonly origin: string; readonly person: string; readonly at: string }
@@ -276,45 +279,46 @@ The coordinator does this task outside the sandbox, since it installs packages (
   export interface AgentToken {
     readonly id: string;               // t-xxxxxx, from mintId
     readonly project: string;
+    readonly role: string | null;      // the agent role its requests act as, agent(role)
     readonly label: string;
     readonly issued: string;
     readonly revoked: string | null;
   }
-  export interface ProjectEntry {
-    readonly name: string;
-    readonly settings: Readonly<Record<string, unknown>>;   // the [length] and [import] tables init sent
-    readonly created: string;
-    readonly by: string;               // the token's ID, or the person's name
-  }
   export interface Accounts {
     setup(): Promise<ServerSetup | null>;
     setUp(setup: ServerSetup): Promise<void>;
-    issueSetupCode(hash: string, expires: string, at: string): Promise<void>;
-    setupCodeValid(hash: string, at: string): Promise<boolean>;
-    spendSetupCode(hash: string, at: string): Promise<boolean>;
+    issueSetupCode(hash: string, expires: string): Promise<void>;
+    setupCodeValid(hash: string): Promise<boolean>;
+    spendSetupCode(hash: string): Promise<boolean>;
     passkeys(): Promise<readonly Passkey[]>;
     addPasskey(passkey: Passkey): Promise<void>;
-    usePasskey(id: string, counter: number, at: string): Promise<void>;
-    startSession(hash: string, expires: string, at: string): Promise<void>;
+    usePasskey(id: string, counter: number): Promise<void>;
+    startSession(hash: string, expires: string): Promise<void>;
     sessionExpiry(hash: string): Promise<string | null>;
-    endSession(hash: string, at: string): Promise<void>;
+    endSession(hash: string): Promise<void>;
     issueToken(token: AgentToken, hash: string): Promise<void>;
     tokenFor(hash: string): Promise<AgentToken | null>;
-    revokeToken(id: string, at: string): Promise<boolean>;
+    revokeToken(id: string): Promise<boolean>;
     tokens(): Promise<readonly AgentToken[]>;
-    createProject(project: ProjectEntry): Promise<boolean>;
-    project(name: string): Promise<ProjectEntry | null>;
-    projects(): Promise<readonly ProjectEntry[]>;
   }
   ```
-- Produces, through `#store`: an `Accounts` over the opened store, from the function plan 2's store opens with (its name aligned in the ledger).
-- Every change is an event in plan 2's one append-only table (design line 66), of the kinds `server-set-up`, `setup-code-issued`, `setup-code-spent`, `passkey-added`, `passkey-used`, `session-started`, `session-ended`, `token-issued`, `token-revoked`, and `project-created`; every read is built from the events, so reopening the file gives the same answers.
+  and `Projects` gains, beside plan 2's four methods (RULE-SETTINGS):
+  ```ts
+  create(project: string, owner: string, settings?: Readonly<Record<string, unknown>>): Promise<void>;   // settings default {}
+  settings(project: string): Promise<Readonly<Record<string, unknown>> | null>;                            // null for an unknown project
+  names(): Promise<readonly string[]>;                                                                     // in code-point order
+  ```
+- Produces, through `#store`: `SqliteAccounts(database, clock)`, implementing `Accounts`, and `SqliteProjects` with the three additions.
+- Every change is an event in plan 2's one append-only table (design line 66), through `appendEvents`, with `at` = `stampOf(clock.now())`: the accounts' kinds `server-set-up`, `setup-code-issued`, `setup-code-spent`, `passkey-added`, `passkey-used`, `session-started`, `session-ended`, `token-issued`, and `token-revoked` belong to the server, not a project, so their `project` is the empty text, which no project's name matches (d-wx7d0f), and their actor is `server`; the project's settings go into the body of plan 2's `project` event (`{ owner, settings }`), so a project and its settings land in one transaction.
+- The derived tables (one migration after plan 2's last, raising `user_version`; plan 2, "Interfaces for plans 3 and 4"): `setup`, `setup_codes`, `passkeys`, `sessions`, `tokens`, and `project_settings`, each filled by its kinds' `applyEvent` cases and refilled by `rebuild`; nothing updates or deletes an event.
 - Only hashes reach the store: the API hashes a setup code, a session, and a token before it calls (RULE-TOKENS), and no event holds the clear text.
-- `setUp` throws when the server is already set up; `setupCodeValid` is true exactly when `hash` is the newest code issued, it is unspent, and `at` is before its `expires` (by `compareStamps`), and `spendSetupCode` is true in the same case and then spends it; `sessionExpiry` is `null` for an unknown or ended session; `revokeToken` is false for an unknown or revoked token; `createProject` is false when the name exists; lists keep the order of issue.
+- `setUp` throws a `Conflict` when the server is already set up; `setupCodeValid` is true exactly when `hash` is the newest code issued, it is unspent, and the clock's stamp is before its `expires` (by `compareStamps`), and `spendSetupCode` is true in the same case and then spends it; `sessionExpiry` is `null` for an unknown or ended session; `revokeToken` is false for an unknown or revoked token; lists keep the order of issue.
 
-- [ ] **Step 1: Write the failing tests:** `accounts.test.ts`, each over the store on `:memory:` unless named: `server_is_set_up_once`; `setup_code_is_spent_once`; `checking_a_setup_code_spends_nothing`; `setup_code_expires` (one second before `expires` true on a fresh code, at `expires` false); `newer_setup_code_replaces_older`; `passkeys_keep_their_counter`; `sessions_start_and_end`; `tokens_issue_list_and_revoke`; `revoked_token_keeps_its_revocation`; `projects_are_created_once`; `no_event_holds_a_clear_secret` (each event's text holds none of the clear values the test hashed); `answers_survive_reopening` (a store on a file in a temporary folder, closed and opened again).
-- [ ] **Step 2: Run** `cd ts && bun test tests/store/accounts.test.ts`; expected: FAIL.
-- [ ] **Step 3: Implement.**
+- [ ] **Step 1: Write the failing tests.**
+  - `accounts.test.ts`, each over `openDatabase(":memory:")` with plan 2's `FixedClock` unless named: `server_is_set_up_once`; `setup_code_is_spent_once`; `checking_a_setup_code_spends_nothing`; `setup_code_expires` (one second before `expires` valid, at `expires` not); `newer_setup_code_replaces_older`; `passkeys_keep_their_counter`; `sessions_start_and_end`; `tokens_issue_list_and_revoke`; `revoked_token_keeps_its_revocation`; `no_event_holds_a_clear_secret` (each event's body holds none of the clear values the test hashed); `server_events_belong_to_no_project` (`project` is empty, and `heads` gains no row); `accounts_survive_reopening_and_rebuild` (a database on a file in a temporary folder, closed and opened again, then `rebuild`, gives the same answers).
+  - `project-settings.test.ts`: `create_keeps_the_settings` (then `settings` gives them); `create_without_settings_keeps_none` (`{}`, so plan 2's calls are unchanged); `unknown_project_has_no_settings` (`null`); `names_lists_the_projects`; `settings_survive_rebuild`.
+- [ ] **Step 2: Run** `cd ts && bun test tests/store`; expected: the new tests FAIL, plan 2's passing.
+- [ ] **Step 3: Implement**; add the new names to `front-door.test.ts`'s allowed additions.
 - [ ] **Step 4: Run** `sh scripts/check-ts.sh`; expected: green.
 - [ ] **Step 5: Coordinator:** `sh scripts/check.sh`, commit, push.
 
