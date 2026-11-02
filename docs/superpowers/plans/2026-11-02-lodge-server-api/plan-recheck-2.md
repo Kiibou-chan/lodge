@@ -56,3 +56,30 @@ Rechecked: N-1 to N-6 and the two renamed rulings.
 Resolved: 5 (N-1, N-2, N-3, N-4, N-6); citations: both renamings complete.
 Not resolved: 1, N-5, Important (the fix's `recordFromDraft(draft, "", null, null)` turns every held decision into a problem).
 New: 0 Blocking, 0 Important, 0 Minor.
+
+## Recheck 3
+
+Rechecked: fix round 3, `git diff 6400ba9 9988813` on `server-api` (plan, ledger, and the Round 3 section of `plan-fix-2.md`); plan 1 read at `7d5ecbc` of `origin/server-core`.
+
+### N-5 · Resolved as recheck 2 proposed
+
+Plan line 442 now calls `recordFromDraft(draft, id, held.at, null)`, with the draft's own `id` when its header holds a string and otherwise `d-000000` or `s-000000` by kind, and says the placeholder ID and the date never reach the answer.
+Plan line 457's `held_shows_the_drafts_as_core_reads_them` holds `seed`'s decision draft without an `id` and its entry draft with one, asserting no `problem`, the decision's `title`, the `statement` `Transcripts are kept.` without its reasoning, and the quote `{text: "Keep them.", where: "chat", when: "2026-10-29 10:00"}` exactly, which matches `decision_text` and `QUOTE` of `tests/e2e/support.py:7,14-21`.
+An area draft takes no ID, as `recordFromDraft` reads an area before `withId` (`ts/src/core/drafts.ts`, `recordFromDraft`), and `seed`'s area draft names itself (`name: storage`, `tests/e2e/support.py:28-30`), so it reads without a problem.
+
+### N-7 · Important · a held add that edits an existing entry still answers that entry as a problem
+
+This gap was in recheck 2's own proposed fix, which passed `null` as `area`; round 3 applied that fix faithfully, so the gap is now in the plan.
+Handle: plan line 442 (`recordFromDraft(draft, id, held.at, null)` for an entry's draft too); `recordFromDraft` reads an entry's area through `name(draft, "area", area)`, which throws ``a new spec draft needs a 'area' key`` when both the draft and the argument lack one (`ts/src/core/drafts.ts`, `name`, on `origin/server-core` at 7d5ecbc); lodge 0.2 gives an existing entry's area from the tree, not the draft (`src/lodge/core/apply.py:136` and `:150`, "an existing one is given `area`", `src/lodge/core/drafts.py:57`); and an edit draft has no `area` key: `lodge draft s-2bzwzv` in this repository prints `base`, `id`, `kind`, `title`, and `rests_on` only.
+Run, in a scratch worktree at `origin/server-core` 7d5ecbc (removed afterwards): `recordFromDraft` of an entry edit draft (`base`, `kind: spec`, `id: s-aaaaaa`, `title`, no `area`) with `area` `null` gives `problem a new spec draft needs a 'area' key`; with any non-null `area` it gives a `spec` with its title; an area draft with `name` gives an `area` with `area` `null`.
+Failure: when a person's held decision edits an existing entry (the normal case for a decision that changes the specification, and the shape of `approval_failing_the_check_answers_422`, plan line 457), `held` answers the entry's draft as `{name, problem: "a new spec draft needs a 'area' key", text}`, so the page shows an error where the person should read the entry they are approving; no test of plan line 457 holds an edit draft, so the gate stays green.
+Fix: for an entry, pass as `area` the draft's own `area` when its header holds a string and otherwise a placeholder (any name; like the placeholder ID it never reaches the answer, and `name` throws only when both are set and differ); add to `held_shows_the_drafts_as_core_reads_them` a hold whose entry draft comes from `lodge draft` of `seed`'s entry (with `base` and no `area`), answered without `problem` with its `title` and `text`.
+
+### Nothing else new
+
+The diff touches plan lines 442 and 457, one ledger line, and the Round 3 section of `plan-fix-2.md`; types and names elsewhere are unchanged, and Task 6 already consumes `recordFromDraft` (plan line 417).
+
+### Counts, recheck 3
+
+Resolved: 1 (N-5, as proposed).
+New: 0 Blocking, 1 Important (N-7, a gap in recheck 2's own proposed fix), 0 Minor.
