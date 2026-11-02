@@ -33,6 +33,8 @@ A lost mock "was not commited or pushed and got lost when the session got lost. 
 Mocks are often visual.
 A mock's course, in the author's words: "I go through with a session working on the mock until I'm satisfied. Maybe I show it to someone else to get an opinion. Then it is sent for developement and implemented."
 After implementation the mock stays: "it is needed at least until development is finished but should still exist because maybe something was missed or I want to see why something was done in some way. Usually the implementation is not perfectly 1:1 what's in the mock and if that's something I do want then consulting the mock is helpful."
+What moves a task on stays as in lodge's own build process: a plan goes to build once its reviews show no Blocking or Important findings, a task is done once its review passes or its fix round is rechecked, a ruling that changes the specification goes to the author, agent entries wait for her confirmation, and code reaches `main` only on her go; a mock moves on when she is satisfied and sends it to development.
+Asked what is missing from that or does not work, the author: "that's fine".
 
 ## Sessions
 
