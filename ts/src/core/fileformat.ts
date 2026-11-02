@@ -1,4 +1,5 @@
 import { sha256 } from "@noble/hashes/sha2.js";
+import { bytesToHex } from "@noble/hashes/utils.js";
 import {
   assemble,
   hasReasoningHeading,
@@ -10,6 +11,7 @@ import { ValueError } from "./errors.ts";
 import { FormatError, readAreaName } from "./fields.ts";
 import { areaFrom, decisionFrom, specFrom } from "./headers.ts";
 import type { Area, Decision, Imported, Problem, Record, SpecEntry } from "./model.ts";
+import { READ_BACK_FIELDS } from "./read-back-fields.ts";
 import { pyRepr } from "./text.ts";
 import { LINE_BREAKS_AND_TABS, quoted } from "./yamlio.ts";
 
@@ -24,6 +26,7 @@ export function parseRecord(path: string, text: string): Record | Problem {
 export function parseArea(path: string, text: string): Area | Problem {
   return readWith(path, text, (header, body) => areaFrom(header, body, folderOf(path)));
 }
+// A record that would not read back unchanged raises ValueError.
 export function writeRecord(record: Record): string {
   if (hasReasoningHeading(record.statement))
     throw new ValueError(`the statement holds a line reading '${REASONING_HEADING}'`);
@@ -62,17 +65,19 @@ export function newRecordPath(record: Record): string {
 export function areaPath(name: string): string {
   return `lodge/spec/${name}/_area.md`;
 }
+const SLUG_WORDS = 6;
+const SLUG_CHARS = 60;
+const PLAIN = /^[A-Za-z0-9][A-Za-z0-9._-]*$/u;
+
 export function slug(title: string): string {
-  const joined = (title.toLowerCase().match(/[a-z0-9]+/gu) ?? []).slice(0, 6).join("-");
-  if (joined.length <= 60) return joined;
-  const cut = joined.lastIndexOf("-", 60);
-  return joined.slice(0, cut > 0 ? cut : 60);
+  const joined = (title.toLowerCase().match(/[a-z0-9]+/gu) ?? []).slice(0, SLUG_WORDS).join("-");
+  if (joined.length <= SLUG_CHARS) return joined;
+  const cut = joined.lastIndexOf("-", SLUG_CHARS);
+  return joined.slice(0, cut > 0 ? cut : SLUG_CHARS);
 }
 export function contentHash(text: string): string {
   const bytes = new TextEncoder().encode(normaliseNewlines(text));
-  return Array.from(sha256(bytes), (byte) => byte.toString(16).padStart(2, "0"))
-    .join("")
-    .slice(0, 12);
+  return bytesToHex(sha256(bytes)).slice(0, 12);
 }
 function folderOf(path: string): string {
   const parts = path.split("/");
@@ -98,33 +103,21 @@ function valueRepr(value: unknown): string {
   if (value === null) return "None";
   if (Array.isArray(value))
     return `(${value.map(valueRepr).join(", ")}${value.length === 1 ? "," : ""})`;
+  if (typeof value === "object") {
+    const get = (key: string) => valueRepr(Reflect.get(value, key));
+    if ("entry" in value && "action" in value)
+      return `Change(entry=${get("entry")}, action=<Action.${String(value.action).toUpperCase()}: ${get("action")}>)`;
+    if ("text" in value && "where" in value && "when" in value)
+      return `Quote(text=${get("text")}, where=${get("where")}, when=${get("when")})`;
+    if ("value" in value && "handle" in value)
+      return `NumberHandle(value=${get("value")}, handle=${get("handle")})`;
+    if ("file" in value && "heading" in value)
+      return `Imported(file=${get("file")}, heading=${get("heading")})`;
+  }
   return String(value);
 }
 function differing(record: Record | Area, back: Record | Area): string | null {
-  const fields =
-    record.kind === "decision"
-      ? [
-          "id",
-          "title",
-          "scope",
-          "decidedBy",
-          "date",
-          "statement",
-          "reasoning",
-          "code",
-          "changes",
-          "replaces",
-          "narrows",
-          "confirms",
-          "workItem",
-          "quote",
-          "numbers",
-          "attachments",
-          "importedFrom",
-        ]
-      : record.kind === "spec"
-        ? ["id", "area", "title", "statement", "code", "importedFrom", "restsOn"]
-        : ["name", "title", "intro", "order", "rank"];
+  const fields = READ_BACK_FIELDS[record.kind];
   for (const key of fields)
     if (!equal(Reflect.get(record, key), Reflect.get(back, key)))
       return `${key.replace(/[A-Z]/gu, (char) => `_${char.toLowerCase()}`)} reads back as ${valueRepr(Reflect.get(back, key))}`;
@@ -142,9 +135,7 @@ function importedLine(imported: Imported): string {
   return `imported_from: {file: ${quoteValue("imported_from.file", imported.file)}, heading: ${quoteValue("imported_from.heading", imported.heading)}}`;
 }
 function decisionHeader(d: Decision): string[] {
-  const plain = /^[A-Za-z0-9][A-Za-z0-9._-]*$/u.test(d.decidedBy)
-    ? d.decidedBy
-    : quoteValue("decided_by", d.decidedBy);
+  const plain = PLAIN.test(d.decidedBy) ? d.decidedBy : quoteValue("decided_by", d.decidedBy);
   const header = [`id: ${d.id}`, "kind: decision"];
   if (d.code !== null) header.push(`code: ${d.code}`);
   header.push(

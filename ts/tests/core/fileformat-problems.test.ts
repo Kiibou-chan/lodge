@@ -74,7 +74,7 @@ test.each(
     (c) => [c] as const,
   ),
 )("non_string_where_string_expected %p", (line) => {
-  const key = line.split(":")[0]!;
+  const key = line.slice(0, line.indexOf(":"));
   const found = problem(document(replaced(key, line)));
   expect(found.message).toContain(key);
 });
@@ -148,7 +148,12 @@ test("imported_date_only_normalised", () => {
   if (result.kind !== "decision") throw new Error("unexpected kind");
   expect(result.date).toEqual("2026-10-28T00:00:00+00:00");
   expect(
-    problem(document([...replaced("date", "date: 2026-13-45"), header.at(-1)!])).message,
+    problem(
+      document([
+        ...replaced("date", "date: 2026-13-45"),
+        'imported_from: {file: "a.md", heading: "H"}',
+      ]),
+    ).message,
   ).toContain("2026-13-45");
 });
 

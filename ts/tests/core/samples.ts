@@ -50,10 +50,10 @@ export const BASE_HEADER = [
 ];
 
 export function document(header: readonly string[], body: string = "A statement.") {
-  return "---\n" + header.join("\n") + "\n---\n\n" + body + "\n";
+  return `---\n${header.join("\n")}\n---\n\n${body}\n`;
 }
 
 export function replaced(key: string, line: string | null) {
-  const kept = BASE_HEADER.filter((row) => !row.startsWith(`${key}:`)).map((row) => row);
+  const kept = BASE_HEADER.filter((row) => !row.startsWith(`${key}:`));
   return line === null ? kept : [...kept, line];
 }

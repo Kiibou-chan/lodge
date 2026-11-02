@@ -3,6 +3,13 @@ import { isDay, isStamp } from "./stamps.ts";
 import { pyRepr, strip } from "./text.ts";
 import { LINE_BREAKS_AND_TABS, unreadableChar } from "./yamlio.ts";
 
+const ID_KIND: ReadonlyMap<string, string> = new Map([
+  ["d", "decision"],
+  ["s", "specification entry"],
+  ["q", "thread"],
+]);
+const CODE = /^[A-Za-z0-9][A-Za-z0-9._-]*$/u;
+
 export class FormatError extends Error {
   constructor(
     message: string,
@@ -31,7 +38,7 @@ export function readStr(value: unknown, key: string, allowed = ""): string {
   const bad = unreadableChar(value, allowed);
   if (bad !== null)
     throw new FormatError(
-      `${key} holds U+${bad.codePointAt(0)!.toString(16).toUpperCase().padStart(4, "0")}, which a header cannot carry`,
+      `${key} holds U+${bad.codePointAt(0)?.toString(16).toUpperCase().padStart(4, "0")}, which a header cannot carry`,
       key,
     );
   return value;
@@ -41,7 +48,7 @@ export function readOptionalStr(header: ReadonlyMap<string, unknown>, key: strin
 }
 export function readCode(header: ReadonlyMap<string, unknown>): string | null {
   const code = readOptionalStr(header, "code");
-  if (code !== null && !/^[A-Za-z0-9][A-Za-z0-9._-]*$/u.test(code))
+  if (code !== null && !CODE.test(code))
     throw new FormatError(
       `code must match [A-Za-z0-9][A-Za-z0-9._-]*, not ${pyRepr(code)}`,
       "code",
@@ -52,6 +59,7 @@ function readList(value: unknown, key: string): unknown[] {
   if (!Array.isArray(value)) throw new FormatError(`${key} must be a list`, key);
   return value;
 }
+// The multiline key may hold line breaks and tabs.
 export function readMap(
   value: unknown,
   key: string,
@@ -84,14 +92,9 @@ export function readMaps(
 }
 export function readId(value: unknown, key: string, prefix: string): string {
   const text = readStr(value, key);
-  const kinds: ReadonlyMap<string, string> = new Map([
-    ["d", "decision"],
-    ["s", "specification entry"],
-    ["q", "thread"],
-  ]);
   if (!isId(text) || !text.startsWith(`${prefix}-`))
     throw new FormatError(
-      `${key} holds ${pyRepr(text)}, which is not a ${kinds.get(prefix)} id`,
+      `${key} holds ${pyRepr(text)}, which is not a ${ID_KIND.get(prefix)} id`,
       key,
     );
   return text;
@@ -118,6 +121,7 @@ export function readEnum<T extends string>(
 }
 const STAMP = /^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}[+-][0-9]{2}:[0-9]{2}$/u;
 const DAY = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/u;
+// A bare day is accepted only for an imported record.
 export function readDate(value: unknown, imported: boolean): string {
   const text = readStr(value, "date");
   if (STAMP.test(text)) {
@@ -144,7 +148,11 @@ export function readAreaName(value: unknown, key: string): string {
   return text;
 }
 export function readRank(value: unknown): number {
-  if (typeof value !== "string" || !/^(?:0|[1-9][0-9]*)$/u.test(value))
+  if (
+    typeof value !== "string" ||
+    !/^(?:0|[1-9][0-9]*)$/u.test(value) ||
+    !Number.isSafeInteger(Number(value))
+  )
     throw new FormatError(
       "rank must be a non-negative whole number without leading zeroes",
       "rank",

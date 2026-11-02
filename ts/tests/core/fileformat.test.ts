@@ -173,12 +173,16 @@ test.each(["", "-a", ".a", "a b", "a:b", "a\n", "\u00e9"].map((c) => [c] as cons
 test.each(["\u0001", "\u007f", "\u0085", "\u2028", "\ufffe", "\t", "\n"].map((c) => [c] as const))(
   "control_character_is_problem_1 %p",
   (char) => {
-    const escaped =
-      '"a' +
-      Array.from(char)
-        .map((c) => `\\u${c.codePointAt(0)?.toString(16).padStart(4, "0")}`)
-        .join("") +
-      'b"';
+    const forms = new Map([
+      ["\u0001", "\\x01"],
+      ["\u007f", "\\x7f"],
+      ["\u0085", "\\x85"],
+      ["\u2028", "\\u2028"],
+      ["\ufffe", "\\ufffe"],
+      ["\t", "\\t"],
+      ["\n", "\\n"],
+    ]);
+    const escaped = `"a${forms.get(char)}b"`;
     const header = ["id: d-3m8qk2", "kind: decision", `title: ${escaped}`, "scope: product"];
     header.push(...["decided_by: coordinator", "date: 2026-10-28T23:48:10+01:00"]);
     const result = parseRecord(DECISION_PATH, document(header));

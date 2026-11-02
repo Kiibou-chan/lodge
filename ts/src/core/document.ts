@@ -9,8 +9,9 @@ export function normaliseNewlines(text: string): string {
 }
 export function splitDocument(text: string): readonly [string, string] {
   for (const char of text) {
-    const n = char.codePointAt(0)!;
-    if (n >= 0xd800 && n <= 0xdfff) throw new FormatError("the text is not valid UTF-8");
+    const n = char.codePointAt(0);
+    if (n !== undefined && n >= 0xd800 && n <= 0xdfff)
+      throw new FormatError("the text is not valid UTF-8");
   }
   const lines = normaliseNewlines(text).split("\n");
   if (lines[0] !== "---")
@@ -39,9 +40,10 @@ export function loadHeader(headerText: string): ReadonlyMap<string, unknown> {
 export function hasReasoningHeading(text: string): boolean {
   return text.split("\n").some((line) => rstrip(line) === REASONING_HEADING);
 }
+// Leading blank lines and trailing whitespace go; indentation stays.
 export function trimBlock(text: string): string {
   const lines = text.split("\n");
-  while (lines.length && !strip(lines[0]!)) lines.shift();
+  while (lines[0] !== undefined && !strip(lines[0])) lines.shift();
   return rstrip(lines.join("\n"));
 }
 export function splitReasoning(body: string): readonly [string, string] {
@@ -78,6 +80,7 @@ export function problemFor(path: string, error: FormatError, headerText: string)
     line: error.line ?? keyLine(headerText, error.key),
   });
 }
+// A dotted key uses its first part; add two for the opening fence and one-based lines.
 export function keyLine(headerText: string, key: string | null): number | null {
   if (key === null) return null;
   const top = key.split(".")[0];

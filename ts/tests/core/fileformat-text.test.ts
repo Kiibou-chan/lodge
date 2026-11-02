@@ -55,12 +55,12 @@ test("blank_lines_around_a_block_are_dropped", () => {
   expect(result.kind).toBe("decision");
   if (result.kind === "decision") expect(result.statement).toBe("  S.");
 });
-test.each(["title", "decided_by"].map((c) => [c]))(
+test.each(["title", "decided_by"].map((c) => [c] as const))(
   "blank_required_string_is_problem_1 %p",
   (key) => {
-    const result = parseRecord(DECISION_PATH, document(replaced(key!, `${key}: "   "`)));
+    const result = parseRecord(DECISION_PATH, document(replaced(key, `${key}: "   "`)));
     expect(result.kind).toBe("problem");
-    if (result.kind === "problem") expect(result.message).toContain(key!);
+    if (result.kind === "problem") expect(result.message).toContain(key);
   },
 );
 test("quote_text_keeps_line_breaks_and_tabs", () => {
@@ -72,10 +72,10 @@ test("quote_text_keeps_line_breaks_and_tabs", () => {
   expect(parseRecord(DECISION_PATH, text)).toEqual(record);
   expect(writeRecord(record)).toBe(text);
 });
-test.each(["where", "when"].map((c) => [c]))(
+test.each(["where", "when"].map((c) => [c] as const))(
   "other_quote_parts_keep_the_control_character_ban %p",
   (field) => {
-    const parts = { text: "t", where: "w", when: "n", [field!]: "a\nb" };
+    const parts = { text: "t", where: "w", when: "n", [field]: "a\nb" };
     const run = () => writeRecord(decision({ quote: parts }));
     expect(run).toThrow(ValueError);
     expect(run).toThrow(new RegExp(`quote.${field}`, "u"));
@@ -126,11 +126,11 @@ test("slug_is_capped_at_a_word_boundary", () => {
   expect(slug("one two three four five six seven")).toBe("one-two-three-four-five-six");
 });
 test("slug_cut_never_splits_a_word_unless_one_word_is_too_long", () => {
-  expect(slug("x".repeat(59) + " yz")).toBe("x".repeat(59));
-  expect(slug("x".repeat(57) + " yz")).toBe("x".repeat(57) + "-yz");
-  expect(slug("x".repeat(58) + " yz")).toBe("x".repeat(58));
-  expect(slug("x".repeat(60) + " yz")).toBe("x".repeat(60));
-  expect(slug("x".repeat(61) + " yz")).toBe("x".repeat(60));
+  expect(slug(`${"x".repeat(59)} yz`)).toBe("x".repeat(59));
+  expect(slug(`${"x".repeat(57)} yz`)).toBe(`${"x".repeat(57)}-yz`);
+  expect(slug(`${"x".repeat(58)} yz`)).toBe("x".repeat(58));
+  expect(slug(`${"x".repeat(60)} yz`)).toBe("x".repeat(60));
+  expect(slug(`${"x".repeat(61)} yz`)).toBe("x".repeat(60));
 });
 test("new_record_path_stays_short_for_long_titles", () => {
   expect(newRecordPath(decision({ title: "a".repeat(300) }))).toBe(

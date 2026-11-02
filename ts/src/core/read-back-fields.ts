@@ -1,0 +1,23 @@
+export const READ_BACK_FIELDS = {
+  decision: [
+    "id",
+    "title",
+    "scope",
+    "decidedBy",
+    "date",
+    "statement",
+    "reasoning",
+    "code",
+    "changes",
+    "replaces",
+    "narrows",
+    "confirms",
+    "workItem",
+    "quote",
+    "numbers",
+    "attachments",
+    "importedFrom",
+  ],
+  spec: ["id", "area", "title", "statement", "code", "importedFrom", "restsOn"],
+  area: ["name", "title", "intro", "order", "rank"],
+} as const;

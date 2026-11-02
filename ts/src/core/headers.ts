@@ -72,7 +72,7 @@ export function decisionFrom(header: Header, body: string): Decision {
     reasoning,
     code: readCode(header),
     changes: changes(header).map((item) => ({
-      entry: item.get("entry")!,
+      entry: mapString(item, "entry"),
       action: readEnum(Action, item.get("action"), "changes.action"),
     })),
     replaces: ids(header, "replaces"),
@@ -83,7 +83,7 @@ export function decisionFrom(header: Header, body: string): Decision {
     numbers: readMaps(header.has("numbers") ? header.get("numbers") : [], "numbers", [
       "value",
       "handle",
-    ]).map((item) => ({ value: item.get("value")!, handle: item.get("handle")! })),
+    ]).map((item) => ({ value: mapString(item, "value"), handle: mapString(item, "handle") })),
     attachments: readStrs(
       header.has("attachments") ? header.get("attachments") : [],
       "attachments",
@@ -139,10 +139,21 @@ function changes(header: Header): readonly ReadonlyMap<string, string>[] {
 function quote(header: Header): Quote | null {
   if (!header.has("quote")) return null;
   const fields = readMap(header.get("quote"), "quote", ["text", "where", "when"], "text");
-  return { text: fields.get("text")!, where: fields.get("where")!, when: fields.get("when")! };
+  return {
+    text: mapString(fields, "text"),
+    where: mapString(fields, "where"),
+    when: mapString(fields, "when"),
+  };
 }
 function imported(header: Header): Imported | null {
   if (!header.has("imported_from")) return null;
   const fields = readMap(header.get("imported_from"), "imported_from", ["file", "heading"]);
-  return { file: fields.get("file")!, heading: fields.get("heading")! };
+  return { file: mapString(fields, "file"), heading: mapString(fields, "heading") };
+}
+
+// readMap has already required every named value to be a string.
+function mapString(fields: ReadonlyMap<string, string>, key: string): string {
+  const value = fields.get(key);
+  if (value === undefined) throw new FormatError(`missing required field '${key}'`, key);
+  return value;
 }
