@@ -71,7 +71,11 @@ A record of the first design never changes once written, as now.
 Specification entries, decisions, areas, threads (doubts and questions), confirmations, levels, review flags, codes, and links, as the first design and the viewer design define them.
 What changes is where they live: in the server's events, not in files in git.
 
-- `decided_by` names a person or an agent role; "the author" becomes the project's owners **[my call]**, so a project with several people keeps who decided.
+- `decided_by` names a person or an agent role; "the author" becomes the person who decided, one of the project's owners **[my call]**, so a project with several people keeps who decided.
+- A person's decision is written only through that person (SRV-2, 2026-11-02 13:38: "B"): a session drafts it with the person's quote, the draft waits in that person's waiting list, and it becomes a current decision when they approve it; until then it is not current.
+  This replaces LODGE-2's "trust the label" for the server, since a signed-in person is a place an agent cannot reach, so must-not 2 is enforced rather than only shown.
+- A review flag on a person's decision clears only when that person confirms, not when another owner does **[my call]**.
+- The importer maps 0.2's `decided_by: author` to the project's first owner, and the export writes the person **[my call]**.
 - The check runs on every write, and a write that fails it is refused with the same feedback `lodge add` gives today **[my call]**; the "published state" of `lodge check --gate` becomes the server's current state.
 - A record no longer waits on a branch merge to exist: it is current from the moment it is written, wherever the work is.
   A decision made for work that is later abandoned stays, and a later decision replaces it, as today for any decision.
@@ -301,9 +305,7 @@ Until step 7, one person signs in; passkeys come in step 1 **[my call]**, since 
 
 ## Open
 
-Questions for the author, from the builder check:
-
-1. Who may write a decision a person made, and what `decided_by` holds once several people sign in: an agent quoting the person from chat, as today (LODGE-2), or only the person, signed in.
+- How approving a drafted decision works in the interface; the author: "we should think about how exactly that interaction then works in the UI (but probably at a later point)".
 
 
 ## Left to the builder
