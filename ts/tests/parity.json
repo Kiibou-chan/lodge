@@ -86,7 +86,7 @@
     "ts": ["ts/tests/core/derivation.ts"]
   },
   "tests/core/samples.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 1,
     "task": ["5a"],
     "ts": ["ts/tests/core/samples.ts"]
@@ -212,10 +212,10 @@
     "ts": ["ts/tests/core/feedback-revival.test.ts"]
   },
   "tests/core/test_fileformat.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 1,
     "task": ["5a"],
-    "ts": ["ts/tests/core/fileformat.test.ts"]
+    "ts": ["ts/tests/core/fileformat.test.ts", "ts/tests/core/fileformat-write.test.ts"]
   },
   "tests/core/test_fileformat_links.py": {
     "status": "planned",
@@ -224,7 +224,7 @@
     "ts": ["ts/tests/core/fileformat-links.test.ts"]
   },
   "tests/core/test_fileformat_problems.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 1,
     "task": ["5a"],
     "ts": ["ts/tests/core/fileformat-problems.test.ts"]
