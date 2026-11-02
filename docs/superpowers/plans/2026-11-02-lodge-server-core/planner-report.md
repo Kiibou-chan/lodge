@@ -1,6 +1,6 @@
 # Planner report: lodge server, build step 1
 
-Status: in progress.
+Status: done; plan, ledger, folder, and 17 rulings committed in 5f6e9b7 and pushed to `server-core`.
 
 ## Read
 - Brief, `CLAUDE.md`, planner agent, the server design, the architecture options, the feasibility research, the viewer plan and its ledger, `lodge spec` (763 lines), `lodge guide`, `lodge waiting` (nothing waiting).
@@ -34,3 +34,5 @@ Status: in progress.
 - Task 1's `where` for her quotes is not in any document; the coordinator takes it from its session.
 - The structure rules for packages that do not exist yet (`store`, `git`, `api`, `cli`, `hook`) are written now (d-k5swcq) and tested on planted trees only.
 - Bun's runtime and `bun test` were not run inside Codex's real sandbox; probe 13 simulates read-only home and temporary folders only.
+- The brief, committed as given, names the worktree's folder under `/var/tmp`; not a personal path or a machine name, but the coordinator may prefer to word it generically.
+- No `questions.md`: every open choice was a which-option question, ruled in lodge; none is a value trade-off for the author.
