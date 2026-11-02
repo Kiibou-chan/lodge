@@ -18,3 +18,12 @@ Ruling: the page, its script, and the guide are text imports (d-5kskm3).
 Ruling: knip checks the front doors from this plan on, unread core names of `__all__` marked public (d-djh40k, narrowing d-s2rdn2).
 Alignment: plan 2 read at 7204ad3 (`origin/server-store`); Task 4 extends plan 2's `Projects` and store with the accounts' events and the project's settings.
 No value trade-off for the author, so no `questions.md`.
+Plan: reviews correctness 1B/8I/9M and practice 1B/7I/7M (`plan-review-correctness.md`, `plan-review-practice.md`).
+Fix round 1 by the planner (`plan-fix-1.md`): 30 fixed, B-1 of both settled by the coordinator's d-4zg8q3 (recorded on `server-core`), 1 rejected, 0 parked.
+Ruling: the command sends `LODGE_TOKEN` when set and no `Authorization` otherwise, for a cloud environment's network secret (d-1zmfdr, replacing d-z1pncx).
+Ruling: knip's `includeEntryExports` tags what a front-door test or plan 4 needs and removes the rest (d-amxk94, replacing d-djh40k).
+Ruling: Task 7a stays one task, its report mapping each ported function to the tests that pin it (d-zthdm7, narrowing d-p8jdqj; rejects practice I-6).
+Ruling: the two-week age holds for transitive packages, through `ts/bunfig.toml` (d-svv7gv, narrowing d-4psbdv).
+Ruling: carried tests that rewrote a decision or relayed a person's words do what the server allows (d-81ps01, narrowing d-bwb1tt; probe 8).
+Alignment: plan 2 read at 61f87ad (`origin/server-store`), after its fix round: d-pmaw3a, d-vwsnz5, d-x6vaw8 (STORE-1 pending, option A followed), d-thvvzx, `FixedClock.sleep`, `attachmentTexts`, and `applyEvent`'s `heads` rule.
+No value trade-off for the author, so no `questions.md`.

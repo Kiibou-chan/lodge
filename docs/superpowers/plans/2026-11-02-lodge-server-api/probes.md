@@ -1,7 +1,7 @@
 # Probes for the server-api plan
 
 Run on 2026-11-02 with Bun 1.3.14, in scratch folders holding the files in `probes/` (with `bun install`), or in a scratch copy of `ts/` at `a73a148` with `bun install --frozen-lockfile`; outputs are quoted as printed.
-The plan cites them as "probe N"; "plan 1, probe N" is an item of `../2026-11-02-lodge-server-core/probes.md`.
+The plan cites them as "probe N"; "plan 1, probe N" is an item of `../done/2026-11-02-lodge-server-core/probes.md`, where plan 1's folder is once plan 1 has merged.
 
 1. `bun toml.ts` (`probes/toml.ts`, smol-toml 1.9.1 with `integersAsBigInt: true` beside `Bun.TOML.parse`), each case as the text, then what each parser gives:
    `title_chars = 80.0` under `[length]`: Bun.TOML `number 80`, smol-toml `number 80`;
@@ -30,3 +30,7 @@ The plan cites them as "probe N"; "plan 1, probe N" is an item of `../2026-11-02
    `lodge` alone prints `usage: lodge [-h] [--version] COMMAND ...`, then `lodge: error: the following arguments are required: COMMAND`;
    `lodge search x --limit 0` prints the usage, then `lodge search: error: argument --limit: '0' is not a positive whole number`.
 7. Publication dates on npm (`npm view <package> time`), for the rule that a pinned version is at least two weeks old (d-4psbdv): smol-toml 1.9.1 2026-10-09, @simplewebauthn/server 14.0.3 2026-09-25 (plan 1, probe 11).
+8. lodge 0.2 on a hand-written decision by `author` with no quote (fix round 1), in a scratch repository (`git init -b main`, `lodge init`, then the seed of `tests/e2e/support.py` added and committed):
+   writing `lodge/decisions/<id>-unquoted.md` with `id`, `kind: decision`, `title: Unquoted`, `scope: product`, `decided_by: author`, `date: 2026-10-29T12:00:00+01:00`, and the body `Unquoted statement.`, then `lodge check` prints `check 3: <id>: decided_by is author, but there is no quote; add quote: {text, where, when} with the author's words, or record it under your own role` and exits 1, and `lodge show <id>`'s first line ends `· fails check`;
+   with that file committed to `main`, so that the published state holds it as the server's does, `lodge check --gate` prints `ok`, then `note: already published, check 3: lodge/decisions/<id>-unquoted.md: <id>: decided_by is author, but there is no quote; …`, and exits 0.
+   Editing the seeded decision's `decided_by` instead, uncommitted, gives `check 3: ` and then `check 5: <id>: decided_by of a published decision was changed; …`, and the gate fails on both; on the server check 5 cannot fire and the store refuses the rewrite (d-pmaw3a).
