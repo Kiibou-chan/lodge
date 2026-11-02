@@ -41,3 +41,7 @@ None. Every addition is a new name in plan 3's files: `tomlTable`, the two dispa
 
 - Plan 3 at `origin/server-api` 9a25b93 rather than 9ac93ac (the coordinator: nothing plan 4 consumes changed, `world.ts` and `testServer()` unchanged); "Aligned against" and the ledger say so.
 - Plan 3's Task 4 now adds `MIGRATIONS[2]` (`user_version` 2 to 3), so Task 7 says a later migration of this plan would be `MIGRATIONS[3]` or later; plan 4 still adds none.
+
+## Addendum: recheck 4
+
+N4-M1: Task 10 Step 1 now gives each test a fresh `world.ts`, so the two layouts never import into the same `moved` (fixed by the coordinator).
