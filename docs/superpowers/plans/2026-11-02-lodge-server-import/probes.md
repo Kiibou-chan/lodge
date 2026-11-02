@@ -34,3 +34,6 @@ The plan cites them as "probe N".
 7. The store of probe 6, with each `decided_by: author` and each thread message's `by: author` replaced by `ana` and committed:
    `lodge check` prints `problem: lodge/threads/q-j2dsgk.md:20: when must be ISO 8601 with seconds and an offset` and `check 3: d-t46j05: confirms is for author decisions, but decided_by is ana`, and exits 1; `lodge spec` prints the same text as before; `lodge threads` prints `no open threads`.
    So lodge 0.2 reads a message by a person other than `author` as an agent's, whose `when` must be a stamp, and the thread becomes unreadable; plan 2's core reads a message as a person's when its `by` is one of the project's people, a person's `when` being a minute (plan 2, Task 10), which is why the importer maps thread messages too.
+8. `python3 probes/fixture.py probes/zero-two-store > zero-two-store.ts`, then a Bun script reading each path of the generated `ZERO_TWO_STORE` from `probes/zero-two-store/` and comparing the texts:
+   `files 11; equal 11`.
+   So the generator's JSON string literals give the made-up store's texts back exactly, and Task 1 can write the fixture with it rather than by hand.
