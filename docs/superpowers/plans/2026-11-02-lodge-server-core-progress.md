@@ -55,3 +55,6 @@ Task 5a: review 0 Blocking, 2 Important, 8 Minor (`task-5a-review.md`); writers 
 Task 5a: fix round 1 by Codex: every finding fixed, ranks beyond a safe integer refused, Biome warnings 0 under `--error-on-warnings`, the Task 3 table pinned (`ts/tests/structure/table.test.ts`), and Task 4's N-1 listed; gate green (429 TS tests). For Task 6's brief: `fields.ts` exports `require` as a field reader, and a call named `require` is dynamic code to the structure rule, so it is imported as `requireField`.
 Task 5a: recheck 1: 14 of 14 closed, the five whitespace mutants each killed, no new Blocking or Important (`task-5a-recheck-1.md`).
 Task 5a: complete.
+Task 5b: review 0 Blocking, 0 Important, 7 Minor (`task-5b-review.md`); 57 of 58 edge drafts agree with lodge 0.2 exactly, the 58th under d-p48gr1; a targeted mutation kills each carried text test (the review's table replaces the report's).
+Parked (Task 5b, Minor): C-1, C-2, P-2, P-3, P-4, and D-1 to the next round touching `drafts.ts`, `fileformat.ts`, or their tests; P-1 (one `valueRepr` for `drafts.ts` and `fileformat.ts`) to Task 11, whose `apply.py` port needs it.
+Task 5b: complete.
