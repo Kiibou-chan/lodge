@@ -30,3 +30,5 @@ No value trade-off for the author, so no `questions.md`.
 Recheck 1 (`plan-recheck-1.md`): 33 resolved; new 0B/2I/4M.
 Fix round 2 by the planner (`plan-fix-2.md`): 6 fixed; `tests/test_wheel.py` back to `planned` in Task 7a; guide line 26 kept; d-j28rp0 and d-d0vca9 cited in place of d-pmaw3a and d-4zg8q3.
 Fix round 3 by the planner (`plan-fix-2.md`, Round 3): N-5 fixed with the recheck's verified `recordFromDraft` arguments.
+Fix round 4 by the planner (`plan-fix-4.md`): N-7 fixed (an entry's draft read with its own or a placeholder area); the author's STORE-1 answer C (d-2v8vtk) applied from plan 2 at a035344 (Task 12c).
+Ruling: carried tests that rewrote a decision write a new file, and a relayed message is approved like a held add (d-4qv0xb, replacing d-81ps01).
