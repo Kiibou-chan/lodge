@@ -104,7 +104,7 @@
     "ts": ["ts/tests/core/apply-refusals.test.ts"]
   },
   "tests/core/test_area_feedback.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 1,
     "task": ["10"],
     "ts": ["ts/tests/core/area-feedback.test.ts"]
@@ -194,19 +194,19 @@
     "ts": ["ts/tests/core/drafts.test.ts"]
   },
   "tests/core/test_feedback.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 1,
     "task": ["10"],
-    "ts": ["ts/tests/core/feedback.test.ts"]
+    "ts": ["ts/tests/core/feedback.test.ts", "ts/tests/core/feedback-edit-back.test.ts"]
   },
   "tests/core/test_feedback_links.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 1,
     "task": ["10"],
     "ts": ["ts/tests/core/feedback-links.test.ts"]
   },
   "tests/core/test_feedback_revival.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 1,
     "task": ["10"],
     "ts": ["ts/tests/core/feedback-revival.test.ts"]
@@ -272,7 +272,7 @@
     "ts": ["ts/tests/core/snapshot.test.ts"]
   },
   "tests/core/test_thread_files.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 1,
     "task": ["6", "10"],
     "ts": ["ts/tests/core/thread-files.test.ts"]

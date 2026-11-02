@@ -11,6 +11,7 @@ export {
 export { type Derived, derive, isAuthor } from "./derive.ts";
 export { type Draft, parseDraft, recordFromDraft } from "./drafts.ts";
 export * from "./errors.ts";
+export { areaFeedback, type Feedback, feedback } from "./feedback.ts";
 export {
   areaPath,
   contentHash,

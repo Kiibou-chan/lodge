@@ -1,6 +1,9 @@
 import { expect, test } from "bun:test";
 import {
   appended,
+  derive,
+  feedback,
+  lengthGuidance,
   load,
   newestLast,
   type Problem,
@@ -11,7 +14,7 @@ import {
   ValueError,
   writeThread,
 } from "#core";
-import { at, filesOf, message, thread } from "./builders.ts";
+import { at, decision, filesOf, message, snapshotOf, thread } from "./builders.ts";
 
 function parsed(t: Thread): Thread {
   const p = parseThread(threadPath(t.id), writeThread(t));
@@ -164,4 +167,10 @@ test("message_without_metadata_names_the_message", () => {
   expect(p.message).toBe("a message needs by and when");
   expect(p.line).toBe(10);
 });
-test.todo("thread_id_is_not_number_feedback");
+test("thread_id_is_not_number_feedback", () => {
+  const d = decision({ statement: "See q-123456." });
+  const s = snapshotOf([d]);
+  expect(
+    feedback([d], s, derive(s), lengthGuidance()).some((f) => f.message.includes("number")),
+  ).toBe(false);
+});
