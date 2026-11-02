@@ -9,11 +9,10 @@ import {
   type Thread,
   ThreadState,
 } from "#core";
-import { at, decision, entry, thread } from "./builders.ts";
-import { snapshotOf } from "./derivation.ts";
+import { at, decision, entry, snapshotOf, thread } from "./builders.ts";
 
 function marks(...items: (Decision | SpecEntry | Thread)[]) {
-  return derive(snapshotOf(...items)).doubts;
+  return derive(snapshotOf(items)).doubts;
 }
 test("open_doubt_marks_its_record", () => {
   const e = entry();
@@ -78,7 +77,7 @@ test("cycle_of_rests_on_does_not_hang", () => {
 test("confirmed_decision_shows_confirmation_and_keeps_decided_by", () => {
   const a = decision();
   const b = decision({ id: "d-bbbbbb", decidedBy: "author", confirms: [a.id] });
-  const s = snapshotOf(a, b);
+  const s = snapshotOf([a, b]);
   const v = level1(s, derive(s), a.id, new Set<string>());
   expect(v.flags).toContain("confirmed by the author (d-bbbbbb)");
   expect(v.decidedBy).toEqual("coordinator");
@@ -98,7 +97,7 @@ test("flag_order", () => {
     ],
     date: at(1),
   });
-  const s = snapshotOf(a, b, first, edit, thread({ about: b.id }));
+  const s = snapshotOf([a, b, first, edit, thread({ about: b.id })]);
   expect(level1(s, derive(s), b.id, new Set<string>()).flags).toEqual([
     `awaiting the author on ${edit.id}`,
     "in doubt",

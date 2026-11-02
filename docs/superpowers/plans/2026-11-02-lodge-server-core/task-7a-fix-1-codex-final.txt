@@ -1,0 +1,5 @@
+DONE_WITH_CONCERNS
+
+Final gate passed: 725 pass, 1 todo, 0 fail. All three required mutations caused test failures.
+
+[Report](docs/superpowers/plans/2026-11-02-lodge-server-core/task-7a-fix-1-report.md) written. D-2 remains for Task 7b’s brief, outside the authorised scope.
