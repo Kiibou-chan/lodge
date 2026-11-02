@@ -58,3 +58,5 @@ Task 5a: complete.
 Task 5b: review 0 Blocking, 0 Important, 7 Minor (`task-5b-review.md`); 57 of 58 edge drafts agree with lodge 0.2 exactly, the 58th under d-p48gr1; a targeted mutation kills each carried text test (the review's table replaces the report's).
 Parked (Task 5b, Minor): C-1, C-2, P-2, P-3, P-4, and D-1 to the next round touching `drafts.ts`, `fileformat.ts`, or their tests; P-1 (one `valueRepr` for `drafts.ts` and `fileformat.ts`) to Task 11, whose `apply.py` port needs it.
 Task 5b: complete.
+Task 6: built by Codex (a73a148), gate green outside the sandbox (480 TS tests, 2 `test.todo` for the review); a first Codex run hung on standard input from 17:54 to 18:32 and was rerun with stdin closed.
+Author decision d-xdqsmf ("Yes, parallelise", 18:40): after Task 7a the remaining tasks run in lanes by the import graph (7b, 8a, and 11 at once; then 8b to 8c beside 9a, 9b, and 10), each in its own worktree merged into `server-core`; plans 2 to 4 are planned now on branches `server-store`, `server-api`, and `server-import`.
