@@ -13,3 +13,8 @@ Ruling: the export batches its writes in `app`, at most one commit a minute (d-s
 Ruling: the hook advises on every file under `lodge/` of a moved project, its paths resolved by `git` (d-va3j7x).
 Ruling: the server design goes into lodge whole, each unbuilt claim naming its build step (d-yng7m8).
 Question for the author: IMP-1 in `questions.md`, who the export names in `decided_by`; the plan follows design line 78 until she answers.
+Alignment: plan 2 read at c949ad9 (`origin/server-store`), plan 3 at c8773bf (`origin/server-api`, drafted through its Task 3).
+Ruling: the importer maps `decided_by` and thread messages by `author` to the owner, through the writers (d-83kt6y, replacing d-bh93bn: plan 2's core reads a message as a person's only when its `by` is a member, probe 7).
+Ruling: the importer reads stored bytes through plan 2's codec and refuses no file for its bytes (d-ryss91, replacing d-m31e0d: plan 2's Task 7 builds the codec and stores bytes in a `blob`).
+Ruling: the export batches in `app` through the clock's sleep, reading every file of the project (d-sj6hmf, replacing d-srfxj8: plan 2's `Clock` has `sleep`).
+Ruling: the import publishes the store's files through the project's store, by its one owner, not through `Lodge.add`, which mints IDs and dates (d-y42b7b).

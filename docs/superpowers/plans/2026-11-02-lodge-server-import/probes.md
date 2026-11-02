@@ -31,3 +31,6 @@ The plan cites them as "probe N".
    `lodge check` prints `ok`, and the store holds ten files, copied unchanged into `probes/zero-two-store/` with its `.lodge.toml`: two `.gitkeep` files, four decisions, one area, one entry, one thread, and one attachment.
    The imported decision's bare day `2026-01-05` is written as `2026-01-05T00:00:00+00:00`, and the author's thread message keeps `by: author` with quoted `when` and `where`.
    These texts are lodge 0.2's own output for a made-up project, so the round-trip test can start from them byte for byte.
+7. The store of probe 6, with each `decided_by: author` and each thread message's `by: author` replaced by `ana` and committed:
+   `lodge check` prints `problem: lodge/threads/q-j2dsgk.md:20: when must be ISO 8601 with seconds and an offset` and `check 3: d-t46j05: confirms is for author decisions, but decided_by is ana`, and exits 1; `lodge spec` prints the same text as before; `lodge threads` prints `no open threads`.
+   So lodge 0.2 reads a message by a person other than `author` as an agent's, whose `when` must be a stamp, and the thread becomes unreadable; plan 2's core reads a message as a person's when its `by` is one of the project's people, a person's `when` being a minute (plan 2, Task 10), which is why the importer maps thread messages too.
