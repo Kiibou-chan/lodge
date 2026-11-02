@@ -14,7 +14,7 @@ Records cross every boundary as path and file text, as lodge 0.2 writes them (d-
 The plan argues from them, never over them; where they disagree with this plan, they win and the builder reports it.
 "Design line N" is a line of the design; "probe N" is an item of `docs/superpowers/plans/2026-11-02-lodge-server-import/probes.md`, whose sources are in `probes/` beside it; "plan 1", "plan 2", and "plan 3" are `docs/superpowers/plans/2026-11-02-lodge-server-core.md`, `…-server-store.md`, and `…-server-api.md`.
 
-**Aligned against:** plan 2 at `origin/server-store` 7204ad3 and plan 3 at `origin/server-api` f2dcc72, both still being planned; the names this plan takes from them are listed below, and the coordinator checks each against the merged code before the task that consumes it.
+**Aligned against:** plan 2 at `origin/server-store` 7204ad3 and plan 3 at `origin/server-api` 3e4c29c, both still being planned; the names this plan takes from them are listed below, and the coordinator checks each against the merged code before the task that consumes it.
 
 ## Global Constraints
 
@@ -62,20 +62,20 @@ Each name as the plan named in "Aligned against" gives it; when the merged code 
 | `Clock` (`now()` giving `Now { epochMs, offsetMinutes }`, `sleep(seconds)`) | plan 2, Task 2, `#app` | 6, 8 |
 | `Store` (`trees()` as `[current, published]`, `attachmentTexts()`, `publish(base, writes, message, approves?)`, `hold`, `held`, `decline`, `commit`, `freshness`, `gate`), `PublishOutcome` | plan 2, Tasks 2 and 12, `#app` | 5, 6 |
 | `Actor`, `person(name)`, `agent(role)`, `Role`, `Projects` (`members(project)` in code-point order, `storeFor(project, actor)`, `create`, `addMember`) | plan 2, Task 2, `#app` | 5, 6, 8 |
+| `Projects.create(project, owner, settings)`, `Projects.settings(project)` (null for an unknown project), `Projects.names()` | plan 3, Task 4, `#app` and `#store` | 8 |
 | `LodgeError`, `NotFound`, `Conflict`, `Forbidden`, `coreSettings(table)` | plan 2, Tasks 2 and 11, `#app` | 2 to 9 |
 | `decodeUtf8`, `encodeUtf8` | plan 2, Task 7a, `#core` (`text.ts`) | 2, 3 |
 | `Tree.people`, `tree()` defaulting `people` to `{author}`, `parseThread(path, text, people)`, `writeThread(thread, people)` | plan 2, Task 10, `#core` | 5 |
 | `LodgeDatabase`, `openDatabase`, `SqliteProjects`, `applyEvent`'s cases in `ts/src/store/events.ts` | plan 2, Tasks 7a and 7b, `#store` | 7, 8 |
 | `FixedClock` (`slept`), `MemoryStore` (`people` option), `CountingIds` | plan 2, Tasks 2 and 11, `ts/tests/app/fakes.ts` | 5, 6 |
-| `ApiOptions`, `handler`, the person's operations of `ts/src/api/person.ts` and their `forbidden` sentence, the session cookie with the server's `Origin`, the 422 answer with the whole result | plan 3, Tasks 5 and 6, `#api` | 8 |
-| `Accounts` (`setup()` with `person`, `project(name)` with `settings`, `projects()`), `ProjectEntry` | plan 3, Task 4, `#app` and `#store` | 8 |
+| `ApiOptions` (`projects`, `lodgeFor`), `lodgesOver(projects, clock, ids)`, `handler`, the person's operations of `ts/src/api/person.ts` and their `forbidden` sentence, the session cookie with the server's `Origin`, the 422 answer with the whole result | plan 3, Tasks 5 and 6, `#api` | 8 |
+| `Accounts` (`setup()` with `person`), `project-create` making the person the project's owner through `Projects.create` | plan 3, Tasks 4 and 5 | 8 |
 | `world.ts` (the API's test world) and the e2e `server.ts` (both build `ApiOptions`) | plan 3, Tasks 5 and 7a, tests | 8 |
 | `Io`, `run(argv, io)`, `parse`, `Command`, `readSettings`, `CliError`, the TOML conversion of `ts/src/cli/settings.ts` | plan 3, Tasks 2, 3, and 7a, `#cli` | 8, 9 |
 | `ts/src/main.ts` (`serverCommand`'s `open(data)` and the command's `Io`) | plan 3, Task 8 | 8, 9 |
 | `grammar.test.ts`'s `help_lists_every_command` and `every_command_has_help`, `ts/tests/e2e/help-lists-every-command.test.ts`, and `parity.json`'s `dropped` | plan 3, Tasks 2 and 7a | 9 |
 
-Two joins neither plan writes down yet, which Task 8 needs: the project's one owner in plan 2's `Projects.members` (plan 3's `project-create` records a `ProjectEntry` in its `Accounts` and does not say that it calls `Projects.create(name, person)`), and the actor that plan 3's `lodgeFor` gives plan 2's `Lodge` and `storeFor` (plan 2, Task 11).
-Task 8 takes the owner from `Projects.members`; if the merged plan 3 creates no owner there, Task 8 stops with BLOCKED, and the coordinator settles it with plan 3's ledger.
+Plan 3's `project-create` makes the person the server is set up for the project's owner (`projects.create(project, owner, settings)`), which is the one owner Task 5's `importStore` asks `Projects.members` for, and its `lodgeFor` builds every `Lodge` over `ApiOptions.projects.storeFor`, which Task 8 wraps.
 
 ## Lanes
 
@@ -396,26 +396,25 @@ The coordinator does this task itself, outside the sandbox.
 
 **Files:**
 - Create: `ts/src/api/moving.ts`, `ts/src/cli/zero-two.ts`
-- Modify: plan 3's `ApiOptions` (where its Task 5 declares it) and its operation table (`ts/src/api/person.ts`), `ts/src/api/index.ts`, `ts/src/cli/index.ts`, `ts/src/main.ts`, `ts/tests/api/world.ts`, `ts/tests/e2e/server.ts`
+- Modify: plan 3's `ApiOptions` (where its Task 5 declares it) and its operation table (`ts/src/api/person.ts`), `ts/src/api/index.ts`, `ts/src/app/exporting.ts` (forwarding plan 3's `settings` and `names`), `ts/src/cli/index.ts`, `ts/src/main.ts`, `ts/tests/api/world.ts`, `ts/tests/e2e/server.ts`
 - Test: `ts/tests/api/import.test.ts`, `ts/tests/api/export-target.test.ts`, `ts/tests/cli/zero-two.test.ts` (new)
 
 **Interfaces:**
-- Consumes: Tasks 2, 3, 5, 6, and 7; plan 2's store and `Projects`; plan 3's handler, person's operations, `Accounts`, test world, and `cli`'s TOML conversion.
+- Consumes: Tasks 2, 3, 5, 6, and 7; plan 2's store and `Projects` with plan 3's additions; plan 3's handler, `lodgesOver`, person's operations, `Accounts`, test world, and `cli`'s TOML conversion.
 - Produces, through `#cli`: `zeroTwoCoreTable(text: string): Readonly<Record<string, unknown>>`, which parses `.lodge.toml` text with the conversion `readSettings` uses (RULE-TOML) and gives its `length` and `import` tables only, every other top-level name ignored, since a lodge 0.2 file may hold `[store]` and `[hook]`; a file that is not TOML is `CliError(".lodge.toml: <smol-toml's first line>")`.
 - Produces, through `#api`: `ApiOptions` gains `readonly moving: Moving`, with
   ```ts
   export interface Moving {
     readonly read: (repository: string, rev: string) => Promise<ZeroTwoCopy>   // main joins #git's readStore and #cli's zeroTwoCoreTable
-    readonly projects: Projects                                                 // exportingProjects over plan 2's projects
     readonly targets: ExportTargets
     readonly exporters: Exporters
   }
   ```
-  and `lodgeFor` builds its `Lodge` over `moving.projects.storeFor`, so every publish tells the exporter.
+  and `ApiOptions.projects` is `exportingProjects` over the store's `SqliteProjects`, given to `lodgesOver` too, so every publish, through `Lodge` or the import, tells the exporter.
 - The operations (`moving.ts`), registered with the person's operations, so an agent's token is `forbidden` with `only the signed-in person may <operation>` (plan 3, Task 6), each body holding `project`:
-  - `import` (`repository`, `rev`; d-1skjw1): `accounts.project(project)` null is `no-project`; `moving.read(repository, rev)`; `importStore(copy, project, <the signed-in person>, moving.projects, coreSettings(entry.settings))`; `imported` answers 200 with it, and `check-failed` answers 422 as plan 3 answers a write whose check fails, with the result; the errors map by class (`Forbidden` 403, `Conflict` 409, `LodgeError` 400).
+  - `import` (`repository`, `rev`; d-1skjw1): `projects.settings(project)` null is `no-project`; `moving.read(repository, rev)`; `importStore(copy, project, <the signed-in person>, options.projects, coreSettings(settings))`; `imported` answers 200 with it, and `check-failed` answers 422 as plan 3 answers a write whose check fails, with the result; the errors map by class (`Forbidden` 403, `Conflict` 409, `LodgeError` 400).
   - `export-target` (`target`, an object of `repository`, `branch`, and `remote` (a string or null), or null): `targets.setTarget(project, target, person(<the signed-in person>))`, then `void exporters.written(project)` when the target is not null, and answers `{"target": …}`.
-- `main.ts`, in plan 3's `open(data)`: `SqliteExportTargets` over the opened store; `Exporters` with plan 2's real clock, `storeFor` = `projects.storeFor(project, agent("exporter"))`, `write` = `#git`'s `exportStore`, and `failed` writing `lodge: the export of <project> failed: <message>` on the server's standard error; `moving.projects` = `exportingProjects(projects, exporters)`; `moving.read` = `readStore` then `zeroTwoCoreTable` of its `settings` (`{}` when null), a `CliError` thrown again as a `LodgeError` with its message; and `exporters.start` of every project's name from `accounts.projects()`, not awaited, so `serve` exports what a stopped server left pending.
+- `main.ts`, in plan 3's `open(data)`: `SqliteExportTargets` over the opened store; `Exporters` with the real clock, `storeFor` = the inner `SqliteProjects`' `storeFor(project, agent("exporter"))`, `write` = `#git`'s `exportStore`, and `failed` writing `lodge: the export of <project> failed: <message>` on the server's standard error; `ApiOptions.projects` = `exportingProjects(sqliteProjects, exporters)`, and `lodgesOver` over it; `moving.read` = `readStore` then `zeroTwoCoreTable` of its `settings` (`{}` when null), a `CliError` thrown again as a `LodgeError` with its message; and `exporters.start(await projects.names())`, not awaited, so `serve` exports what a stopped server left pending.
 - `world.ts` and the e2e `server.ts` build `moving` the same way over the in-memory store, with `FixedClock`.
 
 - [ ] **Step 1: Write the failing tests**, each calling the handler with a `Request` and no socket (plan 3's helpers), each repository from `zeroTwoRepository` with `isolateGit()`:

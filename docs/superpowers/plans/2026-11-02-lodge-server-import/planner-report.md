@@ -11,7 +11,7 @@ Tasks 8 (`api`, `main`) and 9 (`cli`, `main`) run beside each other once plans 2
 
 ## Aligned against
 
-Plan 2 at `origin/server-store` 7204ad3 and plan 3 at `origin/server-api` f2dcc72, both still being planned.
+Plan 2 at `origin/server-store` 7204ad3 and plan 3 at `origin/server-api` 3e4c29c, both still being planned.
 The names taken from them are the plan's table "Names this plan consumes from plans 2 and 3"; plan 2's d-pprhpz records the import's path through `Store.publish` from its side, matching d-y42b7b.
 
 ## Rulings recorded
@@ -21,8 +21,7 @@ Replaced while aligning with plan 2: d-bh93bn by d-83kt6y, d-m31e0d by d-ryss91,
 
 ## Concerns for the coordinator
 
-- Plan 3's `project-create` records a `ProjectEntry` in its `Accounts` but does not say that it makes the person the owner in plan 2's `Projects` (`create(project, owner)`); Task 8's import takes the owner from `Projects.members` and stops BLOCKED if the merged code leaves it out.
-- Plan 3's `lodgeFor(project)` gives plan 2's `Lodge` no actor, which plan 2's Task 11 makes required; Task 8 wraps whatever store `lodgeFor` uses.
+- Task 6's `exportingProjects` wraps plan 2's `Projects`; plan 3's Task 4 adds `settings` and `names` to it, whose forwarding Task 8 adds, so a later addition to `Projects` needs the same line.
 - d-sj6hmf says the export reads attachments "through a function `store` adds"; plan 2 now adds `Store.attachmentTexts()` to the port for this, so the plan uses that.
 
 ## For the author
