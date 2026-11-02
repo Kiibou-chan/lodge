@@ -248,13 +248,13 @@
     "ts": ["ts/tests/core/order.test.ts"]
   },
   "tests/core/test_render.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 1,
     "task": ["9b"],
     "ts": ["ts/tests/core/render.test.ts"]
   },
   "tests/core/test_search.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 1,
     "task": ["9b"],
     "ts": ["ts/tests/core/search.test.ts"]
