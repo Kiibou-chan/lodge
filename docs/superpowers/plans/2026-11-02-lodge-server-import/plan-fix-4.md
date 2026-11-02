@@ -36,3 +36,8 @@ Status: done.
 ## Plan 3 shape changes needed
 
 None. Every addition is a new name in plan 3's files: `tomlTable`, the two dispatched operations, the optional `ApiOptions.moving`, and four members of the object `world.ts` returns. Two places depend on plan 3's merged code, and the coordinator names them in Task 8's brief: the file that declares `ApiOptions`, and the way `person.ts` dispatches `approve` and answers its 422.
+
+## Re-pinned during the round
+
+- Plan 3 at `origin/server-api` 9a25b93 rather than 9ac93ac (the coordinator: nothing plan 4 consumes changed, `world.ts` and `testServer()` unchanged); "Aligned against" and the ledger say so.
+- Plan 3's Task 4 now adds `MIGRATIONS[2]` (`user_version` 2 to 3), so Task 7 says a later migration of this plan would be `MIGRATIONS[3]` or later; plan 4 still adds none.

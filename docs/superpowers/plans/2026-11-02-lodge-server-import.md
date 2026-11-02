@@ -14,7 +14,7 @@ Records cross every boundary as path and file text, as lodge 0.2 writes them (d-
 The plan argues from them, never over them; where they disagree with this plan, they win and the builder reports it.
 "Design line N" is a line of the design; "probe N" is an item of `docs/superpowers/plans/2026-11-02-lodge-server-import/probes.md`, whose sources are in `probes/` beside it; "plan 1", "plan 2", and "plan 3" are `docs/superpowers/plans/2026-11-02-lodge-server-core.md`, `…-server-store.md`, and `…-server-api.md`.
 
-**Aligned against:** plan 2 at `origin/server-store` 0244e79 and plan 3 at `origin/server-api` 9ac93ac, one pin each, re-stated at each alignment; the names this plan takes from them are listed below, and the coordinator checks each against the merged code before the task that consumes it.
+**Aligned against:** plan 2 at `origin/server-store` 0244e79 and plan 3 at `origin/server-api` 9a25b93, one pin each, re-stated at each alignment; the names this plan takes from them are listed below, and the coordinator checks each against the merged code before the task that consumes it.
 
 ## Global Constraints
 
@@ -414,7 +414,7 @@ The coordinator does this task itself, outside the sandbox.
 - Consumes: Task 6's `ExportTargets`, `ExportTarget`; plan 2's `LodgeDatabase`, `openDatabase`, `appendEvents`, `actorText`, `stampOf`, `Clock`, `encodeUtf8`, and `decodeUtf8` (Tasks 2, 7a, and 7b).
 - Produces, through `#store`: `SqliteExportTargets implements ExportTargets` (`constructor(database: LodgeDatabase, clock: Clock)`).
 - `setTarget` appends one event of the kind `export-target` for the project, the actor `actorText(by)`, `at` `stampOf(clock.now())`, and the body `encodeUtf8` of the JSON `{"target": …}`; `target(project)` reads the project's newest such event, decodes its body with `decodeUtf8` (d-0q54zn: a `TextDecoder` would turn an escaped byte of a repository path into U+FFFD, correctness review M-3), and gives its target, null when there is none or the newest holds null (d-j5s0h0).
-- The task adds no migration and no derived table; plan 2's `MIGRATIONS[1]` creates the `held` table (with `at`, plan 2's Task 12a), so a migration a later change of this plan needed would be `MIGRATIONS[2]` or later.
+- The task adds no migration and no derived table; plan 2's `MIGRATIONS[1]` creates the `held` table (with `at`, plan 2's Task 12a) and plan 3's `MIGRATIONS[2]` its accounts' tables (`user_version` 2 to 3, plan 3's Task 4), so a migration a later change of this plan needed would be `MIGRATIONS[3]` or later.
 - `applyEvent` gains the case `export-target`, which changes no derived table beyond what it does for every kind, as plan 2's rule for a new kind says ("Interfaces for plans 3 and 4"), so `rebuild` accepts the event.
 - `setTarget` runs in one transaction whose first statement is a write, `update heads set rev = rev where project = :project` (d-thvvzx, plan 2's rule for a store transaction that reads before it writes); no row matched is `NotFound` as plan 2's `Projects` words an unknown project, and nothing is written; then `appendEvents` appends the event, which moves the project's `rev` as every event does, so a publish racing it is `REJECTED` and retried as any racing write is.
 - Task 8's `export-target` answers an unknown project `no-project` before it reaches the store, as `import` does, so this `NotFound` is the store's guard, not an answer the API gives (preflight M8).
