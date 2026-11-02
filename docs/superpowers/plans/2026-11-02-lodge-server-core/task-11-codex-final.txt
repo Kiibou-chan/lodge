@@ -1,0 +1,6 @@
+DONE_WITH_CONCERNS
+
+`sh scripts/check-ts.sh` passed: 568 pass, 4 existing todos, 0 failures.
+
+Five `checkChange` assertions await the checking lane merge.
+Details: [task-11-report.md](docs/superpowers/plans/2026-11-02-lodge-server-core/task-11-report.md).
