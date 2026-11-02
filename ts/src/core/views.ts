@@ -1,5 +1,5 @@
 import type { CheckResult } from "./check-state.ts";
-import { type Derived, isAuthor, orderKey } from "./derive.ts";
+import { compareOrderKeys, type Derived, isAuthor } from "./derive.ts";
 import {
   Action,
   type Decision,
@@ -200,7 +200,11 @@ function flags(
         if (
           who &&
           changes?.length &&
-          orderKey(s.decisions.get(changes[0] as string) as Decision)[0] > orderKey(who)[0]
+          // Equal IDs suppress the tie-break: changed-since compares instants only.
+          compareOrderKeys(s.decisions.get(changes[0] as string) as Decision, {
+            ...who,
+            id: changes[0] as string,
+          }) > 0
         )
           result.push(`rests on ${target}, changed since`);
       }

@@ -9,6 +9,9 @@ export interface CheckResult {
   readonly notes: readonly string[];
   readonly ok: boolean;
 }
+export function checkResult(problems: readonly Problem[], notes: readonly string[]): CheckResult {
+  return { problems, notes, ok: problems.length === 0 };
+}
 export function sortKey(p: Problem): readonly [string, number, string] {
   return [p.path, p.check, p.message];
 }
@@ -144,11 +147,5 @@ export function checkState(s: Snapshot): CheckResult {
       y = sortKey(b);
     return byCodePoint(x[0], y[0]) || x[1] - y[1] || byCodePoint(x[2], y[2]);
   });
-  return {
-    problems: found,
-    notes: [],
-    get ok() {
-      return this.problems.length === 0;
-    },
-  };
+  return checkResult(found, []);
 }

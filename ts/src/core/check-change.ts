@@ -1,6 +1,13 @@
 import { checkEntries } from "./check-entries.ts";
 import { checkImmutable } from "./check-immutable.ts";
-import { type CheckResult, checkState, newDecisions, problemAt, sortKey } from "./check-state.ts";
+import {
+  type CheckResult,
+  checkResult,
+  checkState,
+  newDecisions,
+  problemAt,
+  sortKey,
+} from "./check-state.ts";
 import { derive } from "./derive.ts";
 import { Action, type Problem } from "./model.ts";
 import type { CoreSettings } from "./settings.ts";
@@ -37,14 +44,9 @@ export function checkChange(
       y = sortKey(b);
     return byCodePoint(x[0], y[0]) || x[1] - y[1] || byCodePoint(x[2], y[2]);
   });
-  return {
-    problems,
-    notes,
-    get ok() {
-      return this.problems.length === 0;
-    },
-  };
+  return checkResult(problems, notes);
 }
+
 function* missing(published: Snapshot, after: Snapshot): Generator<Problem> {
   const ids = new Set([
     ...published.decisions.keys(),

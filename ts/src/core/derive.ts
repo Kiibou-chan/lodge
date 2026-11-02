@@ -23,10 +23,10 @@ export interface Derived {
   readonly supports: Links;
   readonly doubts: Links;
 }
-export function orderKey(d: Decision): readonly [number, string] {
+function orderKey(d: Decision): readonly [number, string] {
   return [orderInstant(d.date), d.id];
 }
-function compare(a: Decision, b: Decision): number {
+export function compareOrderKeys(a: Decision, b: Decision): number {
   const [at, ai] = orderKey(a),
     [bt, bi] = orderKey(b);
   return at - bt || byCodePoint(ai, bi);
@@ -82,7 +82,7 @@ function revivedEntries(oldest: readonly Decision[], replacedBy: Links): Map<str
   return found;
 }
 export function derive(s: Snapshot): Derived {
-  const oldest = [...s.decisions.values()].sort(compare);
+  const oldest = [...s.decisions.values()].sort(compareOrderKeys);
   const newest = [...oldest].reverse();
   const replacedBy = reverse(newest, (d) => d.replaces, s.decisions);
   const narrowedBy = reverse(newest, (d) => d.narrows, s.decisions);
@@ -220,7 +220,7 @@ function cleared(s: Snapshot, oldest: readonly Decision[]): Set<string> {
     if (!isAuthor(later) || later.importedFrom !== null) continue;
     for (const id of [...later.confirms, ...later.replaces]) {
       const target = s.decisions.get(id);
-      if (target && compare(target, later) < 0) found.add(id);
+      if (target && compareOrderKeys(target, later) < 0) found.add(id);
     }
   }
   return found;

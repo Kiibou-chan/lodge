@@ -1,6 +1,7 @@
 import { expect, test } from "bun:test";
 import {
   Action,
+  checkResult,
   derive,
   failingIds,
   formatLevel1,
@@ -133,16 +134,15 @@ test("awaiting_flag_on_touched_entry", () => {
 test("failing_ids_maps_paths", () => {
   const [a, b] = [decision({ id: "d-aaaaaa" }), entry({ id: "s-aaaaaa" })];
   const s = snapshotOf([a, b]);
-  const result = {
-    problems: [
+  const result = checkResult(
+    [
       problem({ path: s.paths.get("d-aaaaaa") as string, check: 3, message: "x" }),
       problem({ path: s.paths.get("d-aaaaaa") as string, check: 2, message: "y" }),
       problem({ path: s.paths.get("s-aaaaaa") as string, check: 2, message: "z" }),
       problem({ path: "lodge/spec/storage/_area.md", check: 7, message: "w" }),
     ],
-    notes: [],
-    ok: false,
-  };
+    [],
+  );
   expect(failingIds(s, result)).toEqual(new Set(["d-aaaaaa", "s-aaaaaa"]));
 });
 test("unrecorded_problem_for_unparsable_file", () => {
@@ -154,7 +154,7 @@ test("unrecorded_problem_for_unparsable_file", () => {
     line: 1,
   });
   const held = problem({ path: s.paths.get("d-aaaaaa") as string, check: 3, message: "x" });
-  const result = { problems: [held, broken], notes: [], ok: false };
+  const result = checkResult([held, broken], []);
   expect(unrecordedProblems(s, result)).toEqual([broken]);
   expect(failingIds(s, result)).toEqual(new Set(["d-aaaaaa"]));
 });

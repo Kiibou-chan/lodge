@@ -5,6 +5,7 @@ import {
   confirmableIds,
   confirmationDraft,
   derive,
+  LookupError,
   parseDraft,
   recordFromDraft,
   Scope,
@@ -122,12 +123,7 @@ test.each([[], ["d-aaaaaa", "d-bbbbbb"]].map((c) => [c]))(
   },
 );
 test("confirmation_draft_empty_area_list_keeps_python_index_error", () => {
-  try {
-    confirmationDraft([], Scope.PRODUCT, "Read.", "now", "storage");
-    throw new Error("expected IndexError");
-  } catch (error) {
-    expect(error).toBeInstanceOf(Error);
-    expect((error as Error).name).toBe("IndexError");
-    expect((error as Error).message).toBe("list index out of range");
-  }
+  const call = () => confirmationDraft([], Scope.PRODUCT, "Read.", "now", "storage");
+  expect(call).toThrow(LookupError);
+  expect(call).toThrow("list index out of range");
 });

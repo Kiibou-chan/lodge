@@ -1,8 +1,7 @@
-import { type Derived, isAuthor, orderKey } from "./derive.ts";
+import { compareOrderKeys, type Derived, isAuthor } from "./derive.ts";
 import { LookupError, ValueError } from "./errors.ts";
 import { Action, type Decision, type Scope } from "./model.ts";
 import type { Snapshot } from "./snapshot.ts";
-import { byCodePoint } from "./text.ts";
 import { LINE_BREAKS_AND_TABS, quoted } from "./yamlio.ts";
 
 class IndexError extends LookupError {
@@ -32,11 +31,9 @@ export function behindArea(s: Snapshot, d: Derived, area: string): readonly stri
           ?.changes.some((c) => entries.has(c.entry) && c.action === Action.CREATE) ||
         [...entries].some((e) => d.changedBy.get(e)?.[0] === id),
     )
-    .sort((a, b) => {
-      const [at, ai] = orderKey(s.decisions.get(a) as Decision);
-      const [bt, bi] = orderKey(s.decisions.get(b) as Decision);
-      return at - bt || byCodePoint(ai, bi);
-    });
+    .sort((a, b) =>
+      compareOrderKeys(s.decisions.get(a) as Decision, s.decisions.get(b) as Decision),
+    );
 }
 export function confirmationDraft(
   confirms: readonly string[],
