@@ -1,0 +1,5 @@
+DONE
+
+`sh scripts/check-ts.sh` exited 0: 259 tests passed.
+
+[Report](docs/superpowers/plans/2026-11-02-lodge-server-core/task-3-fix-1-report.md) written. Reviewer’s file untouched. No unresolved concerns.

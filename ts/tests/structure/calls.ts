@@ -19,6 +19,7 @@ const banned = new Set([
   "process",
   "Bun",
   "fetch",
+  "WebSocket",
   "console",
   "setTimeout",
   "setInterval",
@@ -41,6 +42,11 @@ const local = new Set([
 ]);
 const writes = new Set(
   [
+    "createWriteStream",
+    "write",
+    "writev",
+    "link",
+    "mkdtemp",
     "writeFile",
     "appendFile",
     "mkdir",
@@ -72,10 +78,23 @@ export function callViolations(root: string): string[] {
     }
     function visit(node: ts.Node): void {
       if (ts.isIdentifier(node)) {
-        const property = ts.isPropertyAccessExpression(node.parent) && node.parent.name === node;
+        const parent = node.parent;
+        const property =
+          ((ts.isPropertyAccessExpression(parent) ||
+            ts.isPropertyAssignment(parent) ||
+            ts.isPropertySignature(parent) ||
+            ts.isPropertyDeclaration(parent) ||
+            ts.isMethodDeclaration(parent) ||
+            ts.isMethodSignature(parent)) &&
+            parent.name === node) ||
+          (ts.isBindingElement(parent) && parent.propertyName === node);
+        const reportedDate =
+          ts.isPropertyAccessExpression(parent) &&
+          parent.expression === node &&
+          parent.getText(source) === "Date.now";
         if (!property && pure && banned.has(node.text))
           report(node, `${pkg} may not use ${node.text}`);
-        if (!property && pkg === "core" && node.text === "Date")
+        if (!property && !reportedDate && pkg === "core" && node.text === "Date")
           report(node, "core may not use Date");
         if (!property && ["eval", "Function"].includes(node.text)) report(node, "dynamic code");
       }
@@ -95,10 +114,10 @@ export function callViolations(root: string): string[] {
         if (expr.kind === ts.SyntaxKind.ImportKeyword || name === "require")
           report(node, "dynamic import");
         if (
-          pure &&
+          pkg === "app" &&
           name === "Date" &&
           !ts.isTaggedTemplateExpression(node) &&
-          node.arguments?.length !== 1
+          (!ts.isNewExpression(node) || node.arguments?.length !== 1)
         )
           report(node, `${pkg} may not use Date`);
         if (pure && ts.isPropertyAccessExpression(expr) && local.has(attr))
@@ -106,6 +125,7 @@ export function callViolations(root: string): string[] {
         if (
           pkg === "core" &&
           ts.isPropertyAccessExpression(expr) &&
+          name !== "Date.now" &&
           ["now", "today", "utcnow"].includes(attr)
         )
           report(node, `core may not use ${name}`);
@@ -113,9 +133,25 @@ export function callViolations(root: string): string[] {
           report(node, "process spawning outside git");
         if (pkg !== "git" && pkg !== "cli" && name === "Bun.file")
           report(node, "file reading outside git and cli");
-        if (pkg !== "git" && (name === "Bun.write" || writes.has(attr)))
+        const flags = ts.isTaggedTemplateExpression(node) ? undefined : node.arguments?.[1];
+        const writingOpen =
+          ["open", "openSync"].includes(attr) &&
+          (!flags || !ts.isStringLiteralLike(flags) || /[wa+]/u.test(flags.text));
+        const bunFileWrite =
+          ts.isPropertyAccessExpression(expr) &&
+          ts.isCallExpression(expr.expression) &&
+          expr.expression.expression.getText(source) === "Bun.file" &&
+          ["write", "writer", "delete"].includes(attr);
+        if (
+          pkg !== "git" &&
+          (name === "Bun.write" || writes.has(attr) || writingOpen || bunFileWrite)
+        )
           report(node, "file writing outside git");
-        if (pkg !== "api" && ["Bun.serve", "Bun.listen", "Bun.connect"].includes(name))
+        if (
+          (pkg !== "api" && ["Bun.serve", "Bun.listen", "Bun.connect"].includes(name)) ||
+          (["store", "git"].includes(pkg ?? "") &&
+            (name === "fetch" || (ts.isNewExpression(node) && name === "WebSocket")))
+        )
           report(node, "sockets outside api");
       }
       ts.forEachChild(node, visit);
@@ -143,6 +179,10 @@ export function layoutViolations(root: string): string[] {
         .filter((e) => e.isDirectory())
         .map((e) => e.name)
     : [];
+  for (const path of files(root, "src")) {
+    if (path.split("/").length === 2 && path !== "src/main.ts")
+      found.push(`${path}: unknown package ${path.slice(4, -3)}`);
+  }
   for (const pkg of packages) {
     if (!PACKAGES.has(pkg) || pkg === "main") found.push(`src/${pkg}: unknown package ${pkg}`);
     if (!existsSync(`${root}/src/${pkg}/index.ts`)) found.push(`src/${pkg}: missing front door`);

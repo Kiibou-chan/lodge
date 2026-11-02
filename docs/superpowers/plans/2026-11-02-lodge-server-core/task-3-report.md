@@ -39,12 +39,8 @@ First failure: `error: Cannot find module './parity.json'` when loading this fil
 - `ported_files_keep_every_python_test_name`: the initial missing-module failure above.
 - `ported_files_hold_no_todo`: the initial missing-module failure above.
 - `a_ported_file_losing_a_name_fails`: the initial missing-module failure above.
-- `a`: the initial missing-module failure above.
 - `parity_names_read_both_languages`: the initial missing-module failure above.
-- `c %p`: the initial missing-module failure above.
-- `no`: the initial missing-module failure above.
 - `parity_names_ignore_non_test_calls`: added later, failed because the received list included `not a title` and `not a test`, with `9 pass / 1 fail`, before restricting title recognition to direct tests, todos, and invoked each calls.
-- `real %p`: the initial missing-module failure above.
 ### `ts/tests/structure/calls.test.ts`
 
 First failure: `error: Cannot find module './plant.ts'` when loading this file.

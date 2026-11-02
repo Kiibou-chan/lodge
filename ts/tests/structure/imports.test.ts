@@ -4,13 +4,13 @@ import { CORE_NPM } from "./table.ts";
 
 test("core_importing_app", async () => {
   const found = await cruise(plant({ "src/core/a.ts": 'import "#app";', "src/app/index.ts": "" }));
-  expect(found.some((v) => v.startsWith("allowed-imports:"))).toBe(true);
+  expect(found.sort()).toEqual(["allowed-imports: src/core/a.ts -> src/app/index.ts"]);
 });
 test("adapter_importing_adapter", async () => {
   const found = await cruise(
     plant({ "src/cli/a.ts": 'import "#store";', "src/store/index.ts": "" }),
   );
-  expect(found.some((v) => v.startsWith("allowed-imports:"))).toBe(true);
+  expect(found.sort()).toEqual(["allowed-imports: src/cli/a.ts -> src/store/index.ts"]);
 });
 test("import_past_front_door", async () => {
   const found = await cruise(
@@ -19,73 +19,84 @@ test("import_past_front_door", async () => {
       "src/core/check.ts": "",
     }),
   );
-  expect(found.some((v) => v.startsWith("front-door:"))).toBe(true);
+  expect(found.sort()).toEqual(["front-door: src/app/a.ts -> src/core/check.ts"]);
 });
 test("relative_import_leaving_its_package", async () => {
   const found = await cruise(plant({ "src/app/a.ts": 'import "../core/index.ts";' }));
-  expect(found.some((v) => v.startsWith("front-door:"))).toBe(true);
+  expect(found.sort()).toEqual(["front-door: src/app/a.ts -> src/core/index.ts"]);
 });
 test("test_importing_past_front_door", async () => {
   const found = await cruise(
     plant({ "tests/a.ts": 'import "../src/core/x.ts";', "src/core/x.ts": "" }),
   );
-  expect(found.some((v) => v.startsWith("front-door:"))).toBe(true);
+  expect(found.sort()).toEqual(["front-door: tests/a.ts -> src/core/x.ts"]);
 });
 test("cycle_between_modules", async () => {
   const found = await cruise(
     plant({ "src/core/a.ts": 'import "#app";', "src/app/index.ts": 'import "../core/a.ts";' }),
   );
-  expect(found.some((v) => v.startsWith("no-circular:"))).toBe(true);
+  expect(found.sort()).toEqual([
+    "allowed-imports: src/core/a.ts -> src/app/index.ts",
+    "front-door: src/app/index.ts -> src/core/a.ts",
+    "no-circular: src/app/index.ts -> src/core/a.ts",
+  ]);
 });
 test("cycle_within_a_package", async () => {
   const found = await cruise(
     plant({ "src/core/a.ts": 'import "./b.ts";', "src/core/b.ts": 'import "./a.ts";' }),
   );
-  expect(found.some((v) => v.startsWith("no-circular:"))).toBe(true);
+  expect(found.sort()).toEqual(["no-circular: src/core/a.ts -> src/core/b.ts"]);
 });
-test("core_importing_node_builtin", async () => {
-  const found = await cruise(plant({ "src/core/a.ts": 'import "node:fs";' }));
-  expect(found.some((v) => v.startsWith("core-imports:"))).toBe(true);
-});
-test("core_importing_node_builtin", async () => {
-  const found = await cruise(plant({ "src/core/a.ts": 'import "fs";' }));
-  expect(found.some((v) => v.startsWith("core-imports:"))).toBe(true);
+test.each([
+  ["src/core/a.ts", "node:fs"],
+  ["src/core/a.ts", "fs"],
+])("core_importing_node_builtin %p %p", async (path, name) => {
+  const found = await cruise(plant({ [path]: `import "${name}";` }));
+  expect(found.sort()).toEqual(
+    [`core-imports: ${path} -> fs`, `file-confinement: ${path} -> fs`].sort(),
+  );
 });
 test("core_importing_bun_builtin", async () => {
   const found = await cruise(plant({ "src/core/a.ts": 'import "bun:sqlite";' }));
-  expect(found.some((v) => v.startsWith("core-imports:"))).toBe(true);
+  expect(found.sort()).toEqual([
+    "core-imports: src/core/a.ts -> bun:sqlite",
+    "sqlite-confinement: src/core/a.ts -> bun:sqlite",
+  ]);
 });
 test("core_importing_other_npm_package", async () => {
   const found = await cruise(plant({ "src/core/a.ts": 'import "typescript";' }));
-  expect(found.some((v) => v.startsWith("core-imports:"))).toBe(true);
+  expect(found.sort()).toEqual([
+    "core-imports: src/core/a.ts -> node_modules/typescript/lib/typescript.js",
+  ]);
 });
 test("app_importing_builtin", async () => {
   const found = await cruise(plant({ "src/app/a.ts": 'import "node:path";' }));
-  expect(found.some((v) => v.startsWith("app-imports:"))).toBe(true);
+  expect(found.sort()).toEqual(["app-imports: src/app/a.ts -> path"]);
 });
 test("child_process_outside_git", async () => {
   const found = await cruise(plant({ "src/cli/a.ts": 'import "node:child_process";' }));
-  expect(found.some((v) => v.startsWith("process-confinement:"))).toBe(true);
+  expect(found.sort()).toEqual(["process-confinement: src/cli/a.ts -> child_process"]);
 });
 test("sqlite_outside_store", async () => {
   const found = await cruise(plant({ "src/cli/a.ts": 'import "bun:sqlite";' }));
-  expect(found.some((v) => v.startsWith("sqlite-confinement:"))).toBe(true);
+  expect(found.sort()).toEqual(["sqlite-confinement: src/cli/a.ts -> bun:sqlite"]);
 });
-test("fs_outside_git_and_cli", async () => {
-  const found = await cruise(plant({ "src/store/a.ts": 'import "node:fs";' }));
-  expect(found.some((v) => v.startsWith("file-confinement:"))).toBe(true);
-});
-test("fs_outside_git_and_cli", async () => {
-  const found = await cruise(plant({ "src/api/a.ts": 'import "fs/promises";' }));
-  expect(found.some((v) => v.startsWith("file-confinement:"))).toBe(true);
+test.each([
+  ["src/store/a.ts", "node:fs"],
+  ["src/api/a.ts", "fs/promises"],
+])("fs_outside_git_and_cli %p %p", async (path, name) => {
+  const found = await cruise(plant({ [path]: `import "${name}";` }));
+  expect(found.sort()).toEqual(
+    [`file-confinement: ${path} -> ${name.replace("node:", "")}`].sort(),
+  );
 });
 test("http_outside_api", async () => {
   const found = await cruise(plant({ "src/cli/a.ts": 'import "node:http";' }));
-  expect(found.some((v) => v.startsWith("network-confinement:"))).toBe(true);
+  expect(found.sort()).toEqual(["network-confinement: src/cli/a.ts -> http"]);
 });
 test("unresolvable_import", async () => {
   const found = await cruise(plant({ "src/cli/a.ts": 'import "missing-package";' }));
-  expect(found.some((v) => v.startsWith("not-to-unresolvable:"))).toBe(true);
+  expect(found.sort()).toEqual(["not-to-unresolvable: src/cli/a.ts -> missing-package"]);
 });
 const confinedTree = cruise(
   plant({
@@ -122,12 +133,15 @@ test("tests_and_scripts_may_use_files", async () => {
 });
 test("package_may_not_import_main", async () => {
   const found = await cruise(plant({ "src/core/a.ts": 'import "../main.ts";', "src/main.ts": "" }));
-  expect(found.some((v) => v.startsWith("allowed-imports:"))).toBe(true);
+  expect(found.sort()).toEqual([
+    "allowed-imports: src/core/a.ts -> src/main.ts",
+    "front-door: src/core/a.ts -> src/main.ts",
+  ]);
 });
 test("source_cannot_escape_to_tests", async () => {
   expect(
     await cruise(
       plant({ "src/core/a.ts": 'import "../../tests/helper.ts";', "tests/helper.ts": "" }),
     ),
-  ).toContain("front-door: src/core/a.ts -> tests/helper.ts");
+  ).toEqual(["front-door: src/core/a.ts -> tests/helper.ts"]);
 });

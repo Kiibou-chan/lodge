@@ -2,7 +2,9 @@ import { expect, test } from "bun:test";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import parity from "./parity.json";
-import { missingNames, pythonTestNames, todoTitles, typescriptTestTitles } from "./parity-names.ts";
+import { pythonTestNames, rowMissing, todoTitles, typescriptTestTitles } from "./parity-names.ts";
+
+import { plant } from "./structure/plant.ts";
 
 const root = resolve(import.meta.dir, "../..");
 const rows = Object.entries(parity) as [
@@ -40,14 +42,7 @@ test("ported_files_exist", () => {
       for (const p of r.ts) expect(existsSync(`${root}/${p}`)).toBe(true);
 });
 test("ported_files_keep_every_python_test_name", () => {
-  for (const [p, r] of rows)
-    if (r.status === "ported")
-      expect(
-        missingNames(
-          readFileSync(`${root}/${p}`, "utf8"),
-          r.ts.map((p) => readFileSync(`${root}/${p}`, "utf8")).join("\n"),
-        ),
-      ).toEqual([]);
+  for (const [p, r] of rows) if (r.status === "ported") expect(rowMissing(root, p, r)).toEqual([]);
 });
 test("ported_files_hold_no_todo", () => {
   for (const [, r] of rows)
@@ -55,9 +50,11 @@ test("ported_files_hold_no_todo", () => {
       for (const p of r.ts) expect(todoTitles(readFileSync(`${root}/${p}`, "utf8"))).toEqual([]);
 });
 test("a_ported_file_losing_a_name_fails", () => {
-  expect(missingNames("def test_a(): pass\ndef test_b(): pass", 'test("a", () => {})')).toEqual([
-    "b",
-  ]);
+  const fixture = plant({
+    "tests/sample.py": "def test_a(): pass\ndef test_b(): pass",
+    "tests/sample.test.ts": 'test("a", () => {})',
+  });
+  expect(rowMissing(fixture, "tests/sample.py", { ts: ["tests/sample.test.ts"] })).toEqual(["b"]);
 });
 test("parity_names_read_both_languages", () => {
   expect(
