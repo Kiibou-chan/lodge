@@ -85,9 +85,11 @@ export function unsafePattern(node: ts.Node): boolean {
     node.expression.text === "RegExp"
   ) {
     const args = node.arguments;
-    if (!args?.[0] || !ts.isStringLiteralLike(args[0])) return false;
-    pattern = args[0].text;
+    if (!args?.[0]) return false;
+    pattern = ts.isStringLiteralLike(args[0]) ? args[0].text : "";
     flags = args[1] && ts.isStringLiteralLike(args[1]) ? args[1].text : "";
   } else return false;
-  return !flags.includes("u") || flags.includes("m") || /(?<!\\)(?:\\\\)*\\[swdb]/u.test(pattern);
+  return (
+    !flags.includes("u") || flags.includes("m") || /(?<!\\)(?:\\\\)*\\[swdbSWDB]/u.test(pattern)
+  );
 }

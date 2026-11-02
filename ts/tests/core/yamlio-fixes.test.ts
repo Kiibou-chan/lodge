@@ -39,6 +39,13 @@ test.each([
 ])("syntax_precedes_construction %p %p", (text, line) => {
   expect(failure(text as string).line).toBe(line as number);
 });
+test.each([
+  ["a: b\r\nc d\r\ne: f", 3],
+  ["a: b\nc d  \ne: f", 3],
+  ["a:  \nb c\nd: e", 3],
+])("implicit_key_line_skips_blanks_and_crlf %p %p", (text, line) => {
+  expect(failure(text as string).line).toBe(line as number);
+});
 test.each(["*x: y", "a: *x"])("undefined_alias_names_source %p", (text) => {
   expect(failure(text).message).toBe("found undefined alias 'x'");
   expect(failure(text).line).toBe(1);

@@ -88,7 +88,8 @@ export function callViolations(root: string): string[] {
     }
     function visit(node: ts.Node): void {
       if (pkg === "core" && unsafePattern(node)) report(node, "use portable Unicode patterns");
-      if (pure && ts.isMetaProperty(node)) report(node, `${pkg} may not use import.meta`);
+      if (pure && ts.isMetaProperty(node) && node.keywordToken === ts.SyntaxKind.ImportKeyword)
+        report(node, `${pkg} may not use import.meta`);
       if (pkg === "core" && ts.isCatchClause(node) && !guardedCatch(node))
         report(node, "catch must rethrow other errors");
       if (

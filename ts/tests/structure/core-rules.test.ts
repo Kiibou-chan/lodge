@@ -31,6 +31,10 @@ test.each([
   ["/a/mu", true],
   [String.raw`/a\s/u`, true],
   [String.raw`/\w\d\b/u`, true],
+  [String.raw`/\S\W\D\B/u`, true],
+  [String.raw`/\D/u`, true],
+  ["new RegExp(`a$" + "{x}`)", true],
+  ["new RegExp(`a$" + '{x}`, "u")', false],
   ['new RegExp("a")', true],
   ['new RegExp("a", "um")', true],
   [String.raw`new RegExp("\\s", "u")`, true],
@@ -48,4 +52,10 @@ test.each([
   ["xs.toSorted(byCodePoint)", false],
 ])("explicit_sort_comparator %p", (code, refused) => {
   expect(callViolations(plant({ "src/core/a.ts": code })).length > 0).toBe(refused);
+});
+
+test("new_target_is_not_import_meta", () => {
+  expect(callViolations(plant({ "src/core/a.ts": "function f() { return new.target; }" }))).toEqual(
+    [],
+  );
 });

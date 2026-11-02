@@ -104,7 +104,7 @@ export function loadYaml(text: string): unknown {
       error.code === "MULTILINE_IMPLICIT_KEY" ||
       (error.code === "MISSING_CHAR" && error.message.startsWith("Implicit map keys"));
     let position = key?.pos[1] ?? (implicitKey ? error.pos[1] : error.pos[0]);
-    if (implicitKey && text[position] === "\n") position++;
+    if (implicitKey) position += /^[ \t]*\r?\n/u.exec(text.slice(position))?.[0].length ?? 0;
     throw new YamlError(error.message, lineAt(position));
   }
   const document = doc;
