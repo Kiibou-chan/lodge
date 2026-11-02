@@ -62,7 +62,7 @@
     "why": "design line 72: records live in the server's events, not in files in git; a write that loses a race is retried against the store, not a push"
   },
   "tests/core/applying.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 1,
     "task": ["11"],
     "ts": ["ts/tests/core/applying.ts"]
@@ -92,13 +92,13 @@
     "ts": ["ts/tests/core/samples.ts"]
   },
   "tests/core/test_apply.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 1,
     "task": ["11"],
-    "ts": ["ts/tests/core/apply.test.ts"]
+    "ts": ["ts/tests/core/apply.test.ts", "ts/tests/core/apply-edits.test.ts"]
   },
   "tests/core/test_apply_refusals.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 1,
     "task": ["11"],
     "ts": ["ts/tests/core/apply-refusals.test.ts"]

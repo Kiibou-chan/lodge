@@ -1,5 +1,5 @@
 {
-  "entry": ["tests/**/*.test.ts", "scripts/*.ts", "tests/core/builders.ts", "tests/core/checks.ts"],
+  "entry": ["tests/**/*.test.ts", "scripts/*.ts", "tests/core/checks.ts"],
   "project": ["src/**/*.ts", "tests/**/*.ts", "scripts/**/*.ts"],
   "ignoreDependencies": []
 }

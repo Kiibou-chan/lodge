@@ -10,6 +10,7 @@ import {
 } from "./headers.ts";
 import type { Area, Problem, Record } from "./model.ts";
 import { pyRepr } from "./text.ts";
+import { valueRepr } from "./value-repr.ts";
 
 type DraftKind = "decision" | "spec" | "area";
 const KEYS = {
@@ -88,15 +89,4 @@ function name(draft: Draft, key: string, given: string | null): string {
   const found = given !== null ? given : own;
   if (found === null) throw new FormatError(`a new ${draft.kind} draft needs a '${key}' key`, key);
   return found;
-}
-
-function valueRepr(value: unknown): string {
-  if (typeof value === "string") return pyRepr(value);
-  if (value === null) return "None";
-  if (value === true) return "True";
-  if (value === false) return "False";
-  if (Array.isArray(value)) return `[${value.map(valueRepr).join(", ")}]`;
-  if (value instanceof Map)
-    return `{${[...value].map(([key, item]) => `${valueRepr(key)}: ${valueRepr(item)}`).join(", ")}}`;
-  return String(value);
 }

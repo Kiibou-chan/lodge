@@ -12,7 +12,7 @@ import { FormatError, readAreaName } from "./fields.ts";
 import { areaFrom, decisionFrom, specFrom } from "./headers.ts";
 import type { Area, Decision, Imported, Problem, Record, SpecEntry } from "./model.ts";
 import { READ_BACK_FIELDS } from "./read-back-fields.ts";
-import { pyRepr } from "./text.ts";
+import { valueRepr } from "./value-repr.ts";
 import { LINE_BREAKS_AND_TABS, quoted } from "./yamlio.ts";
 
 export function parseRecord(path: string, text: string): Record | Problem {
@@ -98,29 +98,11 @@ function equal(a: unknown, b: unknown): boolean {
     );
   return false;
 }
-function valueRepr(value: unknown): string {
-  if (typeof value === "string") return pyRepr(value);
-  if (value === null) return "None";
-  if (Array.isArray(value))
-    return `(${value.map(valueRepr).join(", ")}${value.length === 1 ? "," : ""})`;
-  if (typeof value === "object") {
-    const get = (key: string) => valueRepr(Reflect.get(value, key));
-    if ("entry" in value && "action" in value)
-      return `Change(entry=${get("entry")}, action=<Action.${String(value.action).toUpperCase()}: ${get("action")}>)`;
-    if ("text" in value && "where" in value && "when" in value)
-      return `Quote(text=${get("text")}, where=${get("where")}, when=${get("when")})`;
-    if ("value" in value && "handle" in value)
-      return `NumberHandle(value=${get("value")}, handle=${get("handle")})`;
-    if ("file" in value && "heading" in value)
-      return `Imported(file=${get("file")}, heading=${get("heading")})`;
-  }
-  return String(value);
-}
 function differing(record: Record | Area, back: Record | Area): string | null {
   const fields = READ_BACK_FIELDS[record.kind];
   for (const key of fields)
     if (!equal(Reflect.get(record, key), Reflect.get(back, key)))
-      return `${key.replace(/[A-Z]/gu, (char) => `_${char.toLowerCase()}`)} reads back as ${valueRepr(Reflect.get(back, key))}`;
+      return `${key.replace(/[A-Z]/gu, (char) => `_${char.toLowerCase()}`)} reads back as ${valueRepr(Reflect.get(back, key), "tuple")}`;
   return record.kind === back.kind ? null : "the kind differs";
 }
 function quoteValue(key: string, value: string, allowed = ""): string {
