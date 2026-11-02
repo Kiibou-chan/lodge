@@ -68,7 +68,7 @@
     "ts": ["ts/tests/core/applying.ts"]
   },
   "tests/core/builders.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 1,
     "task": ["6"],
     "ts": ["ts/tests/core/builders.ts"]
@@ -218,7 +218,7 @@
     "ts": ["ts/tests/core/fileformat.test.ts", "ts/tests/core/fileformat-write.test.ts"]
   },
   "tests/core/test_fileformat_links.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 1,
     "task": ["6"],
     "ts": ["ts/tests/core/fileformat-links.test.ts"]

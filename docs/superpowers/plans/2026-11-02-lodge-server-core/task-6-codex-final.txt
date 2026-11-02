@@ -1,0 +1,7 @@
+DONE
+
+`sh scripts/check-ts.sh` passed: 478 tests passed, 2 required TODOs, 0 failures.
+No implementation concerns.
+
+Report: [task-6-report.md](docs/superpowers/plans/2026-11-02-lodge-server-core/task-6-report.md).
+No commit or push.
