@@ -79,3 +79,8 @@ Task 8c: built by Codex (5cace5c): the 51 carried names each fail against a targ
 Task 9b: built by Codex in lane `server-core-t9b` (c54d421); merged.
 Task 10: built by Codex (616b872), gate green.
 Task 8a: fix round 1 by Codex in lane `server-core-t8afix` (f344014), with 7a D-2 and 7b's Minors, under d-qe513h; the builder stopped on two tests importing `checkResult` past `#core`, and the coordinator exported it through `#core` (`CheckResult` is in `__all__`, so the closing front-door test allows it as its constructor); merged with the 7a fix at d625cf3, gate green (849 TS tests).
+Task 11: closing step by Codex (d-442r2f): `front-door.test.ts` written and seen failing both ways, no plan 1 row `planned` (40 `planned` rows, all of plans 2 to 4), `ts/knip.json`'s `entry` back to Task 2's two patterns; gate green (851 TS tests).
+Task 8c and 9b: review (`task-8c-9b-review.md`): 8c 0 Blocking, 0 Important, 1 Minor; 9b 0 Blocking, 0 Important, 3 Minor; Python and TypeScript agree on all 5,984 values over the repository's 350 records and an edge-text copy (`render_spec` byte for byte, search over 69 queries and 19 filters).
+Parked (8c and 9b, Minor) for the final fix wave: 9b-C-1 (a carried render assertion weaker than Python's, `indexOf` against `text.index`), 9b-C-2, 9b-P-1, and 8c-P-1.
+Task 8c: complete.
+Task 9b: complete.
