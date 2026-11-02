@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 import { Action, type Change, derive, isAuthor, load, tree } from "#core";
-import { at, decision, entry, filesOf } from "./builders.ts";
+import { at, decision, entry, filesOf, snapshotOf as memorySnapshotOf } from "./builders.ts";
 import { snapshotOf } from "./derivation.ts";
 
 test("is_author", () => {
@@ -169,7 +169,7 @@ test("agent_after_author_edit_of_unparsable_entry_flagged", () => {
     "lodge/spec/storage/s-aaaaaa-broken.md",
     "---\nid: s-aaaaaa\nkind: spec\n---\n\nText.\n",
   );
-  const snap = load(tree({ rev: null, files: files, attachments: new Set() }));
+  const snap = load(tree({ rev: null, files, attachments: new Set() }));
   expect(snap.problems.length).toEqual(1);
   const got = derive(snap);
   expect(got.awaitingAuthor).toEqual(new Set(["d-bbbbbb"]));
@@ -185,4 +185,19 @@ test("confirm_dated_before_does_not_clear", () => {
     confirms: ["d-bbbbbb"],
   });
   expect(derive(snapshotOf(author, agent, early)).awaitingAuthor).toEqual(new Set(["d-bbbbbb"]));
+});
+
+test("orders_by_instant_across_offsets_then_by_id", () => {
+  const changes = [{ entry: "s-aaaaaa", action: Action.EDIT }];
+  const at = (id: string, date: string) => decision({ id, date, changes });
+  const got = derive(
+    memorySnapshotOf([
+      entry({ id: "s-aaaaaa" }),
+      at("d-dddddd", "2026-10-28T08:45:00-01:00"),
+      at("d-cccccc", "2026-10-28T09:30:00+00:00"),
+      at("d-bbbbbb", "2026-10-28T10:00:00+01:00"),
+      at("d-aaaaaa", "2026-10-28T09:00:00+00:00"),
+    ]),
+  );
+  expect(got.changedBy.get("s-aaaaaa")).toEqual(["d-dddddd", "d-cccccc", "d-bbbbbb", "d-aaaaaa"]);
 });
