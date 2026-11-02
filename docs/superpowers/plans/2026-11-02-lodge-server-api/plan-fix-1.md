@@ -51,6 +51,9 @@ Status: done; 33 findings: 30 fixed in the plan text, 2 (B-1 of each review) set
 - M-5: `ApiOptions.log` (Task 5); `main` binds it to `process.stderr.write`; Tasks 5 and 6 log through it; `unexpected_error_is_internal_without_detail` reads the world's log.
 - M-6: "Order and lanes": lane D is rebased onto `server-api` after Task 8 merges and its gate rerun before review.
 - M-7: Task 2: help bodies follow argparse's layout at 80 columns as far as the carried tests and probe 6 check, other differences listed in the report.
+
+### Correctness review, remaining
+
 - M-6: Global Constraints' Porting bullet and Review Focus 1 name d-bwb1tt's third substitution (the held add approved, with the held line asserted) and d-81ps01's changes.
 - M-7: Task 7a's guide changes: line 55 says such an add waits for the author's approval and prints `held for approval`, which `guide_is_short_and_covers_the_write_path` looks for; line 26 says only the author writes `--by author` (d-x6vaw8); the count of lines is unchanged.
 - M-8: Task 8's `environment.test.ts` gains `main_clears_yaml_logging_first`, which reads `src/main.ts` with TypeScript's parser.

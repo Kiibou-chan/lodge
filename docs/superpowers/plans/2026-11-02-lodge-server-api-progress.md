@@ -27,3 +27,5 @@ Ruling: the two-week age holds for transitive packages, through `ts/bunfig.toml`
 Ruling: carried tests that rewrote a decision or relayed a person's words do what the server allows (d-81ps01, narrowing d-bwb1tt; probe 8).
 Alignment: plan 2 read at 61f87ad (`origin/server-store`), after its fix round: d-pmaw3a, d-vwsnz5, d-x6vaw8 (STORE-1 pending, option A followed), d-thvvzx, `FixedClock.sleep`, `attachmentTexts`, and `applyEvent`'s `heads` rule.
 No value trade-off for the author, so no `questions.md`.
+Recheck 1 (`plan-recheck-1.md`): 33 resolved; new 0B/2I/4M.
+Fix round 2 by the planner (`plan-fix-2.md`): 6 fixed; `tests/test_wheel.py` back to `planned` in Task 7a; guide line 26 kept; d-j28rp0 and d-d0vca9 cited in place of d-pmaw3a and d-4zg8q3.
