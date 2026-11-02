@@ -15,4 +15,6 @@ Ruling: a person's decision drafted by another is held whole until that person a
 Ruling: a review flag waits for each person whose decision raised it (d-4spcem).
 Ruling: every write is already checked against the state it lands on, proved over the events store (d-fv20kp).
 Ruling: projects and members are events behind a `Projects` port (d-wx7d0f).
+Ruling: the import is checked by its own state check, since it publishes through the store (d-pprhpz, narrowing d-fv20kp after plan 4's d-y42b7b).
+Alignment: plan 3 read at f2dcc72 (`origin/server-api`), plan 4 at 34c12f1 (`origin/server-import`); `Store.attachmentTexts` added for plan 4's export.
 No value trade-off for the author, so no `questions.md`.

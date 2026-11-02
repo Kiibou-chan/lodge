@@ -59,7 +59,7 @@ Every task repeats what it needs of them, so no brief needs this section.
 7. d-kj59bz: a person is a member of the project, people reach the core in `Tree.people`, and the words of lodge 0.2 stay for a person named `author`.
 8. d-znagqe: a person's decision drafted by anyone else is held whole until that person approves or declines it.
 9. d-4spcem: a review flag waits for each person whose decision raised it, and each clears their part.
-10. d-fv20kp: the check on every write needs no new write path; plan 2 proves it over the events store.
+10. d-fv20kp: the check on every write needs no new write path; plan 2 proves it over the events store; d-pprhpz narrows it for plan 4's import, which publishes through the store after its own state check.
 11. d-wx7d0f: projects and their members are events behind the `Projects` port.
 
 ## Review Focus
@@ -94,6 +94,7 @@ export interface Gate { readonly published: Tree; readonly checked: readonly (re
 export interface Store {
   commit(paths: readonly string[], message: string): Promise<Committed>;
   trees(): Promise<readonly [Tree, Tree]>;                 // current, published
+  attachmentTexts(): Promise<ReadonlyMap<string, string>>; // added: every attachment's text by path, for plan 4's export
   freshness(): Promise<string | null>;
   gate(current: Tree): Promise<Gate>;
   publish(base: Tree, writes: ReadonlyMap<string, string>, message: string, approves?: number | null): Promise<PublishOutcome>;  // approves: Task 12
@@ -169,7 +170,7 @@ export interface Tables { events: EventsTable; heads: HeadsTable; files: FilesTa
 
 - The events table (d-wje1cn): `events(seq integer primary key autoincrement, project text not null, at text not null, actor text not null, kind text not null, path text, body blob not null, message text)`, refused `update` and `delete` by two triggers raising `events are append-only` (probe 3); plan 2's kinds are `project`, `member`, `file`, `held`, `approved`, and `declined`, a `file` event's body the file's bytes and every other body UTF-8 JSON.
 - A later plan adds an event kind by adding its case to `applyEvent` of `store/events.ts`, which both a write and `rebuild` run, and a derived table to `Tables`, `openDatabase`'s schema (raising `user_version`), and `rebuild`'s list; nothing ever updates or deletes an event.
-- A record reaches the events only through `Store.publish`, which `app` calls after the check; the importer goes through `Lodge.add` with `importing`, so the check runs on it too (design line 79, d-fv20kp).
+- `Store.publish` runs no check of its own: `app` checks before it calls it (d-fv20kp), and plan 4's import, which publishes a lodge 0.2 store's files through the project's store, checks that store with lodge 0.2's state check first (d-pprhpz, narrowing d-fv20kp); a test that writes through `publish` directly stands for a hand edit of lodge 0.2.
 - The SQLite store answers `trees()` with one tree twice, `gate(current)` with `gate({ published: current, checked: [["", current]] })`, `freshness()` with `null`, and `commit(…)` with `committed({ outcome: CommitOutcome.FAILED, detail: "the server keeps no checkout; its writes are published at once" })`, and `publish` never answers `STAGED` (d-ae1vn5).
 - A person's name is `^[a-z][a-z0-9-]{0,31}$` and a project's `^[a-z0-9][a-z0-9-]{0,62}$` (d-wx7d0f); `decided_by` names a person when it is a member of the project (d-kj59bz).
 
@@ -223,10 +224,11 @@ The coordinator does this task outside the sandbox, since it installs a package 
 
 **Interfaces:**
 - Consumes: plan 1's `#core`.
-- Produces, through `#app`: the ports, errors, and results of "Interfaces for plans 3 and 4" as of this task: `Now`, `Clock`, `IdSource`, `PublishOutcome`, `CommitOutcome`, `Committed` and `committed`, `Gate` and `gate`, `Store` (the five methods of `ports.py`, no `approves`, `hold`, `held`, or `decline` yet), `Actor`, `person`, `agent`, `actorText`, `Role`, `Projects`, `stampOf`, `minuteOf`; `LodgeError`, `NotFound`, `Conflict`, `StaleList`, `coreSettings`; `AddOutcome` (without `HELD`), `Read` and `read`, `Shown`, `Listed` and `listed`, `Added` and `added`, `Written` and `written`, `ThreadList`, `ThreadShown`, `ThreadsWaiting`, `Behind`.
+- Produces, through `#app`: the ports, errors, and results of "Interfaces for plans 3 and 4" as of this task: `Now`, `Clock`, `IdSource`, `PublishOutcome`, `CommitOutcome`, `Committed` and `committed`, `Gate` and `gate`, `Store` (the five methods of `ports.py` and `attachmentTexts`, no `approves`, `hold`, `held`, or `decline` yet), `Actor`, `person`, `agent`, `actorText`, `Role`, `Projects`, `stampOf`, `minuteOf`; `LodgeError`, `NotFound`, `Conflict`, `StaleList`, `coreSettings`; `AddOutcome` (without `HELD`), `Read` and `read`, `Shown`, `Listed` and `listed`, `Added` and `added`, `Written` and `written`, `ThreadList`, `ThreadShown`, `ThreadsWaiting`, `Behind`.
 - The default-filling functions are those of probe 5: `committed` (detail `""`), `gate` (notes `[]`), `read` (statuses an empty `Map`), `listed` (more `0`), `added` (freshness `null`, minted `[]`, paths `[]`), and `written` (committed `null`, about `null`); `Shown` has none, since every call passes all its fields (probe 5).
 - `LodgeError` extends `Error` with `exitCode` 2 and `name` its class name; `Conflict` sets `exitCode` 1, and `StaleList` extends it; `NotFound` extends `LodgeError`.
 - `coreSettings(table)` calls `parseCoreSettings` and throws `new LodgeError(".lodge.toml: " + message)` for a `SettingsError`, as `src/lodge/app/errors.py:28-33`; it shares its name with `#core`'s default-filling `coreSettings`, so `errors.ts` imports that one as `import { coreSettings as defaultCoreSettings }` if it needs it.
+- `Store.attachmentTexts()` is an addition for plan 4's export, which writes every file of the project; `MemoryStore` answers with its files under `lodge/attachments/`.
 - `Actor`, `person`, `agent`, `actorText`, `Role`, `Projects`, `stampOf`, and `minuteOf` are additions (d-kj59bz, d-wx7d0f), declared here so that lanes B and C build on one port: `actorText(person("ada"))` is `"ada"`, `actorText(agent())` is `"agent"`, and `actorText(agent("builder"))` is `"agent builder"`.
 - `time.ts`, exported through `#app` as additions, since the store stamps its events with them (Task 7b):
   ```ts
@@ -389,6 +391,7 @@ The coordinator does this task outside the sandbox, since it installs a package 
 - `SqliteStore(database, project, actor, clock)` implements `Store` (d-ae1vn5):
   - `trees()` reads `heads` and `files` of the project in one transaction; an unknown project throws `NotFound("no project named <project>")`; the tree is `tree({ rev: String(rev), files, attachments })` of `#core`, a path under `lodge/attachments/` listed in `attachments` and never decoded, every other path in `files` as `decodeUtf8` of its bytes; it returns that one tree as both the current and the published state.
   - `publish(base, writes, message)` refuses a path not under `lodge/` with `LodgeError("<path> is outside lodge/")`, encodes every text with `encodeUtf8` first (a `ValueError` becomes `LodgeError("<path>: <message>")`), then in one transaction runs, as its first statement, `update heads set rev = rev where project = :project and rev = :base` (probes 4 and 8): no row matched, or a `base.rev` that is not a decimal, answers `REJECTED` and writes nothing; otherwise it appends one `file` event per path of `writes` in the map's order, each with the message, the actor, and `at` = `stampOf(clock.now())` of `#app`, and answers `PUBLISHED`.
+  - `attachmentTexts()` reads the project's files under `lodge/attachments/` and decodes each with `decodeUtf8`.
   - `freshness()` answers `null`, `gate(current)` `gate({ published: current, checked: [["", current]] })`, and `commit()` the `FAILED` outcome of "Interfaces for plans 3 and 4"; none reads or writes.
 - `SqliteProjects(database, clock)` implements `Projects` (d-wx7d0f):
   - `create(project, owner)` checks both names, then in one transaction refuses an existing project with `Conflict("a project named <project> exists")` and appends a `project` event (`{ owner }`) and a `member` event (`{ person: owner, role: "owner" }`), the actor being the owner;
@@ -399,7 +402,7 @@ The coordinator does this task outside the sandbox, since it installs a package 
 
 - [ ] **Step 1: Write the failing tests.**
   - `projects.test.ts`: `create_writes_the_project_and_its_owner` (two events in order, `members` gives `ada` as owner); `existing_project_conflicts`; `names_are_checked` (`Lodge`, `-x`, and a 64-character project name; `Ada` and `1ada` as persons); `add_member_needs_a_new_name`; `unknown_project_is_not_found`.
-  - `sqlite-store.test.ts`: `trees_give_one_state`; `a_write_is_one_event_per_file` (kind, path, message, actor `ada`, `at` the clock's stamp); `file_bytes_survive_exactly` (a text starting with U+FEFF, CRLF, U+0000, an astral character, and U+DC80, read back equal, the last stored as the byte 0x80; probes 1 and 2); `lone_surrogate_outside_the_escapes_is_refused` (no event written); `stale_base_is_rejected_and_writes_nothing`; `attachments_are_listed_not_read`; `gate_compares_the_current_state_with_itself`; `freshness_is_null_and_commit_is_refused`; `path_outside_lodge_is_refused`; `lodge_adds_through_the_store` (`Lodge` over a `SqliteStore` adds the pair of `ts/tests/app/writes-attach.test.ts`, `PUBLISHED`, and `show` of the new entry reads it).
+  - `sqlite-store.test.ts`: `trees_give_one_state`; `a_write_is_one_event_per_file` (kind, path, message, actor `ada`, `at` the clock's stamp); `file_bytes_survive_exactly` (a text starting with U+FEFF, CRLF, U+0000, an astral character, and U+DC80, read back equal, the last stored as the byte 0x80; probes 1 and 2); `lone_surrogate_outside_the_escapes_is_refused` (no event written); `stale_base_is_rejected_and_writes_nothing`; `attachments_are_listed_not_read` (in `attachments` of the tree, not in `files`, and given back by `attachmentTexts`); `gate_compares_the_current_state_with_itself`; `freshness_is_null_and_commit_is_refused`; `path_outside_lodge_is_refused`; `lodge_adds_through_the_store` (`Lodge` over a `SqliteStore` adds the pair of `ts/tests/app/writes-attach.test.ts`, `PUBLISHED`, and `show` of the new entry reads it).
   - `rebuild.test.ts`: `rebuild_gives_the_same_tables` (after a project, a member, three publishes, one rewriting a path, the rows of `heads`, `files`, and `members` before and after `rebuild` are equal); `rebuild_keeps_every_event`.
 - [ ] **Step 2: Run** `cd ts && bun test tests/store`; expected: the new tests FAIL.
 - [ ] **Step 3: Implement**; take `src/store/events.ts` out of `ts/knip.json`'s `entry`.
@@ -420,6 +423,7 @@ The coordinator does this task outside the sandbox, since it installs a package 
   export class Interleaved implements Store       // tests/gitstore/test_concurrent.py:29-58: runs another Lodge's add once, after the first trees()
   export class Interleaving implements Store      // tests/app/fakes.py's rejectNext and movesAfterRead over any Store
   ```
+  Both pass `attachmentTexts` and every other method they do not change on to the inner store.
   `Interleaving(inner)` counts `attempts` and keeps `publishes` (the writes and message of each `PUBLISHED` answer) as `MemoryStore` does; `rejectNext(...changes)` lands each change through `inner.publish` on a fresh `inner.trees()` before passing the next publish on, so the inner store's compare-and-set rejects it; `movesAfterRead(change)` lands it after the next `trees()`; `files()` reads the inner store's current files.
 - `concurrent.test.ts` keeps the three titles of `tests/gitstore/test_concurrent.py` over the events store, each with Python's assertions on the outcomes and the state:
   - `two_clones_add_at_once`: two `openDatabase` connections on one file in a temporary folder, as two server processes would hold; A's add lands between B's read and B's publish, B's outcomes are `[REJECTED, PUBLISHED]`, and a third connection reads `s-bbbbbb`, `s-cccccc`, and `s-dddddd`, three decisions, the area's order, and `checkState` ok;
