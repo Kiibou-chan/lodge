@@ -91,3 +91,9 @@ Ruling for the final fix wave: d-d0vca9 (replaces d-4zg8q3): the file-writing ru
 Task 8b: complete.
 Task 9a: complete.
 Task 11: complete.
+Task 10, Task 12, and the 8a fix round: review (`task-10-12-8afix-review.md`): Task 10 0 Blocking, 0 Important, 2 Minor, Python and TypeScript `feedback` and `area_feedback` agreeing on 2,426 comparisons; Task 12 0, 0, 2; the 8a fix closes 8a-D-1, 8a-P-1, 8a-D-2, 7b-P-1, 7b-D-1, and 7a-D-2, leaves 8a-P-2 open, and adds 3 Minor.
+Ruling: d-snrhjs (narrows d-qe513h and d-ca6wbw): `checkResult` is a constructor of `#core`'s front door; answers 8afix-D-1.
+Parked (Tasks 10 and 12, the 8a fix round, Minor) for the final fix wave: 12-D-1 first (the differential never compares thread files, `differential.ts:65-73`, `differential_dump.py:65-76`, yet prints "N threads"; compare them, with a made-up store holding threads, or stop counting them), 12-D-2 (`bun test` needs `uv` on PATH), 10-P-1, 10-D-1 (21 surviving `feedback.ts` mutations, each surviving Python too), 8a-P-2 (the duplicate check 8 test at `check-state.test.ts:259`), 8afix-D-2, 8afix-P-1; noted, not raised: a read-only `TMPDIR` breaks the structure tests.
+Task 10: complete.
+Task 12: complete.
+Task 8a: complete.
