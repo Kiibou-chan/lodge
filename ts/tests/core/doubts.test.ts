@@ -3,6 +3,7 @@ import {
   Action,
   type Decision,
   derive,
+  level1,
   Raises,
   type SpecEntry,
   type Thread,
@@ -74,5 +75,34 @@ test("cycle_of_rests_on_does_not_hang", () => {
   const m = marks(a, b, thread({ about: a.id }));
   expect(m.get(b.id)).toEqual([`rests on ${a.id}, in doubt`]);
 });
-test.todo("confirmed_decision_shows_confirmation_and_keeps_decided_by");
-test.todo("flag_order");
+test("confirmed_decision_shows_confirmation_and_keeps_decided_by", () => {
+  const a = decision();
+  const b = decision({ id: "d-bbbbbb", decidedBy: "author", confirms: [a.id] });
+  const s = snapshotOf(a, b);
+  const v = level1(s, derive(s), a.id, new Set<string>());
+  expect(v.flags).toContain("confirmed by the author (d-bbbbbb)");
+  expect(v.decidedBy).toEqual("coordinator");
+});
+test("flag_order", () => {
+  const a = entry();
+  const b = entry({ restsOn: [a.id], importedFrom: { file: "storage.md", heading: "Storage" } });
+  const first = decision({
+    decidedBy: "author",
+    changes: [{ entry: b.id, action: Action.CREATE }],
+    date: at(0),
+  });
+  const edit = decision({
+    changes: [
+      { entry: b.id, action: Action.EDIT },
+      { entry: a.id, action: Action.RETIRE },
+    ],
+    date: at(1),
+  });
+  const s = snapshotOf(a, b, first, edit, thread({ about: b.id }));
+  expect(level1(s, derive(s), b.id, new Set<string>()).flags).toEqual([
+    `awaiting the author on ${edit.id}`,
+    "in doubt",
+    `rests on ${a.id}, retired`,
+    "imported",
+  ]);
+});

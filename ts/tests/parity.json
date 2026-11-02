@@ -182,7 +182,7 @@
     "ts": ["ts/tests/core/derive-links.test.ts"]
   },
   "tests/core/test_doubts.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 1,
     "task": ["7a", "9a"],
     "ts": ["ts/tests/core/doubts.test.ts"]
@@ -266,7 +266,7 @@
     "ts": ["ts/tests/core/settings.test.ts"]
   },
   "tests/core/test_snapshot.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 1,
     "task": ["6", "9a"],
     "ts": ["ts/tests/core/snapshot.test.ts"]
@@ -278,19 +278,19 @@
     "ts": ["ts/tests/core/thread-files.test.ts"]
   },
   "tests/core/test_views.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 1,
     "task": ["9a"],
     "ts": ["ts/tests/core/views.test.ts"]
   },
   "tests/core/test_views_links.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 1,
     "task": ["9a"],
     "ts": ["ts/tests/core/views-links.test.ts"]
   },
   "tests/core/test_views_trust.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 1,
     "task": ["9a"],
     "ts": ["ts/tests/core/views-trust.test.ts"]
