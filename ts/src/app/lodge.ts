@@ -1,8 +1,10 @@
 import type { CheckResult, CoreSettings, Filters, Raises, SpecArea } from "#core";
+import * as confirmations from "./confirm.ts";
 import type { Clock, IdSource, Store } from "./ports.ts";
 import * as reads from "./reads.ts";
 import type {
   Added,
+  Behind,
   Listed,
   Read,
   Shown,
@@ -92,5 +94,15 @@ export class Lodge {
   }
   async threadsWaiting(): Promise<ThreadsWaiting> {
     return threads.waiting(this.wiring);
+  }
+  async confirm(
+    ids: readonly string[],
+    words: string,
+    { area = null, commit = false }: { area?: string | null; commit?: boolean } = {},
+  ): Promise<Written> {
+    return confirmations.confirmDecisions(this.wiring, ids, words, area, commit);
+  }
+  async behindArea(name: string): Promise<readonly Behind[]> {
+    return confirmations.behindArea(this.wiring, name);
   }
 }
