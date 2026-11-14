@@ -6,10 +6,10 @@ import {
   isAuthor,
   level1,
   load,
+  parseRecord,
   parseThread,
   Scope,
   tree,
-  ValueError,
   writeThread,
 } from "#core";
 import { at, decision, filesOf, message, thread } from "./builders.ts";
@@ -93,13 +93,30 @@ test("person_message_needs_where_and_a_minute", () => {
       { ...t, messages: [message({ by: "ada", when: quote.when, where: null })] },
       people,
     ),
-  ).toThrow(ValueError);
+  ).toThrow("the thread would not read back: a message by ada needs where");
   expect(parseThread("thread", text)).toMatchObject({ kind: "problem" });
 });
 test("confirmation_draft_names_the_person", () => {
   const text = confirmationDraft(["d-aaaaaa"], Scope.PRODUCT, "Agreed.", quote.when, null, "ada");
   expect(text).toContain("decided_by: ada\n");
   expect(text).toContain("ada confirms d-aaaaaa.");
+  for (const person of ["a: b", "#ada"]) {
+    const draft = confirmationDraft(
+      ["d-aaaaaa"],
+      Scope.PRODUCT,
+      "Agreed.",
+      quote.when,
+      null,
+      person,
+    );
+    expect(draft).toContain(`decided_by: "${person}"\n`);
+    expect(
+      parseRecord(
+        "draft",
+        draft.replace("kind: decision\n", `kind: decision\nid: d-bbbbbb\ndate: ${at(0)}\n`),
+      ),
+    ).toMatchObject({ kind: "decision", decidedBy: person });
+  }
 });
 test("agent_change_to_a_persons_decision_is_flagged", () => {
   const d = decision({ decidedBy: "ada", quote });
