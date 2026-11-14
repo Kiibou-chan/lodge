@@ -1,0 +1,5 @@
+DONE — committed `16d2366` and pushed to `server-store`.
+
+Tests: `sh scripts/check-ts.sh` passed; 1,218 passed, 2 existing TODOs, 0 failures.
+
+Concerns: the brief mentions three changed parity files; only two matching rows exist. Details and mutation evidence are in [task-9-report.md](docs/superpowers/plans/2026-11-02-lodge-server-store/task-9-report.md).
