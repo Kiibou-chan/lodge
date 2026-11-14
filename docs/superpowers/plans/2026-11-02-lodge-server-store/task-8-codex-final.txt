@@ -1,0 +1,5 @@
+DONE — committed `11806a5` and pushed `server-store-b`.
+
+Tests: `sh scripts/check-ts.sh` passed; 1,125 tests passed.
+
+Concerns: none introduced; the parked caller-base trust issue remains unchanged.
