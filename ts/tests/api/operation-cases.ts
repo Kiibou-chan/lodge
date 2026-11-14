@@ -1,0 +1,47 @@
+export const cases: readonly [string, Record<string, unknown>, string, unknown[]][] = [
+  [
+    "search",
+    {},
+    "search",
+    [
+      "",
+      { kind: null, scope: null, status: "current", area: null, decidedBy: null },
+      { limit: 20 },
+    ],
+  ],
+  ["show", { ref: "ITEM-1" }, "show", ["ITEM-1", { reasoning: false, provenance: false }]],
+  ["waiting", {}, "waitingAll", []],
+  ["timeline", {}, "timeline", [{ limit: 50 }]],
+  ["spec", {}, "spec", [{ area: null }]],
+  ["problems", {}, "problems", []],
+  ["check", {}, "check", [false]],
+  ["draft", { ref: "ITEM-1" }, "draft", ["ITEM-1"]],
+  ["mint", {}, "mint", ["d"]],
+  [
+    "add",
+    { drafts: [["a", "b"]] },
+    "add",
+    [[["a", "b"]], { attachments: [], importing: false, dryRun: false }],
+  ],
+  [
+    "ask",
+    { ref: "ITEM-1", raises: "doubt", by: "builder", text: "why" },
+    "ask",
+    ["ITEM-1", "doubt", "builder", "why", { where: null, when: null }],
+  ],
+  [
+    "reply",
+    { thread: "q-111111", by: "builder", text: "yes" },
+    "reply",
+    ["q-111111", "builder", "yes", { where: null, when: null }],
+  ],
+  [
+    "close",
+    { thread: "q-111111", by: "builder" },
+    "close",
+    ["q-111111", "builder", { text: null, where: null, when: null }],
+  ],
+  ["threads", {}, "threads", []],
+  ["thread", { ref: "q-111111" }, "thread", ["q-111111"]],
+  ["behind-area", { name: "storage" }, "behindArea", ["storage"]],
+];
