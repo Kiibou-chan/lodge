@@ -14,3 +14,11 @@ test("newest_last_uses_instants_and_code_point_ids", () => {
   const b = thread({ id: "q-\u{10000}", opened: "2026-10-28T09:00:00+00:00" });
   expect(newestLast([b, a])).toEqual([a, b]);
 });
+
+test("unescape_breaks_lines_at_newline_only", () => {
+  const text = "x\u2028\\## Message 1\ny\r\\## Message 2\na\u2029\\\\## Message 3";
+  const t = thread({ messages: [message({ text })] });
+  const written = writeThread(t);
+  expect(written).toContain(text);
+  expect(parseThread(threadPath(t.id), written)).toEqual(t);
+});

@@ -1,0 +1,8 @@
+DONE
+
+Tests: `sh scripts/check-ts.sh` passed: 774 pass, 1 existing TODO, 0 fail.
+All 51 carried test names failed against targeted mutations.
+
+[Report](docs/superpowers/plans/2026-11-02-lodge-server-core/task-8c-report.md).
+Concerns: none.
+No reviewer reports edited.

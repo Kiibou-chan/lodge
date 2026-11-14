@@ -10,9 +10,10 @@ import {
 } from "./headers.ts";
 import type { Area, Problem, Record } from "./model.ts";
 import { pyRepr } from "./text.ts";
+import { valueRepr } from "./value-repr.ts";
 
 type DraftKind = "decision" | "spec" | "area";
-const KEYS = {
+const KEYS: { readonly [K in DraftKind]: readonly string[] } = {
   decision: [...DECISION_KEYS, "base"],
   spec: [...SPEC_KEYS, "area", "base"],
   area: [...AREA_KEYS, "name", "base"],
@@ -24,6 +25,7 @@ export interface Draft {
   readonly source: string;
   readonly headerText: string;
 }
+// Checks syntax and key names only.
 export function parseDraft(source: string, text: string): Draft | Problem {
   let headerText = "";
   try {
@@ -38,6 +40,9 @@ export function parseDraft(source: string, text: string): Draft | Problem {
     return problemFor(source, error, headerText);
   }
 }
+// New records receive date; only imports may carry their own date.
+// Existing records receive null and keep their draft date.
+// New entries and areas name themselves; existing ones receive area.
 export function recordFromDraft(
   draft: Draft,
   id: string,
@@ -88,15 +93,4 @@ function name(draft: Draft, key: string, given: string | null): string {
   const found = given !== null ? given : own;
   if (found === null) throw new FormatError(`a new ${draft.kind} draft needs a '${key}' key`, key);
   return found;
-}
-
-function valueRepr(value: unknown): string {
-  if (typeof value === "string") return pyRepr(value);
-  if (value === null) return "None";
-  if (value === true) return "True";
-  if (value === false) return "False";
-  if (Array.isArray(value)) return `[${value.map(valueRepr).join(", ")}]`;
-  if (value instanceof Map)
-    return `{${[...value].map(([key, item]) => `${valueRepr(key)}: ${valueRepr(item)}`).join(", ")}}`;
-  return String(value);
 }

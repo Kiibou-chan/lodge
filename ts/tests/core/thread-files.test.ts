@@ -1,6 +1,9 @@
 import { expect, test } from "bun:test";
 import {
   appended,
+  derive,
+  feedback,
+  lengthGuidance,
   load,
   newestLast,
   type Problem,
@@ -11,7 +14,8 @@ import {
   ValueError,
   writeThread,
 } from "#core";
-import { at, filesOf, message, thread } from "./builders.ts";
+import { at, decision, filesOf, message, snapshotOf, thread } from "./builders.ts";
+import { refused } from "./refused.ts";
 
 function parsed(t: Thread): Thread {
   const p = parseThread(threadPath(t.id), writeThread(t));
@@ -20,7 +24,7 @@ function parsed(t: Thread): Thread {
 }
 function invalid(old: string, value: string): Problem {
   const t = thread();
-  const p = parseThread(threadPath(t.id), writeThread(t).replace(old, value));
+  const p = parseThread(threadPath(t.id), writeThread(t).replaceAll(old, value));
   expect(p.kind).toBe("problem");
   expect((p as Problem).check).toBe(1);
   return p as Problem;
@@ -41,7 +45,7 @@ test.each([
   [true, true],
 ])("empty_text_only_on_the_closing_message %p %p", (closed, first) => {
   const t = thread({ state: closed ? "closed" : "open" });
-  let text = writeThread(t).replace("A message.", "");
+  let text = writeThread(t).replaceAll("A message.", "");
   if (first) text += `\n## Message 2\n\nby: coordinator\nwhen: ${at(1)}\n\nEnd.\n`;
   expect(parseThread(threadPath(t.id), text).kind).toBe("problem");
 });
@@ -101,7 +105,7 @@ test("author_message_needs_where", () =>
     "an author message needs where",
   ));
 test("malformed_id_is_problem_1", () =>
-  expect(parseThread("lodge/threads/q-BAD.md", EXAMPLE.replace("q-4kq1zm", "q-BAD")).kind).toBe(
+  expect(parseThread("lodge/threads/q-BAD.md", EXAMPLE.replaceAll("q-4kq1zm", "q-BAD")).kind).toBe(
     "problem",
   ));
 test("about_must_name_a_decision_or_entry", () =>
@@ -155,8 +159,11 @@ test.each([
 test.each(["A message. ", "A\r\nmessage."].map((c) => [c]))(
   "write_text_error_names_the_field %p",
   (text) => {
-    expect(() => writeThread(thread({ messages: [message({ text })] }))).toThrow(ValueError);
-    expect(() => writeThread(thread({ messages: [message({ text })] }))).toThrow(/message 1 text/u);
+    refused(
+      () => writeThread(thread({ messages: [message({ text })] })),
+      ValueError,
+      /message 1 text/u,
+    );
   },
 );
 test("message_without_metadata_names_the_message", () => {
@@ -164,4 +171,10 @@ test("message_without_metadata_names_the_message", () => {
   expect(p.message).toBe("a message needs by and when");
   expect(p.line).toBe(10);
 });
-test.todo("thread_id_is_not_number_feedback");
+test("thread_id_is_not_number_feedback", () => {
+  const d = decision({ statement: "See q-123456." });
+  const s = snapshotOf([d]);
+  expect(
+    feedback([d], s, derive(s), lengthGuidance()).some((f) => f.message.includes("number")),
+  ).toBe(false);
+});
