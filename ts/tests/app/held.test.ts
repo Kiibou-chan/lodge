@@ -21,6 +21,7 @@ test("another_persons_add_is_held", async () => {
     outcome: AddOutcome.HELD,
     awaits: "ada",
   });
+  expect(await lodge.held()).toMatchObject([{ by: "bo" }]);
 });
 test("a_dry_run_names_who_must_approve", async () => {
   const { lodge } = setup();
@@ -67,4 +68,16 @@ test("a_failing_check_is_not_held", async () => {
   expect(result.outcome).toBe(AddOutcome.CHECK_FAILED);
   expect(result.check.problems.some((p) => p.check === 3)).toBe(true);
   expect(await lodge.held()).toEqual([]);
+});
+
+test("held_adds_are_listed_in_seq_order", async () => {
+  const { lodge } = setup();
+  const first = await lodge.add([["first.md", draft()]]);
+  const second = await lodge.add([["second.md", draft()]]);
+  const seqs = [first.held as number, second.held as number];
+  expect(seqs[0]).toBeLessThan(seqs[1] as number);
+  expect((await lodge.held()).map((hold) => hold.seq)).toEqual(seqs);
+});
+test("held_has_the_public_wire_value", () => {
+  expect(AddOutcome.HELD).toBe("held for approval");
 });

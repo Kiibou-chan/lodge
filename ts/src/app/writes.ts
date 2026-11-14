@@ -60,7 +60,7 @@ export async function add(
   approval: { readonly seq: number; readonly refresh: () => Promise<HeldAdd> } | null = null,
 ): Promise<Added> {
   const parsed = parse(drafts);
-  let request: Request = {
+  const request: Request = {
     drafts: parsed,
     raw: drafts,
     attachments,
@@ -71,18 +71,7 @@ export async function add(
   };
   let first: Snapshot | null = null;
   for (let i = 0; i < ATTEMPTS; i++) {
-    if (approval) {
-      const fresh = await approval.refresh();
-      const parsed = parse(fresh.drafts);
-      request = {
-        ...request,
-        raw: fresh.drafts,
-        drafts: parsed,
-        importing: fresh.importing,
-        attachments: fresh.attachments,
-        attached: attached(fresh.attachments, parsed),
-      };
-    }
+    if (approval) await approval.refresh();
     const state = await readState(w.store);
     first ??= state.snapshot;
     const result = await attempt(w, state, first, request);
@@ -176,7 +165,7 @@ async function attempt(
       held,
     });
   }
-  if (!files.size && request.approves === null)
+  if (!files.size)
     return added({ ids: applied.ids, feedback: notes, check, outcome: AddOutcome.UNCHANGED });
   const outcome = await w.store.publish(
     current,

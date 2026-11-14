@@ -84,6 +84,8 @@ test("a_declined_hold_cannot_be_approved", async () => {
 test("decline_needs_the_person_and_a_reason", async () => {
   const { store, seq, ada, lodge } = await pending();
   await expect(lodge.decline(seq, "No.")).rejects.toThrow(Forbidden);
+  const bo = wired(store, new FixedClock(), new CountingIds(), person("bo"));
+  await expect(bo.decline(seq, " ")).rejects.toThrow(Forbidden);
   await expect(ada.decline(seq, " \n ")).rejects.toThrow(
     new LodgeError("a reason is required; nothing was written"),
   );
@@ -105,5 +107,17 @@ test("a_hold_settled_during_the_last_rejection_is_not_found", async () => {
     new NotFound(`nothing is held under number ${seq}`),
   );
   expect(store.attempts).toBe(3);
+  expect(store.files.size).toBe(0);
+});
+
+test("a_hold_settled_after_the_first_rejection_stops_the_next_attempt", async () => {
+  const { store, seq, ada } = await pending();
+  store.publish = async () => {
+    store.attempts += 1;
+    if (store.attempts === 1) await store.decline(seq, "No.");
+    return "rejected";
+  };
+  await expect(ada.approve(seq)).rejects.toThrow(NotFound);
+  expect(store.attempts).toBe(1);
   expect(store.files.size).toBe(0);
 });

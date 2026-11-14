@@ -1,6 +1,6 @@
 import { cleanText } from "#core";
 import { Forbidden, LodgeError, NotFound } from "./errors.ts";
-import { type Held, type HeldAdd, person } from "./ports.ts";
+import type { Held, HeldAdd } from "./ports.ts";
 import type { Approved } from "./results.ts";
 import type { Wiring } from "./state.ts";
 import { add } from "./writes.ts";
@@ -26,7 +26,7 @@ export async function approve(w: Wiring, seq: number): Promise<Approved> {
   return {
     kind: "add",
     added: await add(
-      { ...w, actor: person(found.person) },
+      w,
       found.drafts,
       {
         importing: found.importing,
