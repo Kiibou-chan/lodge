@@ -13,7 +13,7 @@ import {
 } from "#app";
 import { ATTACHMENTS, decodeUtf8, encodeUtf8, type Tree, ValueError } from "#core";
 import { appendEvents, json } from "./events.ts";
-import { readTree, touchHead } from "./read-tree.ts";
+import { openHold, readTree, touchHead } from "./read-tree.ts";
 import type { LodgeDatabase } from "./schema.ts";
 export class SqliteStore implements Store {
   constructor(
@@ -49,13 +49,7 @@ export class SqliteStore implements Store {
     await this.database.db.transaction().execute(async (tx) => {
       if (!(await touchHead(tx, this.project)))
         throw new NotFound(`no project named ${this.project}`);
-      const held = await tx
-        .selectFrom("held")
-        .select("seq")
-        .where("seq", "=", seq)
-        .where("project", "=", this.project)
-        .where("state", "=", "open")
-        .executeTakeFirst();
+      const held = await openHold(tx, this.project, seq);
       if (!held) throw new NotFound(`nothing is held under number ${seq}`);
       await appendEvents(tx, this.project, this.actor, stampOf(this.clock.now()), [
         { kind: "declined", path: null, body: json({ held: seq, reason }), message: null },
@@ -136,13 +130,7 @@ export class SqliteStore implements Store {
     return this.database.db.transaction().execute(async (tx) => {
       if (!(await touchHead(tx, this.project, Number(base.rev)))) return PublishOutcome.REJECTED;
       if (approves !== null) {
-        const held = await tx
-          .selectFrom("held")
-          .select("seq")
-          .where("seq", "=", approves)
-          .where("project", "=", this.project)
-          .where("state", "=", "open")
-          .executeTakeFirst();
+        const held = await openHold(tx, this.project, approves);
         if (!held) return PublishOutcome.REJECTED;
       }
       const at = stampOf(this.clock.now());

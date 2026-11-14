@@ -34,4 +34,5 @@ test("memory_store_settles_a_hold_once", async () => {
   );
   await expect(store.decline(next, "no")).rejects.toThrow(NotFound);
   expect(await store.held()).toEqual([]);
+  expect(store.declined).toEqual([[seq, "no"]]);
 });

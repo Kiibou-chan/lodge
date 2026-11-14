@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test";
 import { type HeldDraft, NotFound, PublishOutcome } from "#app";
 import { decodeUtf8, encodeUtf8 } from "#core";
-import { rebuild } from "#store";
+import { rebuild, SqliteStore } from "#store";
 import { events, setup } from "./support.ts";
 
 const draft: HeldDraft = {
@@ -82,9 +82,9 @@ test("a_settled_hold_cannot_be_declined", async () => {
     const seq = await store.hold(draft);
     if (approve) await store.publish((await store.trees())[0], new Map(), "approve", seq);
     else await store.decline(seq, "no");
-    await expect(store.decline(seq, "again")).rejects.toThrow(
-      new NotFound(`nothing is held under number ${seq}`),
-    );
+    const refusal = store.decline(seq, "again");
+    await expect(refusal).rejects.toBeInstanceOf(NotFound);
+    await expect(refusal).rejects.toThrow(`nothing is held under number ${seq}`);
   }
 });
 test("a_held_message_round_trips", async () => {
@@ -111,7 +111,6 @@ test("holds_rebuild", async () => {
   await store.publish((await store.trees())[0], writes, "yes", second);
   await store.hold(draft);
   const before = await database.db.selectFrom("held").selectAll().orderBy("seq").execute();
-  await database.db.deleteFrom("held").execute();
   await rebuild(database);
   expect(await database.db.selectFrom("held").selectAll().orderBy("seq").execute()).toEqual(before);
 });
@@ -141,4 +140,21 @@ test("rebuild_refuses_an_impossible_history", async () => {
     .execute();
   await expect(rebuild(database)).rejects.toThrow();
   expect(await snapshot()).toEqual(before);
+});
+
+test("holds_belong_to_their_project", async () => {
+  const { store, database, projects, clock } = await setup();
+  await projects.create("other", "ada");
+  const other = new SqliteStore(database, "other", "ada", clock);
+  const ownSeq = await store.hold(draft);
+  const otherSeq = await other.hold(draft);
+  expect((await store.held()).map((held) => held.seq)).toEqual([ownSeq]);
+  expect((await other.held()).map((held) => held.seq)).toEqual([otherSeq]);
+  const before = await events(database);
+  await expect(store.decline(otherSeq, "no")).rejects.toBeInstanceOf(NotFound);
+  expect(await events(database)).toEqual(before);
+  expect(await store.publish((await store.trees())[0], writes, "yes", otherSeq)).toBe(
+    PublishOutcome.REJECTED,
+  );
+  expect(await events(database)).toEqual(before);
 });

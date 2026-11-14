@@ -12,6 +12,7 @@ import {
   type Now,
   PublishOutcome,
   type Store,
+  stampOf,
 } from "#app";
 import {
   type Area,
@@ -33,6 +34,7 @@ export class MemoryStore implements Store {
   staged: boolean;
   people: ReadonlySet<string>;
   rev = 0;
+  declined: [number, string][] = [];
   private holds = new Map<number, Held>();
   commits: [readonly string[], string][] = [];
   commitResult: Committed = committed({ outcome: CommitOutcome.COMMITTED });
@@ -54,14 +56,15 @@ export class MemoryStore implements Store {
   }
   async hold(draft: HeldDraft): Promise<number> {
     const seq = ++this.rev;
-    this.holds.set(seq, structuredClone({ ...draft, seq, at: "2026-10-29T09:30:00+01:00" }));
+    this.holds.set(seq, structuredClone({ ...draft, seq, at: stampOf(START) }));
     return seq;
   }
   async held(): Promise<readonly Held[]> {
     return structuredClone([...this.holds.values()]);
   }
-  async decline(seq: number, _reason: string): Promise<void> {
+  async decline(seq: number, reason: string): Promise<void> {
     if (!this.holds.delete(seq)) throw new NotFound(`nothing is held under number ${seq}`);
+    this.declined.push([seq, reason]);
     this.rev += 1;
   }
   async commit(paths: readonly string[], message: string): Promise<Committed> {

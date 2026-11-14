@@ -51,3 +51,13 @@ export async function readTree(tx: Transaction<Tables>, project: string): Promis
     people: new Set(owners.map((row) => row.person)),
   });
 }
+
+export async function openHold(tx: Transaction<Tables>, project: string, seq: number) {
+  return tx
+    .selectFrom("held")
+    .select("seq")
+    .where("seq", "=", seq)
+    .where("project", "=", project)
+    .where("state", "=", "open")
+    .executeTakeFirst();
+}
