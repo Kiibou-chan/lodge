@@ -1,10 +1,4 @@
 {
-  "entry": [
-    "tests/**/*.test.ts",
-    "scripts/*.ts",
-    "src/app/state.ts",
-    "src/app/writes.ts",
-    "tests/app/support.ts"
-  ],
+  "entry": ["tests/**/*.test.ts", "scripts/*.ts"],
   "project": ["src/**/*.ts", "tests/**/*.ts", "scripts/**/*.ts"]
 }
