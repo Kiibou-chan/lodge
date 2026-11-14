@@ -10,11 +10,20 @@ import {
   PublishOutcome,
   type Store,
 } from "#app";
-import { type Area, type Decision, instant, type SpecEntry, type Tree, tree } from "#core";
+import {
+  type Area,
+  ATTACHMENTS,
+  type Decision,
+  instant,
+  type SpecEntry,
+  type Tree,
+  tree,
+} from "#core";
 import { filesOf } from "../core/builders.ts";
 
 export const START: Now = { epochMs: instant("2026-10-29T09:30:00+01:00"), offsetMinutes: 60 };
 
+// movesAfterRead and rejectNext land another session’s change before publication.
 export class MemoryStore implements Store {
   files: Map<string, string>;
   published: Map<string, string>;
@@ -48,7 +57,7 @@ export class MemoryStore implements Store {
     return [current, published];
   }
   async attachmentTexts(): Promise<ReadonlyMap<string, string>> {
-    return new Map([...this.files].filter(([path]) => path.startsWith("lodge/attachments/")));
+    return new Map([...this.files].filter(([path]) => path.startsWith(`${ATTACHMENTS}/`)));
   }
   async freshness(): Promise<string | null> {
     return this.stamp;
@@ -106,10 +115,13 @@ export class FixedClock implements Clock {
 }
 export class CountingIds implements IdSource {
   draws = 0;
+  next: number;
   constructor(
-    public next = 1,
+    first = 1,
     public step = 1,
-  ) {}
+  ) {
+    this.next = first;
+  }
   entropy(): Uint8Array {
     this.draws += 1;
     const value = this.next;
