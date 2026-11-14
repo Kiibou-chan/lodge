@@ -38,7 +38,7 @@ test("a_write_is_one_event_per_file", async () => {
       kind: "file",
       path,
       message: "write",
-      actor: "ada",
+      actor: "author",
       at: "2026-10-29T09:30:00+01:00",
     })),
   );

@@ -25,7 +25,7 @@ test.each(["create", "addMember", "publish"])(
     statements.length = 0;
     if (operation === "create") await projects.create("other", "ada");
     else if (operation === "addMember")
-      await projects.addMember("storage", "bo", Role.MEMBER, person("ada"));
+      await projects.addMember("storage", "bo", Role.MEMBER, person("author"));
     else await store.publish(base, new Map([["lodge/a", "a"]]), "");
     const first = statements[0];
     expect(first?.kind).toBe(operation === "create" ? "InsertQueryNode" : "UpdateQueryNode");

@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { agent, Forbidden, LodgeError, person } from "#app";
+import { agent, Forbidden, LodgeError, NotFound, person } from "#app";
 import { Action, derive, load, Raises } from "#core";
 import { decisionText } from "../core/applying.ts";
 import { area, decision, entry } from "../core/builders.ts";
@@ -101,4 +101,36 @@ test("an_agent_edit_of_a_persons_entry_waits", async () => {
   expect(derive(load((await store.trees())[0])).awaitingAuthor.has(result.ids[0] as string)).toBe(
     true,
   );
+});
+
+test("unknown_reference_is_refused_before_impersonation", async () => {
+  const { store, lodge } = setup(person("bo"));
+  await expect(
+    lodge.ask("d-ffffff", Raises.QUESTION, "ada", "Why?", { where: "chat" }),
+  ).rejects.toThrow(NotFound);
+  await expect(lodge.reply("q-ffffff", "ada", "Yes.", { where: "chat" })).rejects.toThrow(NotFound);
+  expect(store.publishes).toEqual([]);
+});
+test("closed_thread_is_refused_before_impersonation", async () => {
+  const { store, lodge } = setup();
+  const question = await lodge.ask("d-aaaaaa", Raises.QUESTION, "ada", "Why?", { where: "chat" });
+  const id = question.ids[0] as string;
+  await lodge.close(id, "ada", { where: "chat" });
+  const before = new Map(store.files);
+  const bo = wired(store, new FixedClock(), new CountingIds(), person("bo"));
+  await expect(bo.reply(id, "ada", "Yes.", { where: "chat" })).rejects.toThrow(`${id} is closed`);
+  expect(store.files).toEqual(before);
+  expect(store.publishes).toHaveLength(2);
+});
+test("an_agent_is_refused_before_reading_state", async () => {
+  const { store, lodge } = setup(agent());
+  let reads = 0;
+  store.trees = async () => {
+    reads += 1;
+    throw new Error("state must not be read");
+  };
+  await expect(lodge.confirm(["d-aaaaaa"], "Read.")).rejects.toThrow(
+    new Forbidden("only a person confirms; nothing was written"),
+  );
+  expect(reads).toBe(0);
 });

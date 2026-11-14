@@ -11,8 +11,8 @@ export async function setup() {
   opened.push(database);
   const clock = new FixedClock();
   const projects = new SqliteProjects(database, clock);
-  await projects.create("storage", "ada");
-  const store = new SqliteStore(database, "storage", "ada", clock);
+  await projects.create("storage", "author");
+  const store = new SqliteStore(database, "storage", "author", clock);
   return { database, projects, store, clock };
 }
 export async function events(database: LodgeDatabase) {

@@ -5,7 +5,7 @@ import { events, setup } from "./support.ts";
 
 async function populated() {
   const context = await setup();
-  await context.projects.addMember("storage", "bo", Role.MEMBER, person("ada"));
+  await context.projects.addMember("storage", "bo", Role.MEMBER, person("author"));
   for (const writes of [
     new Map([
       ["lodge/a", "first"],

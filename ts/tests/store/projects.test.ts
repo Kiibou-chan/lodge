@@ -17,11 +17,11 @@ test("create_writes_the_project_and_its_owner", async () => {
       JSON.parse(new TextDecoder().decode(e.body)),
     ]),
   ).toEqual([
-    ["project", "ada", { owner: "ada" }],
-    ["member", "ada", { person: "ada", role: "owner" }],
+    ["project", "author", { owner: "author" }],
+    ["member", "author", { person: "author", role: "owner" }],
   ]);
-  expect(await projects.members("storage")).toEqual(new Map([["ada", Role.OWNER]]));
-  expect(projects.storeFor("storage", person("ada"))).toBeInstanceOf(SqliteStore);
+  expect(await projects.members("storage")).toEqual(new Map([["author", Role.OWNER]]));
+  expect(projects.storeFor("storage", person("author"))).toBeInstanceOf(SqliteStore);
 });
 test("existing_project_conflicts", async () => {
   const { projects } = await setup();
@@ -30,16 +30,16 @@ test("existing_project_conflicts", async () => {
   );
 });
 test.each([
-  ["Lodge", "ada"],
-  ["-x", "ada"],
-  ["x".repeat(64), "ada"],
+  ["Lodge", "author"],
+  ["-x", "author"],
+  ["x".repeat(64), "author"],
   ["other", "Ada"],
   ["other", "1ada"],
 ])("names_are_checked", async (project, owner) => {
   const { projects, database } = await setup();
   const before = await events(database);
   const expected =
-    owner === "ada"
+    owner === "author"
       ? `${project} is not a project name: ^[a-z0-9][a-z0-9-]{0,62}$`
       : `${owner} is not a person's name: ^[a-z][a-z0-9-]{0,31}$`;
   await expect(projects.create(project, owner)).rejects.toThrow(new LodgeError(expected));
@@ -47,16 +47,16 @@ test.each([
 });
 test("add_member_needs_a_new_name", async () => {
   const { projects, database } = await setup();
-  await projects.addMember("storage", "bo", Role.MEMBER, person("ada"));
+  await projects.addMember("storage", "bo", Role.MEMBER, person("author"));
   expect([...(await projects.members("storage"))]).toEqual([
-    ["ada", Role.OWNER],
+    ["author", Role.OWNER],
     ["bo", Role.MEMBER],
   ]);
-  expect((await events(database)).at(-1)?.actor).toBe("ada");
-  await expect(projects.addMember("storage", "bo", Role.OWNER, person("ada"))).rejects.toThrow(
+  expect((await events(database)).at(-1)?.actor).toBe("author");
+  await expect(projects.addMember("storage", "bo", Role.OWNER, person("author"))).rejects.toThrow(
     "bo is a member of storage",
   );
-  await expect(projects.addMember("storage", "Ada", Role.MEMBER, person("ada"))).rejects.toThrow(
+  await expect(projects.addMember("storage", "Ada", Role.MEMBER, person("author"))).rejects.toThrow(
     LodgeError,
   );
 });
@@ -65,10 +65,10 @@ test("unknown_project_is_not_found", async () => {
   await expect(projects.members("unknown")).rejects.toThrow(
     new NotFound("no project named unknown"),
   );
-  await expect(projects.addMember("unknown", "bo", Role.MEMBER, person("ada"))).rejects.toThrow(
+  await expect(projects.addMember("unknown", "bo", Role.MEMBER, person("author"))).rejects.toThrow(
     NotFound,
   );
-  await expect(new SqliteStore(database, "unknown", "ada", clock).trees()).rejects.toThrow(
+  await expect(new SqliteStore(database, "unknown", "author", clock).trees()).rejects.toThrow(
     NotFound,
   );
 });
@@ -78,7 +78,7 @@ test("a_second_create_conflicts_across_connections", async () => {
   const b = await openDatabase(join(folder, "store.db"));
   try {
     const clock = new FixedClock();
-    await new SqliteProjects(a, clock).create("storage", "ada");
+    await new SqliteProjects(a, clock).create("storage", "author");
     await expect(new SqliteProjects(b, clock).create("storage", "bo")).rejects.toThrow(Conflict);
   } finally {
     await a.close();
@@ -101,8 +101,8 @@ test("a_name_used_as_a_role_cannot_join", async () => {
     ["reviewer", "d-aaaaaa"],
     ["builder", "q-aaaaaa"],
   ] as const)
-    await expect(projects.addMember("storage", name, Role.MEMBER, person("ada"))).rejects.toThrow(
-      `${name} is a role in ${id}, so it cannot name a person`,
-    );
+    await expect(
+      projects.addMember("storage", name, Role.MEMBER, person("author")),
+    ).rejects.toThrow(`${name} is a role in ${id}, so it cannot name a person`);
   expect(await events(database)).toEqual(before);
 });

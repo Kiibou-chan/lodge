@@ -91,8 +91,6 @@ export async function writeMessage(
       now = w.clock.now(),
       msg = message(now, state.snapshot.people, by, text, where, when, close),
       s = state.snapshot;
-    if (s.people.has(by) && w.actor.kind === "person" && w.actor.name !== by)
-      throw new Forbidden(`only ${by} writes as ${by}; nothing was written`);
     let thread: Thread, description: string;
     if (raises !== null) {
       const about = resolveRef(state, ref),
@@ -117,6 +115,8 @@ export async function writeMessage(
       thread = appended(thread, msg, close);
       description = close ? `closed by ${by}` : `${by} reply`;
     }
+    if (s.people.has(by) && w.actor.kind === "person" && w.actor.name !== by)
+      throw new Forbidden(`only ${by} writes as ${by}; nothing was written`);
     const path = threadPath(thread.id);
     let content: string;
     try {

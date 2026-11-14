@@ -49,8 +49,8 @@ export async function confirmDecisions(
   if (words.includes("\r\n"))
     throw new LodgeError("your words hold a character lodge cannot store");
   if (!words) throw new LodgeError("your words are required; nothing was written");
-  const state = await readState(w.store);
   if (w.actor.kind !== "person") throw new Forbidden("only a person confirms; nothing was written");
+  const state = await readState(w.store);
   if (!state.snapshot.people.has(w.actor.name))
     throw new Forbidden("only an owner of the project confirms; nothing was written");
   const expected = expectedIds(state, ids, area);
