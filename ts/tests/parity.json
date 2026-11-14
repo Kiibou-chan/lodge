@@ -36,13 +36,14 @@
   },
   "tests/app/test_thread_fix_paths.py": {
     "status": "planned",
-    "plan": 2,
+    "plan": 3,
     "ts": ["ts/tests/app/thread-fix-paths.test.ts"]
   },
   "tests/app/test_thread_ops.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 2,
-    "ts": ["ts/tests/app/thread-ops.test.ts"]
+    "ts": ["ts/tests/app/thread-ops.test.ts", "ts/tests/app/thread-ops-publish.test.ts"],
+    "task": ["5"]
   },
   "tests/app/test_writes.py": {
     "status": "ported",
