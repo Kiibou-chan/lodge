@@ -1,0 +1,6 @@
+DONE_WITH_CONCERNS: Implemented, committed as `f194667`, and pushed to `server-store-b`.
+
+Tests: `sh scripts/check-ts.sh` passed; 973 tests, 0 failures.
+
+Concern: Corrected an existing hash expectation that conflicted with the required byte-preserving behaviour.
+Details in [task-7a-report.md](docs/superpowers/plans/2026-11-02-lodge-server-store/task-7a-report.md).
