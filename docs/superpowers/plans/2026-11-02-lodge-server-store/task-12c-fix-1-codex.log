@@ -808,10 +808,10 @@ find: ‘../systemd-private-1d0e9058960d426fbdcfec615fbd59b6-upower.service-GqHn
 find: ‘../systemd-private-1d0e9058960d426fbdcfec615fbd59b6-power-profiles-daemon.service-Q8y6UK’: Permission denied
 find: ‘../systemd-private-1d0e9058960d426fbdcfec615fbd59b6-geoclue.service-FlSyiw’: Permission denied
 find: ‘../systemd-private-1d0e9058960d426fbdcfec615fbd59b6-iio-sensor-proxy.service-CazOwL’: Permission denied
-find: ‘../<build-dir>/codex-desktop-linux/pkg’: Permission denied
+find: ‘../pamac-build-user/codex-desktop-linux/pkg’: Permission denied
 find: ‘../systemd-private-1d0e9058960d426fbdcfec615fbd59b6-bluetooth.service-IwDOXN’: Permission denied
 find: ‘../systemd-private-1d0e9058960d426fbdcfec615fbd59b6-systemd-logind.service-KkH9na’: Permission denied
-../<build-dir>/codex-desktop-linux/src/codex-desktop-linux/AGENTS.md
+../pamac-build-user/codex-desktop-linux/src/codex-desktop-linux/AGENTS.md
 
 codex
 The review identifies missing test coverage for behaviour the code already supports. I’ll add those assertions, verify that each named mutation fails, then refactor the approval and hold code.
