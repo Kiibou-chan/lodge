@@ -1,0 +1,8 @@
+Implemented and pushed as `d34be5b` on `server-store`.
+
+- Fixed I-1 and M-1 through M-5.
+- Confirmed all eight mutations fail the relevant tests.
+- `sh scripts/check-ts.sh`: 1271 pass, 2 todo, 0 fail.
+- Left M-6 and M-7 for plan 3.
+
+[Report](docs/superpowers/plans/2026-11-02-lodge-server-store/task-12b-fix-1-report.md)
