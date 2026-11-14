@@ -33,7 +33,8 @@
     "status": "changed",
     "plan": 2,
     "ts": ["ts/tests/app/reads-published.test.ts"],
-    "why": "design line 79: the check runs on every write, and the published state becomes the server's current state"
+    "why": "design line 79: the check runs on every write, and the published state becomes the server's current state",
+    "task": ["9"]
   },
   "tests/app/test_thread_fix_paths.py": {
     "status": "planned",
@@ -68,7 +69,8 @@
     "status": "changed",
     "plan": 2,
     "ts": ["ts/tests/app/writes-retry.test.ts"],
-    "why": "design line 72: records live in the server's events, not in files in git; a write that loses a race is retried against the store, not a push"
+    "why": "design line 72: records live in the server's events, not in files in git; a write that loses a race is retried against the store, not a push",
+    "task": ["9"]
   },
   "tests/core/applying.py": {
     "status": "ported",

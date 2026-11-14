@@ -38,15 +38,17 @@ test("planned_rows_name_a_plan", () => {
 });
 test("ported_files_exist", () => {
   for (const [, r] of rows)
-    if (r.status === "ported" || (r.status === "changed" && r.plan === 1))
+    if (r.status === "ported" || (r.status === "changed" && [1, 2].includes(r.plan ?? 0)))
       for (const p of r.ts) expect(existsSync(`${root}/${p}`)).toBe(true);
 });
 test("ported_files_keep_every_python_test_name", () => {
-  for (const [p, r] of rows) if (r.status === "ported") expect(rowMissing(root, p, r)).toEqual([]);
+  for (const [p, r] of rows)
+    if (r.status === "ported" || (r.status === "changed" && r.plan === 2))
+      expect(rowMissing(root, p, r)).toEqual([]);
 });
 test("ported_files_hold_no_todo", () => {
   for (const [, r] of rows)
-    if (r.status === "ported")
+    if (r.status === "ported" || (r.status === "changed" && r.plan === 2))
       for (const p of r.ts) expect(todoTitles(readFileSync(`${root}/${p}`, "utf8"))).toEqual([]);
 });
 test("a_ported_file_losing_a_name_fails", () => {
