@@ -7,6 +7,7 @@ import {
   type SpecEntry,
   type Thread,
 } from "./model.ts";
+import { AUTHOR_ONLY } from "./people.ts";
 import { byCodePoint } from "./text.ts";
 import { parseThread } from "./threads.ts";
 export type Files = ReadonlyMap<string, string>;
@@ -15,9 +16,12 @@ export interface Tree {
   readonly rev: string | null;
   readonly files: Files;
   readonly attachments: ReadonlySet<string>;
+  readonly people: ReadonlySet<string>;
 }
-export function tree(value: Omit<Tree, "attachments"> & Partial<Pick<Tree, "attachments">>): Tree {
-  return { attachments: new Set(), ...value };
+export function tree(
+  value: Omit<Tree, "attachments" | "people"> & Partial<Pick<Tree, "attachments" | "people">>,
+): Tree {
+  return { attachments: new Set(), people: AUTHOR_ONLY, ...value };
 }
 export interface Snapshot {
   readonly decisions: ReadonlyMap<string, Decision>;
@@ -26,6 +30,7 @@ export interface Snapshot {
   readonly paths: ReadonlyMap<string, string>;
   readonly problems: readonly Problem[];
   readonly attachments: ReadonlySet<string>;
+  readonly people: ReadonlySet<string>;
   readonly threads: ReadonlyMap<string, Thread>;
 }
 export const ATTACHMENTS = "lodge/attachments/";
@@ -49,14 +54,15 @@ export function load(tree: Tree): Snapshot {
       attachments.add(path);
       continue;
     }
-    if (THREAD_FILE.test(path)) keepThread(path, parseThread(path, text), threads, paths, problems);
+    if (THREAD_FILE.test(path))
+      keepThread(path, parseThread(path, text, tree.people), threads, paths, problems);
     else if (AREA_FILE.test(path)) keepArea(parseArea(path, text), areas, problems);
     else if (DECISION_FILE.test(path) || SPEC_FILE.test(path))
       keepRecord(path, parseRecord(path, text), decisions, entries, paths, problems);
     else if (path.startsWith("lodge/") && !path.endsWith("/.gitkeep"))
       problems.push(problem({ path, check: 1, message: STRAY }));
   }
-  return { decisions, entries, areas, paths, problems, attachments, threads };
+  return { decisions, entries, areas, paths, problems, attachments, threads, people: tree.people };
 }
 
 const THREAD_FILE = /^lodge\/threads\/[^/]+\.md$/u;

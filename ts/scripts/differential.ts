@@ -19,6 +19,7 @@ import {
   renderSpec,
   search,
   splitWords,
+  tree,
   writeArea,
   writeRecord,
   writeThread,
@@ -40,7 +41,7 @@ const table = Bun.TOML.parse(await readFile(join(root, ".lodge.toml"), "utf8"));
 parseCoreSettings(
   Object.fromEntries(Object.entries(table).filter(([key]) => ["length", "import"].includes(key))),
 );
-const snapshot = load({ rev: null, files, attachments: new Set() });
+const snapshot = load(tree({ rev: null, files, attachments: new Set() }));
 const derived = derive(snapshot);
 const checked = checkState(snapshot);
 const failing = failingIds(snapshot, checked);
@@ -73,9 +74,9 @@ for (const [path, text] of files) {
     if (record.kind === "problem") continue;
     written = writeRecord(record);
   } else if (/^lodge\/threads\/[^/]+\.md$/u.test(path)) {
-    const thread = parseThread(path, text);
+    const thread = parseThread(path, text, snapshot.people);
     if (thread.kind === "problem") continue;
-    written = writeThread(thread);
+    written = writeThread(thread, snapshot.people);
   } else continue;
   rewrite[path] = [new Bun.CryptoHasher("sha256").update(written).digest("hex"), written === text];
 }

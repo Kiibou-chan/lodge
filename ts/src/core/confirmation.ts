@@ -1,6 +1,7 @@
 import { compareOrderKeys, type Derived, isAuthor } from "./derive.ts";
 import { LookupError, ValueError } from "./errors.ts";
 import { Action, type Decision, type Scope } from "./model.ts";
+import { confirmationWords } from "./people.ts";
 import type { Snapshot } from "./snapshot.ts";
 import { LINE_BREAKS_AND_TABS, quoted } from "./yamlio.ts";
 
@@ -16,7 +17,7 @@ export function confirmableIds(s: Snapshot, d: Derived): ReadonlySet<string> {
     [...s.decisions]
       .filter(
         ([id, decision]) =>
-          !isAuthor(decision) && d.status.get(id) === "current" && !d.confirmedBy.has(id),
+          !isAuthor(decision, s.people) && d.status.get(id) === "current" && !d.confirmedBy.has(id),
       )
       .map(([id]) => id),
   );
@@ -41,6 +42,7 @@ export function confirmationDraft(
   words: string,
   when: string,
   area: string | null,
+  person = "author",
 ): string {
   if (area === null && confirms.length !== 1)
     throw new ValueError("a confirmation without an area needs one decision");
@@ -57,8 +59,8 @@ export function confirmationDraft(
   const text = quoted(words, LINE_BREAKS_AND_TABS);
   return (
     `---\nkind: decision\ntitle: ${quoted(title)}\nscope: ${scope}\n` +
-    `decided_by: author\nconfirms: [${ids}]\n` +
+    `decided_by: ${person}\nconfirms: [${ids}]\n` +
     `quote: {text: ${text}, where: ${quoted(VIEWER)}, when: ${quoted(when)}}\n---\n\n` +
-    `The author confirms ${listed}.\n\n## Reasoning\n\n${words}\n`
+    `${confirmationWords(person)} confirms ${listed}.\n\n## Reasoning\n\n${words}\n`
   );
 }

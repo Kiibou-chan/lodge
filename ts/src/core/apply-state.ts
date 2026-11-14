@@ -65,7 +65,13 @@ function restored(add: Add): string[] {
   const was = derive(add.current).status;
   if (![...was.values()].includes("retired")) return [];
   const now = derive(
-    load(tree({ rev: add.tree.rev, files: new Map([...add.tree.files, ...add.files]) })),
+    load(
+      tree({
+        people: add.tree.people,
+        rev: add.tree.rev,
+        files: new Map([...add.tree.files, ...add.files]),
+      }),
+    ),
   ).status;
   return [...add.current.entries.keys()]
     .filter((id) => was.get(id) === "retired" && now.get(id) === "current")

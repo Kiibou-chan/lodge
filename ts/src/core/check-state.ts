@@ -2,6 +2,7 @@ import { checkAreas } from "./check-areas.ts";
 import { checkCycles } from "./check-cycles.ts";
 import { isAuthor } from "./derive.ts";
 import { type Decision, type Problem, problem, type Record } from "./model.ts";
+import { confirmsWords, quoteWords, roleWords } from "./people.ts";
 import { attachmentPath, type Snapshot } from "./snapshot.ts";
 import { byCodePoint, casefold, strip } from "./text.ts";
 export interface CheckResult {
@@ -96,21 +97,11 @@ function* attachments(s: Snapshot): Generator<Problem> {
 }
 function* quotes(s: Snapshot): Generator<Problem> {
   for (const d of decisions(s)) {
-    if (!isAuthor(d) && casefold(strip(d.decidedBy)).includes("author"))
-      yield problemAt(
-        s,
-        d.id,
-        3,
-        `decided_by is ${d.decidedBy}; write author exactly, with a quote, or use your own role`,
-      );
-    if (!isAuthor(d) || d.importedFrom !== null) continue;
+    if (!isAuthor(d, s.people) && casefold(strip(d.decidedBy)).includes("author"))
+      yield problemAt(s, d.id, 3, roleWords(d.decidedBy, s.people));
+    if (!isAuthor(d, s.people) || d.importedFrom !== null) continue;
     if (d.quote === null) {
-      yield problemAt(
-        s,
-        d.id,
-        3,
-        "decided_by is author, but there is no quote; add quote: {text, where, when} with the author's words, or record it under your own role",
-      );
+      yield problemAt(s, d.id, 3, quoteWords(d.decidedBy));
       continue;
     }
     for (const [key, value] of [
@@ -122,13 +113,8 @@ function* quotes(s: Snapshot): Generator<Problem> {
 }
 function* confirmations(s: Snapshot): Generator<Problem> {
   for (const d of decisions(s))
-    if (d.confirms.length && !isAuthor(d))
-      yield problemAt(
-        s,
-        d.id,
-        3,
-        `confirms is for author decisions, but decided_by is ${d.decidedBy}`,
-      );
+    if (d.confirms.length && !isAuthor(d, s.people))
+      yield problemAt(s, d.id, 3, confirmsWords(d.decidedBy, s.people));
 }
 export function checkState(s: Snapshot): CheckResult {
   const found = [

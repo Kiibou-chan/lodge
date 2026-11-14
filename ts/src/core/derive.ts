@@ -1,5 +1,6 @@
 import { doubtMarks } from "./doubts.ts";
 import { Action, type Decision } from "./model.ts";
+import { AUTHOR_ONLY } from "./people.ts";
 import type { Snapshot } from "./snapshot.ts";
 import { orderInstant } from "./stamps.ts";
 import { byCodePoint } from "./text.ts";
@@ -99,7 +100,11 @@ export function derive(s: Snapshot): Derived {
     ]),
   );
   const changedBy = reverse(newest, (d) => touches.get(d.id) ?? [], s.entries);
-  const confirmedBy = reverse(newest, (d) => (isAuthor(d) ? d.confirms : []), s.decisions);
+  const confirmedBy = reverse(
+    newest,
+    (d) => (isAuthor(d, s.people) ? d.confirms : []),
+    s.decisions,
+  );
   const retired = new Set(
     oldest
       .filter((d) => !replacedBy.has(d.id))
@@ -110,13 +115,13 @@ export function derive(s: Snapshot): Derived {
   for (const id of s.entries.keys()) status.set(id, retired.has(id) ? "retired" : "current");
   const changes = new Map<string, Decision[]>();
   for (const d of oldest) for (const entry of touches.get(d.id) ?? []) append(changes, entry, d);
-  const hers = confirmedByHer(oldest);
+  const hers = confirmedByHer(oldest, s.people);
   const awaitingAuthor = flagged(s, oldest, touches, changes, hers);
   const touchedByFlagged = new Map<string, string[]>();
   for (const d of newest) {
     if (!awaitingAuthor.has(d.id)) continue;
     const entries = touches.get(d.id) ?? [];
-    const behind = behindEntryEdits(d, entries, changes, countsFor(d, hers), replacedBy);
+    const behind = behindEntryEdits(d, entries, changes, countsFor(d, hers, s.people), replacedBy);
     const targets = new Set([...d.replaces, ...d.narrows, ...entries, ...behind]);
     for (const target of [...targets].sort(byCodePoint))
       if (s.decisions.has(target) || s.entries.has(target)) append(touchedByFlagged, target, d.id);
@@ -150,18 +155,22 @@ export function derive(s: Snapshot): Derived {
   };
 }
 
-export function isAuthor(d: Decision): boolean {
-  return d.decidedBy === "author";
+export function isAuthor(d: Decision, people = AUTHOR_ONLY): boolean {
+  return people.has(d.decidedBy);
 }
-function confirmedByHer(oldest: readonly Decision[]): Set<string> {
+function confirmedByHer(oldest: readonly Decision[], people: ReadonlySet<string>): Set<string> {
   return new Set(
-    oldest.filter((d) => isAuthor(d) && d.importedFrom === null).flatMap((d) => d.confirms),
+    oldest.filter((d) => isAuthor(d, people) && d.importedFrom === null).flatMap((d) => d.confirms),
   );
 }
 // An imported decision is flagged only by non-imported ones.
-function countsFor(d: Decision, hers: ReadonlySet<string>): (other: Decision) => boolean {
+function countsFor(
+  d: Decision,
+  hers: ReadonlySet<string>,
+  people: ReadonlySet<string>,
+): (other: Decision) => boolean {
   return (other) =>
-    (isAuthor(other) || hers.has(other.id)) &&
+    (isAuthor(other, people) || hers.has(other.id)) &&
     (d.importedFrom === null || other.importedFrom === null);
 }
 function behindEntryEdits(
@@ -191,16 +200,16 @@ function flagged(
   const clearedIds = cleared(s, oldest);
   const undone = new Set<string>();
   for (const later of oldest) {
-    if (!isAuthor(later) || later.importedFrom !== null) continue;
+    if (!isAuthor(later, s.people) || later.importedFrom !== null) continue;
     for (const target of later.replaces) {
       const other = s.decisions.get(target);
-      if (other && !isAuthor(other) && !hers.has(target)) undone.add(target);
+      if (other && !isAuthor(other, s.people) && !hers.has(target)) undone.add(target);
     }
   }
   const found = new Set<string>();
   for (const d of oldest) {
-    if (clearedIds.has(d.id) || (isAuthor(d) && d.importedFrom === null)) continue;
-    const counts = countsFor(d, hers);
+    if (clearedIds.has(d.id) || (isAuthor(d, s.people) && d.importedFrom === null)) continue;
+    const counts = countsFor(d, hers, s.people);
     const touchesAuthor = [...d.replaces, ...d.narrows].some((t) => {
       const other = s.decisions.get(t);
       return other !== undefined && counts(other);
@@ -217,7 +226,7 @@ function flagged(
 function cleared(s: Snapshot, oldest: readonly Decision[]): Set<string> {
   const found = new Set<string>();
   for (const later of oldest) {
-    if (!isAuthor(later) || later.importedFrom !== null) continue;
+    if (!isAuthor(later, s.people) || later.importedFrom !== null) continue;
     for (const id of [...later.confirms, ...later.replaces]) {
       const target = s.decisions.get(id);
       if (target && compareOrderKeys(target, later) < 0) found.add(id);

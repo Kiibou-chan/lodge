@@ -98,6 +98,7 @@ export function snapshotOf(
   } = {},
 ): Snapshot {
   return {
+    people: new Set(["author"]),
     decisions: new Map(items.filter((i) => i.kind === "decision").map((i) => [i.id, i])),
     entries: new Map(items.filter((i) => i.kind === "spec").map((i) => [i.id, i])),
     areas: new Map(items.filter((i) => i.kind === "area").map((i) => [i.name, i])),

@@ -61,7 +61,7 @@ export function level1(s: Snapshot, d: Derived, id: string, failing: ReadonlySet
     scope: record.kind === "decision" ? record.scope : null,
     area: record.kind === "spec" ? record.area : null,
     flags: flags(s, d, record, who, failing),
-    quote: who && isAuthor(who) ? who.quote : null,
+    quote: who && isAuthor(who, s.people) ? who.quote : null,
   };
 }
 export function level2(s: Snapshot, d: Derived, id: string, failing: ReadonlySet<string>): string {
@@ -204,7 +204,7 @@ function flags(
     }
   if (record.importedFrom !== null) {
     result.push("imported");
-    if (record.kind === "decision" && record.decidedBy === "author" && record.quote === null)
+    if (record.kind === "decision" && isAuthor(record, s.people) && record.quote === null)
       result.push("unquoted");
   }
   if (failing.has(id)) result.push("fails check");
