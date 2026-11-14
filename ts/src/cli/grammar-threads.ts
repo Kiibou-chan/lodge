@@ -2,13 +2,11 @@
 import type { Declaration } from "./args.ts";
 export const THREADS: Readonly<Record<string, Declaration>> = {
   threads: {
-    summary: "list the open threads: doubts and questions on records",
     usage: "usage: lodge threads [-h]\n",
     help: "usage: lodge threads [-h]\n\nlist the open threads: doubts and questions on records\n\noptions:\n  -h, --help  show this help message and exit\n",
     actions: [],
   },
   thread: {
-    summary: "show one thread with its messages",
     usage: "usage: lodge thread [-h] ref\n",
     help: "usage: lodge thread [-h] ref\n\nshow one thread with its messages\n\npositional arguments:\n  ref\n\noptions:\n  -h, --help  show this help message and exit\n",
     actions: [
@@ -24,7 +22,6 @@ export const THREADS: Readonly<Record<string, Declaration>> = {
     ],
   },
   ask: {
-    summary: "open a thread on a record: a doubt or a question",
     usage:
       "usage: lodge ask [-h] --kind {doubt,question} --by BY [--where WHERE]\n                 [--when WHEN]\n                 ref FILE\n",
     help: "usage: lodge ask [-h] --kind {doubt,question} --by BY [--where WHERE]\n                 [--when WHEN]\n                 ref FILE\n\nopen a thread on a record: a doubt or a question\n\npositional arguments:\n  ref\n  FILE\n\noptions:\n  -h, --help            show this help message and exit\n  --kind {doubt,question}\n  --by BY               the role writing the message\n  --where WHERE         for --by author: where the words were said\n  --when WHEN           for --by author: when the words were said\n",
@@ -86,7 +83,6 @@ export const THREADS: Readonly<Record<string, Declaration>> = {
     ],
   },
   reply: {
-    summary: "add a message to an open thread",
     usage: "usage: lodge reply [-h] --by BY [--where WHERE] [--when WHEN] ref FILE\n",
     help: "usage: lodge reply [-h] --by BY [--where WHERE] [--when WHEN] ref FILE\n\nadd a message to an open thread\n\npositional arguments:\n  ref\n  FILE\n\noptions:\n  -h, --help     show this help message and exit\n  --by BY        the role writing the message\n  --where WHERE  for --by author: where the words were said\n  --when WHEN    for --by author: when the words were said\n",
     actions: [
@@ -138,7 +134,6 @@ export const THREADS: Readonly<Record<string, Declaration>> = {
     ],
   },
   close: {
-    summary: "close a thread, with a closing message",
     usage: "usage: lodge close [-h] --by BY [--where WHERE] [--when WHEN] ref [FILE]\n",
     help: "usage: lodge close [-h] --by BY [--where WHERE] [--when WHEN] ref [FILE]\n\nclose a thread, with a closing message\n\npositional arguments:\n  ref\n  FILE\n\noptions:\n  -h, --help     show this help message and exit\n  --by BY        the role writing the message\n  --where WHERE  for --by author: where the words were said\n  --when WHEN    for --by author: when the words were said\n",
     actions: [

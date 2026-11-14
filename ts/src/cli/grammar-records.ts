@@ -2,13 +2,11 @@
 import { type Declaration, positive } from "./args.ts";
 export const RECORDS: Readonly<Record<string, Declaration>> = {
   init: {
-    summary: "create the empty store in this repository",
     usage: "usage: lodge init [-h]\n",
     help: "usage: lodge init [-h]\n\ncreate the empty store in this repository\n\noptions:\n  -h, --help  show this help message and exit\n",
     actions: [],
   },
   id: {
-    summary: "print a new ID for a decision (d) or a specification entry (s)",
     usage: "usage: lodge id [-h] {d,s}\n",
     help: "usage: lodge id [-h] {d,s}\n\nprint a new ID for a decision (d) or a specification entry (s)\n\npositional arguments:\n  {d,s}\n\noptions:\n  -h, --help  show this help message and exit\n",
     actions: [
@@ -24,7 +22,6 @@ export const RECORDS: Readonly<Record<string, Declaration>> = {
     ],
   },
   search: {
-    summary: "find records by words, ID, or code; one level-1 block each",
     usage:
       "usage: lodge search [-h] [--kind {decision,spec}] [--scope {product,process}]\n                    [--status {current,replaced,retired,any}] [--area AREA]\n                    [--by BY] [--limit LIMIT]\n                    [query]\n",
     help: "usage: lodge search [-h] [--kind {decision,spec}] [--scope {product,process}]\n                    [--status {current,replaced,retired,any}] [--area AREA]\n                    [--by BY] [--limit LIMIT]\n                    [query]\n\nfind records by words, ID, or code; one level-1 block each\n\npositional arguments:\n  query                 words, an ID, or a code; empty lists records newest\n                        first, up to --limit\n\noptions:\n  -h, --help            show this help message and exit\n  --kind {decision,spec}\n  --scope {product,process}\n  --status {current,replaced,retired,any}\n  --area AREA           an area; a decision's areas are those of its entries\n  --by BY               who decided, such as author or an agent role\n  --limit LIMIT         records to list; default 20\n",
@@ -96,7 +93,6 @@ export const RECORDS: Readonly<Record<string, Declaration>> = {
     ],
   },
   show: {
-    summary: "show one record; reasoning and provenance only when asked for",
     usage: "usage: lodge show [-h] [--reasoning] [--provenance] ref\n",
     help: "usage: lodge show [-h] [--reasoning] [--provenance] ref\n\nshow one record; reasoning and provenance only when asked for\n\npositional arguments:\n  ref           an ID or a code\n\noptions:\n  -h, --help    show this help message and exit\n  --reasoning   add level 2\n  --provenance  add level 3\n",
     actions: [
@@ -130,8 +126,6 @@ export const RECORDS: Readonly<Record<string, Declaration>> = {
     ],
   },
   draft: {
-    summary:
-      "print the file of an entry to edit and add; area:<name> for an area; a decision is immutable, so change it with a new decision that replaces or narrows it",
     usage: "usage: lodge draft [-h] ref\n",
     help: "usage: lodge draft [-h] ref\n\nprint the file of an entry to edit and add; area:<name> for an area; a\ndecision is immutable, so change it with a new decision that replaces or\nnarrows it\n\npositional arguments:\n  ref         an ID, a code, or area:<name>\n\noptions:\n  -h, --help  show this help message and exit\n",
     actions: [
@@ -147,7 +141,6 @@ export const RECORDS: Readonly<Record<string, Declaration>> = {
     ],
   },
   add: {
-    summary: "add draft files: new records, edits, areas",
     usage: "usage: lodge add [-h] [--import] [--dry-run] [--attach PATH] FILE [FILE ...]\n",
     help: "usage: lodge add [-h] [--import] [--dry-run] [--attach PATH] FILE [FILE ...]\n\nadd draft files: new records, edits, areas\n\npositional arguments:\n  FILE\n\noptions:\n  -h, --help     show this help message and exit\n  --import       records with imported_from\n  --dry-run      apply and check, publish nothing\n  --attach PATH  a text file kept beside the one new decision; repeat for more\n",
     actions: [
@@ -190,7 +183,6 @@ export const RECORDS: Readonly<Record<string, Declaration>> = {
     ],
   },
   check: {
-    summary: "run the checks; --gate compares with the published state",
     usage: "usage: lodge check [-h] [--gate]\n",
     help: "usage: lodge check [-h] [--gate]\n\nrun the checks; --gate compares with the published state\n\noptions:\n  -h, --help  show this help message and exit\n  --gate      the check that gates publication\n",
     actions: [
@@ -206,7 +198,6 @@ export const RECORDS: Readonly<Record<string, Declaration>> = {
     ],
   },
   spec: {
-    summary: "print the readable specification: areas by rank, entries after what they rest on",
     usage: "usage: lodge spec [-h] [--area AREA]\n",
     help: "usage: lodge spec [-h] [--area AREA]\n\nprint the readable specification: areas by rank, entries after what they rest\non\n\noptions:\n  -h, --help   show this help message and exit\n  --area AREA  only this area\n",
     actions: [
@@ -222,13 +213,11 @@ export const RECORDS: Readonly<Record<string, Declaration>> = {
     ],
   },
   waiting: {
-    summary: "list what waits: for an agent, then for the author",
     usage: "usage: lodge waiting [-h]\n",
     help: "usage: lodge waiting [-h]\n\nlist what waits: for an agent, then for the author\n\noptions:\n  -h, --help  show this help message and exit\n",
     actions: [],
   },
   guide: {
-    summary: "print the guide for agents",
     usage: "usage: lodge guide [-h]\n",
     help: "usage: lodge guide [-h]\n\nprint the guide for agents\n\noptions:\n  -h, --help  show this help message and exit\n",
     actions: [],

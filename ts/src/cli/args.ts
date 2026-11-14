@@ -11,7 +11,6 @@ interface Argument {
   readonly convert?: (text: string) => unknown;
 }
 export interface Declaration {
-  readonly summary: string;
   readonly usage: string;
   readonly help: string;
   readonly actions: readonly Argument[];
@@ -52,7 +51,7 @@ export function argumentsOf(
   let ended = false;
   const error = (message: string) => usageError(message, name, decl.usage);
   const looksOption = (word: string) =>
-    word.startsWith("-") && word !== "-" && !/^-\d+(?:\.\d+)?$/u.test(word);
+    word.startsWith("-") && word !== "-" && !/^-(?:\d+|\d*\.\d+)$/u.test(word);
   function assign(a: Argument, value: string, label: string): Exit | null {
     if (a.choices && !a.choices.includes(value))
       return error(
@@ -72,14 +71,37 @@ export function argumentsOf(
     seen.add(a.name);
     return null;
   }
+  let positionalIndex = 0;
+  function consumeWords(): Exit | null {
+    let position = 0;
+    while (position < words.length && positionalIndex < positional.length) {
+      const a = positional[positionalIndex++];
+      if (!a) break;
+      const take = a.nargs === "+" ? words.length - position : 1;
+      for (let n = 0; n < take; n++) {
+        const failed = assign(a, words[position++]?.word ?? "", a.metavar);
+        if (failed) return failed;
+      }
+    }
+    extras.push(...words.slice(position));
+    words.length = 0;
+    return null;
+  }
   for (let i = 0; i < argv.length; i++) {
     const word = argv[i] ?? "";
     if (!ended && word === "--") {
-      if (!positional.length) extras.push({ word, index: i });
+      if (
+        positionalIndex >= positional.length ||
+        (positional.slice(positionalIndex).every((a) => a.nargs !== "+") &&
+          words.length > positional.length - positionalIndex)
+      )
+        extras.push({ word, index: i });
       ended = true;
       continue;
     }
     if (!ended && looksOption(word)) {
+      const failedWords = consumeWords();
+      if (failedWords) return failedWords;
       const at = word.indexOf("=");
       const key = at < 0 ? word : word.slice(0, at);
       if (key === "-h" || (key.startsWith("--") && "--help".startsWith(key))) {
@@ -119,19 +141,12 @@ export function argumentsOf(
       if (failed) return failed;
     } else words.push({ word, index: i });
   }
-  let position = 0;
-  for (const a of positional) {
-    const take = a.nargs === "+" ? words.length - position : Math.min(1, words.length - position);
-    for (let n = 0; n < take; n++) {
-      const failed = assign(a, words[position++]?.word ?? "", a.metavar);
-      if (failed) return failed;
-    }
-  }
+  const failed = consumeWords();
+  if (failed) return failed;
   const missing = decl.actions
     .filter((a) => a.required && !seen.has(a.name))
     .map((a) => a.options[0] ?? a.metavar);
   if (missing.length) return error(`the following arguments are required: ${missing.join(", ")}`);
-  extras.push(...words.slice(position));
   const leftover = [
     ...leadingExtras,
     ...extras.sort((a, b) => a.index - b.index).map((a) => a.word),

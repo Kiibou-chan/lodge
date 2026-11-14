@@ -85,7 +85,8 @@ export function parse(argv: readonly string[], version: string): Command | Exit 
     }
     extras.push(word);
   }
-  const name = argv[index];
+  const candidate = argv[index];
+  const name = candidate as Command["kind"] | undefined;
   if (name === undefined) return usageError("the following arguments are required: COMMAND");
   const decl = DECLARATIONS[name];
   if (!decl)
@@ -169,7 +170,5 @@ export function parse(argv: readonly string[], version: string): Command | Exit 
       if (name === "reply") return { kind: name, ref, by, where, when, file: text("file") };
       return { kind: name, ref, by, where, when, file: nullable("file") };
     }
-    default:
-      return usageError(`unrecognized arguments: ${argv.join(" ")}`);
   }
 }
