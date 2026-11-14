@@ -82,18 +82,15 @@ test("sqlite_outside_store", async () => {
   expect(found.sort()).toEqual(["sqlite-confinement: src/cli/a.ts -> bun:sqlite"]);
 });
 test.each([
-  ["src/store/a.ts", "node:fs"],
-  ["src/api/a.ts", "fs/promises"],
-])("fs_outside_git_and_cli %p %p", async (path, name) => {
+  [
+    "src/store/a.ts",
+    "node:fs",
+    ["file-confinement: src/store/a.ts -> fs", "store-imports: src/store/a.ts -> fs"],
+  ],
+  ["src/api/a.ts", "fs/promises", ["file-confinement: src/api/a.ts -> fs/promises"]],
+] as const)("fs_outside_git_and_cli %p %p", async (path, name, expected) => {
   const found = await cruise(plant({ [path]: `import "${name}";` }));
-  expect(found.sort()).toEqual(
-    [
-      `file-confinement: ${path} -> ${name.replace("node:", "")}`,
-      ...(path.startsWith("src/store/")
-        ? [`store-imports: ${path} -> ${name.replace("node:", "")}`]
-        : []),
-    ].sort(),
-  );
+  expect(found.sort()).toEqual([...expected].sort());
 });
 test("http_outside_api", async () => {
   const found = await cruise(plant({ "src/cli/a.ts": 'import "node:http";' }));

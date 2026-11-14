@@ -56,6 +56,21 @@ test("newer_schema_is_refused", async () => {
     `the database at ${file} has schema 9, newer than this lodge's 1`,
   );
 });
+test.each(["insert or replace", "replace"])("events_refuse_%s", async (statement) => {
+  const { db } = await open();
+  await db
+    .insertInto("events")
+    .values(event("project", [123, 125]))
+    .execute();
+  await expect(
+    sql
+      .raw(
+        `${statement} into events(seq, project, at, actor, kind, body) values (1, 'storage', 'now', 'bo', 'project', x'7b7d')`,
+      )
+      .execute(db),
+  ).rejects.toThrow("events are append-only");
+  expect(await db.selectFrom("events").select("actor").execute()).toEqual([{ actor: "ada" }]);
+});
 test("events_are_append_only", async () => {
   const { db } = await open();
   await db
@@ -74,6 +89,7 @@ test("rebuild_derives_the_tables_from_raw_events", async () => {
   for (const row of [
     event("project", [123, 125]),
     event("member", member),
+    event("member", Array.from(new TextEncoder().encode('{"person":"ada","role":"member"}'))),
     event("file", [128], "storage", "a.md"),
     event("file", [239, 187, 191, 255], "storage", "a.md"),
   ]) {
@@ -82,10 +98,10 @@ test("rebuild_derives_the_tables_from_raw_events", async () => {
   for (let i = 0; i < 2; i++) {
     await rebuild(database);
     expect(await db.selectFrom("heads").selectAll().execute()).toEqual([
-      { project: "storage", rev: 4 },
+      { project: "storage", rev: 5 },
     ]);
     expect(await db.selectFrom("members").selectAll().execute()).toEqual([
-      { project: "storage", person: "ada", role: "owner" },
+      { project: "storage", person: "ada", role: "member" },
     ]);
     const files = await db.selectFrom("files").selectAll().execute();
     expect(files).toHaveLength(1);
@@ -93,10 +109,10 @@ test("rebuild_derives_the_tables_from_raw_events", async () => {
       project: "storage",
       path: "a.md",
       body: expect.any(Uint8Array),
-      seq: 4,
+      seq: 5,
     });
     expect(Array.from(files[0]?.body ?? [])).toEqual([239, 187, 191, 255]);
-    expect(await db.selectFrom("events").selectAll().execute()).toHaveLength(4);
+    expect(await db.selectFrom("events").selectAll().execute()).toHaveLength(5);
   }
 });
 test("an_event_of_no_project_adds_no_head", async () => {
@@ -107,4 +123,50 @@ test("an_event_of_no_project_adds_no_head", async () => {
     .execute();
   await rebuild(database);
   expect(await database.db.selectFrom("heads").selectAll().execute()).toEqual([]);
+});
+
+test("rebuild_removes_stale_rows", async () => {
+  const database = await open();
+  const { db } = database;
+  await db.insertInto("heads").values({ project: "stale", rev: 9 }).execute();
+  await db
+    .insertInto("files")
+    .values({ project: "stale", path: "a.md", body: new Uint8Array([128]), seq: 9 })
+    .execute();
+  await db
+    .insertInto("members")
+    .values({ project: "stale", person: "bo", role: "owner" })
+    .execute();
+  await rebuild(database);
+  expect(await db.selectFrom("heads").selectAll().execute()).toEqual([]);
+  expect(await db.selectFrom("files").selectAll().execute()).toEqual([]);
+  expect(await db.selectFrom("members").selectAll().execute()).toEqual([]);
+});
+test("unknown_event_rolls_back_rebuild", async () => {
+  const database = await open();
+  const { db } = database;
+  await db.insertInto("heads").values({ project: "storage", rev: 9 }).execute();
+  await db
+    .insertInto("files")
+    .values({ project: "storage", path: "a.md", body: new Uint8Array([128]), seq: 9 })
+    .execute();
+  await db
+    .insertInto("members")
+    .values({ project: "storage", person: "ada", role: "owner" })
+    .execute();
+  const before = [
+    await db.selectFrom("heads").selectAll().execute(),
+    await db.selectFrom("files").selectAll().execute(),
+    await db.selectFrom("members").selectAll().execute(),
+  ];
+  await db
+    .insertInto("events")
+    .values(event("mystery", [123, 125]))
+    .execute();
+  await expect(rebuild(database)).rejects.toThrow("unknown event kind: mystery");
+  expect([
+    await db.selectFrom("heads").selectAll().execute(),
+    await db.selectFrom("files").selectAll().execute(),
+    await db.selectFrom("members").selectAll().execute(),
+  ]).toEqual(before);
 });

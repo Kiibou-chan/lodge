@@ -41,6 +41,9 @@ const MIGRATIONS = [
   `
 create table events(seq integer primary key autoincrement, project text not null,
   at text not null, actor text not null, kind text not null, path text, body blob not null, message text);
+create trigger events_no_replace before insert on events
+  when exists (select 1 from events where seq = new.seq) begin
+  select raise(abort, 'events are append-only'); end;
 create trigger events_no_update before update on events begin
   select raise(abort, 'events are append-only'); end;
 create trigger events_no_delete before delete on events begin

@@ -2,6 +2,7 @@ import { expect, test } from "bun:test";
 import { contentHash, decodeUtf8, encodeUtf8, ValueError } from "#core";
 
 const cases = [
+  ["efbbbf61", [0xfeff, 97]],
   ["80ff", [0xdc80, 0xdcff]],
   ["c0af", [0xdcc0, 0xdcaf]],
   ["e282", [0xdce2, 0xdc82]],
