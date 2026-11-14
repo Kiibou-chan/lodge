@@ -7,6 +7,7 @@ import {
   type Message,
   newestLast,
   Raises,
+  strip,
   type Thread,
   ThreadState,
   threadPath,
@@ -43,12 +44,12 @@ function message(
 ): Message {
   text = cleanText(text);
   if (!text && !close) throw new LodgeError("the message is empty");
-  if (!by.trim()) throw new LodgeError("by needs a non-empty role");
+  if (!strip(by)) throw new LodgeError("by needs a non-empty role");
   if (by !== "author" && by.toLowerCase().includes("author"))
     throw new LodgeError("write author exactly, or use your own role");
   let stamp: string;
   if (by === "author") {
-    if (where === null || !where.trim())
+    if (where === null || !strip(where))
       throw new LodgeError("a message by author needs where, the place of the author's words");
     stamp = when ?? minuteOf(now);
   } else {
@@ -62,6 +63,7 @@ export interface MessageOptions {
   readonly where?: string | null;
   readonly when?: string | null;
   readonly commit?: boolean;
+  readonly close?: boolean;
 }
 export async function writeMessage(
   w: Wiring,
@@ -69,8 +71,7 @@ export async function writeMessage(
   raises: Raises | null,
   by: string,
   text: string,
-  { where = null, when = null, commit = false }: MessageOptions = {},
-  close = false,
+  { where = null, when = null, commit = false, close = false }: MessageOptions = {},
 ): Promise<Written> {
   for (let i = 0; i < 3; i++) {
     const state = await readState(w.store),

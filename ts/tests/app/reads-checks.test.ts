@@ -74,9 +74,10 @@ test("draft_prints_file_with_base", async () => {
   for (const [ref, prefix] of [
     ["s-aaaaaa", "lodge/spec/storage/s-"],
     ["item-1", "lodge/decisions/"],
-  ]) {
-    const text = [...store.files].find(([p]) => p.startsWith(prefix ?? ""))?.[1] ?? "";
-    expect(await wired(store).draft(ref ?? "")).toBe(
+  ] as const) {
+    const text = [...store.files].find(([p]) => p.startsWith(prefix))?.[1];
+    if (text === undefined) throw new Error(`missing file with prefix ${prefix}`);
+    expect(await wired(store).draft(ref)).toBe(
       text.replace("---\n", `---\nbase: ${contentHash(text)}\n`),
     );
   }
@@ -107,7 +108,11 @@ test.each(calls.map((c) => [c]))(
   async ([path, call]) => {
     const store = project();
     store.files.set(path, "no header here\n");
-    await raises(call(wired(store)), NotFound, `lodge could not read ${path}`);
+    await raises(
+      call(wired(store)),
+      NotFound,
+      `no ${path === GHOST ? "area named ghost" : "record named d-aaaaaa"}; lodge could not read ${path}`,
+    );
   },
 );
 test("not_found_lists_all_unreadable_files_when_none_matches", async () => {
@@ -128,8 +133,9 @@ test("not_found_does_not_call_a_missing_file_unreadable", async () => {
   expect((await lodge.search("", filters())).read.unrecorded.map((p) => p.path)).toEqual([
     "lodge/spec/storage/_area.md",
   ]);
-  await expect(lodge.show("d-zzzzzz")).rejects.toThrow("no record named d-zzzzzz");
-  await lodge.show("d-zzzzzz").catch((e) => expect(e.message).toBe("no record named d-zzzzzz"));
+  const call = lodge.show("d-zzzzzz");
+  await raises(call, NotFound, "no record named d-zzzzzz");
+  await call.catch((e) => expect(e.message).toBe("no record named d-zzzzzz"));
 });
 test("search_says_how_many_more_matched_beyond_the_limit", async () => {
   const lodge = wired(

@@ -1,6 +1,7 @@
 import {
   areaPath,
   byCodePoint,
+  type CheckResult,
   checkChange,
   checkResult,
   confirmableIds,
@@ -21,7 +22,7 @@ import {
   specView,
 } from "#core";
 import { LodgeError } from "./errors.ts";
-import { type Listed, listed, type Read, type Shown } from "./results.ts";
+import { type Listed, listed, type Read, type Shown, type ThreadsWaiting } from "./results.ts";
 import { notFound, readChecked, readState, resolveRef, type State, type Wiring } from "./state.ts";
 import { waitingIn } from "./threads.ts";
 import { stampOf } from "./time.ts";
@@ -58,7 +59,7 @@ export async function show(
     supports: views(state, d.supports.get(id) ?? []),
   };
 }
-export async function waitingAll(w: Wiring) {
+export async function waitingAll(w: Wiring): Promise<readonly [Listed, ThreadsWaiting]> {
   const state = await readChecked(w);
   return [
     listed({ items: newestFirst(state, state.derived.awaitingAuthor), read: state.read }),
@@ -89,7 +90,7 @@ export async function spec(
     specView(s, state.derived, state.failing, area),
   ];
 }
-export async function check(w: Wiring, gate: boolean) {
+export async function check(w: Wiring, gate: boolean): Promise<readonly [CheckResult, Read]> {
   const state = await readChecked(w);
   if (!gate) return [state.result, state.read] as const;
   const base = await w.store.gate(state.current),
@@ -145,13 +146,14 @@ export async function draft(w: Wiring, ref: string): Promise<string> {
 }
 function newestFirst(state: State, ids: Iterable<string>) {
   const decisions = state.snapshot.decisions;
+  function date(id: string): number {
+    const decision = decisions.get(id);
+    if (decision === undefined) throw new Error(`missing decision ${id}`);
+    return instant(decision.date);
+  }
   return views(
     state,
-    [...ids].sort(
-      (a, b) =>
-        instant(decisions.get(b)?.date ?? "") - instant(decisions.get(a)?.date ?? "") ||
-        byCodePoint(b, a),
-    ),
+    [...ids].sort((a, b) => date(b) - date(a) || byCodePoint(b, a)),
   );
 }
 function views(state: State, ids: Iterable<string>) {

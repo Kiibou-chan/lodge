@@ -48,7 +48,7 @@
     "status": "ported",
     "plan": 2,
     "ts": ["ts/tests/app/writes.test.ts"],
-    "task": ["4"]
+    "task": ["3", "4"]
   },
   "tests/app/test_writes_attach.py": {
     "status": "ported",
