@@ -5,9 +5,10 @@
     "ts": ["ts/tests/app/support.ts"]
   },
   "tests/app/fakes.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 2,
-    "ts": ["ts/tests/app/fakes.ts"]
+    "ts": ["ts/tests/app/fakes.ts"],
+    "task": ["2"]
   },
   "tests/app/support.py": {
     "status": "planned",

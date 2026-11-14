@@ -1,0 +1,46 @@
+import { expect, test } from "bun:test";
+import {
+  AddOutcome,
+  actorText,
+  added,
+  agent,
+  CommitOutcome,
+  committed,
+  gate,
+  listed,
+  person,
+  read,
+  written,
+} from "#app";
+import { checkResult, tree } from "#core";
+
+test("actor_text_names_the_person_or_the_role", () => {
+  expect(actorText(person("ada"))).toBe("ada");
+  expect(actorText(agent())).toBe("agent");
+  expect(actorText(agent("builder"))).toBe("agent builder");
+});
+test("default_filling_functions_fill_python_defaults", () => {
+  const current = tree({ rev: null, files: new Map() });
+  const reading = read({ freshness: null, unrecorded: [] });
+  const check = checkResult([], []);
+  expect(committed({ outcome: CommitOutcome.COMMITTED }).detail).toBe("");
+  expect(gate({ published: current, checked: [["", current]] }).notes).toEqual([]);
+  expect(reading.statuses).toEqual(new Map());
+  expect(listed({ items: [], read: reading }).more).toBe(0);
+  expect(added({ ids: [], feedback: [], check, outcome: AddOutcome.PUBLISHED })).toEqual({
+    ids: [],
+    feedback: [],
+    check,
+    outcome: AddOutcome.PUBLISHED,
+    freshness: null,
+    minted: [],
+    paths: [],
+  });
+  expect(written({ ids: [], outcome: AddOutcome.PUBLISHED, check })).toEqual({
+    ids: [],
+    outcome: AddOutcome.PUBLISHED,
+    check,
+    committed: null,
+    about: null,
+  });
+});
