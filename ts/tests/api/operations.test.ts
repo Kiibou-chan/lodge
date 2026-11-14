@@ -28,7 +28,15 @@ test.each(cases)("each_operation_reaches_lodge %s", async (op, body, method, arg
 });
 test.each([
   ["search", { query: 1 }, "query must be a string"],
+  ["search", { limit: 1.5 }, "limit must be a whole number from 1"],
   ["search", { limit: 0 }, "limit must be a whole number from 1"],
+  ["search", { filters: { kind: "other" } }, "filters.kind must be decision or spec or null"],
+  ["search", { filters: { scope: "other" } }, "filters.scope must be product or process or null"],
+  [
+    "search",
+    { filters: { status: "other" } },
+    "filters.status must be current or replaced or retired or any",
+  ],
   ["search", { filters: [] }, "filters must be an object"],
   ["search", { filters: { kind: 2 } }, "filters.kind must be a string or null"],
   ["search", { filters: { extra: 1 } }, "unknown field filters.extra"],
@@ -36,6 +44,8 @@ test.each([
   ["mint", { prefix: "q" }, "prefix must be d or s"],
   ["ask", { ref: "x", raises: "other" }, "raises must be doubt or question"],
   ["spec", { area: 1 }, "area must be a string or null"],
+  ["add", { drafts: [["a", "b", "c"]] }, "drafts must be a list of [name, text] pairs"],
+  ["add", { drafts: [["a", 1]] }, "drafts must be a list of [name, text] pairs"],
   ["add", { drafts: ["x"] }, "drafts must be a list of [name, text] pairs"],
   ["search", { extra: true }, "unknown field extra"],
   ["show", {}, "ref must be a string"],

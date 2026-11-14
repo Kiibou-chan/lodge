@@ -46,6 +46,18 @@ test.each([
   expect(await response.json()).toMatchObject({ error: { message } });
   await w.database.close();
 });
+test.each(["application/json; charset=utf-8", "Application/JSON"])(
+  "json_content_type_is_accepted %s",
+  async (contentType) => {
+    const w = await world();
+    const request = w.request("search", { project: "work" });
+    request.headers.set("Content-Type", contentType);
+    const response = await w.fetch(request);
+    expect(response.status).toBe(200);
+    expect(await response.json()).toHaveProperty("result");
+    await w.database.close();
+  },
+);
 test("every_answer_carries_the_version_and_no_store", async () => {
   const w = await world();
   for (const req of [

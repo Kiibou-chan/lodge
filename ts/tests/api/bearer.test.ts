@@ -12,6 +12,17 @@ test.each([
   expect(await r.json()).toEqual({ error: { kind: "unauthorised", message } });
   await w.database.close();
 });
+test("other_authorization_scheme_is_unauthorised", async () => {
+  const w = await world();
+  const request = w.request("search", { project: "work" });
+  request.headers.set("Authorization", `Basic ${w.issued.secret}`);
+  const response = await w.fetch(request);
+  expect(response.status).toBe(401);
+  expect(await response.json()).toEqual({
+    error: { kind: "unauthorised", message: "the agent token is not known or was revoked" },
+  });
+  await w.database.close();
+});
 test("revoked_token_is_unauthorised", async () => {
   const w = await world();
   await w.accounts.revokeToken(w.issued.token.id);
