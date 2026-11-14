@@ -1,3 +1,4 @@
+import { behindEntryEdits, countsForPeople, reviewFlags } from "./derive-flags.ts";
 import { doubtMarks } from "./doubts.ts";
 import { Action, type Decision } from "./model.ts";
 import { AUTHOR_ONLY } from "./people.ts";
@@ -17,6 +18,7 @@ export interface Derived {
   readonly narrowedBy: Links;
   readonly changedBy: Links;
   readonly confirmedBy: Links;
+  readonly awaiting: ReadonlyMap<string, readonly string[]>;
   readonly awaitingAuthor: ReadonlySet<string>;
   readonly touchedByFlagged: Links;
   readonly revived: Links;
@@ -115,13 +117,19 @@ export function derive(s: Snapshot): Derived {
   for (const id of s.entries.keys()) status.set(id, retired.has(id) ? "retired" : "current");
   const changes = new Map<string, Decision[]>();
   for (const d of oldest) for (const entry of touches.get(d.id) ?? []) append(changes, entry, d);
-  const hers = confirmedByHer(oldest, s.people);
-  const awaitingAuthor = flagged(s, oldest, touches, changes, hers);
+  const awaiting = reviewFlags(s, oldest, touches, changes);
+  const awaitingAuthor = new Set(awaiting.keys());
   const touchedByFlagged = new Map<string, string[]>();
   for (const d of newest) {
     if (!awaitingAuthor.has(d.id)) continue;
     const entries = touches.get(d.id) ?? [];
-    const behind = behindEntryEdits(d, entries, changes, countsFor(d, hers, s.people), replacedBy);
+    const behind = behindEntryEdits(
+      d,
+      entries,
+      changes,
+      countsForPeople(oldest, new Set(awaiting.get(d.id)), d),
+      replacedBy,
+    );
     const targets = new Set([...d.replaces, ...d.narrows, ...entries, ...behind]);
     for (const target of [...targets].sort(byCodePoint))
       if (s.decisions.has(target) || s.entries.has(target)) append(touchedByFlagged, target, d.id);
@@ -142,6 +150,7 @@ export function derive(s: Snapshot): Derived {
     narrowedBy,
     changedBy,
     confirmedBy,
+    awaiting,
     awaitingAuthor,
     touchedByFlagged,
     revived: new Map(
@@ -157,91 +166,4 @@ export function derive(s: Snapshot): Derived {
 
 export function isAuthor(d: Decision, people = AUTHOR_ONLY): boolean {
   return people.has(d.decidedBy);
-}
-function confirmedByHer(oldest: readonly Decision[], people: ReadonlySet<string>): Set<string> {
-  return new Set(
-    oldest.filter((d) => isAuthor(d, people) && d.importedFrom === null).flatMap((d) => d.confirms),
-  );
-}
-// An imported decision is flagged only by non-imported ones.
-function countsFor(
-  d: Decision,
-  hers: ReadonlySet<string>,
-  people: ReadonlySet<string>,
-): (other: Decision) => boolean {
-  return (other) =>
-    (isAuthor(other, people) || hers.has(other.id)) &&
-    (d.importedFrom === null || other.importedFrom === null);
-}
-function behindEntryEdits(
-  d: Decision,
-  entries: readonly string[],
-  changes: ReadonlyMap<string, readonly Decision[]>,
-  counts: (other: Decision) => boolean,
-  replacedBy: ReadonlyMap<string, readonly string[]>,
-): string[] {
-  const behind: string[] = [];
-  for (const entry of entries) {
-    const edits = changes.get(entry) as readonly Decision[];
-    const standing = edits.slice(0, edits.indexOf(d)).filter((c) => !replacedBy.has(c.id));
-    const last = standing.at(-1);
-    if (last && counts(last)) behind.push(last.id);
-  }
-  return behind;
-}
-// Skip changes undone by a non-imported author replacement when they are not hers.
-function flagged(
-  s: Snapshot,
-  oldest: readonly Decision[],
-  touches: ReadonlyMap<string, readonly string[]>,
-  changes: ReadonlyMap<string, readonly Decision[]>,
-  hers: ReadonlySet<string>,
-): Set<string> {
-  const clearedIds = cleared(s, oldest);
-  const undone = new Set<string>();
-  for (const later of oldest) {
-    if (!isAuthor(later, s.people) || later.importedFrom !== null) continue;
-    for (const target of later.replaces) {
-      const other = s.decisions.get(target);
-      if (other && !isAuthor(other, s.people) && !hers.has(target)) undone.add(target);
-    }
-  }
-  const found = new Set<string>();
-  for (const d of oldest) {
-    if (clearedIds.has(d.id) || (isAuthor(d, s.people) && d.importedFrom === null)) continue;
-    const counts = countsFor(d, hers, s.people);
-    const touchesAuthor = [...d.replaces, ...d.narrows].some((t) => {
-      const other = s.decisions.get(t);
-      return other !== undefined && counts(other);
-    });
-    const followsAuthor = (touches.get(d.id) as readonly string[]).some((entry) =>
-      followsAuthorChange(d, counts, changes.get(entry) as readonly Decision[], undone),
-    );
-    if (touchesAuthor || followsAuthor) found.add(d.id);
-  }
-  return found;
-}
-
-// Decisions confirmed or replaced by a later, non-imported author decision.
-function cleared(s: Snapshot, oldest: readonly Decision[]): Set<string> {
-  const found = new Set<string>();
-  for (const later of oldest) {
-    if (!isAuthor(later, s.people) || later.importedFrom !== null) continue;
-    for (const id of [...later.confirms, ...later.replaces]) {
-      const target = s.decisions.get(id);
-      if (target && compareOrderKeys(target, later) < 0) found.add(id);
-    }
-  }
-  return found;
-}
-// Whether the latest preceding change, skipping undone changes, raises a flag.
-function followsAuthorChange(
-  d: Decision,
-  counts: (other: Decision) => boolean,
-  edits: readonly Decision[],
-  undone: ReadonlySet<string>,
-): boolean {
-  const before = edits.slice(0, edits.indexOf(d)).filter((c) => !undone.has(c.id));
-  const last = before.at(-1);
-  return last !== undefined && counts(last);
 }

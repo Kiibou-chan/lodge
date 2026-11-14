@@ -10,8 +10,10 @@ import {
   type SpecEntry,
   uniqueChanges,
 } from "./model.ts";
+import { listedPeople, waitingPeople } from "./people.ts";
 import type { Snapshot } from "./snapshot.ts";
 import { orderInstant } from "./stamps.ts";
+import { byCodePoint } from "./text.ts";
 export interface Level1 {
   readonly id: string;
   readonly kind: string;
@@ -179,14 +181,28 @@ function flags(
     if (rep?.length) result.push(`its decision replaced by ${rep.join(", ")}`);
     if (nar?.length) result.push(`its decision narrowed by ${nar.join(", ")}`);
   }
-  if (d.awaitingAuthor.has(id)) result.push("awaiting the author");
+  if (d.awaitingAuthor.has(id)) result.push(`awaiting ${waitingPeople(d.awaiting.get(id) ?? [])}`);
   else {
     const waiting = d.touchedByFlagged.get(id);
-    if (waiting?.length) result.push(`awaiting the author on ${waiting.join(", ")}`);
+    if (waiting?.length) {
+      const people = [...new Set(waiting.flatMap((i) => d.awaiting.get(i) ?? []))].sort(
+        byCodePoint,
+      );
+      result.push(`awaiting ${waitingPeople(people)} on ${waiting.join(", ")}`);
+    }
   }
   const confirmed = d.confirmedBy.get(id);
   if (record.kind === "decision" && confirmed?.length)
-    result.push(`confirmed by the author (${confirmed.join(", ")})`);
+    result.push(
+      `confirmed by ${listedPeople(
+        [...new Set(confirmed.map((i) => (s.decisions.get(i) as Decision).decidedBy))]
+          .sort(byCodePoint)
+          .map(
+            (person) =>
+              `${waitingPeople([person])} (${confirmed.filter((i) => s.decisions.get(i)?.decidedBy === person).join(", ")})`,
+          ),
+      )}`,
+    );
   result.push(...(d.doubts.get(id) ?? []));
   if (record.kind === "spec")
     for (const target of record.restsOn) {

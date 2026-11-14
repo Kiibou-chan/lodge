@@ -1,6 +1,7 @@
 import { type Derived, isAuthor } from "./derive.ts";
 import { areaPath } from "./fileformat.ts";
 import { Action, type Decision, type Record, type SpecEntry } from "./model.ts";
+import { waitingPeople } from "./people.ts";
 import { related } from "./search.ts";
 import type { LengthGuidance } from "./settings.ts";
 import type { Snapshot } from "./snapshot.ts";
@@ -85,8 +86,12 @@ function* decisionMessages(
   }
   yield* editBackMessage(decision, after, d);
   yield* revivalMessage(decision, after, d);
-  if (d.awaitingAuthor.has(decision.id))
-    yield "this decision will wait for the author: it takes effect at once, and a later author decision that confirms or replaces it clears the flag";
+  const awaiting = d.awaiting.get(decision.id);
+  if (awaiting?.length) {
+    const people = waitingPeople(awaiting);
+    const later = people === "the author" ? "author decision" : `decision of ${people}`;
+    yield `this decision will wait for ${people}: it takes effect at once, and a later ${later} that confirms or replaces it clears the flag`;
+  }
 }
 function* editBackMessage(decision: Decision, after: Snapshot, d: Derived): Generator<string> {
   if (!isAuthor(decision, after.people)) return;

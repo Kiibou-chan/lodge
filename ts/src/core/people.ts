@@ -24,3 +24,11 @@ export function messageWords(person: string): string {
 export function confirmationWords(person: string): string {
   return person === "author" ? "The author" : person;
 }
+
+export function listedPeople(items: readonly string[]): string {
+  if (items.length < 3) return items.join(" and ");
+  return `${items.slice(0, -1).join(", ")}, and ${items.at(-1)}`;
+}
+export function waitingPeople(people: readonly string[]): string {
+  return people.length === 1 && people[0] === "author" ? "the author" : listedPeople(people);
+}

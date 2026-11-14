@@ -69,7 +69,7 @@ export function areaPath(name: string): string {
 }
 const SLUG_WORDS = 6;
 const SLUG_CHARS = 60;
-const PLAIN = /^[A-Za-z0-9][A-Za-z0-9._-]*$/u;
+export const PLAIN = /^[A-Za-z0-9][A-Za-z0-9._-]*$/u;
 
 export function slug(title: string): string {
   const joined = (title.toLowerCase().match(/[a-z0-9]+/gu) ?? []).slice(0, SLUG_WORDS).join("-");
