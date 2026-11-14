@@ -55,7 +55,8 @@ test("stale_base_is_rejected_and_writes_nothing", async () => {
   const base = (await store.trees())[0];
   await store.publish(base, new Map([["lodge/a", "a"]]), "");
   const before = await events(database);
-  for (const rev of [base.rev, null, "x", "2.0", "-1"])
+  const live = (await store.trees())[0];
+  for (const rev of [base.rev, null, "x", "2.0", "-1", ` ${live.rev}`, `${live.rev}.0`])
     expect(await store.publish(tree({ ...base, rev }), new Map([["lodge/b", "b"]]), "")).toBe(
       PublishOutcome.REJECTED,
     );

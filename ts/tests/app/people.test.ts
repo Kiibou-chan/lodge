@@ -1,8 +1,8 @@
 import { expect, test } from "bun:test";
-import { agent, Forbidden, LodgeError, NotFound, person } from "#app";
+import { AddOutcome, agent, Forbidden, LodgeError, NotFound, person } from "#app";
 import { Action, derive, load, Raises } from "#core";
 import { decisionText } from "../core/applying.ts";
-import { area, decision, entry } from "../core/builders.ts";
+import { area, at, decision, entry } from "../core/builders.ts";
 import { CountingIds, FixedClock, MemoryStore } from "./fakes.ts";
 import { wired } from "./support.ts";
 
@@ -133,3 +133,36 @@ test("an_agent_is_refused_before_reading_state", async () => {
   );
   expect(reads).toBe(0);
 });
+
+for (const both of [true, false]) {
+  test(`confirmations_remain_available_to_each_person_${both ? "both" : "ada"}`, async () => {
+    const quote = { text: "Agreed.", where: "chat", when: "2026-10-28 10:00" };
+    const store = new MemoryStore(
+      [
+        area(),
+        decision({ id: "d-aaaaaa", decidedBy: "ada", quote }),
+        decision({ id: "d-cccccc", decidedBy: "bo", quote }),
+        decision({
+          id: "d-bbbbbb",
+          date: at(1),
+          replaces: ["d-aaaaaa"],
+          narrows: both ? ["d-cccccc"] : [],
+        }),
+      ],
+      { people: new Set(["ada", "bo"]) },
+    );
+    const ids = new CountingIds();
+    const ada = wired(store, new FixedClock(), ids, person("ada"));
+    const bo = wired(store, new FixedClock(), ids, person("bo"));
+    const awaiting = async () => derive(load((await store.trees())[0])).awaiting;
+    expect((await awaiting()).get("d-bbbbbb")).toEqual(both ? ["ada", "bo"] : ["ada"]);
+    const first = both ? ada : bo;
+    const second = both ? bo : ada;
+    expect((await first.confirm(["d-bbbbbb"], "Read.")).outcome).toBe(AddOutcome.PUBLISHED);
+    expect((await awaiting()).get("d-bbbbbb")).toEqual([both ? "bo" : "ada"]);
+    expect((await first.show("d-bbbbbb")).confirmable).toBe(false);
+    expect((await second.show("d-bbbbbb")).confirmable).toBe(true);
+    expect((await second.confirm(["d-bbbbbb"], "Read too.")).outcome).toBe(AddOutcome.PUBLISHED);
+    expect(await awaiting()).toEqual(new Map());
+  });
+}

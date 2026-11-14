@@ -77,7 +77,11 @@ export class Lodge {
     text: string,
     options: threads.MessageOptions = {},
   ): Promise<Written> {
-    return threads.writeMessage(this.wiring, ref, raises, by, text, options);
+    return threads.writeMessage(this.wiring, ref, raises, by, text, {
+      where: options.where ?? null,
+      when: options.when ?? null,
+      commit: options.commit ?? false,
+    });
   }
   async reply(
     thread: string,
@@ -85,7 +89,11 @@ export class Lodge {
     text: string,
     options: threads.MessageOptions = {},
   ): Promise<Written> {
-    return threads.writeMessage(this.wiring, thread, null, by, text, options);
+    return threads.writeMessage(this.wiring, thread, null, by, text, {
+      where: options.where ?? null,
+      when: options.when ?? null,
+      commit: options.commit ?? false,
+    });
   }
   async close(
     thread: string,

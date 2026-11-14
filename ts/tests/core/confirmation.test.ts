@@ -21,7 +21,7 @@ test("confirmable_ids_skip_author_confirmed_and_replaced", () => {
     decision({ id: "d-dddddd", decidedBy: "author", confirms: ["d-aaaaaa"] }),
     decision({ id: "d-eeeeee", replaces: ["d-bbbbbb"] }),
   ]);
-  expect(confirmableIds(s, derive(s))).toEqual(new Set(["d-cccccc", "d-eeeeee"]));
+  expect(confirmableIds(s, derive(s), "author")).toEqual(new Set(["d-cccccc", "d-eeeeee"]));
 });
 test("behind_area_lists_creators_and_last_changers_oldest_first", () => {
   const s = snapshotOf([
@@ -42,14 +42,14 @@ test("behind_area_lists_creators_and_last_changers_oldest_first", () => {
       changes: [{ entry: "s-aaaaaa", action: Action.EDIT }],
     }),
   ]);
-  expect(behindArea(s, derive(s), "storage")).toEqual(["d-cccccc", "d-aaaaaa"]);
+  expect(behindArea(s, derive(s), "storage", "author")).toEqual(["d-cccccc", "d-aaaaaa"]);
 });
 test("behind_area_includes_the_retirer_of_a_retired_entry", () => {
   const s = snapshotOf([
     entry({ id: "s-aaaaaa" }),
     decision({ id: "d-aaaaaa", changes: [{ entry: "s-aaaaaa", action: Action.RETIRE }] }),
   ]);
-  expect(behindArea(s, derive(s), "storage")).toEqual(["d-aaaaaa"]);
+  expect(behindArea(s, derive(s), "storage", "author")).toEqual(["d-aaaaaa"]);
 });
 test("confirmation_draft_single", () => {
   const words = 'Read: "yes".\nStill a caveat.';
@@ -100,7 +100,7 @@ test("behind_area_same_date_uses_id_tie_break", () => {
       changes: [{ entry: "s-aaaaaa", action: Action.CREATE }],
     }),
   ]);
-  expect(behindArea(s, derive(s), "storage")).toEqual(["d-aaaaaa", "d-cccccc"]);
+  expect(behindArea(s, derive(s), "storage", "author")).toEqual(["d-aaaaaa", "d-cccccc"]);
 });
 test("confirmation_draft_two_uses_and", () => {
   const draft = parseDraft(

@@ -54,7 +54,7 @@ export async function show(
     read: state.read,
     changing: reasoning ? level2Views(s, d, id, state.failing) : [],
     threads: newestLast([...s.threads.values()].filter((t) => t.about === id)),
-    confirmable: confirmableIds(s, d).has(id),
+    confirmable: confirmableIds(s, d, w.actor.kind === "person" ? w.actor.name : null).has(id),
     restsOn: restsOnTree(s, d, id),
     supports: views(state, d.supports.get(id) ?? []),
   };

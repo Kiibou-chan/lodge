@@ -14,16 +14,16 @@ import { notFound, readState, type State, type Wiring } from "./state.ts";
 import { minuteOf } from "./time.ts";
 import { add } from "./writes.ts";
 
-function behindIds(state: State, name: string): readonly string[] {
+function behindIds(state: State, name: string, person: string | null): readonly string[] {
   const s = state.snapshot;
   if (!s.areas.has(name) && [...s.entries.values()].every((e) => e.area !== name))
     throw notFound(state, `area named ${name}`, name);
-  return coreBehindArea(s, state.derived, name);
+  return coreBehindArea(s, state.derived, name, person);
 }
 export async function behindArea(w: Wiring, name: string): Promise<readonly Behind[]> {
   const state = await readState(w.store);
   const s = state.snapshot;
-  return behindIds(state, name).map((id) => {
+  return behindIds(state, name, w.actor.kind === "person" ? w.actor.name : null).map((id) => {
     const decision = s.decisions.get(id);
     if (decision === undefined) throw new Error(`missing decision ${id}`);
     return {
@@ -35,9 +35,14 @@ export async function behindArea(w: Wiring, name: string): Promise<readonly Behi
     };
   });
 }
-function expectedIds(state: State, ids: readonly string[], area: string | null): readonly string[] {
-  if (area !== null) return behindIds(state, area);
-  if (ids.length === 1 && confirmableIds(state.snapshot, state.derived).has(ids[0] ?? ""))
+function expectedIds(
+  state: State,
+  ids: readonly string[],
+  area: string | null,
+  person: string | null,
+): readonly string[] {
+  if (area !== null) return behindIds(state, area, person);
+  if (ids.length === 1 && confirmableIds(state.snapshot, state.derived, person).has(ids[0] ?? ""))
     return ids;
   return [];
 }
@@ -57,7 +62,7 @@ export async function confirmDecisions(
   const state = await readState(w.store);
   if (!state.snapshot.people.has(w.actor.name))
     throw new Forbidden("only an owner of the project confirms; nothing was written");
-  const expected = expectedIds(state, ids, area);
+  const expected = expectedIds(state, ids, area, w.actor.name);
   const given = new Set(ids);
   if (!expected.length || ids.length !== expected.length || expected.some((id) => !given.has(id)))
     throw new StaleList("the list changed since the page was loaded; nothing was written");

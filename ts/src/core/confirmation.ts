@@ -13,19 +13,33 @@ class IndexError extends LookupError {
 export const VIEWER = "lodge viewer";
 export const MINUTE_FORMAT = "%Y-%m-%d %H:%M";
 
-export function confirmableIds(s: Snapshot, d: Derived): ReadonlySet<string> {
+export function confirmableIds(
+  s: Snapshot,
+  d: Derived,
+  person: string | null,
+): ReadonlySet<string> {
+  const confirmed = new Set(
+    [...s.decisions.values()]
+      .filter((decision) => decision.decidedBy === person && decision.importedFrom === null)
+      .flatMap((decision) => decision.confirms),
+  );
   return new Set(
     [...s.decisions]
       .filter(
         ([id, decision]) =>
-          !isAuthor(decision, s.people) && d.status.get(id) === "current" && !d.confirmedBy.has(id),
+          !isAuthor(decision, s.people) && d.status.get(id) === "current" && !confirmed.has(id),
       )
       .map(([id]) => id),
   );
 }
-export function behindArea(s: Snapshot, d: Derived, area: string): readonly string[] {
+export function behindArea(
+  s: Snapshot,
+  d: Derived,
+  area: string,
+  person: string | null,
+): readonly string[] {
   const entries = new Set([...s.entries].filter(([, e]) => e.area === area).map(([id]) => id));
-  return [...confirmableIds(s, d)]
+  return [...confirmableIds(s, d, person)]
     .filter(
       (id) =>
         s.decisions

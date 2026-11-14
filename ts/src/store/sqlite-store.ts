@@ -90,6 +90,7 @@ export class SqliteStore implements Store {
     message: string,
     approves: number | null = null,
   ): Promise<PublishOutcome> {
+    if (base.rev === null || String(Number(base.rev)) !== base.rev) return PublishOutcome.REJECTED;
     const events: { kind: string; path: string; body: Uint8Array; message: string }[] = [];
     for (const path of writes.keys()) {
       const parts = path.split("/");

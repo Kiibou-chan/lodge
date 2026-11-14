@@ -21,7 +21,7 @@ test("confirmable_and_confirmed_by_follow_the_person", () => {
   const own = decision({ decidedBy: "ada", quote });
   const agent = decision({ date: at(1) });
   const before = s(own, agent);
-  expect(confirmableIds(before, derive(before))).toEqual(new Set([agent.id]));
+  expect(confirmableIds(before, derive(before), "author")).toEqual(new Set([agent.id]));
   const c = decision({ decidedBy: "ada", quote, date: at(2), confirms: [agent.id] });
   const after = s(own, agent, c);
   expect(derive(after).confirmedBy.get(agent.id)).toEqual([c.id]);
