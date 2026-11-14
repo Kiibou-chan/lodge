@@ -104,7 +104,13 @@ export class SqliteAccounts implements Accounts {
     return this.write("session-ended", { hash });
   }
   issueToken(token: AgentToken, hash: string): Promise<void> {
-    return this.write("token-issued", { ...token, hash });
+    const { id, project, role, label, issued, revoked } = token;
+    return this.database.db.transaction().execute(async (tx) => {
+      await this.lock(tx, "tokens");
+      if (await tx.selectFrom("tokens").select("id").where("id", "=", id).executeTakeFirst())
+        throw new Conflict(`a token already exists under ID ${id}`);
+      await this.append(tx, "token-issued", { id, project, role, label, issued, revoked, hash });
+    });
   }
   private token(value: AgentToken & { hash: string }): AgentToken {
     const { hash: _hash, ...token } = value;

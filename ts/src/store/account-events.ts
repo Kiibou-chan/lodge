@@ -1,4 +1,5 @@
 import type { Selectable, Transaction } from "kysely";
+import { NotFound } from "#app";
 import { decodeUtf8, encodeUtf8 } from "#core";
 
 const json = (value: unknown): Uint8Array => encodeUtf8(JSON.stringify(value));
@@ -40,11 +41,9 @@ export async function applyAccountEvent(
     case "token-revoked": {
       const table = row.kind === "passkey-used" ? "passkeys" : "tokens";
       const id = String(body.id);
-      const old = await tx
-        .selectFrom(table)
-        .select("body")
-        .where("id", "=", id)
-        .executeTakeFirstOrThrow();
+      const old = await tx.selectFrom(table).select("body").where("id", "=", id).executeTakeFirst();
+      if (!old)
+        throw new NotFound(`no ${table === "passkeys" ? "passkey" : "token"} under ID ${id}`);
       const value = JSON.parse(decodeUtf8(old.body)) as Record<string, unknown>;
       const updated =
         row.kind === "passkey-used"

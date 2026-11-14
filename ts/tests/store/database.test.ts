@@ -5,7 +5,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { sql } from "kysely";
 import { LodgeError } from "#app";
-import { type LodgeDatabase, openDatabase, rebuild } from "#store";
+import { type LodgeDatabase, openDatabase, rebuild, SqliteProjects } from "#store";
+import { FixedClock } from "../app/fakes.ts";
 
 const roots: string[] = [];
 const databases: LodgeDatabase[] = [];
@@ -198,21 +199,19 @@ create table members(project text not null, person text not null, role text not 
   raw.exec(
     "insert into events(project, at, actor, kind, body) values ('storage', 'now', 'ada', 'project', x'7b7d')",
   );
+  raw.exec("insert into heads(project, rev) values ('storage', 1)");
   raw.close();
   const database = await open(file);
   expect(
     (await sql<{ user_version: number }>`pragma user_version`.execute(database.db)).rows,
   ).toEqual([{ user_version: 3 }]);
   expect(await database.db.selectFrom("held").selectAll().execute()).toEqual([]);
-  for (const table of [
-    "setup",
-    "setup_codes",
-    "passkeys",
-    "sessions",
-    "tokens",
-    "project_settings",
-  ] as const)
+  for (const table of ["setup", "setup_codes", "passkeys", "sessions", "tokens"] as const)
     expect(await database.db.selectFrom(table).selectAll().execute()).toEqual([]);
+  const projects = new SqliteProjects(database, new FixedClock());
+  expect(await projects.names()).toEqual(["storage"]);
+  expect(await projects.settings("storage")).toEqual({});
+  expect(await projects.settings("unknown")).toBeNull();
   expect(await database.db.selectFrom("events").selectAll().execute()).toHaveLength(1);
 }
 

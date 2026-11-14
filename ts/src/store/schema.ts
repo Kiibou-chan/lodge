@@ -81,7 +81,9 @@ create table setup_codes(id text primary key, body blob not null, seq integer no
 create table passkeys(id text primary key, body blob not null, seq integer not null);
 create table sessions(id text primary key, body blob not null, seq integer not null);
 create table tokens(id text primary key, body blob not null, seq integer not null);
-create table project_settings(id text primary key, body blob not null, seq integer not null);`,
+create table project_settings(id text primary key, body blob not null, seq integer not null);
+insert into project_settings(id, body, seq)
+  select project, cast('{}' as blob), max(seq) from events where kind = 'project' group by project;`,
 ];
 export async function openDatabase(path: string): Promise<LodgeDatabase> {
   const raw = new Database(path, { strict: true, create: true });

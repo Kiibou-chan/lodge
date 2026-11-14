@@ -2,8 +2,8 @@ import { afterEach, expect, test } from "bun:test";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { Conflict, stampOf } from "#app";
-import { type LodgeDatabase, openDatabase, rebuild, SqliteAccounts } from "#store";
+import { Conflict, NotFound, stampOf } from "#app";
+import { type LodgeDatabase, openDatabase, rebuild, SqliteAccounts, SqliteProjects } from "#store";
 import { FixedClock } from "../app/fakes.ts";
 
 const opened: LodgeDatabase[] = [];
@@ -130,7 +130,13 @@ test("no_event_holds_a_clear_secret", async () => {
   );
   await accounts.issueSetupCode(hashes[0] ?? "", expiry);
   await accounts.startSession(hashes[1] ?? "", expiry);
-  await accounts.issueToken(token, hashes[2] ?? "");
+  const issued = {
+    ...token,
+    clearSetupCode: secrets[0],
+    clearSession: secrets[1],
+    clearToken: secrets[2],
+  };
+  await accounts.issueToken(issued, hashes[2] ?? "");
   for (const event of await database.db.selectFrom("events").selectAll().execute())
     for (const secret of secrets)
       expect(new TextDecoder().decode(event.body)).not.toContain(secret);
@@ -176,3 +182,58 @@ test("accounts_survive_reopening_and_rebuild", async () => {
     await rebuild(next.database);
   }
 });
+
+test("spent_newest_code_never_revives_older_codes", async () => {
+  const { accounts, database } = await fixture();
+  await accounts.issueSetupCode("old", expiry);
+  await accounts.issueSetupCode("new", expiry);
+  expect(await accounts.spendSetupCode("new")).toBe(true);
+  for (let i = 0; i < 2; i++) {
+    expect(await accounts.setupCodeValid("old")).toBe(false);
+    expect(await accounts.spendSetupCode("old")).toBe(false);
+    await rebuild(database);
+  }
+});
+test("duplicate_token_id_is_a_conflict", async () => {
+  const { accounts, database } = await fixture();
+  await accounts.issueToken(token, "original");
+  await accounts.issueToken({ ...token, id: "t-bbbbbb" }, "second");
+  const before = await database.db.selectFrom("events").selectAll().execute();
+  await expect(accounts.issueToken({ ...token, project: "other" }, "replacement")).rejects.toThrow(
+    Conflict,
+  );
+  expect(await accounts.tokenFor("original")).toEqual(token);
+  expect(await accounts.tokenFor("replacement")).toBeNull();
+  expect((await accounts.tokens()).map((t) => t.id)).toEqual([token.id, "t-bbbbbb"]);
+  expect(await database.db.selectFrom("events").selectAll().execute()).toEqual(before);
+});
+test("unknown_passkey_is_not_found", async () => {
+  const { accounts, database } = await fixture();
+  await expect(accounts.usePasskey("unknown", 3)).rejects.toThrow(NotFound);
+  expect(await database.db.selectFrom("events").selectAll().execute()).toEqual([]);
+});
+test.each(["setup", "setup_codes", "passkeys", "sessions", "tokens", "project_settings"] as const)(
+  "rebuild_clears_stale_%s",
+  async (table) => {
+    const { accounts, database, clock } = await fixture();
+    await new SqliteProjects(database, clock).create("storage", "author", {
+      length: { title_chars: 70 },
+    });
+    await accounts.setUp(setup);
+    await accounts.issueSetupCode("hash", expiry);
+    await accounts.addPasskey(key);
+    await accounts.startSession("session", expiry);
+    await accounts.issueToken(token, "token");
+    const before = await database.db.selectFrom(table).selectAll().execute();
+    await database.db
+      .insertInto(table)
+      .values({
+        id: "stale",
+        body: new TextEncoder().encode("{}"),
+        seq: 999,
+      })
+      .execute();
+    await rebuild(database);
+    expect(await database.db.selectFrom(table).selectAll().execute()).toEqual(before);
+  },
+);
