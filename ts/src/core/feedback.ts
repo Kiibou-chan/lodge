@@ -1,7 +1,7 @@
 import { type Derived, isAuthor } from "./derive.ts";
 import { areaPath } from "./fileformat.ts";
 import { Action, type Decision, type Record, type SpecEntry } from "./model.ts";
-import { waitingPeople } from "./people.ts";
+import { listed, waitWords } from "./people.ts";
 import { related } from "./search.ts";
 import type { LengthGuidance } from "./settings.ts";
 import type { Snapshot } from "./snapshot.ts";
@@ -87,11 +87,7 @@ function* decisionMessages(
   yield* editBackMessage(decision, after, d);
   yield* revivalMessage(decision, after, d);
   const awaiting = d.awaiting.get(decision.id);
-  if (awaiting?.length) {
-    const people = waitingPeople(awaiting);
-    const later = people === "the author" ? "author decision" : `decision of ${people}`;
-    yield `this decision will wait for ${people}: it takes effect at once, and a later ${later} that confirms or replaces it clears the flag`;
-  }
+  if (awaiting?.length) yield waitWords(awaiting);
 }
 function* editBackMessage(decision: Decision, after: Snapshot, d: Derived): Generator<string> {
   if (!isAuthor(decision, after.people)) return;
@@ -135,10 +131,6 @@ function* revivalMessage(decision: Decision, after: Snapshot, d: Derived): Gener
     if (!retirements.length) continue;
     yield `it replaces ${listed(retirements)}, the last standing ${retirements.length > 1 ? "retirements" : "retirement"} of ${entry}, so ${entry} becomes current again; to keep it retired, list it in changes with action retire`;
   }
-}
-function listed(items: readonly string[]): string {
-  if (items.length < 3) return items.join(" and ");
-  return `${items.slice(0, -1).join(", ")}, and ${items.at(-1)}`;
 }
 function* relatedMessage(decision: Decision, after: Snapshot, d: Derived): Generator<string> {
   const found = related(after, d, decision);

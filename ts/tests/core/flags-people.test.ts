@@ -79,3 +79,45 @@ test("confirmed_by_names_each_person", () => {
   const s = snapshot(ada, agent, b, a);
   expect(flags(s, agent.id)).toContain(`confirmed by ada (${a.id}) and bo (${b.id})`);
 });
+test("a_persons_decision_is_not_flagged_for_another", () => {
+  const spec = entry();
+  const changes = [{ entry: spec.id, action: Action.EDIT }];
+  for (const own of [
+    decision({ decidedBy: "bo", quote, date: at(1), narrows: [ada.id] }),
+    decision({ decidedBy: "bo", quote, date: at(1), changes }),
+  ]) {
+    const s = snapshot(spec, { ...ada, changes }, own);
+    expect(derive(s).awaiting).toEqual(new Map());
+    expect(
+      feedback([own], s, derive(s), lengthGuidance())
+        .map((f) => f.message)
+        .filter((message) => message.startsWith("this decision will wait for")),
+    ).toEqual([]);
+  }
+});
+test("entry_waiting_people_are_in_code_point_order", () => {
+  const spec = entry();
+  const changes = [{ entry: spec.id, action: Action.EDIT }];
+  const first = decision({ date: at(1), changes, narrows: [ada.id] });
+  const second = decision({ date: at(2), changes, narrows: [bo.id] });
+  const s = snapshot(spec, ada, bo, first, second);
+  expect(flags(s, spec.id)).toContain(`awaiting ada and bo on ${second.id}, ${first.id}`);
+});
+test("three_waiting_people_have_an_oxford_comma", () => {
+  const cy = decision({ decidedBy: "cy", quote });
+  const edit = decision({ date: at(1), narrows: [cy.id, bo.id, ada.id] });
+  const s = load(
+    tree({ rev: null, files: filesOf(ada, bo, cy, edit), people: new Set(["cy", "bo", "ada"]) }),
+  );
+  expect(flags(s, edit.id)).toContain("awaiting ada, bo, and cy");
+});
+test("behind_edits_count_only_for_people_still_waited_for", () => {
+  const spec = entry();
+  const changes = [{ entry: spec.id, action: Action.EDIT }];
+  const first = { ...ada, changes };
+  const edit = decision({ date: at(1), changes, narrows: [bo.id] });
+  const confirmation = decision({ decidedBy: "ada", quote, date: at(2), confirms: [edit.id] });
+  const s = snapshot(spec, first, bo, edit, confirmation);
+  expect(derive(s).awaiting.get(edit.id)).toEqual(["bo"]);
+  expect(derive(s).touchedByFlagged.has(first.id)).toBe(false);
+});
