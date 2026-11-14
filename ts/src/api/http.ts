@@ -45,9 +45,8 @@ export function handler(options: ApiOptions): (request: Request) => Promise<Resp
       }
       if (isPersonOperation(operation)) {
         const actor = await authenticate(options, request, null);
-        const result = await personOperation(options, operation, body, actor);
-        const outcome = isObject(result) ? (result["added"] ?? result["written"] ?? result) : null;
-        if (isObject(outcome) && outcome["outcome"] === AddOutcome.CHECK_FAILED)
+        const { result, checkFailed } = await personOperation(options, operation, body, actor);
+        if (checkFailed)
           return answer(
             {
               error: { kind: "check-failed", message: "the check failed" },

@@ -9,6 +9,13 @@ test("register_with_the_setup_code_then_sign_in", async () => {
     response: await w.a.get(await w.challenge("sign-in-options")),
   });
   expect(r.status).toBe(200);
+  const cookie = r.headers.get("Set-Cookie");
+  expect(cookie).toMatch(
+    /^lodge_session=[A-Za-z0-9_-]{43}; HttpOnly; Secure; SameSite=Strict; Path=\/; Max-Age=2592000$/u,
+  );
+  expect(await (await w.call("me", {}, cookie ?? "")).json()).toEqual({
+    result: { setUp: true, signedIn: true, person: "ada" },
+  });
   expect((await w.accounts.passkeys())[0]?.counter).toBe(1);
   await w.database.close();
 });
@@ -156,5 +163,37 @@ test("registration_user_handle_is_the_origin_and_person_hash", async () => {
   );
   expect(opts.rp).toEqual({ name: "lodge", id: "lodge.test" });
   expect(opts.attestation).toBe("none");
+  await w.database.close();
+});
+
+test.each(["register-options", "register"])("registration_requires_access %s", async (op) => {
+  const w = await ceremony();
+  const response = await w.a.create(await w.challenge("register-options", { setupCode: w.code }));
+  for (const cookie of [undefined, "lodge_session=unknown"]) {
+    const r = await w.call(op, op === "register" ? { response } : {}, cookie);
+    expect(r.status).toBe(401);
+    expect(await r.json()).toEqual({ error: { kind: "unauthorised", message: "sign in again" } });
+  }
+  const cookie = (await w.register()).headers.get("Set-Cookie") ?? "";
+  expect((await w.call(op, op === "register" ? { response } : {}, cookie, null)).status).toBe(403);
+  await w.options.clock.sleep(2592000);
+  expect((await w.call(op, op === "register" ? { response } : {}, cookie)).status).toBe(401);
+  await w.database.close();
+});
+
+test("library_log_escapes_line_breaks", async () => {
+  const w = await ceremony();
+  await w.register();
+  w.a.origin = "https://other.test\r\nFORGED LOG LINE";
+  const response = await w.call("sign-in", {
+    response: await w.a.get(await w.challenge("sign-in-options")),
+  });
+  expect(response.status).toBe(401);
+  expect(await response.json()).toEqual({
+    error: { kind: "unauthorised", message: "the passkey was not accepted" },
+  });
+  expect(w.logs).toHaveLength(1);
+  expect(w.logs[0]).not.toMatch(/[\r\n]/u);
+  expect(JSON.parse(w.logs[0] ?? "")).toContain(w.a.origin);
   await w.database.close();
 });

@@ -62,7 +62,9 @@ export function passkeys(options: ApiOptions) {
     try {
       return await fn();
     } catch (error) {
-      options.log(error instanceof Error ? error.message : "passkey verification failed");
+      options.log(
+        JSON.stringify(error instanceof Error ? error.message : "passkey verification failed"),
+      );
       throw new ApiError("unauthorised", "the passkey was not accepted");
     }
   }

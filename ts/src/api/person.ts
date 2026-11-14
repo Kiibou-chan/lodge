@@ -1,4 +1,4 @@
-import { type Actor, coreSettings, type Held } from "#app";
+import { type Actor, AddOutcome, coreSettings, type Held } from "#app";
 import { parseDraft, recordFromDraft } from "#core";
 import { Args } from "./args.ts";
 import { ApiError } from "./errors.ts";
@@ -58,32 +58,39 @@ function presentHeld(h: Held): unknown {
     };
   return { ...common, drafts: h.drafts.map(([name, text]) => heldDraft(name, text, h.at)) };
 }
+export interface PersonAnswer {
+  readonly result: unknown;
+  readonly checkFailed: boolean;
+}
 export async function personOperation(
   options: ApiOptions,
   operation: string,
   body: Record<string, unknown>,
   actor: Actor,
-): Promise<unknown> {
+): Promise<PersonAnswer> {
   if (actor.kind !== "person")
     throw new ApiError("forbidden", `only the signed-in person may ${operation}`);
   const args = new Args(operation, body);
   args.known(fields[operation] ?? []);
   switch (operation) {
     case "token-issue":
-      return issueToken(
-        options,
-        args.string("project"),
-        args.string("label"),
-        args.nullable("role"),
-      );
+      return {
+        result: await issueToken(
+          options,
+          args.string("project"),
+          args.string("label"),
+          args.nullable("role"),
+        ),
+        checkFailed: false,
+      };
     case "token-revoke":
       if (!(await options.accounts.revokeToken(args.string("id"))))
         throw new ApiError("not-found", "no live token with that id");
-      return null;
+      return { result: null, checkFailed: false };
     case "tokens":
-      return options.accounts.tokens();
+      return { result: await options.accounts.tokens(), checkFailed: false };
     case "projects":
-      return options.projects.names();
+      return { result: await options.projects.names(), checkFailed: false };
   }
   const project = args.string("project"),
     settings = await options.projects.settings(project);
@@ -93,17 +100,25 @@ export async function personOperation(
     const ids = args.body["ids"];
     if (!Array.isArray(ids) || !ids.every((id) => typeof id === "string"))
       return args.fail("ids", "a list of strings");
-    return lodge.confirm(ids, args.string("words"), { area: args.nullable("area") });
+    const result = await lodge.confirm(ids, args.string("words"), { area: args.nullable("area") });
+    return { result, checkFailed: result.outcome === AddOutcome.CHECK_FAILED };
   }
   if (operation === "held")
-    return (await lodge.held())
-      .filter((h) => h.person === actor.name)
-      .sort((a, b) => a.seq - b.seq)
-      .map(presentHeld);
+    return {
+      result: (await lodge.held())
+        .filter((h) => h.person === actor.name)
+        .sort((a, b) => a.seq - b.seq)
+        .map(presentHeld),
+      checkFailed: false,
+    };
   const seq = args.body["seq"];
   if (typeof seq !== "number" || !Number.isSafeInteger(seq) || seq < 1)
     return args.fail("seq", "a positive whole number");
-  if (operation === "approve") return lodge.approve(seq);
+  if (operation === "approve") {
+    const result = await lodge.approve(seq);
+    const outcome = result.kind === "add" ? result.added : result.written;
+    return { result, checkFailed: outcome.outcome === AddOutcome.CHECK_FAILED };
+  }
   await lodge.decline(seq, args.string("reason"));
-  return null;
+  return { result: null, checkFailed: false };
 }

@@ -10,7 +10,8 @@ export function sessionSecret(request: Request): string | null {
 }
 export async function sessionActor(options: ApiOptions, request: Request): Promise<Actor> {
   const setup = await options.accounts.setup();
-  if (!setup || request.headers.get("Origin") !== setup.origin)
+  if (!setup) throw new ApiError("unauthorised", "sign in again");
+  if (request.headers.get("Origin") !== setup.origin)
     throw new ApiError("forbidden", "the request does not come from this server's page");
   const secret = sessionSecret(request);
   const expires = secret === null ? null : await options.accounts.sessionExpiry(hashSecret(secret));

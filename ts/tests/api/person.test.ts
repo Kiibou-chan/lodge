@@ -120,9 +120,9 @@ test.each([
     ).toBe(200);
     expect((await w.call("approve", { project: "work", seq: add.held })).status).toBe(404);
   } else {
-    const b = (
-      await (await w.call("approve", { project: "work", seq: add.held })).text().then(JSON.parse)
-    ).result;
+    const approved = await w.call("approve", { project: "work", seq: add.held });
+    expect(approved.status).toBe(200);
+    const b = (await approved.text().then(JSON.parse)).result;
     expect(structuredClone(b)).toMatchObject({
       kind: "add",
       added: { outcome: "published", ids: [expect.any(String)] },

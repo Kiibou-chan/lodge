@@ -127,7 +127,9 @@ test("approval_failing_the_check_answers_422", async () => {
   const r = await w.call("approve", { project: "work", seq: add.held });
   expect(r.status).toBe(422);
   const b = await r.text().then(JSON.parse);
+  expect(b.error).toEqual({ kind: "check-failed", message: "the check failed" });
   expect(b.result.kind).toBe("add");
+  expect(b.result).not.toHaveProperty("checkFailed");
   expect(b.result.added.check.problems.some((p: { check: number }) => p.check === 6)).toBe(true);
   expect(
     (await (await w.call("held", { project: "work" })).text().then(JSON.parse)).result,
