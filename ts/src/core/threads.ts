@@ -1,4 +1,5 @@
 import { assemble, keyLine, loadHeader, readWith, trimBlock } from "./document.ts";
+import { equal } from "./equal.ts";
 import { ValueError } from "./errors.ts";
 import {
   checkKeys,
@@ -12,8 +13,10 @@ import {
 } from "./fields.ts";
 import { isId } from "./ids.ts";
 import { type Message, type Problem, Raises, type Thread, ThreadState } from "./model.ts";
+import { AUTHOR_ONLY, messageWords } from "./people.ts";
+import { READ_BACK_FIELDS } from "./read-back-fields.ts";
 import { instant } from "./stamps.ts";
-import { strip } from "./text.ts";
+import { byCodePoint, strip } from "./text.ts";
 import { quoted } from "./yamlio.ts";
 export const THREADS = "lodge/threads/";
 const HEADING = /^## Message [0-9]+$/u;
@@ -22,7 +25,7 @@ const UNESCAPE = /(?<=^|\n)\\+## Message [0-9]+(?=\n|$)/gu;
 export function threadPath(id: string): string {
   return `${THREADS}${id}.md`;
 }
-export function parseThread(path: string, text: string): Thread | Problem {
+export function parseThread(path: string, text: string, people = AUTHOR_ONLY): Thread | Problem {
   return readWith(path, text, (header, body) => {
     checkKeys(header, ["id", "kind", "about", "raises", "state", "opened"]);
     const id = readId(requireField(header, "id"), "id", "q");
@@ -41,11 +44,16 @@ export function parseThread(path: string, text: string): Thread | Problem {
       raises,
       state,
       opened,
-      messages: messages(body, state, text.split("\n").length - body.split("\n").length),
+      messages: messages(body, state, text.split("\n").length - body.split("\n").length, people),
     };
   });
 }
-function messages(body: string, state: ThreadState, offset: number): readonly Message[] {
+function messages(
+  body: string,
+  state: ThreadState,
+  offset: number,
+  people: ReadonlySet<string>,
+): readonly Message[] {
   const lines = body.split("\n"),
     starts = lines.flatMap((line, i) => (HEADING.test(line) ? [i] : []));
   if (!starts.length) throw new FormatError("a thread needs at least one message");
@@ -60,6 +68,7 @@ function messages(body: string, state: ThreadState, offset: number): readonly Me
       starts[i + 1] ?? lines.length,
       offset,
       state === ThreadState.CLOSED && i === starts.length - 1,
+      people,
     );
   });
 }
@@ -69,6 +78,7 @@ function readMessage(
   end: number,
   offset: number,
   closing: boolean,
+  people: ReadonlySet<string>,
 ): Message {
   const heading = first;
   while (first < end && !strip(lines[first] as string)) first++;
@@ -83,9 +93,8 @@ function readMessage(
     by = readStr(requireField(header, "by"), "by");
     when = readStr(requireField(header, "when"), "when");
     where = readOptionalStr(header, "where");
-    if (by === "author" && where === null)
-      throw new FormatError("an author message needs where", "where");
-    if (by !== "author") when = readStamp(when, "when");
+    if (people.has(by) && where === null) throw new FormatError(messageWords(by), "where");
+    if (!people.has(by)) when = readStamp(when, "when");
   } catch (error) {
     if (!(error instanceof FormatError)) throw error;
     const relative = error.key !== null ? keyLine(headerText, error.key) : error.line;
@@ -104,7 +113,7 @@ function quote(key: string, value: string): string {
     throw new ValueError(`${key}: ${error.message}`);
   }
 }
-export function writeThread(thread: Thread): string {
+export function writeThread(thread: Thread, people = AUTHOR_ONLY): string {
   const header = [
     `id: ${thread.id}`,
     "kind: thread",
@@ -115,28 +124,21 @@ export function writeThread(thread: Thread): string {
   ];
   const blocks = thread.messages.map((m, i) => {
     const by = /^[A-Za-z0-9][A-Za-z0-9._-]*$/u.test(m.by) ? m.by : quote("by", m.by);
-    const meta = [`by: ${by}`, `when: ${m.by === "author" ? quote("when", m.when) : m.when}`];
+    const meta = [`by: ${by}`, `when: ${people.has(m.by) ? quote("when", m.when) : m.when}`];
     if (m.where !== null) meta.push(`where: ${quote("where", m.where)}`);
     const text = trimBlock(m.text).replace(ESCAPE, (m) => `\\${m}`);
     return `## Message ${i + 1}\n\n${meta.join("\n")}${text ? `\n\n${text}` : ""}`;
   });
   const text = assemble(header, blocks.join("\n\n")),
-    back = parseThread(threadPath(thread.id), text);
+    back = parseThread(threadPath(thread.id), text, people);
   if (back.kind === "problem")
     throw new ValueError(`the thread would not read back: ${back.message}`);
   for (let i = 0; i < Math.min(thread.messages.length, back.messages.length); i++) {
-    for (const field of ["by", "when", "where", "text"] as const)
+    for (const field of READ_BACK_FIELDS.message)
       if (thread.messages[i]?.[field] !== back.messages[i]?.[field])
         throw new ValueError(`the thread would not read back unchanged: message ${i + 1} ${field}`);
   }
-  if (
-    thread.id !== back.id ||
-    thread.about !== back.about ||
-    thread.raises !== back.raises ||
-    thread.state !== back.state ||
-    thread.opened !== back.opened ||
-    thread.messages.length !== back.messages.length
-  )
+  if (READ_BACK_FIELDS.thread.some((field) => !equal(thread[field], back[field])))
     throw new ValueError("the thread would not read back unchanged: header or messages");
   return text;
 }
@@ -155,16 +157,6 @@ export function appended(thread: Thread, message: Message, close = false): Threa
 }
 export function newestLast(threads: Iterable<Thread>): readonly Thread[] {
   return [...threads].sort(
-    (a, b) => instant(a.opened) - instant(b.opened) || compareIds(a.id, b.id),
+    (a, b) => instant(a.opened) - instant(b.opened) || byCodePoint(a.id, b.id),
   );
-}
-
-function compareIds(a: string, b: string): number {
-  const left = Array.from(a, (c) => c.codePointAt(0) as number);
-  const right = Array.from(b, (c) => c.codePointAt(0) as number);
-  for (let i = 0; i < Math.min(left.length, right.length); i++) {
-    const difference = (left[i] as number) - (right[i] as number);
-    if (difference) return difference;
-  }
-  return left.length - right.length;
 }

@@ -1,4 +1,4 @@
-const { PACKAGES, CORE_NPM } = require("./tests/structure/table.ts");
+const { PACKAGES, CORE_NPM, STORE_NPM } = require("./tests/structure/table.ts");
 const packages = [...PACKAGES.keys()].filter((name) => name !== "main");
 
 /** @type {import("dependency-cruiser").IConfiguration} */
@@ -55,6 +55,15 @@ module.exports = {
       to: {
         dependencyTypes: ["npm", "npm-dev", "npm-optional", "npm-peer", "npm-no-pkg"],
         pathNot: `^(?:node_modules/)?(?:${CORE_NPM.join("|")})(?:/|$)`,
+      },
+    },
+    {
+      name: "store-imports",
+      severity: "error",
+      from: { path: "^src/store/" },
+      to: {
+        dependencyTypes: ["core", "npm", "npm-dev", "npm-optional", "npm-peer", "npm-no-pkg"],
+        pathNot: `^(?:(?:node_modules/)?(?:${STORE_NPM.join("|")})(?:/|$)|bun:sqlite$)`,
       },
     },
     {

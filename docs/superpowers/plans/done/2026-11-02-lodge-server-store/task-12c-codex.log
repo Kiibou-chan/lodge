@@ -1,0 +1,2113 @@
+Reading additional input from stdin...
+OpenAI Codex v0.167.0
+--------
+workdir: /var/tmp/lodge-server-store
+model: gpt-6.1-sol
+provider: openai
+approval: never
+sandbox: danger-full-access
+reasoning effort: none
+reasoning summaries: none
+session id: 01a1dc13-99ab-7f82-b408-a8b25dbddd0c
+--------
+user
+Read docs/superpowers/plans/2026-11-02-lodge-server-store/task-12c-brief.md first, then build it.
+codex
+I’ll read the task brief first, then implement it and run the relevant checks.
+exec
+/bin/bash -lc 'cat docs/superpowers/plans/2026-11-02-lodge-server-store/task-12c-brief.md' in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+# Brief: Task 12c of `docs/superpowers/plans/2026-11-02-lodge-server-store.md`
+
+You build Task 12c of the plan named above, in the worktree `/var/tmp/lodge-server-store`, on branch `server-store`.
+Read `CLAUDE.md` first, then this brief; it is your requirements, with the exact values to use verbatim.
+Test-first: write each test, run it and see it fail, then write the code; all existing tests keep passing.
+You have full access (d-94tynf). Run `sh scripts/check-ts.sh` last; it must exit 0. The structure checks gate the finished task, not intermediate commits.
+Never run `bun install` or `bun add`: a package the task needs and `ts/package.json` lacks stops the task with BLOCKED and its name.
+Never edit earlier briefs, reports, or reviews in `docs/superpowers/plans/2026-11-02-lodge-server-store/`: they are history.
+Line handles in this brief drift as tasks land; re-locate them by content.
+Commit when the gate is green, with explicit paths: `git -c "user.name=Svenja Kernig" -c user.email=20756868+Kiibou-chan@users.noreply.github.com commit`, message ending with the trailer `Co-Authored-By: Codex <noreply@openai.com>`; then `git push origin server-store`. Never touch `main`.
+Write your report to `docs/superpowers/plans/2026-11-02-lodge-server-store/task-12c-report.md`: what you changed per file, each test added or carried with its first failing output (or the mutation it failed against, as a table), the commands you ran and their last lines, every test that cannot hold in TypeScript with the reason, anything you were unsure of. Commit the report too.
+Your final message: DONE, DONE_WITH_CONCERNS, or BLOCKED, one line on the tests, and your concerns.
+The "Coordinator" step of the task is not yours: the coordinator runs the whole gate, merges, and updates the ledger.
+Plan 1's code is in `ts/`; the plan's Global Constraints, Calls made, and Interfaces follow, then your task.
+
+## Global Constraints
+
+Plan 1's Global Constraints hold for every task of this plan, and each brief repeats them; in short, with what this plan adds:
+
+- Builders are Codex (`codex exec`), one task per brief; Codex sees its brief, `CLAUDE.md`, and the repository, with no network, a read-only git index, and no sockets: the builder never stages, commits, or pushes, and never runs `bun install` or `bun add`; a package the task needs and `ts/package.json` lacks stops the task with BLOCKED and its name.
+- The builder's gate is `sh scripts/check-ts.sh` (Biome with `--error-on-warnings`, d-f18pz7; `tsc`, dependency-cruiser, knip, and `bun test`); the coordinator's gate after every task is `sh scripts/check.sh` outside the sandbox, then it stages with explicit paths, commits with `git -c user.name="Svenja Kernig" -c user.email=20756868+Kiibou-chan@users.noreply.github.com commit`, the message ending `Co-Authored-By: Claude <noreply@anthropic.com>`, and pushes `server-store` to `origin`; never `main`.
+- lodge 0.2 keeps working: `src/`, `tests/`, `pyproject.toml`, and `uv.lock` are not edited.
+- Test-first: each carried or new test is written and seen failing before its code (a missing module or export counts as failing); a carried test over code an earlier task ported is seen failing against a targeted mutation of that code, never a throw at a function's entry, one per test or per named group, listed in the report as a table and then reverted (d-mfayy5, as plan 1's Task 8c did); every existing test keeps passing, edited only where a task says so.
+- Plan 1's final state is `origin/server-core` at 4f5d5fb; every line this plan cites in `ts/` is at that commit, and the coordinator checks each against the merged code before the task that reads it.
+- Rules in `core` only (`ts/tests/structure/calls.ts` and `guards.ts` at 4f5d5fb), which bind Tasks 7a, 10, and 13, the tasks that edit `ts/src/core`: every `catch` begins with `if (!(e instanceof X)) throw e;`; no object literal has an `ok` key outside `check-state.ts`, so a check result is built through `checkResult` (d-snrhjs); a regular expression literal carries the `u` flag, never `m`, and no Python shorthand; and no `sort()` or `toSorted()` is called without a comparator.
+- Check results in `app` are built through `checkResult` of `#core` too (d-snrhjs), where Python builds `CheckResult(…)` (`src/lodge/app/state.py:69`, `src/lodge/app/reads.py:96`), as plan 1's hand-off asks (`docs/superpowers/plans/done/2026-11-02-lodge-server-core/plan-2-writes-handoff.md` on `server-core`).
+- Lanes (d-d96y91): a task's tests call only what its lane and the tasks it waits for provide; a parameter a later task adds to a function plan 1 ported, or that another lane calls, is trailing and has a default, so every carried call stays as it is.
+- Porting (d-88p8h9), as plan 1's Global Constraints say: each Python test becomes a test titled with its name without `test_`, in the file the parity table names, asserting no less; a parametrised test becomes `test.each(cases.map((c) => [c]))` or `test.each([[a, b], …])` with every case; a test that cannot hold keeps its title, asserts the TypeScript behaviour, and is listed in the report; the task's last step flips its rows of `ts/tests/parity.json` and sets each row's `task` to the task's number, as plan 1's rows have it (`"task": ["5a"]`); a row whose port is split over two files names both in its `ts`.
+- Types, names, and exceptions follow plan 1: a frozen dataclass is an `interface` with `readonly` fields and, where a Python call leaves a defaulted field out, a default-filling function of the same name in camelCase beside it (`committed`, `gate`, `read`, `listed`, `added`, and `written`; probe 5, d-ca6wbw); `X | None` is `X | null`; a tuple is `readonly T[]`, a `Mapping` a `ReadonlyMap`; a `StrEnum` a `const` object and its union type; `raise E(m)` is `throw new E(m)`, and `except E` a `catch` that rethrows anything not an `E`.
+- Calls (d-vd3175): a Python method's parameters without a default stay positional, and those with a default become one trailing options object with their names in camelCase (`add(drafts, { dryRun: true, attachments })`); a test calling Python with keywords calls TypeScript with that object.
+- Asynchrony (d-59q4jc): every method of `Store` and `Projects` returns a `Promise`, `Clock.sleep` returns a `Promise`, and every operation of `Lodge` is `async`; a carried test `await`s each operation, and a `pytest.raises` becomes `await expect(promise).rejects.toThrow(Class)` with the pattern where Python matched one.
+- Time (d-59q4jc): `Clock.now()` gives a `Now`, `{ epochMs, offsetMinutes }`, never a `Date`; `app/time.ts` (Task 2) turns it into stamps; `app` uses no clock, randomness, local time, or `Date` without `new` (d-mfskz3), so it may write `new Date(ms)` and call its UTC methods, and `core` still sees only stamps.
+- Structure (plan 1, Task 3; d-x6f9za; d-s5s2c3; d-nf7wvx): `app` imports only `#core`; `store` imports `#app`, `#core`, `kysely`, and `bun:sqlite`, which the rule `store-imports` (Task 7a) checks, and its confinements hold it to no `fs`, no `fetch`, no socket, and no child process; another package only through its front door (`#app`, `#store`); no file over 300 lines, tests included; a module nearing it is split by topic, as plan 1 says.
+- Exports read in a later task (d-tha8st): a file with an export whose first reader comes in a later task goes into `ts/knip.json`'s `entry` in the task that creates it and leaves in the task that gives it that reader; the files and tasks are listed in "Exports read in a later task" below.
+- Bytes (d-0q54zn, d-wje1cn): text crosses into the database only as UTF-8 bytes through `encodeUtf8` and back through `decodeUtf8` of `core/text.ts` (Task 7a), which map a byte of an invalid sequence to U+DC00 plus the byte and back, as Python's `surrogateescape` does; a `text` column never holds a record's or a file's text, since it drops a leading U+FEFF and corrupts a lone surrogate (probes 1 and 2).
+- No test of this plan needs a socket, so the builder runs every one; tests never touch a real repository or the network; a database is `":memory:"` or a file under a folder from `mkdtempSync` in the system's temporary folder; fixtures are the made-up project of lodge 0.2's tests (the `storage` area), and the people in them are made up (`ada`, `bo`).
+- User-facing text and Markdown: British English, no em-dashes, the Oxford comma, one sentence per line; code comments state the fact.
+
+### Exports read in a later task
+
+From the import lines of `src/lodge/app/*.py` and `tests/app/*.py` (`grep -n '^from' tests/app/*.py`):
+
+| File | Into `entry` | Names and the task that first reads them | Out of `entry` |
+|---|---|---|---|
+| `tests/app/fakes.ts` | Task 2 | `MemoryStore`, `FixedClock`, `CountingIds`, `START` (3) | Task 3 |
+| `src/app/state.ts` | Task 3 | `readChecked`, `resolveRef`, `notFound` (4) | Task 4 |
+| `src/app/writes.ts` | Task 3 | `mintUnused` (4) | Task 4 |
+| `tests/app/support.ts` | Task 3 | `project`, `FIRST` (3); `ENTRY` (4) | Task 4 |
+| `src/store/events.ts` | Task 7a | `appendEvents`, `json` (7b) | Task 7b |
+| `tests/store/interleaving.ts` | Task 8 | `Interleaving` (9) | Task 9 |
+
+Declared without `export`, so knip reports nothing: the Kysely table interfaces `EventsTable`, `HeadsTable`, `FilesTable`, `MembersTable`, and `HeldTable`, and `MIGRATIONS` of `schema.ts`; `NewEvent` of `events.ts` is exported only if another module names the type.
+
+## Calls made
+
+Each is the planner's ruling, recorded in lodge with scope `process` and this plan as its work item; its reasoning there holds a handle per argument and the cost if wrong.
+Every task repeats what it needs of them, so no brief needs this section.
+
+1. d-59q4jc: the ports are asynchronous and `Clock.now()` gives `{ epochMs, offsetMinutes }`.
+2. d-ae1vn5: the `Store` port keeps lodge 0.2's methods and outcomes, and the SQLite store gives one state.
+3. d-wje1cn: the events table, one event per file written with the file's bytes, the derived tables, and the compare-and-set that publishes; d-0q54zn's codec is this plan's.
+4. d-vd3175: defaulted parameters become one trailing options object.
+5. d-t7er56: the task cut, `Lodge` ported method by method with the modules it delegates to, and the lanes; d-d96y91 narrows it: a lane's tests call only what its waits provide, a new parameter of a function another lane calls has a default, and Task 12 is split into 12a and 12b; the held thread messages of d-2v8vtk are Task 12c, on the same hold machinery.
+6. d-rp74dr: `test_thread_fix_paths.py`'s two command tests wait for plan 3 as `test.todo`, and its row becomes plan 3's.
+7. d-vwsnz5 (replacing d-kj59bz): a person is an owner of the project, people reach the core in `Tree.people` and as a defaulted parameter, the words of lodge 0.2 stay for a person named `author`, and a name the records use as a role cannot join.
+8. d-znagqe: a person's decision drafted by anyone else is held whole until that person approves or declines it.
+9. d-4spcem: a review flag waits for each person whose decision raised it, and each clears their part.
+10. d-fv20kp: the check on every write needs no new write path; plan 2 proves it over the events store; d-j28rp0 (replacing d-pmaw3a, which replaced d-pprhpz) narrows it for plan 4's import, which publishes through the store after running the change check from an empty state with the store's settings and then the project's (d-n9nm8h, narrowing d-j28rp0), and has `publish` refuse what lodge 0.2's stores refuse, a path holding a surrogate, and a changed decision.
+11. d-wx7d0f: projects and their members are events behind the `Projects` port.
+12. d-2v8vtk (the author's answer to STORE-1): an agent may relay a person's words into a thread under that person's name, with where and when; the message is held, and the thread waits for that person until they approve it signed in; a person's own message is not held, and one person writing under another's name is refused (Task 12c).
+13. d-nf7wvx: the rule `store-imports` holds `store` to `kysely` and `bun:sqlite` among outside modules.
+14. d-thvvzx: a store transaction that reads before it writes opens with a write, and a hold is approved or declined once.
+
+## Interfaces for plans 3 and 4
+
+The names are those of `src/lodge/app/__init__.py`'s `__all__` in camelCase, with the additions marked; every operation is `async`.
+
+```ts
+// #app, ports
+export interface Now { readonly epochMs: number; readonly offsetMinutes: number }          // added
+export interface Clock { now(): Now; sleep(seconds: number): Promise<void> }
+export interface IdSource { entropy(): Uint8Array }                                         // at least six bytes
+export const PublishOutcome = { PUBLISHED: "published", STAGED: "staged", REJECTED: "rejected" } as const;
+export const CommitOutcome = { COMMITTED: "committed", ON_BASE: "on the base branch", DETACHED: "on a detached HEAD",
+  IN_PROGRESS: "during a merge, rebase, cherry-pick, or revert", LOCKED: "git's index is locked by another process",
+  FAILED: "git could not commit" } as const;
+export interface Committed { readonly outcome: CommitOutcome; readonly detail: string }    // committed() fills detail ""
+export interface Gate { readonly published: Tree; readonly checked: readonly (readonly [string, Tree])[]; readonly notes: readonly string[] }  // gate() fills notes
+export interface Store {
+  commit(paths: readonly string[], message: string): Promise<Committed>;
+  trees(): Promise<readonly [Tree, Tree]>;                 // current, published
+  attachmentTexts(): Promise<ReadonlyMap<string, string>>; // added: every attachment's text by path, for plan 4's export
+  freshness(): Promise<string | null>;
+  gate(current: Tree): Promise<Gate>;
+  publish(base: Tree, writes: ReadonlyMap<string, string>, message: string, approves?: number | null): Promise<PublishOutcome>;  // approves: Task 12a
+  hold(held: HeldDraft): Promise<number>;                  // Task 12a
+  held(): Promise<readonly Held[]>;                        // Task 12a
+  decline(seq: number, reason: string): Promise<void>;     // Task 12a: NotFound unless the hold is open
+}
+export type Actor = { readonly kind: "person"; readonly name: string } | { readonly kind: "agent"; readonly role: string | null };  // added
+export function person(name: string): Actor;               // added
+export function agent(role?: string | null): Actor;        // added
+export function actorText(actor: Actor): string;           // added: "ada", "agent", "agent builder"
+export const Role = { OWNER: "owner", MEMBER: "member" } as const;                          // added
+export interface Projects {                                // added
+  create(project: string, owner: string): Promise<void>;
+  members(project: string): Promise<ReadonlyMap<string, Role>>;
+  addMember(project: string, person: string, role: Role, by: Actor): Promise<void>;
+  storeFor(project: string, actor: Actor): Store;
+}
+export function stampOf(now: Now): string;               // added: datetime.isoformat(timespec="seconds"), "2026-10-29T09:30:00+01:00"
+export function minuteOf(now: Now): string;              // added: strftime("%Y-%m-%d %H:%M") in the offset's own time
+export type HeldDraft = HeldAdd | HeldMessage;             // added, Task 12a: what waits for one person's approval
+export interface HeldAdd {                                 // added, Task 12a: an add holding a person's decision (d-znagqe)
+  readonly kind: "add"; readonly person: string; readonly by: string; readonly drafts: readonly (readonly [string, string])[];
+  readonly attachments: readonly (readonly [string, string])[]; readonly importing: boolean; readonly message: string;
+}
+export interface HeldMessage {                             // added, Task 12a: a person's words relayed into a thread by an agent (d-2v8vtk)
+  readonly kind: "message"; readonly person: string; readonly by: string;   // by: actorText of the agent that relayed it
+  readonly operation: "ask" | "reply" | "close"; readonly ref: string;      // ask: the record's ref; reply and close: the thread's ID
+  readonly raises: Raises | null; readonly text: string | null;            // raises: ask only; text: null only for close
+  readonly where: string; readonly when: string;                            // the person's place and minute, as the relay gave them
+}
+export type Held = HeldDraft & { readonly seq: number; readonly at: string };  // added, Task 12a
+export type Approved = { readonly kind: "add"; readonly added: Added } | { readonly kind: "message"; readonly written: Written };  // added, Task 12b
+
+// #app, errors
+export class LodgeError extends Error { readonly exitCode: number }  // 2
+export class NotFound extends LodgeError {}                // 2
+export class Conflict extends LodgeError {}                // 1
+export class StaleList extends Conflict {}                 // 1
+export class Forbidden extends LodgeError {}               // added, Task 11: 2; the API's 403
+export function coreSettings(table: Readonly<Record<string, unknown>>): CoreSettings;  // as parseCoreSettings takes it; shares its name with #core's default-filling coreSettings: import one under an alias
+
+// #app, results: AddOutcome (and HELD: "held for approval", Task 12b), Read, Shown, Listed, Added, Written,
+// ThreadList, ThreadShown, ThreadsWaiting, Behind, as results.py, fields in camelCase;
+// Added gains awaits: string | null and held: number | null (Task 12b);
+// Written gains awaits: string | null and held: number | null, both filled null by written() (Task 12c).
+
+// #app, the operations
+export class Lodge {
+  constructor(store: Store, clock: Clock, ids: IdSource, settings: CoreSettings, actor: Actor);  // actor: Task 11
+  search(query: string, filters: Filters, options?: { limit?: number }): Promise<Listed>;
+  show(ref: string, options?: { reasoning?: boolean; provenance?: boolean }): Promise<Shown>;
+  waitingAll(): Promise<readonly [Listed, ThreadsWaiting]>;
+  timeline(options?: { limit?: number }): Promise<Listed>;
+  spec(options?: { area?: string | null }): Promise<readonly [string, Read, readonly SpecArea[]]>;
+  problems(): Promise<readonly [CheckResult, Read]>;
+  check(gate: boolean): Promise<readonly [CheckResult, Read]>;
+  draft(ref: string): Promise<string>;
+  mint(prefix: "d" | "s"): Promise<string>;
+  add(drafts: readonly (readonly [string, string])[], options?: { importing?: boolean; dryRun?: boolean; attachments?: readonly (readonly [string, string])[] }): Promise<Added>;
+  ask(ref: string, raises: Raises, by: string, text: string, options?: { where?: string | null; when?: string | null; commit?: boolean }): Promise<Written>;
+  reply(thread: string, by: string, text: string, options?: { where?: string | null; when?: string | null; commit?: boolean }): Promise<Written>;
+  close(thread: string, by: string, options?: { text?: string | null; where?: string | null; when?: string | null; commit?: boolean }): Promise<Written>;
+  threads(): Promise<ThreadList>;
+  thread(ref: string): Promise<ThreadShown>;
+  threadsWaiting(): Promise<ThreadsWaiting>;
+  confirm(ids: readonly string[], words: string, options?: { area?: string | null; commit?: boolean }): Promise<Written>;
+  behindArea(name: string): Promise<readonly Behind[]>;
+  held(): Promise<readonly Held[]>;                          // added, Task 12b
+  approve(seq: number): Promise<Approved>;                   // added, Task 12b; a held message's approval, Task 12c
+  decline(seq: number, reason: string): Promise<void>;       // added, Task 12b
+}
+
+// #store
+export interface LodgeDatabase { readonly db: Kysely<Tables>; close(): Promise<void> }
+export function openDatabase(path: string): Promise<LodgeDatabase>;   // ":memory:" or a file; creates or checks the schema
+export class SqliteStore implements Store { constructor(database: LodgeDatabase, project: string, actor: string, clock: Clock) }
+export class SqliteProjects implements Projects { constructor(database: LodgeDatabase, clock: Clock) }
+export function rebuild(database: LodgeDatabase): Promise<void>;       // every derived table from the events
+export interface Tables { events: EventsTable; heads: HeadsTable; files: FilesTable; members: MembersTable; held: HeldTable }  // held: Task 12a
+```
+
+- The events table (d-wje1cn): `events(seq integer primary key autoincrement, project text not null, at text not null, actor text not null, kind text not null, path text, body blob not null, message text)`, refused `update` and `delete` by two triggers raising `events are append-only` (probe 3); plan 2's kinds are `project`, `member`, `file`, `held`, `approved`, and `declined`, a `file` event's body the file's bytes and every other body UTF-8 JSON.
+- A later plan adds an event kind by adding its case to `applyEvent` of `store/events.ts`, which both a write and `rebuild` run, and a derived table to `Tables`, `openDatabase`'s schema (raising `user_version`), and `rebuild`'s list; nothing ever updates or deletes an event.
+- `applyEvent` inserts the project's `heads` row only for a `project` event; for every other kind it runs `update heads set rev = <seq> where project = <project>`, never an upsert, so an event whose `project` names no project (plan 3's account events, whose `project` is the empty text) adds no `heads` row.
+- `Store.publish` refuses, before it writes anything, what lodge 0.2's `check_writes` refuses (`src/lodge/gitstore/plumbing.py:14-25`) with its two messages, a path holding a surrogate, and a changed text for a decision file the base holds (d-j28rp0, replacing d-pmaw3a); it runs no other check: `app` checks before it calls it (d-fv20kp), and plan 4's import, which publishes a lodge 0.2 store's files through the project's store into an empty project, first runs the change check from an empty state with that store's settings and then with the project's (d-n9nm8h, narrowing d-j28rp0); a test that writes through `publish` directly stands for a hand edit of lodge 0.2 that leaves decisions and attachments as they are.
+- Every store transaction that reads before it writes opens with a write on the project's `heads` row (d-thvvzx, probe 4): `publish` with its compare-and-set, `create` with an insert that does nothing on an existing name, and `addMember`, `decline`, and an approving `publish` with an update that keeps the revision (probe 8).
+- The SQLite store answers `trees()` with one tree twice, `gate(current)` with `gate({ published: current, checked: [["", current]] })`, `freshness()` with `null`, and `commit(…)` with `committed({ outcome: CommitOutcome.FAILED, detail: "the server keeps no checkout; its writes are published at once" })`, and `publish` never answers `STAGED` (d-ae1vn5).
+- A person's name is `^[a-z][a-z0-9-]{0,31}$` and a project's `^[a-z0-9][a-z0-9-]{0,62}$` (d-wx7d0f); `decided_by` names a person when it names an owner of the project, `Tree.people` being the owners (d-vwsnz5, design lines 74 and 261); a name the project's records use as `decided_by` or as a thread message's `by` cannot join it.
+- A thread message whose `by` names a person (d-2v8vtk): from that person it is published at once; from another person it is refused with `Forbidden` (Task 11); from an agent, with where and when, it is held as a `HeldMessage` and published only when that person approves it, the thread waiting for that person meanwhile (Task 12c).
+
+## Lanes
+Lanes A, B, and C run in parallel in their own worktrees, merged into `server-store` as each task passes its review (Tasks 2 and 7a both edit `ts/package.json`'s `imports` and `ts/knip.json`'s one-line `entry`, so the second merge meets a textual conflict, which the integrator resolves by keeping both sides), as plan 1's lanes are (d-xdqsmf, recorded on `server-core` and here once plan 1 merges); within a lane, tasks run in order.
+The import graph decides the lanes (d-d96y91): lane B's code and tests need only `#app`'s ports, `Lodge.add`, and `tests/app/support.ts` (Tasks 2 and 3), reading the store through `load` of `#core` where a later task's `show` would do; lane C touches only `ts/src/core` and `ts/tests/core`, which no task of lanes A and B edits except Task 7a's `text.ts` and `fileformat.ts`, which lane C does not touch.
+Lane C's new parameters (`people` of `isAuthor`, `parseThread`, and `writeThread`) default to `author` alone, so lane A's `app/threads.ts` and plan 1's carried tests compile whichever lane merges first.
+Tasks 11 and 13 may also run in parallel, since Task 13 touches only the core's derivation, views, and feedback, and Task 11 only the operations, the store, and their tests; Task 11's test reads a flag's feedback by its first words, which Task 13 keeps.
+Tasks 9, 11, 12a, 12b, and 12c run in that order, since each edits or extends the tests or modules the one before it wrote; in `app` the imports run `held.ts → threads.ts → writes.ts → awaits.ts` and `held.ts → writes.ts`, and neither `threads.ts` nor `writes.ts` imports `held.ts`, so plan 1's `no-circular` rule holds.
+
+### Task 12c: A person's words relayed into a thread wait for that person
+
+The author's answer to STORE-1 (d-2v8vtk): an agent may relay a person's words into a thread under that person's name, with where and when; the message is held on Task 12a's machinery, and the thread waits for that person until they approve it signed in.
+
+**Files:**
+- Modify: `ts/src/app/threads.ts` (an agent's message under a person's name is held, not published), `ts/src/app/held.ts` (`approve`'s `message` branch), `ts/src/app/results.ts` (`Written`'s `awaits` and `held`)
+- Modify also: `ts/tests/app/ports.test.ts` (`written()`'s `awaits` and `held` as `null`)
+- Test: `ts/tests/app/held-messages.test.ts` and `ts/tests/app/held-messages-approve.test.ts`, `ts/tests/store/held-messages.test.ts` (new)
+
+**Interfaces:**
+- Consumes: Task 12b (`held.ts`, `Approved`, `AddOutcome.HELD`) and Task 12a's port.
+- Produces, through `#app`: `Written.awaits` (the person whose approval the message needs, or `null`) and `Written.held` (the hold's number, or `null`), both filled `null` by `written()`; `approve(seq)` answers `{ kind: "message", written }` for a `HeldMessage`.
+- The imports run `held.ts → threads.ts → writes.ts → awaits.ts`; `threads.ts` calls `store.hold` and `store.held` through the port and imports nothing of `held.ts`, so plan 1's `no-circular` rule holds.
+- `ask`, `reply`, and `close` from an agent actor with a `by` in the snapshot's `people`: lodge 0.2's refusals come first, so a relay without `where` is refused with its words (`a message by P needs where, the place of P's words`); the ref or thread is resolved and a reply or close to a closed thread refused as lodge 0.2 refuses it; the message, its `when` the relay's or else `minuteOf(clock.now())`, is built and the thread write checked against the current state as a published one would be, so a message that fails is not held; then, instead of publishing, `store.hold` receives a `HeldMessage` (`person` the `by`, `by` the agent's `actorText`, the operation, the ref, `raises`, the cleaned text, `where`, and `when`), and the operation answers `Written` with `outcome` `HELD`, `ids` the thread's ID for a reply or close or the provisional ID a dry run would mint for an ask, `awaits` the person, and `held` the number; nothing is written to the records.
+- A person actor writing under their own name is published at once, and one writing under another person's name is `Forbidden`, as Task 11 has it; an agent writing under a role is published as lodge 0.2 publishes it.
+- `approve(seq)` of a `HeldMessage`: the refusals of Task 12b; then it runs the thread write as that person, with the held `where` and `when`, through the same attempts as an unheld message, minting an asked thread's ID at the approval, and publishes with `approves` = `seq`, so the thread file and the approval land in one transaction; a `REJECTED` answer reads again, a hold no longer open then throws `NotFound`, and a refusal (the thread closed meanwhile, a failing check) leaves the hold open; it answers `{ kind: "message", written }`.
+- `decline(seq, reason)` of a `HeldMessage` is Task 12b's: nothing is published, and the hold leaves `held()`.
+- Waiting: a held message changes no thread's waiting, since d-2v8vtk has the thread wait for the person "as before" until approval; `waitingIn`, `threadsWaiting`, and `waitingAll` stay Task 11's, deciding by the last published message only, and a held message reaches its person through `held()`; it becomes the thread's last message when it is approved; a held `ask` has no thread yet and is listed by `held()` only.
+
+- [ ] **Step 1: Write the failing tests.**
+  - `app/held-messages.test.ts` and `app/held-messages-approve.test.ts`, the second holding `the_person_approves_and_the_message_is_published`, `a_relayed_question_mints_its_thread_at_approval`, `decline_publishes_nothing`, `another_person_or_an_agent_cannot_approve_a_message`, and `approval_after_the_thread_closed_leaves_it_held`, over `MemoryStore` with `people` `{ada, bo}`, a question asked by `reviewer` on `s-aaaaaa`, and the agent actor `agent("coordinator")`: `an_agent_relaying_a_persons_words_is_held` (a `reply` by `ada` with `where: "chat"` and `when: "2026-10-29 09:00"` answers `HELD`, `awaits` `ada`, and a `held` number; no publish is made; `held()` lists a `message` hold with that text, `where`, and `when`); `the_thread_still_waits_for_the_person` (the thread's last published message is `reviewer`'s: after that relay it is in `forAuthor` of `threadsWaiting` and of `waitingAll`, not `forAgent`, and `thread` shows `reviewer`'s message last; after `ada` approves, it is in `forAgent`); `a_persons_thread_still_waits_for_an_agent` (a question asked by `ada` herself, so its last published message is hers: after an agent relays a follow-up of hers, the thread stays in `forAgent` of both, `thread` shows her question last, and `held()` lists the relay; after she approves, the relay is the last message and the thread is still in `forAgent`); `the_person_approves_and_the_message_is_published` (as `ada`, `approve` answers `{ kind: "message" }` with `PUBLISHED`; the thread's last message is `ada`'s with `where` `chat` and `when` `2026-10-29 09:00`; the thread moves to `forAgent`; `held()` is empty); `a_relayed_question_mints_its_thread_at_approval` (an agent's `ask` by `ada`: held, no thread listed; after approval, one thread whose first message is `ada`'s); `decline_publishes_nothing` (as `ada`, `decline` with a reason: no publish is made, `held()` is empty, and the thread waits for the person by its last published message, `reviewer`'s); `a_persons_own_message_is_published_at_once` (as `ada`, a `reply` by `ada` with `where`: `PUBLISHED`, `held` `null`); `one_person_cannot_write_as_another` (as `bo`, a `reply` by `ada` with `where`: `Forbidden`, nothing held or published); `a_relay_without_where_is_refused_as_lodge_0_2_refuses_it` (an agent's `reply` by `ada` without `where`: `LodgeError` with `a message by ada needs where, the place of ada's words`, nothing held); `a_relay_to_a_closed_thread_is_refused` (nothing held); `another_person_or_an_agent_cannot_approve_a_message` (`Forbidden` for `bo` and for an agent); `approval_after_the_thread_closed_leaves_it_held` (the thread closed between the hold and the approval: the approval is refused, and the hold stays in `held()`).
+  - `store/held-messages.test.ts`, over a `SqliteStore` from `seeded`: `a_relayed_message_lands_with_its_approval` (one `approve` writes the thread file's `file` event and the `approved` event under one compare-and-set, and `trees()` then holds the message).
+- [ ] **Step 2: Run** `cd ts && bun test tests/app tests/store`; expected: the new tests FAIL but three, which pass on arrival because they assert refusals earlier tasks wrote and that nothing is held, which is true while nothing holds a message: `one_person_cannot_write_as_another` (Task 11), `a_relay_without_where_is_refused_as_lodge_0_2_refuses_it`, and `a_relay_to_a_closed_thread_is_refused` (lodge 0.2's); after Step 3 each is seen failing against a targeted mutation, listed in the report as a table, then reverted: the other-person `Forbidden` replaced by a hold of the message for the person it names, and the hold placed before the `where` refusal and before the closed-thread refusal.
+- [ ] **Step 3: Implement**, removing Task 12b's interim refusal for a `HeldMessage`; `bun x depcruise` (through `sh scripts/check-ts.sh`) reports no `no-circular` violation.
+- [ ] **Step 4: Run** `sh scripts/check-ts.sh`; green.
+- [ ] **Step 5: Coordinator:** `sh scripts/check.sh`, commit, push.
+
+
+## From the coordinator
+Task 12c builds in the main worktree `/var/tmp/lodge-server-store` on branch `server-store` (Tasks 1 to 11, 12a, 12b, and 13 are merged here).
+Task 12b's review parked for plan 3 (do not fix): `Lodge.held()` lists every person's holds to any actor; a retried add holds twice.
+Do not dispatch subagents.
+
+exec
+/bin/bash -lc 'cat CLAUDE.md; git status --short; cat ts/src/app/threads.ts; cat ts/src/app/held.ts' in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+# lodge
+
+Knowledge tool for agent-built software: decisions and specification entries, levelled reads, a check.
+Authority: `lodge spec`; the plan argues from it, never over it.
+Run `uv run --frozen --quiet lodge waiting` at the start of a session and answer what waits for an agent first.
+Read decisions and her rulings with `lodge show` and `lodge search`; her own decisions have `decided_by: author` (`lodge search --by author`).
+The entries are agent text written from the design documents (the first approved by her, the viewer design by the advisor, d-7w5aq0), awaiting her confirmation through the viewer.
+Both design documents (`docs/superpowers/specs/2026-10-29-lodge-design.md` and `docs/superpowers/specs/2026-10-31-lodge-viewer-interaction-design.md`) are frozen history.
+Read through lodge, never by opening record files; run `uv run --frozen --quiet lodge guide` for the writing rules.
+Drafts go under `.drafts/`, and `lodge add --dry-run` precedes every `lodge add`.
+Open plans in `docs/superpowers/plans/`, each with `-progress.md` (the ledger) and a folder of briefs, reports, and reviews.
+Plan's last task merged → same branch `git mv`s plan, progress, folder to `docs/superpowers/plans/done/`, links fixed (`git grep 'plans/<file>'` = 0 outside `done/`).
+
+## Commands
+
+`sh scripts/check.sh` (the whole gate: ruff format, ruff, mypy strict, vulture, pytest, and once lodge holds records `lodge check --gate`) · `uv run pytest <files> -q` · `uv run lodge …`.
+Code: `src/lodge/{core,app,gitstore,cli,viewer,hook}` behind front doors (`__init__.py`), wired in `src/lodge/main.py`; tests in `tests/`, `tests/structure_rules.py` the import and size rules.
+
+## Structure checks
+
+`tests/test_structure.py` runs in every pytest: allowed imports, front doors, no cycles, modules ≤ 300 lines, core purity, I/O confinement (LODGE-5).
+There is no baseline: lodge starts clean.
+Fix a violation in the code; never loosen a rule to pass.
+Raising a limit or adding an allowed edge is the author's call, recorded as a decision.
+In `core` and `app`, take the time and randomness through the ports; never read the clock or `secrets`.
+
+## Hard rules
+
+- Test-first; see each new test fail before its code; all existing tests keep passing.
+- Public repository: no personal paths, machine names, secrets, or another project's records in code, tests, or docs; fixtures synthetic (a made-up project), never her words or another project's records.
+- Tests never touch a real repository: git only in `tmp_path` with `GIT_CONFIG_GLOBAL` empty, `GIT_CONFIG_NOSYSTEM=1`, `git init -b main`; no network.
+- Record files are written only through `lodge add`, never by hand, here too.
+- The hook in `.claude/settings.json` advises on a hand edit of a record file or of a file matching a `frozen` glob in `.lodge.toml` (both design documents and the done ledger of the first build); those files are not edited.
+- User-facing text and Markdown: British English, no em-dashes, Oxford comma, one sentence per line.
+
+## Build process (adapted from an existing project)
+
+Plan → plan review (two angles) → one fix round → rechecks until 0 Blocking, 0 Important → preflight scan in the ledger (each task's Produces against the next tasks' Consumes) → build.
+Agents in `.claude/agents/`: `builder` (Sonnet, one task from its brief), `reviewer` (Sonnet, first reviews), `rechecker` (fix diffs), `integrator` (merges, rulings), `planner` (plans, fix rounds).
+Tasks run in order on one build branch in its own worktree; each task: brief, build, report, review (correctness, then practice, then design), fix round if needed, ledger line.
+Minors are parked in the ledger and taken by the next round touching those files.
+Final whole-branch review, fix wave, recheck.
+Models: task subagents run Sonnet or cheaper, reviews and final review too; no Opus, no Fable
+(author, 2026-11-14). Every Agent dispatch passes `model`: `reviewer`'s own definition says Opus.
+Escalate, never self-raise: fix round 3, or two rechecks finding new kinds of problems, → ask the
+author or the build session, with findings, handle, and cost.
+A finding that conflicts with the plan is recorded with `lodge add` (scope `process`, `work_item` the plan), with a handle per argument and the cost if wrong in its reasoning.
+The ledger line gives the decision's ID; a ruling that changes what the spec says goes to the author.
+
+## Git
+
+Branch per work item; `main` takes only merges, and code reaches `main` only on the author's go.
+`git -c user.name="Svenja Kernig" -c user.email=20756868+Kiibou-chan@users.noreply.github.com commit` with explicit paths, trailer `Co-Authored-By: Claude <noreply@anthropic.com>`; push the branch to `origin` (GitHub) after each commit; never push `main` from a builder, reviewer, or rechecker.
+?? docs/superpowers/plans/2026-11-02-lodge-server-store/task-12c-codex.log
+import {
+  appended,
+  checkChange,
+  cleanText,
+  level1,
+  load,
+  type Message,
+  newestLast,
+  Raises,
+  strip,
+  type Thread,
+  ThreadState,
+  threadPath,
+  tree,
+  ValueError,
+  writeThread,
+} from "#core";
+import { Conflict, Forbidden, LodgeError } from "./errors.ts";
+import { type Now, PublishOutcome } from "./ports.ts";
+import {
+  AddOutcome,
+  type ThreadList,
+  type ThreadShown,
+  type ThreadsWaiting,
+  type Written,
+  written,
+} from "./results.ts";
+import { notFound, readChecked, readState, resolveRef, type State, type Wiring } from "./state.ts";
+import { minuteOf, stampOf } from "./time.ts";
+import { mintUnused } from "./writes.ts";
+
+function find(state: State, ref: string): Thread {
+  const thread = state.snapshot.threads.get(ref.toLowerCase());
+  if (!thread) throw notFound(state, `thread named ${ref}`, ref);
+  return thread;
+}
+function message(
+  now: Now,
+  people: ReadonlySet<string>,
+  by: string,
+  text: string,
+  where: string | null,
+  when: string | null,
+  close: boolean,
+): Message {
+  text = cleanText(text);
+  if (!text && !close) throw new LodgeError("the message is empty");
+  if (!strip(by)) throw new LodgeError("by needs a non-empty role");
+  if (!people.has(by) && by.toLowerCase().includes("author"))
+    throw new LodgeError(
+      people.has("author")
+        ? "write author exactly, or use your own role"
+        : "name a person of the project exactly, or use your own role",
+    );
+  let stamp: string;
+  if (people.has(by)) {
+    if (where === null || !strip(where))
+      throw new LodgeError(
+        by === "author"
+          ? "a message by author needs where, the place of the author's words"
+          : `a message by ${by} needs where, the place of ${by}'s words`,
+      );
+    stamp = when ?? minuteOf(now);
+  } else {
+    if (where !== null || when !== null)
+      throw new LodgeError(
+        people.has("author")
+          ? "where and when are for messages by author"
+          : "where and when are for messages by a person",
+      );
+    stamp = stampOf(now);
+  }
+  return { by, when: stamp, text, where };
+}
+export interface MessageOptions {
+  readonly where?: string | null;
+  readonly when?: string | null;
+  readonly commit?: boolean;
+  readonly close?: boolean;
+}
+export async function writeMessage(
+  w: Wiring,
+  ref: string,
+  raises: Raises | null,
+  by: string,
+  text: string,
+  { where = null, when = null, commit = false, close = false }: MessageOptions = {},
+): Promise<Written> {
+  for (let i = 0; i < 3; i++) {
+    const state = await readState(w.store),
+      now = w.clock.now(),
+      msg = message(now, state.snapshot.people, by, text, where, when, close),
+      s = state.snapshot;
+    let thread: Thread, description: string;
+    if (raises !== null) {
+      const about = resolveRef(state, ref),
+        id = mintUnused(
+          w.ids,
+          "q",
+          new Set([...s.decisions.keys(), ...s.entries.keys(), ...s.threads.keys()]),
+        );
+      thread = {
+        kind: "thread",
+        id,
+        about,
+        raises,
+        state: ThreadState.OPEN,
+        opened: stampOf(now),
+        messages: [msg],
+      };
+      description = `${raises === Raises.DOUBT ? "doubt raised" : "question asked"} by ${by}`;
+    } else {
+      thread = find(state, ref);
+      if (thread.state === ThreadState.CLOSED) throw new LodgeError(`${thread.id} is closed`);
+      thread = appended(thread, msg, close);
+      description = close ? `closed by ${by}` : `${by} reply`;
+    }
+    if (s.people.has(by) && w.actor.kind === "person" && w.actor.name !== by)
+      throw new Forbidden(`only ${by} writes as ${by}; nothing was written`);
+    const path = threadPath(thread.id);
+    let content: string;
+    try {
+      content = writeThread(thread, s.people);
+    } catch (error) {
+      if (!(error instanceof ValueError)) throw error;
+      throw new LodgeError(error.message);
+    }
+    const after = load(
+      tree({
+        rev: state.current.rev,
+        people: state.current.people,
+        files: new Map([...state.current.files, [path, content]]),
+        attachments: state.current.attachments,
+      }),
+    );
+    const check = checkChange(load(state.published), after, w.settings, stampOf(now), s);
+    if (!check.ok)
+      return written({
+        ids: [thread.id],
+        outcome: AddOutcome.CHECK_FAILED,
+        check,
+        about: thread.about,
+      });
+    const commitMessage = `Thread ${thread.id}: ${description}`;
+    const outcome = await w.store.publish(state.current, new Map([[path, content]]), commitMessage);
+    if (outcome === PublishOutcome.REJECTED) continue;
+    const committed =
+      commit && outcome === PublishOutcome.STAGED
+        ? await w.store.commit([path], commitMessage)
+        : null;
+    return written({
+      ids: [thread.id],
+      outcome: outcome === PublishOutcome.PUBLISHED ? AddOutcome.PUBLISHED : AddOutcome.STAGED,
+      check,
+      committed,
+      about: thread.about,
+    });
+  }
+  throw new Conflict(
+    "other changes reached the store three times; nothing was written, so try again",
+  );
+}
+export async function listOpen(w: Wiring): Promise<ThreadList> {
+  return openIn(await readChecked(w));
+}
+function openIn(state: State): ThreadList {
+  const s = state.snapshot,
+    items = newestLast([...s.threads.values()].filter((t) => t.state === ThreadState.OPEN));
+  const records = new Map<string, { readonly title: string }>([...s.decisions, ...s.entries]);
+  const titles = new Map<string, string>();
+  for (const t of items) {
+    const r = records.get(t.about);
+    if (r) titles.set(t.about, r.title);
+  }
+  return { items, titles, read: state.read };
+}
+export async function show(w: Wiring, ref: string): Promise<ThreadShown> {
+  const state = await readChecked(w),
+    thread = find(state, ref),
+    s = state.snapshot;
+  return {
+    thread,
+    about:
+      s.decisions.has(thread.about) || s.entries.has(thread.about)
+        ? level1(s, state.derived, thread.about, state.failing)
+        : null,
+    read: state.read,
+  };
+}
+export async function waiting(w: Wiring): Promise<ThreadsWaiting> {
+  return waitingIn(await readChecked(w));
+}
+export function waitingIn(state: State): ThreadsWaiting {
+  const listed = openIn(state);
+  return {
+    forAgent: listed.items.filter((t) => state.snapshot.people.has(t.messages.at(-1)?.by ?? "")),
+    forAuthor: listed.items.filter((t) => !state.snapshot.people.has(t.messages.at(-1)?.by ?? "")),
+    titles: listed.titles,
+    read: listed.read,
+  };
+}
+import { cleanText } from "#core";
+import { Forbidden, LodgeError, NotFound } from "./errors.ts";
+import type { Held, HeldAdd } from "./ports.ts";
+import type { Approved } from "./results.ts";
+import type { Wiring } from "./state.ts";
+import { add } from "./writes.ts";
+
+export async function held(w: Wiring): Promise<readonly Held[]> {
+  return w.store.held();
+}
+async function authorised(w: Wiring, seq: number): Promise<Held> {
+  const found = (await w.store.held()).find((h) => h.seq === seq);
+  if (!found) throw new NotFound(`nothing is held under number ${seq}`);
+  if (w.actor.kind !== "person" || w.actor.name !== found.person)
+    throw new Forbidden(`only ${found.person} approves this; nothing was written`);
+  return found;
+}
+export async function approve(w: Wiring, seq: number): Promise<Approved> {
+  const refresh = async (): Promise<HeldAdd> => {
+    const found = await authorised(w, seq);
+    if (found.kind === "message")
+      throw new LodgeError(`hold ${seq} is a thread message, which this build cannot approve yet`);
+    return found;
+  };
+  const found = await refresh();
+  return {
+    kind: "add",
+    added: await add(
+      w,
+      found.drafts,
+      {
+        importing: found.importing,
+        attachments: found.attachments,
+      },
+      { seq, refresh },
+    ),
+  };
+}
+export async function decline(w: Wiring, seq: number, reason: string): Promise<void> {
+  await authorised(w, seq);
+  reason = cleanText(reason);
+  if (!reason) throw new LodgeError("a reason is required; nothing was written");
+  await w.store.decline(seq, reason);
+}
+
+exec
+/bin/bash -lc 'uv run --frozen --quiet lodge waiting; cat ts/tests/app/held.test.ts; cat ts/tests/store/held.test.ts; cat ts/tests/app/fakes.ts; cat ts/src/app/results.ts' in /var/tmp/lodge-server-store
+ succeeded in 391ms:
+waiting for an agent
+nothing
+
+waiting for the author
+nothing
+import { expect, test } from "bun:test";
+import { AddOutcome, LodgeError, NotFound, person } from "#app";
+import { filters } from "#core";
+import { draft, setup } from "./held-support.ts";
+
+test("an_agents_add_of_a_persons_decision_is_held", async () => {
+  const { store, lodge } = setup();
+  const result = await lodge.add([["d.md", draft()]]);
+  expect(result.outcome).toBe(AddOutcome.HELD);
+  expect(result.awaits).toBe("ada");
+  expect(result.minted).toEqual(result.ids);
+  expect(result.paths).toEqual([]);
+  expect(await lodge.held()).toEqual(await store.held());
+  expect(await lodge.held()).toMatchObject([
+    { seq: result.held, kind: "add", person: "ada", by: "agent", drafts: [["d.md", draft()]] },
+  ]);
+});
+test("another_persons_add_is_held", async () => {
+  const { lodge } = setup(person("bo"));
+  expect(await lodge.add([["d.md", draft()]])).toMatchObject({
+    outcome: AddOutcome.HELD,
+    awaits: "ada",
+  });
+  expect(await lodge.held()).toMatchObject([{ by: "bo" }]);
+});
+test("a_dry_run_names_who_must_approve", async () => {
+  const { lodge } = setup();
+  expect(await lodge.add([["d.md", draft()]], { dryRun: true })).toMatchObject({
+    outcome: AddOutcome.DRY_RUN,
+    awaits: "ada",
+    held: null,
+  });
+  expect(await lodge.held()).toEqual([]);
+});
+test("a_held_add_is_not_current", async () => {
+  const { store, lodge } = setup();
+  const result = await lodge.add([["d.md", draft()]]);
+  await expect(lodge.show(result.ids[0] as string)).rejects.toThrow(NotFound);
+  expect((await lodge.search("", filters())).items).toEqual([]);
+  expect(store.files.size).toBe(0);
+});
+test("a_persons_own_decision_is_not_held", async () => {
+  const { lodge } = setup(person("ada"));
+  expect(await lodge.add([["d.md", draft()]])).toMatchObject({
+    outcome: AddOutcome.PUBLISHED,
+    awaits: null,
+    held: null,
+  });
+  expect(await lodge.held()).toEqual([]);
+});
+test("an_add_for_two_people_is_refused", async () => {
+  const { lodge } = setup();
+  await expect(
+    lodge.add([
+      ["a.md", draft()],
+      ["b.md", draft("bo")],
+    ]),
+  ).rejects.toThrow(
+    new LodgeError(
+      "an add holds the decisions of one person at a time; split the drafts by person",
+    ),
+  );
+  expect(await lodge.held()).toEqual([]);
+});
+test("a_failing_check_is_not_held", async () => {
+  const { lodge } = setup();
+  const result = await lodge.add([["d.md", draft("ada", false)]]);
+  expect(result.outcome).toBe(AddOutcome.CHECK_FAILED);
+  expect(result.check.problems.some((p) => p.check === 3)).toBe(true);
+  expect(await lodge.held()).toEqual([]);
+});
+
+test("held_adds_are_listed_in_seq_order", async () => {
+  const { lodge } = setup();
+  const first = await lodge.add([["first.md", draft()]]);
+  const second = await lodge.add([["second.md", draft()]]);
+  const seqs = [first.held as number, second.held as number];
+  expect(seqs[0]).toBeLessThan(seqs[1] as number);
+  expect((await lodge.held()).map((hold) => hold.seq)).toEqual(seqs);
+});
+test("held_has_the_public_wire_value", () => {
+  expect(AddOutcome.HELD).toBe("held for approval");
+});
+import { expect, test } from "bun:test";
+import { type HeldDraft, NotFound, PublishOutcome } from "#app";
+import { decodeUtf8, encodeUtf8 } from "#core";
+import { rebuild, SqliteStore } from "#store";
+import { events, setup } from "./support.ts";
+
+const draft: HeldDraft = {
+  kind: "add",
+  person: "ada",
+  by: "agent",
+  drafts: [["draft", "text"]],
+  attachments: [],
+  importing: false,
+  message: "add",
+};
+const writes = new Map([["lodge/specs/new.md", "new"]]);
+test("a_hold_is_an_event_and_not_a_file", async () => {
+  const { store, database } = await setup();
+  const [before] = await store.trees();
+  const seq = await store.hold(draft);
+  const event = (await events(database)).at(-1);
+  expect(event?.kind).toBe("held");
+  expect(event?.seq).toBe(seq);
+  expect(JSON.parse(decodeUtf8(event?.body ?? new Uint8Array()))).toEqual(draft);
+  expect((await store.trees())[0].files).toEqual(before.files);
+  expect((await store.trees())[0].rev).toBe(String(seq));
+  expect(await store.held()).toEqual([{ ...draft, seq, at: "2026-10-29T09:30:00+01:00" }]);
+});
+test("approval_and_files_land_together", async () => {
+  const { store, database } = await setup();
+  const [stale] = await store.trees();
+  const seq = await store.hold(draft);
+  const before = await events(database);
+  expect(await store.publish(stale, writes, "approve", seq)).toBe(PublishOutcome.REJECTED);
+  expect(await events(database)).toEqual(before);
+  expect(await store.publish((await store.trees())[0], writes, "approve", seq)).toBe(
+    PublishOutcome.PUBLISHED,
+  );
+  expect(
+    (await events(database))
+      .slice(-2)
+      .map((e) => [
+        e.kind,
+        e.kind === "approved" ? JSON.parse(decodeUtf8(e.body)) : decodeUtf8(e.body),
+      ]),
+  ).toEqual([
+    ["file", "new"],
+    ["approved", { held: seq }],
+  ]);
+  expect((await store.trees())[0].files.get("lodge/specs/new.md")).toBe("new");
+  expect(await store.held()).toEqual([]);
+});
+test("a_declined_hold_cannot_be_approved", async () => {
+  const { store, database } = await setup();
+  const seq = await store.hold(draft);
+  const [stale] = await store.trees();
+  await store.decline(seq, "no");
+  expect((await store.trees())[0].rev).not.toBe(stale.rev);
+  const before = await events(database);
+  expect(JSON.parse(decodeUtf8(before.at(-1)?.body ?? new Uint8Array()))).toEqual({
+    held: seq,
+    reason: "no",
+  });
+  expect(await store.publish((await store.trees())[0], writes, "approve", seq)).toBe(
+    PublishOutcome.REJECTED,
+  );
+  expect(await events(database)).toEqual(before);
+});
+test("a_hold_is_approved_once", async () => {
+  const { store, database } = await setup();
+  const seq = await store.hold(draft);
+  await store.publish((await store.trees())[0], writes, "approve", seq);
+  const before = await events(database);
+  expect(await store.publish((await store.trees())[0], writes, "again", seq)).toBe(
+    PublishOutcome.REJECTED,
+  );
+  expect(await events(database)).toEqual(before);
+});
+test("a_settled_hold_cannot_be_declined", async () => {
+  const { store } = await setup();
+  for (const approve of [false, true]) {
+    const seq = await store.hold(draft);
+    if (approve) await store.publish((await store.trees())[0], new Map(), "approve", seq);
+    else await store.decline(seq, "no");
+    const refusal = store.decline(seq, "again");
+    await expect(refusal).rejects.toBeInstanceOf(NotFound);
+    await expect(refusal).rejects.toThrow(`nothing is held under number ${seq}`);
+  }
+});
+test("a_held_message_round_trips", async () => {
+  const { store } = await setup();
+  const message: HeldDraft = {
+    kind: "message",
+    person: "ada",
+    by: "agent builder",
+    operation: "ask",
+    ref: "d-123456",
+    raises: null,
+    text: "words",
+    where: "review",
+    when: "2026-10-29 09:30",
+  };
+  const seq = await store.hold(message);
+  expect(await store.held()).toEqual([{ ...message, seq, at: "2026-10-29T09:30:00+01:00" }]);
+});
+test("holds_rebuild", async () => {
+  const { store, database } = await setup();
+  const first = await store.hold(draft);
+  await store.decline(first, "no");
+  const second = await store.hold(draft);
+  await store.publish((await store.trees())[0], writes, "yes", second);
+  await store.hold(draft);
+  const before = await database.db.selectFrom("held").selectAll().orderBy("seq").execute();
+  await rebuild(database);
+  expect(await database.db.selectFrom("held").selectAll().orderBy("seq").execute()).toEqual(before);
+});
+test("rebuild_refuses_an_impossible_history", async () => {
+  const { store, database } = await setup();
+  const seq = await store.hold(draft);
+  await store.decline(seq, "no");
+  const snapshot = async () =>
+    Promise.all([
+      database.db.selectFrom("held").selectAll().execute(),
+      database.db.selectFrom("heads").selectAll().execute(),
+      database.db.selectFrom("files").selectAll().execute(),
+      database.db.selectFrom("members").selectAll().execute(),
+    ]);
+  const before = await snapshot();
+  await database.db
+    .insertInto("events")
+    .values({
+      project: "storage",
+      actor: "ada",
+      at: "now",
+      kind: "approved",
+      path: null,
+      body: encodeUtf8(JSON.stringify({ held: seq })),
+      message: null,
+    })
+    .execute();
+  await expect(rebuild(database)).rejects.toThrow();
+  expect(await snapshot()).toEqual(before);
+});
+
+test("holds_belong_to_their_project", async () => {
+  const { store, database, projects, clock } = await setup();
+  await projects.create("other", "ada");
+  const other = new SqliteStore(database, "other", "ada", clock);
+  const ownSeq = await store.hold(draft);
+  const otherSeq = await other.hold(draft);
+  expect((await store.held()).map((held) => held.seq)).toEqual([ownSeq]);
+  expect((await other.held()).map((held) => held.seq)).toEqual([otherSeq]);
+  const before = await events(database);
+  await expect(store.decline(otherSeq, "no")).rejects.toBeInstanceOf(NotFound);
+  expect(await events(database)).toEqual(before);
+  expect(await store.publish((await store.trees())[0], writes, "yes", otherSeq)).toBe(
+    PublishOutcome.REJECTED,
+  );
+  expect(await events(database)).toEqual(before);
+});
+import {
+  type Clock,
+  CommitOutcome,
+  type Committed,
+  committed,
+  type Gate,
+  gate,
+  type Held,
+  type HeldDraft,
+  type IdSource,
+  NotFound,
+  type Now,
+  PublishOutcome,
+  type Store,
+  stampOf,
+} from "#app";
+import {
+  type Area,
+  ATTACHMENTS,
+  type Decision,
+  instant,
+  type SpecEntry,
+  type Tree,
+  tree,
+} from "#core";
+import { filesOf } from "../core/builders.ts";
+
+export const START: Now = { epochMs: instant("2026-10-29T09:30:00+01:00"), offsetMinutes: 60 };
+
+// movesAfterRead and rejectNext land another session’s change before publication.
+export class MemoryStore implements Store {
+  files: Map<string, string>;
+  published: Map<string, string>;
+  staged: boolean;
+  people: ReadonlySet<string>;
+  rev = 0;
+  declined: [number, string][] = [];
+  private holds = new Map<number, Held>();
+  commits: [readonly string[], string][] = [];
+  commitResult: Committed = committed({ outcome: CommitOutcome.COMMITTED });
+  stamp: string | null = "fetched 2026-10-29T08:00:00+00:00";
+  publishes: [Map<string, string>, string][] = [];
+  attempts = 0;
+  gateFor: Gate | null = null;
+  private moves: ReadonlyMap<string, string>[] = [];
+  private rejections: ReadonlyMap<string, string>[] = [];
+
+  constructor(
+    items: (Area | Decision | SpecEntry)[] = [],
+    options: { staged?: boolean; people?: ReadonlySet<string> } = {},
+  ) {
+    this.people = options.people ?? new Set(["author"]);
+    this.files = filesOf(...items);
+    this.published = new Map(this.files);
+    this.staged = options.staged ?? false;
+  }
+  async hold(draft: HeldDraft): Promise<number> {
+    const seq = ++this.rev;
+    this.holds.set(seq, structuredClone({ ...draft, seq, at: stampOf(START) }));
+    return seq;
+  }
+  async held(): Promise<readonly Held[]> {
+    return structuredClone([...this.holds.values()]);
+  }
+  async decline(seq: number, reason: string): Promise<void> {
+    if (!this.holds.delete(seq)) throw new NotFound(`nothing is held under number ${seq}`);
+    this.declined.push([seq, reason]);
+    this.rev += 1;
+  }
+  async commit(paths: readonly string[], message: string): Promise<Committed> {
+    this.commits.push([[...paths], message]);
+    return this.commitResult;
+  }
+  async trees(): Promise<readonly [Tree, Tree]> {
+    const current = tree({
+      rev: String(this.rev),
+      files: new Map(this.files),
+      people: this.people,
+    });
+    const published = this.staged
+      ? tree({ rev: String(this.rev), files: new Map(this.published), people: this.people })
+      : current;
+    const move = this.moves.shift();
+    if (move !== undefined) this.land(move);
+    return [current, published];
+  }
+  async attachmentTexts(): Promise<ReadonlyMap<string, string>> {
+    return new Map([...this.files].filter(([path]) => path.startsWith(ATTACHMENTS)));
+  }
+  async freshness(): Promise<string | null> {
+    return this.stamp;
+  }
+  async gate(current: Tree): Promise<Gate> {
+    if (this.gateFor !== null) return this.gateFor;
+    const published = this.staged
+      ? tree({ rev: String(this.rev), files: new Map(this.published), people: this.people })
+      : current;
+    return gate({ published, checked: [["", current]] });
+  }
+  async publish(
+    base: Tree,
+    writes: ReadonlyMap<string, string>,
+    message: string,
+    approves: number | null = null,
+  ): Promise<PublishOutcome> {
+    this.attempts += 1;
+    const rejection = this.rejections.shift();
+    if (rejection !== undefined) {
+      this.land(rejection);
+      return PublishOutcome.REJECTED;
+    }
+    if (base.rev !== String(this.rev)) return PublishOutcome.REJECTED;
+    if (approves !== null && !this.holds.has(approves)) return PublishOutcome.REJECTED;
+    this.publishes.push([new Map(writes), message]);
+    this.land(writes);
+    if (approves !== null) {
+      this.holds.delete(approves);
+      this.rev += 1;
+    }
+    return this.staged ? PublishOutcome.STAGED : PublishOutcome.PUBLISHED;
+  }
+  movesAfterRead(change: ReadonlyMap<string, string>): void {
+    this.moves.push(change);
+  }
+  rejectNext(...changes: ReadonlyMap<string, string>[]): void {
+    this.rejections.push(...changes);
+  }
+  private land(change: ReadonlyMap<string, string>): void {
+    for (const [path, text] of change) this.files.set(path, text);
+    this.rev += 1;
+    if (!this.staged) this.published = new Map(this.files);
+  }
+}
+export class FixedClock implements Clock {
+  calls = 0;
+  slept: number[] = [];
+  constructor(
+    public start: Now = START,
+    public stepMs = 0,
+  ) {}
+  now(): Now {
+    this.calls += 1;
+    return { ...this.start, epochMs: this.start.epochMs + this.stepMs * (this.calls - 1) };
+  }
+  async sleep(seconds: number): Promise<void> {
+    this.slept.push(seconds);
+    this.start = { ...this.start, epochMs: this.start.epochMs + seconds * 1000 };
+  }
+}
+export class CountingIds implements IdSource {
+  draws = 0;
+  next: number;
+  constructor(
+    first = 1,
+    public step = 1,
+  ) {
+    this.next = first;
+  }
+  entropy(): Uint8Array {
+    this.draws += 1;
+    const value = this.next;
+    this.next += this.step;
+    if (!Number.isInteger(value) || value < 0 || value > 255)
+      throw new RangeError("byte must be in range(0, 256)");
+    return new Uint8Array(6).fill(value);
+  }
+}
+import type { Branch, CheckResult, Feedback, Level1, Level3, Problem, Thread } from "#core";
+import type { Committed } from "./ports.ts";
+
+export const AddOutcome = {
+  HELD: "held for approval",
+  PUBLISHED: "published",
+  STAGED: "staged",
+  CHECK_FAILED: "check failed",
+  DRY_RUN: "dry run",
+  UNCHANGED: "nothing changed",
+} as const;
+export type AddOutcome = (typeof AddOutcome)[keyof typeof AddOutcome];
+export interface Read {
+  readonly freshness: string | null;
+  readonly unrecorded: readonly Problem[];
+  readonly statuses: ReadonlyMap<string, string>;
+}
+export function read(value: Omit<Read, "statuses"> & Partial<Read>): Read {
+  return { statuses: new Map(), ...value };
+}
+export interface Shown {
+  readonly level1: Level1;
+  readonly level2: string | null;
+  readonly level3: Level3 | null;
+  readonly read: Read;
+  readonly changing: readonly Level1[];
+  readonly threads: readonly Thread[];
+  readonly confirmable: boolean;
+  readonly restsOn: readonly Branch[];
+  readonly supports: readonly Level1[];
+}
+export interface Listed {
+  readonly items: readonly Level1[];
+  readonly read: Read;
+  readonly more: number;
+}
+export function listed(value: Omit<Listed, "more"> & Partial<Listed>): Listed {
+  return { more: 0, ...value };
+}
+export type Approved =
+  | { readonly kind: "add"; readonly added: Added }
+  | { readonly kind: "message"; readonly written: Written };
+export interface Added {
+  readonly awaits: string | null;
+  readonly held: number | null;
+  readonly ids: readonly string[];
+  readonly feedback: readonly Feedback[];
+  readonly check: CheckResult;
+  readonly outcome: AddOutcome;
+  readonly freshness: string | null;
+  readonly minted: readonly string[];
+  readonly paths: readonly string[];
+}
+export function added(
+  value: Omit<Added, "freshness" | "minted" | "paths" | "awaits" | "held"> & Partial<Added>,
+): Added {
+  return { freshness: null, minted: [], paths: [], awaits: null, held: null, ...value };
+}
+export interface Written {
+  readonly ids: readonly string[];
+  readonly outcome: AddOutcome;
+  readonly check: CheckResult;
+  readonly committed: Committed | null;
+  readonly about: string | null;
+}
+export function written(value: Omit<Written, "committed" | "about"> & Partial<Written>): Written {
+  return { committed: null, about: null, ...value };
+}
+export interface ThreadList {
+  readonly items: readonly Thread[];
+  readonly titles: ReadonlyMap<string, string>;
+  readonly read: Read;
+}
+export interface ThreadShown {
+  readonly thread: Thread;
+  readonly about: Level1 | null;
+  readonly read: Read;
+}
+export interface ThreadsWaiting {
+  readonly forAgent: readonly Thread[];
+  readonly forAuthor: readonly Thread[];
+  readonly titles: ReadonlyMap<string, string>;
+  readonly read: Read;
+}
+export interface Behind {
+  readonly decision: Level1;
+  readonly entries: readonly (readonly [string, string])[];
+}
+
+exec
+/bin/bash -lc 'cat ts/tests/app/held-support.ts; cat ts/tests/store/support.ts; cat ts/tests/store/seeded.ts; cat ts/tests/app/ports.test.ts; cat ts/tests/app/people.test.ts' in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+import { agent } from "#app";
+import { decisionText } from "../core/applying.ts";
+import { CountingIds, FixedClock, MemoryStore } from "./fakes.ts";
+import { wired } from "./support.ts";
+
+export function draft(name = "ada", quote = true): string {
+  return decisionText().replace(
+    "decided_by: coordinator",
+    `decided_by: ${name}${quote ? '\nquote:\n  text: Keep it.\n  where: a session\n  when: "2026-10-29 09:00"' : ""}`,
+  );
+}
+export function setup(actor = agent()) {
+  const store = new MemoryStore([], { people: new Set(["ada", "bo"]) });
+  const clock = new FixedClock();
+  const lodge = wired(store, clock, new CountingIds(), actor);
+  return { store, clock, lodge };
+}
+import { afterEach } from "bun:test";
+import { type LodgeDatabase, openDatabase, SqliteProjects, SqliteStore } from "#store";
+import { FixedClock } from "../app/fakes.ts";
+
+const opened: LodgeDatabase[] = [];
+afterEach(async () => {
+  for (const db of opened.splice(0)) await db.close();
+});
+export async function setup() {
+  const database = await openDatabase(":memory:");
+  opened.push(database);
+  const clock = new FixedClock();
+  const projects = new SqliteProjects(database, clock);
+  await projects.create("storage", "author");
+  const store = new SqliteStore(database, "storage", "author", clock);
+  return { database, projects, store, clock };
+}
+export async function events(database: LodgeDatabase) {
+  return database.db.selectFrom("events").selectAll().orderBy("seq", "asc").execute();
+}
+cat: ts/tests/store/seeded.ts: No such file or directory
+import { expect, test } from "bun:test";
+import {
+  AddOutcome,
+  actorText,
+  added,
+  agent,
+  CommitOutcome,
+  committed,
+  gate,
+  listed,
+  person,
+  read,
+  written,
+} from "#app";
+import { checkResult, tree } from "#core";
+
+test("actor_text_names_the_person_or_the_role", () => {
+  expect(actorText(person("ada"))).toBe("ada");
+  expect(actorText(agent())).toBe("agent");
+  expect(actorText(agent("builder"))).toBe("agent builder");
+});
+test("default_filling_functions_fill_python_defaults", () => {
+  const current = tree({ rev: null, files: new Map() });
+  const reading = read({ freshness: null, unrecorded: [] });
+  const check = checkResult([], []);
+  expect(committed({ outcome: CommitOutcome.COMMITTED }).detail).toBe("");
+  expect(gate({ published: current, checked: [["", current]] }).notes).toEqual([]);
+  expect(reading.statuses).toEqual(new Map());
+  expect(listed({ items: [], read: reading }).more).toBe(0);
+  expect(added({ ids: [], feedback: [], check, outcome: AddOutcome.PUBLISHED })).toEqual({
+    ids: [],
+    feedback: [],
+    check,
+    outcome: AddOutcome.PUBLISHED,
+    freshness: null,
+    minted: [],
+    paths: [],
+    awaits: null,
+    held: null,
+  });
+  expect(written({ ids: [], outcome: AddOutcome.PUBLISHED, check })).toEqual({
+    ids: [],
+    outcome: AddOutcome.PUBLISHED,
+    check,
+    committed: null,
+    about: null,
+  });
+});
+
+test("explicit_defaulted_fields_survive", () => {
+  const current = tree({ rev: null, files: new Map() });
+  const statuses = new Map([["s-aaaaaa", "current"]]);
+  const reading = read({ freshness: null, unrecorded: [], statuses });
+  const check = checkResult([], []);
+  const commit = committed({ outcome: CommitOutcome.COMMITTED, detail: "x" });
+  expect(commit.detail).toBe("x");
+  expect(gate({ published: current, checked: [], notes: ["x"] }).notes).toEqual(["x"]);
+  expect(reading.statuses).toBe(statuses);
+  expect(listed({ items: [], read: reading, more: 2 }).more).toBe(2);
+  expect(
+    added({
+      ids: [],
+      feedback: [],
+      check,
+      outcome: AddOutcome.PUBLISHED,
+      freshness: "x",
+      minted: ["d-aaaaaa"],
+      paths: ["x"],
+    }),
+  ).toMatchObject({ freshness: "x", minted: ["d-aaaaaa"], paths: ["x"] });
+  expect(
+    written({
+      ids: [],
+      outcome: AddOutcome.PUBLISHED,
+      check,
+      committed: commit,
+      about: "s-aaaaaa",
+    }),
+  ).toMatchObject({ committed: commit, about: "s-aaaaaa" });
+});
+import { expect, test } from "bun:test";
+import { agent, Forbidden, LodgeError, NotFound, person } from "#app";
+import { Action, derive, load, Raises } from "#core";
+import { decisionText } from "../core/applying.ts";
+import { area, decision, entry } from "../core/builders.ts";
+import { CountingIds, FixedClock, MemoryStore } from "./fakes.ts";
+import { wired } from "./support.ts";
+
+function setup(actor = person("ada")) {
+  const store = new MemoryStore(
+    [
+      area(),
+      entry({ id: "s-aaaaaa" }),
+      decision({ id: "d-aaaaaa", changes: [{ entry: "s-aaaaaa", action: Action.CREATE }] }),
+    ],
+    { people: new Set(["ada", "bo"]) },
+  );
+  return { store, lodge: wired(store, new FixedClock(), new CountingIds(), actor) };
+}
+test("confirm_writes_the_persons_decision", async () => {
+  const { store, lodge } = setup();
+  await lodge.confirm(["d-aaaaaa"], "Read.");
+  const made = load((await store.trees())[0]).decisions.get("d-111111");
+  expect(made?.decidedBy).toBe("ada");
+  expect(made?.statement).toContain("ada confirms d-aaaaaa");
+});
+test("an_agent_cannot_confirm", async () => {
+  const { store, lodge } = setup(agent());
+  await expect(lodge.confirm(["d-aaaaaa"], "Read.")).rejects.toThrow(
+    new Forbidden("only a person confirms; nothing was written"),
+  );
+  expect(new Forbidden("").exitCode).toBe(2);
+  expect(store.publishes).toEqual([]);
+});
+test("a_person_not_among_the_people_cannot_confirm", async () => {
+  const { store, lodge } = setup(person("cy"));
+  await expect(lodge.confirm(["d-aaaaaa"], "Read.")).rejects.toThrow(
+    new Forbidden("only an owner of the project confirms; nothing was written"),
+  );
+  expect(store.publishes).toEqual([]);
+});
+test("a_persons_message_needs_where", async () => {
+  const { store, lodge } = setup();
+  await expect(lodge.ask("d-aaaaaa", Raises.QUESTION, "ada", "Why?")).rejects.toThrow(
+    "a message by ada needs where, the place of ada's words",
+  );
+  expect(store.publishes).toEqual([]);
+});
+test("author_is_a_role_where_no_person_is_author", async () => {
+  const { lodge } = setup();
+  await expect(lodge.ask("d-aaaaaa", Raises.QUESTION, "author", "Why?")).rejects.toThrow(
+    new LodgeError("name a person of the project exactly, or use your own role"),
+  );
+});
+test("a_person_writes_only_as_themselves", async () => {
+  const { store, lodge } = setup(person("bo"));
+  const ada = wired(store, new FixedClock(), new CountingIds(), person("ada"));
+  const result = await ada.ask("d-aaaaaa", Raises.QUESTION, "ada", "Why?", { where: "chat" });
+  expect(store.publishes).toHaveLength(1);
+  const before = new Map(store.files);
+  for (const operation of [
+    () => lodge.ask("d-aaaaaa", Raises.QUESTION, "ada", "Why?", { where: "chat" }),
+    () => lodge.reply(result.ids[0] as string, "ada", "Yes.", { where: "chat" }),
+    () => lodge.close(result.ids[0] as string, "ada", { where: "chat" }),
+  ]) {
+    await expect(operation()).rejects.toThrow(
+      new Forbidden("only ada writes as ada; nothing was written"),
+    );
+  }
+  expect(store.files).toEqual(before);
+  expect(store.publishes).toHaveLength(1);
+});
+test("a_persons_question_waits_for_an_agent", async () => {
+  const { lodge } = setup();
+  const a = await lodge.ask("d-aaaaaa", Raises.QUESTION, "ada", "Why?", { where: "chat" });
+  const b = await lodge.ask("d-aaaaaa", Raises.QUESTION, "reviewer", "Why?");
+  const waiting = await lodge.threadsWaiting();
+  expect(waiting.forAgent.map((t) => t.id)).toEqual([...a.ids]);
+  expect(waiting.forAuthor.map((t) => t.id)).toEqual([...b.ids]);
+});
+test("an_agent_edit_of_a_persons_entry_waits", async () => {
+  const store = new MemoryStore(
+    [
+      area(),
+      entry({ id: "s-aaaaaa" }),
+      decision({
+        id: "d-aaaaaa",
+        decidedBy: "ada",
+        changes: [{ entry: "s-aaaaaa", action: Action.CREATE }],
+      }),
+    ],
+    { people: new Set(["ada", "bo"]) },
+  );
+  const lodge = wired(store, new FixedClock(), new CountingIds(), agent());
+  const result = await lodge.add([
+    ["d.md", decisionText("changes:", "  - {entry: s-aaaaaa, action: edit}")],
+  ]);
+  expect(result.feedback.some((f) => f.message.startsWith("this decision will wait for"))).toBe(
+    true,
+  );
+  expect(derive(load((await store.trees())[0])).awaitingAuthor.has(result.ids[0] as string)).toBe(
+    true,
+  );
+});
+
+test("unknown_reference_is_refused_before_impersonation", async () => {
+  const { store, lodge } = setup(person("bo"));
+  await expect(
+    lodge.ask("d-ffffff", Raises.QUESTION, "ada", "Why?", { where: "chat" }),
+  ).rejects.toThrow(NotFound);
+  await expect(lodge.reply("q-ffffff", "ada", "Yes.", { where: "chat" })).rejects.toThrow(NotFound);
+  expect(store.publishes).toEqual([]);
+});
+test("closed_thread_is_refused_before_impersonation", async () => {
+  const { store, lodge } = setup();
+  const question = await lodge.ask("d-aaaaaa", Raises.QUESTION, "ada", "Why?", { where: "chat" });
+  const id = question.ids[0] as string;
+  await lodge.close(id, "ada", { where: "chat" });
+  const before = new Map(store.files);
+  const bo = wired(store, new FixedClock(), new CountingIds(), person("bo"));
+  await expect(bo.reply(id, "ada", "Yes.", { where: "chat" })).rejects.toThrow(`${id} is closed`);
+  expect(store.files).toEqual(before);
+  expect(store.publishes).toHaveLength(2);
+});
+test("an_agent_is_refused_before_reading_state", async () => {
+  const { store, lodge } = setup(agent());
+  let reads = 0;
+  store.trees = async () => {
+    reads += 1;
+    throw new Error("state must not be read");
+  };
+  await expect(lodge.confirm(["d-aaaaaa"], "Read.")).rejects.toThrow(
+    new Forbidden("only a person confirms; nothing was written"),
+  );
+  expect(reads).toBe(0);
+});
+
+codex
+The existing hold store already supports atomic approval with file writes. I’ll add the thread relay and approval paths while keeping waiting lists based on the last published message, as the brief requires.
+exec
+/bin/bash -lc "rg 'seeded' ts/tests/store; cat ts/tests/app/support.ts | head -65; cat ts/tests/store/held-approve.test.ts | head -65" in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+ts/tests/store/checked-writes.test.ts:import { seeded } from "./seed.ts";
+ts/tests/store/checked-writes.test.ts:  const { database, store } = await seeded(AREA, ENTRY, FIRST);
+ts/tests/store/checked-writes.test.ts:  const { database, store } = await seeded(AREA, ENTRY, FIRST);
+ts/tests/store/checked-writes.test.ts:  const { store } = await seeded(AREA, ENTRY, FIRST);
+ts/tests/store/checked-writes.test.ts:  const { store } = await seeded(AREA, ENTRY, FIRST);
+ts/tests/store/seed.ts:export async function seeded(...items: (Area | Decision | SpecEntry)[]) {
+ts/tests/store/concurrent.test.ts:async function seeded() {
+ts/tests/store/concurrent.test.ts:  const { path, store, clock } = await seeded();
+ts/tests/store/concurrent.test.ts:  const { database, store, clock } = await seeded();
+ts/tests/store/concurrent.test.ts:  const { database, store: a, clock } = await seeded();
+import { expect } from "bun:test";
+import { Lodge, person, type Store } from "#app";
+import { Action, coreSettings } from "#core";
+import { area, at, decision, entry } from "../core/builders.ts";
+import { CountingIds, FixedClock, MemoryStore } from "./fakes.ts";
+
+export const AREA = area({
+  name: "storage",
+  title: "Storage",
+  intro: "How it keeps data.",
+  order: ["s-aaaaaa"],
+});
+export const ENTRY = entry({
+  id: "s-aaaaaa",
+  area: "storage",
+  title: "Transcripts are kept",
+  statement: "Held.",
+});
+export const FIRST = decision({
+  id: "d-aaaaaa",
+  title: "Keep whole transcripts",
+  code: "ITEM-1",
+  decidedBy: "author",
+  reasoning: "Because they are evidence.",
+  changes: [{ entry: "s-aaaaaa", action: Action.CREATE }],
+  date: at(0),
+});
+export function project({ staged = false } = {}) {
+  return new MemoryStore([AREA, ENTRY, FIRST], { staged });
+}
+
+export function wired(
+  store: Store,
+  clock = new FixedClock(),
+  ids = new CountingIds(),
+  actor = person("author"),
+) {
+  return new Lodge(store, clock, ids, coreSettings(), actor);
+}
+
+export async function raises(
+  promise: Promise<unknown>,
+  errorClass: new (message: string) => Error,
+  pattern: string | RegExp,
+): Promise<void> {
+  await expect(promise).rejects.toThrow(errorClass);
+  await expect(promise).rejects.toThrow(pattern);
+}
+cat: ts/tests/store/held-approve.test.ts: No such file or directory
+
+exec
+/bin/bash -lc "cat > ts/tests/app/held-messages-support.ts <<'EOF'
+import { agent, person } from \"#app\";
+import { Raises } from \"#core\";
+import { CountingIds, FixedClock, MemoryStore } from \"./fakes.ts\";
+import { AREA, ENTRY, FIRST, wired } from \"./support.ts\";
+
+export async function setup(own = false) {
+  const store = new MemoryStore([AREA, ENTRY, FIRST], { people: new Set([\"ada\", \"bo\"]) });
+  const clock = new FixedClock();
+  const ids = new CountingIds();
+  const lodge = wired(store, clock, ids, agent(\"coordinator\"));
+  const ada = wired(store, clock, ids, person(\"ada\"));
+  const bo = wired(store, clock, ids, person(\"bo\"));
+  const question = await (own ? ada : lodge).ask(\"s-aaaaaa\", Raises.QUESTION, own ? \"ada\" : \"reviewer\", \"Why?\", own ? { where: \"chat\" } : {});
+  store.publishes.length = 0;
+  const id = question.ids[0] as string;
+  const relay = () => lodge.reply(id, \"ada\", \"  Yes.  \", { where: \"chat\", when: \"2026-10-29 09:00\" });
+  return { store, lodge, ada, bo, id, relay };
+}
+EOF
+cat > ts/tests/app/held-messages.test.ts <<'EOF'
+import { expect, test } from \"bun:test\";
+import { AddOutcome, Forbidden, LodgeError } from \"#app\";
+import { setup } from \"./held-messages-support.ts\";
+
+test(\"an_agent_relaying_a_persons_words_is_held\", async () => {
+  const { store, lodge, relay } = await setup();
+  const result = await relay();
+  expect(result).toMatchObject({ outcome: AddOutcome.HELD, awaits: \"ada\", held: expect.any(Number) });
+  expect(store.publishes).toEqual([]);
+  expect(await lodge.held()).toMatchObject([{ seq: result.held, kind: \"message\", person: \"ada\", by: \"agent coordinator\", operation: \"reply\", text: \"Yes.\", where: \"chat\", when: \"2026-10-29 09:00\" }]);
+});
+for (const own of [false, true]) {
+  test(own ? \"a_persons_thread_still_waits_for_an_agent\" : \"the_thread_still_waits_for_the_person\", async () => {
+    const { lodge, ada, id, relay } = await setup(own);
+    const result = await relay();
+    const key = own ? \"forAgent\" : \"forAuthor\";
+    expect((await lodge.threadsWaiting())[key].map(t => t.id)).toEqual([id]);
+    expect((await lodge.waitingAll())[1][key].map(t => t.id)).toEqual([id]);
+    expect((await lodge.thread(id)).thread.messages.at(-1)?.text).toBe(\"Why?\");
+    expect(await lodge.held()).toHaveLength(1);
+    await ada.approve(result.held as number);
+    expect((await lodge.threadsWaiting()).forAgent.map(t => t.id)).toEqual([id]);
+    expect((await lodge.thread(id)).thread.messages.at(-1)?.text).toBe(\"Yes.\");
+  });
+}
+test(\"a_persons_own_message_is_published_at_once\", async () => {
+  const { ada, id } = await setup();
+  expect(await ada.reply(id, \"ada\", \"Yes.\", { where: \"chat\" })).toMatchObject({ outcome: AddOutcome.PUBLISHED, held: null, awaits: null });
+});
+test(\"one_person_cannot_write_as_another\", async () => {
+  const { bo, lodge, store, id } = await setup();
+  await expect(bo.reply(id, \"ada\", \"Yes.\", { where: \"chat\" })).rejects.toThrow(Forbidden);
+  expect(await lodge.held()).toEqual([]);
+  expect(store.publishes).toEqual([]);
+});
+test(\"a_relay_without_where_is_refused_as_lodge_0_2_refuses_it\", async () => {
+  const { lodge, id } = await setup();
+  await expect(lodge.reply(id, \"ada\", \"Yes.\")).rejects.toThrow(new LodgeError(\"a message by ada needs where, the place of ada's words\"));
+  expect(await lodge.held()).toEqual([]);
+});
+test(\"a_relay_to_a_closed_thread_is_refused\", async () => {
+  const { lodge, id, relay } = await setup();
+  await lodge.close(id, \"reviewer\");
+  await expect(relay()).rejects.toThrow("'`${id} is closed`);
+  expect(await lodge.held()).toEqual([]);
+});
+EOF
+cat > ts/tests/app/held-messages-approve.test.ts <<'"'EOF'
+import { expect, test } from \"bun:test\";
+import { AddOutcome, Forbidden } from \"#app\";
+import { Raises } from \"#core\";
+import { setup } from \"./held-messages-support.ts\";
+
+test(\"the_person_approves_and_the_message_is_published\", async () => {
+  const { lodge, ada, id, relay } = await setup();
+  const result = await relay();
+  expect(await ada.approve(result.held as number)).toMatchObject({ kind: \"message\", written: { outcome: AddOutcome.PUBLISHED } });
+  expect((await lodge.thread(id)).thread.messages.at(-1)).toMatchObject({ by: \"ada\", text: \"Yes.\", where: \"chat\", when: \"2026-10-29 09:00\" });
+  expect((await lodge.threadsWaiting()).forAgent.map(t => t.id)).toEqual([id]);
+  expect(await lodge.held()).toEqual([]);
+});
+test(\"a_relayed_question_mints_its_thread_at_approval\", async () => {
+  const { lodge, ada } = await setup();
+  const before = (await lodge.threads()).items.map(t => t.id);
+  const result = await lodge.ask(\"s-aaaaaa\", Raises.QUESTION, \"ada\", \"Another?\", { where: \"chat\" });
+  expect(result.outcome).toBe(AddOutcome.HELD);
+  expect((await lodge.threads()).items.map(t => t.id)).toEqual(before);
+  const approved = await ada.approve(result.held as number);
+  expect(approved.kind).toBe(\"message\");
+  if (approved.kind "'!== "message") throw new Error("message expected");
+  expect(approved.written.ids).not.toEqual(result.ids);
+  expect((await lodge.thread(approved.written.ids[0] as string)).thread.messages[0]?.by).toBe("ada");
+});
+test("decline_publishes_nothing", async () => {
+  const { store, lodge, ada, id, relay } = await setup();
+  const result = await relay();
+  await ada.decline(result.held as number, "No.");
+  expect(store.publishes).toEqual([]);
+  expect(await lodge.held()).toEqual([]);
+  expect((await lodge.threadsWaiting()).forAuthor.map(t => t.id)).toEqual([id]);
+});
+test("another_person_or_an_agent_cannot_approve_a_message", async () => {
+  const { lodge, bo, relay } = await setup();
+  const result = await relay();
+  for (const actor of [bo, lodge]) await expect(actor.approve(result.held as number)).rejects.toThrow(Forbidden);
+});
+test("approval_after_the_thread_closed_leaves_it_held", async () => {
+  const { lodge, ada, id, relay } = await setup();
+  const result = await relay();
+  await lodge.close(id, "reviewer");
+  await expect(ada.approve(result.held as number)).rejects.toThrow(`${id} is closed`);
+  expect(await lodge.held()).toMatchObject([{ seq: result.held }]);
+});
+EOF
+cat ts/tests/store/seed.ts' in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+import { afterEach } from "bun:test";
+import { PublishOutcome } from "#app";
+import type { Area, Decision, SpecEntry } from "#core";
+import { type LodgeDatabase, openDatabase, SqliteProjects, SqliteStore } from "#store";
+import { FixedClock } from "../app/fakes.ts";
+import { filesOf } from "../core/builders.ts";
+
+const opened: LodgeDatabase[] = [];
+afterEach(async () => {
+  for (const database of opened.splice(0)) await database.close();
+});
+export async function seeded(...items: (Area | Decision | SpecEntry)[]) {
+  const database = await openDatabase(":memory:");
+  opened.push(database);
+  const clock = new FixedClock();
+  await new SqliteProjects(database, clock).create("storage-notes", "author");
+  const store = new SqliteStore(database, "storage-notes", "author", clock);
+  if (
+    (await store.publish((await store.trees())[0], filesOf(...items), "seed")) !==
+    PublishOutcome.PUBLISHED
+  )
+    throw new Error("seed did not publish");
+  return { database, store };
+}
+
+exec
+/bin/bash -lc "python - <<'PY'
+p='ts/tests/app/ports.test.ts'
+s=open(p).read().replace('    about: null,','    about: null,\\n    awaits: null,\\n    held: null,');open(p,'w').write(s)
+PY
+cat > ts/tests/store/held-messages.test.ts <<'EOF'
+import { expect, test } from \"bun:test\";
+import { agent, person } from \"#app\";
+import { decodeUtf8, Raises } from \"#core\";
+import { CountingIds, FixedClock } from \"../app/fakes.ts\";
+import { AREA, ENTRY, FIRST, wired } from \"../app/support.ts\";
+import { seeded } from \"./seed.ts\";
+import { events } from \"./support.ts\";
+
+test(\"a_relayed_message_lands_with_its_approval\", async () => {
+  const { store, database } = await seeded(AREA, ENTRY, FIRST);
+  const clock = new FixedClock();
+  const ids = new CountingIds();
+  const lodge = wired(store, clock, ids, agent(\"coordinator\"));
+  const question = await lodge.ask(\"s-aaaaaa\", Raises.QUESTION, \"reviewer\", \"Why?\");
+  const id = question.ids[0] as string;
+  const relay = await lodge.reply(id, \"author\", \"Yes.\", { where: \"chat\" });
+  const before = await events(database);
+  const approves: (number | null | undefined)[] = [];
+  const publish = store.publish.bind(store);
+  store.publish = async (base, writes, message, seq) => {
+    approves.push(seq);
+    return publish(base, writes, message, seq);
+  };
+  await wired(store, clock, ids, person(\"author\")).approve(relay.held as number);
+  expect(approves).toEqual([relay.held]);
+  const landed = (await events(database)).slice(before.length);
+  expect(landed.map(e => e.kind)).toEqual([\"file\", \"approved\"]);
+  expect(JSON.parse(decodeUtf8(landed[1]?.body ?? new Uint8Array()))).toEqual({ held: relay.held });
+  expect((await store.trees())[0].files.get(landed[0]?.path ?? \"\")).toContain(\"Yes.\");
+  expect((await lodge.thread(id)).thread.messages.at(-1)?.by).toBe(\"author\");
+  expect(await store.held()).toEqual([]);
+});
+EOF
+cd ts && bun test tests/app tests/store > /tmp/task12c-red.log 2>&1; tail -8 /tmp/task12c-red.log" in /var/tmp/lodge-server-store
+ succeeded in 2246ms:
+      at async approve (/var/tmp/lodge-server-store/ts/src/app/held.ts:25:23)
+(fail) a_relayed_message_lands_with_its_approval [7.35ms]
+
+ 272 pass
+ 2 todo
+ 11 fail
+ 836 expect() calls
+Ran 285 tests across 36 files. [2.35s]
+
+exec
+/bin/bash -lc "python - <<'PY'
+p='ts/src/app/results.ts';s=open(p).read().replace('export interface Written {','export interface Written {\\n  readonly awaits: string | null;\\n  readonly held: number | null;').replace('Omit<Written, \"committed\" | \"about\">','Omit<Written, \"committed\" | \"about\" | \"awaits\" | \"held\">').replace('return { committed: null, about: null, ...value };','return { committed: null, about: null, awaits: null, held: null, ...value };');open(p,'w').write(s)
+p='ts/src/app/threads.ts';s=open(p).read().replace('Conflict, Forbidden, LodgeError','Conflict, Forbidden, LodgeError, NotFound').replace('import { type Now, PublishOutcome }','import { actorText, type Now, PublishOutcome }').replace('  readonly close?: boolean;','  readonly close?: boolean;').replace('}: MessageOptions = {},\\n): Promise<Written>', '}: MessageOptions = {},\\n  approves: number | null = null,\\n): Promise<Written>').replace('    const state = await readState(w.store),','    if (approves "'!== null && !(await w.store.held()).some((h) => h.seq === approves))'"\\n      throw new NotFound("'`nothing is held under number ${approves}`);'"\\n    const state = await readState(w.store),').replace('    const commitMessage =', '''    if (s.people.has(by) && w.actor.kind === \"agent\") {
+      const held = await w.store.hold({
+        kind: \"message\", person: by, by: actorText(w.actor),
+        operation: raises "'!== null ? "ask" : close ? "close" : "reply",
+        ref: raises !== null ? thread.about : thread.id, raises,
+        text: close && !msg.text ? null : msg.text,
+        where: msg.where as string, when: msg.when,
+      });
+      return written({ ids: [thread.id], outcome: AddOutcome.HELD, check,
+        about: thread.about, awaits: by, held });
+    }
+    const commitMessage ='"''').replace('new Map([[path, content]]), commitMessage);','new Map([[path, content]]), commitMessage, approves);');open(p,'w').write(s)
+p='ts/src/app/held.ts';s=open(p).read().replace('import type { Wiring }','import { writeMessage } from \"./threads.ts\";\\nimport type { Wiring }').replace('  const refresh = async', '''  const initial = await authorised(w, seq);
+  if (initial.kind === \"message\") {
+    return { kind: \"message\", written: await writeMessage(
+      w, initial.ref, initial.raises, initial.person, initial.text ?? \"\",
+      { where: initial.where, when: initial.when, close: initial.operation === \"close\" }, seq,
+    ) };
+  }
+  const refresh = async''').replace('hold "'${seq} is a thread message, which this build cannot approve yet'"','hold "'${seq} is not an add'"');open(p,'w').write(s)
+PY
+cd ts && bun test tests/app tests/store > /tmp/task12c-green.log 2>&1; tail -8 /tmp/task12c-green.log" in /var/tmp/lodge-server-store
+ succeeded in 2247ms:
+bun test v1.3.14 (0d9b296a)
+
+ 283 pass
+ 2 todo
+ 0 fail
+ 865 expect() calls
+Ran 285 tests across 36 files. [2.36s]
+
+exec
+/bin/bash -lc "python - <<'PY'
+import subprocess
+p='ts/src/app/threads.ts'; original=open(p).read()
+mutations=[('one_person_cannot_write_as_another',original.replace('throw new Forbidden("'`only ${by} writes as ${by}; nothing was written`);'"','await w.store.hold({ kind: \"message\", person: by, by: actorText(w.actor), operation: \"reply\", ref, raises, text, where: where ?? \"\", when: when ?? \"\" });')),('a_relay_without_where_is_refused_as_lodge_0_2_refuses_it',original.replace('if (where === null || "'!strip(where))'"','if (false)')),('a_relay_to_a_closed_thread_is_refused',original.replace('if (thread.state === ThreadState.CLOSED) throw new LodgeError("'`${thread.id} is closed`);'"','if (thread.state === ThreadState.CLOSED) { await w.store.hold({ kind: \"message\", person: by, by: actorText(w.actor), operation: \"reply\", ref, raises, text, where: where ?? \"\", when: when ?? \"\" }); throw new LodgeError("'`${thread.id} is closed`); }'"'))]
+try:
+ for name, source in mutations:
+  open(p,'w').write(source)
+  result=subprocess.run(['bun','test','tests/app/held-messages.test.ts','--test-name-pattern',name],cwd='ts',capture_output=True,text=True)
+  open('/tmp/task12c-mutation-'+name+'.log','w').write(result.stdout+result.stderr)
+  print(name,result.returncode,(result.stdout+result.stderr)[-220:])
+finally: open(p,'w').write(original)
+PY
+sh scripts/check-ts.sh > /tmp/task12c-gate.log 2>&1; tail -35 /tmp/task12c-gate.log" in /var/tmp/lodge-server-store
+ succeeded in 198ms:
+one_person_cannot_write_as_another 1 nonymous> (/var/tmp/lodge-server-store/ts/tests/app/held-messages.test.ts:32:72)
+(fail) one_person_cannot_write_as_another [36.04ms]
+
+ 0 pass
+ 6 filtered out
+ 1 fail
+ 1 expect() calls
+Ran 1 test across 1 file. [67.00ms]
+
+a_relay_without_where_is_refused_as_lodge_0_2_refuses_it 1 dge-server-store/ts/tests/app/held-messages.test.ts:38:56)
+(fail) a_relay_without_where_is_refused_as_lodge_0_2_refuses_it [24.62ms]
+
+ 0 pass
+ 6 filtered out
+ 1 fail
+ 1 expect() calls
+Ran 1 test across 1 file. [56.00ms]
+
+a_relay_to_a_closed_thread_is_refused 1 ymous> (/var/tmp/lodge-server-store/ts/tests/app/held-messages.test.ts:45:30)
+(fail) a_relay_to_a_closed_thread_is_refused [31.98ms]
+
+ 0 pass
+ 6 filtered out
+ 1 fail
+ 2 expect() calls
+Ran 1 test across 1 file. [64.00ms]
+
+    27 45 │     const { ada, id } = await setup();
+    28    │ - ··expect(await·ada.reply(id,·"ada",·"Yes.",·{·where:·"chat"·})).toMatchObject({·outcome:·AddOutcome.PUBLISHED,·held:·null,·awaits:·null·});
+       46 │ + ··expect(await·ada.reply(id,·"ada",·"Yes.",·{·where:·"chat"·})).toMatchObject({
+       47 │ + ····outcome:·AddOutcome.PUBLISHED,
+       48 │ + ····held:·null,
+       49 │ + ····awaits:·null,
+       50 │ + ··});
+    29 51 │   });
+    30 52 │   test("one_person_cannot_write_as_another", async () => {
+    ····· │ 
+    36 58 │   test("a_relay_without_where_is_refused_as_lodge_0_2_refuses_it", async () => {
+    37 59 │     const { lodge, id } = await setup();
+    38    │ - ··await·expect(lodge.reply(id,·"ada",·"Yes.")).rejects.toThrow(new·LodgeError("a·message·by·ada·needs·where,·the·place·of·ada's·words"));
+       60 │ + ··await·expect(lodge.reply(id,·"ada",·"Yes.")).rejects.toThrow(
+       61 │ + ····new·LodgeError("a·message·by·ada·needs·where,·the·place·of·ada's·words"),
+       62 │ + ··);
+    39 63 │     expect(await lodge.held()).toEqual([]);
+    40 64 │   });
+  
+
+tests/store/held-messages.test.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    27 │ ··expect(landed.map((e)·=>·e.kind)).toEqual(["file",·"approved"]);
+       │                     + +                                           
+
+Checked 186 files in 48ms. No fixes applied.
+Found 8 errors.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while running checks.
+  
+
+error: script "check" exited with code 1
+
+codex
+The app and store tests pass, including atomic message approval in SQLite. The three refusal tests also fail under targeted mutations. The full gate found formatting issues; I’m fixing those before rerunning it.
+exec
+/bin/bash -lc 'cd ts && bun x biome check --write src/app/threads.ts src/app/held.ts src/app/results.ts tests/app/ports.test.ts tests/app/held-messages*.ts tests/store/held-messages.test.ts; cd ..
+sh scripts/check-ts.sh > /tmp/task12c-gate.log 2>&1; tail -30 /tmp/task12c-gate.log' in /var/tmp/lodge-server-store
+ succeeded in 8691ms:
+Checked 8 files in 7ms. Fixed 7 files.
+$ biome check --error-on-warnings . && tsc --noEmit -p . && depcruise src tests scripts --config .dependency-cruiser.cjs && knip && bun test
+Checked 186 files in 49ms. No fixes applied.
+
+[32m✔[39m no dependency violations found (197 modules, 760 dependencies cruised)
+
+bun test v1.3.14 (0d9b296a)
+
+ 1284 pass
+ 2 todo
+ 0 fail
+ 3320 expect() calls
+Ran 1286 tests across 104 files. [3.99s]
+
+exec
+/bin/bash -lc "rg -n -B 5 -A 2 '\\(fail\\)' /tmp/task12c-red.log; git diff --stat; git branch --show-current; cat ts/src/app/held.ts; sed -n '85,115p' ts/src/app/threads.ts; cat scripts/check-ts.sh" in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+31-
+32-- Expected  - 3
+33-+ Received  + 13
+34-
+35-      at <anonymous> (/var/tmp/lodge-server-store/ts/tests/app/held-messages.test.ts:8:18)
+36:(fail) an_agent_relaying_a_persons_words_is_held [7.18ms]
+37-12 | for (const own of [false, true]) {
+38-13 |   test(own ? "a_persons_thread_still_waits_for_an_agent" : "the_thread_still_waits_for_the_person", async () => {
+--
+50-
+51-- Expected  - 3
+52-+ Received  + 1
+53-
+54-      at <anonymous> (/var/tmp/lodge-server-store/ts/tests/app/held-messages.test.ts:17:64)
+55:(fail) the_thread_still_waits_for_the_person [7.02ms]
+56-14 |     const { lodge, ada, id, relay } = await setup(own);
+57-15 |     const result = await relay();
+--
+64-
+65-Expected: "Why?"
+66-Received: "Yes."
+67-
+68-      at <anonymous> (/var/tmp/lodge-server-store/ts/tests/app/held-messages.test.ts:19:67)
+69:(fail) a_persons_thread_still_waits_for_an_agent [9.08ms]
+70-23 |     expect((await lodge.thread(id)).thread.messages.at(-1)?.text).toBe("Yes.");
+71-24 |   });
+--
+96-
+97-- Expected  - 2
+98-+ Received  + 12
+99-
+100-      at <anonymous> (/var/tmp/lodge-server-store/ts/tests/app/held-messages.test.ts:28:65)
+101:(fail) a_persons_own_message_is_published_at_once [4.49ms]
+102-
+103-tests/app/held-messages-approve.test.ts:
+--
+112- exitCode: 2,
+113-
+114-      at authorised (/var/tmp/lodge-server-store/ts/src/app/held.ts:13:21)
+115-      at async <anonymous> (/var/tmp/lodge-server-store/ts/src/app/held.ts:20:25)
+116-      at async approve (/var/tmp/lodge-server-store/ts/src/app/held.ts:25:23)
+117:(fail) the_person_approves_and_the_message_is_published [5.05ms]
+118-13 | });
+119-14 | test("a_relayed_question_mints_its_thread_at_approval", async () => {
+--
+126-
+127-Expected: "held for approval"
+128-Received: "published"
+129-
+130-      at <anonymous> (/var/tmp/lodge-server-store/ts/tests/app/held-messages-approve.test.ts:18:26)
+131:(fail) a_relayed_question_mints_its_thread_at_approval [5.52ms]
+132- 8 | export async function held(w: Wiring): Promise<readonly Held[]> {
+133- 9 |   return w.store.held();
+--
+139-NotFound: nothing is held under number undefined
+140- exitCode: 2,
+141-
+142-      at authorised (/var/tmp/lodge-server-store/ts/src/app/held.ts:13:21)
+143-      at async decline (/var/tmp/lodge-server-store/ts/src/app/held.ts:40:9)
+144:(fail) decline_publishes_nothing [3.92ms]
+145-32 |   expect((await lodge.threadsWaiting()).forAuthor.map(t => t.id)).toEqual([id]);
+146-33 | });
+--
+155-Received constructor: NotFound
+156-
+157-Received message: "nothing is held under number undefined"
+158-
+159-      at <anonymous> (/var/tmp/lodge-server-store/ts/tests/app/held-messages-approve.test.ts:37:95)
+160:(fail) another_person_or_an_agent_cannot_approve_a_message [3.51ms]
+161-38 | });
+162-39 | test("approval_after_the_thread_closed_leaves_it_held", async () => {
+--
+169-
+170-Expected substring: "q-111111 is closed"
+171-Received message: "nothing is held under number undefined"
+172-
+173-      at <anonymous> (/var/tmp/lodge-server-store/ts/tests/app/held-messages-approve.test.ts:43:60)
+174:(fail) approval_after_the_thread_closed_leaves_it_held [4.69ms]
+175-
+176-tests/app/ports.test.ts:
+--
+194-
+195-- Expected  - 2
+196-+ Received  + 0
+197-
+198-      at <anonymous> (/var/tmp/lodge-server-store/ts/tests/app/ports.test.ts:41:70)
+199:(fail) default_filling_functions_fill_python_defaults [0.21ms]
+200-
+201-tests/store/held-messages.test.ts:
+--
+210- exitCode: 2,
+211-
+212-      at authorised (/var/tmp/lodge-server-store/ts/src/app/held.ts:13:21)
+213-      at async <anonymous> (/var/tmp/lodge-server-store/ts/src/app/held.ts:20:25)
+214-      at async approve (/var/tmp/lodge-server-store/ts/src/app/held.ts:25:23)
+215:(fail) a_relayed_message_lands_with_its_approval [7.35ms]
+216-
+217- 272 pass
+ ts/src/app/held.ts         | 19 +++++++++++++++++--
+ ts/src/app/results.ts      |  8 ++++++--
+ ts/src/app/threads.ts      | 35 ++++++++++++++++++++++++++++++++---
+ ts/tests/app/ports.test.ts |  2 ++
+ 4 files changed, 57 insertions(+), 7 deletions(-)
+server-store
+import { cleanText } from "#core";
+import { Forbidden, LodgeError, NotFound } from "./errors.ts";
+import type { Held, HeldAdd } from "./ports.ts";
+import type { Approved } from "./results.ts";
+import type { Wiring } from "./state.ts";
+import { writeMessage } from "./threads.ts";
+import { add } from "./writes.ts";
+
+export async function held(w: Wiring): Promise<readonly Held[]> {
+  return w.store.held();
+}
+async function authorised(w: Wiring, seq: number): Promise<Held> {
+  const found = (await w.store.held()).find((h) => h.seq === seq);
+  if (!found) throw new NotFound(`nothing is held under number ${seq}`);
+  if (w.actor.kind !== "person" || w.actor.name !== found.person)
+    throw new Forbidden(`only ${found.person} approves this; nothing was written`);
+  return found;
+}
+export async function approve(w: Wiring, seq: number): Promise<Approved> {
+  const initial = await authorised(w, seq);
+  if (initial.kind === "message") {
+    return {
+      kind: "message",
+      written: await writeMessage(
+        w,
+        initial.ref,
+        initial.raises,
+        initial.person,
+        initial.text ?? "",
+        { where: initial.where, when: initial.when, close: initial.operation === "close" },
+        seq,
+      ),
+    };
+  }
+  const refresh = async (): Promise<HeldAdd> => {
+    const found = await authorised(w, seq);
+    if (found.kind === "message") throw new LodgeError(`hold ${seq} is not an add`);
+    return found;
+  };
+  const found = await refresh();
+  return {
+    kind: "add",
+    added: await add(
+      w,
+      found.drafts,
+      {
+        importing: found.importing,
+        attachments: found.attachments,
+      },
+      { seq, refresh },
+    ),
+  };
+}
+export async function decline(w: Wiring, seq: number, reason: string): Promise<void> {
+  await authorised(w, seq);
+  reason = cleanText(reason);
+  if (!reason) throw new LodgeError("a reason is required; nothing was written");
+  await w.store.decline(seq, reason);
+}
+  by: string,
+  text: string,
+  { where = null, when = null, commit = false, close = false }: MessageOptions = {},
+  approves: number | null = null,
+): Promise<Written> {
+  for (let i = 0; i < 3; i++) {
+    if (approves !== null && !(await w.store.held()).some((h) => h.seq === approves))
+      throw new NotFound(`nothing is held under number ${approves}`);
+    const state = await readState(w.store),
+      now = w.clock.now(),
+      msg = message(now, state.snapshot.people, by, text, where, when, close),
+      s = state.snapshot;
+    let thread: Thread, description: string;
+    if (raises !== null) {
+      const about = resolveRef(state, ref),
+        id = mintUnused(
+          w.ids,
+          "q",
+          new Set([...s.decisions.keys(), ...s.entries.keys(), ...s.threads.keys()]),
+        );
+      thread = {
+        kind: "thread",
+        id,
+        about,
+        raises,
+        state: ThreadState.OPEN,
+        opened: stampOf(now),
+        messages: [msg],
+      };
+      description = `${raises === Raises.DOUBT ? "doubt raised" : "question asked"} by ${by}`;
+    } else {
+set -eu
+cd "$(dirname "$0")/../ts"
+command -v bun >/dev/null 2>&1 || { echo "bun is not installed" >&2; exit 2; }
+[ -d node_modules ] || { echo "ts/node_modules is missing; run bun install --frozen-lockfile in ts/" >&2; exit 2; }
+bun --bun run check
+
+exec
+/bin/bash -lc "python - <<'PY'
+import subprocess
+p='ts/src/app/threads.ts';original=open(p).read()
+source=original.replace('    const state = await readState(w.store),','''    if (where === null && w.actor.kind === \"agent\" && by === \"ada\")
+      await w.store.hold({ kind: \"message\", person: by, by: actorText(w.actor), operation: \"reply\", ref, raises, text, where: \"\", when: when ?? \"\" });
+    const state = await readState(w.store),''')
+try:
+ open(p,'w').write(source)
+ r=subprocess.run(['bun','test','tests/app/held-messages.test.ts','--test-name-pattern','a_relay_without_where_is_refused_as_lodge_0_2_refuses_it'],cwd='ts',capture_output=True,text=True)
+ open('/tmp/task12c-mutation-where-order.log','w').write(r.stdout+r.stderr)
+ print((r.stdout+r.stderr)[-400:]);assert r.returncode "'!= 0
+finally:open(p,'"'w').write(original)
+PY" in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+
++     "ref": "q-111111",
++     "seq": 2,
++     "text": "Yes.",
++     "when": "",
++     "where": "",
++   },
++ ]
+
+- Expected  - 1
++ Received  + 15
+
+      at <anonymous> (/var/tmp/lodge-server-store/ts/tests/app/held-messages.test.ts:63:30)
+(fail) a_relay_without_where_is_refused_as_lodge_0_2_refuses_it [24.60ms]
+
+ 0 pass
+ 6 filtered out
+ 1 fail
+ 2 expect() calls
+Ran 1 test across 1 file. [58.00ms]
+
+
+exec
+/bin/bash -lc "cat >> ts/tests/app/held-messages-approve.test.ts <<'EOF'
+
+test(\"a_hold_settled_on_the_last_attempt_is_not_found\", async () => {
+  const { store, ada, relay } = await setup();
+  const result = await relay();
+  let attempts = 0;
+  store.publish = async () => {
+    if (++attempts === 3) await store.decline(result.held as number, \"No.\");
+    return PublishOutcome.REJECTED;
+  };
+  await expect(ada.approve(result.held as number)).rejects.toThrow(NotFound);
+  expect(attempts).toBe(3);
+});
+EOF
+python - <<'PY'
+p='ts/tests/app/held-messages-approve.test.ts';s=open(p).read().replace('AddOutcome, Forbidden','AddOutcome, Forbidden, NotFound, PublishOutcome');open(p,'w').write(s)
+PY
+cd ts && bun test tests/app/held-messages-approve.test.ts --test-name-pattern a_hold_settled > /tmp/task12c-retry-red.log 2>&1; tail -15 /tmp/task12c-retry-red.log" in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+error: expect(received).toThrow(expected)
+
+Expected constructor: NotFound
+Received constructor: Conflict
+
+Received message: "other changes reached the store three times; nothing was written, so try again"
+
+      at <anonymous> (/var/tmp/lodge-server-store/ts/tests/app/held-messages-approve.test.ts:66:60)
+(fail) a_hold_settled_on_the_last_attempt_is_not_found [40.33ms]
+
+ 0 pass
+ 5 filtered out
+ 1 fail
+ 1 expect() calls
+Ran 1 test across 1 file. [72.00ms]
+
+exec
+/bin/bash -lc "python - <<'PY'
+p='ts/src/app/threads.ts';s=open(p).read().replace('    if (outcome === PublishOutcome.REJECTED) continue;','''    if (outcome === PublishOutcome.REJECTED) {
+      if (approves "'!== null && !(await w.store.held()).some((h) => h.seq === approves))
+        throw new NotFound(`nothing is held under number ${approves}`);
+      continue;
+    }'"''');open(p,'w').write(s)
+PY
+cd ts && bun x biome check --write src/app/threads.ts tests/app/held-messages-approve.test.ts && bun test tests/app/held-messages-approve.test.ts" in /var/tmp/lodge-server-store
+ succeeded in 74ms:
+Checked 2 files in 6ms. No fixes applied.
+bun test v1.3.14 (0d9b296a)
+
+ 6 pass
+ 0 fail
+ 18 expect() calls
+Ran 6 tests across 1 file. [126.00ms]
+
+codex
+The full gate passed. A further retry test caught an edge case: if a hold is settled during the third publication attempt, approval must return `NotFound`, rather than the retry-limit conflict. That fix and test now pass; I’m writing the report before the final gate, commit, and push.
+exec
+/bin/bash -lc "cat > docs/superpowers/plans/2026-11-02-lodge-server-store/task-12c-report.md <<'EOF'
+# Task 12c report
+
+Implemented held thread messages and approval through the existing publication transaction.
+
+## Files
+
+| File | Change |
+| --- | --- |
+| "'`ts/src/app/threads.ts` | Validate and check relayed messages before holding them; retain cleaned text, place, and minute; return provisional question IDs; publish approvals with their hold number; retry rejected publications and detect settled holds, including on the last attempt. |
+| `ts/src/app/held.ts` | Approve messages through the shared thread writer as the authorised person, preserving place and minute. |
+| `ts/src/app/results.ts` | Add `Written.awaits` and `Written.held`, defaulting both to null. |
+| `ts/tests/app/ports.test.ts` | Assert the two new defaults. |
+| `ts/tests/app/held-messages-support.ts` | Synthetic project with ada and bo, shared actors, and a reviewer question. |
+| `ts/tests/app/held-messages.test.ts` | Relay holding, published waiting state, own messages, and refusal ordering. |
+| `ts/tests/app/held-messages-approve.test.ts` | Message approval, approval-time question minting, decline, authorisation, closed threads, and settlement during the final retry. |
+| `ts/tests/store/held-messages.test.ts` | SQLite approval writes one file event and one approval event through one publication call with the hold number. |
+
+Waiting functions remain based on published messages.
+No parity rows belong to these new plan-specific tests, so parity.json is unchanged.
+No dependencies were added or installed.
+
+## Test-first evidence
+
+The initial app and store run, before implementation, ended with `272 pass`, `2 todo`, and `11 fail`.
+The three existing refusal behaviours passed on arrival and were subsequently tested against targeted mutations, each reverted immediately.
+
+| Test | First failure or targeted mutation |
+| --- | --- |
+| `an_agent_relaying_a_persons_words_is_held` | Expected held result with awaits and held; received published result without the fields. |
+| `the_thread_still_waits_for_the_person` | Expected the question in forAuthor; received an empty list after immediate publication. |
+| `a_persons_thread_still_waits_for_an_agent` | Expected last published text `Why?`; received `Yes.`. |
+| `a_persons_own_message_is_published_at_once` | Expected null awaits and held; fields absent. |
+| `the_person_approves_and_the_message_is_published` | `NotFound: nothing is held under number undefined`. |
+| `a_relayed_question_mints_its_thread_at_approval` | Expected `held for approval`; received `published`. |
+| `decline_publishes_nothing` | `NotFound: nothing is held under number undefined`. |
+| `another_person_or_an_agent_cannot_approve_a_message` | Expected Forbidden; received NotFound because no message was held. |
+| `approval_after_the_thread_closed_leaves_it_held` | Expected `q-111111 is closed`; received `nothing is held under number undefined`. |
+| `default_filling_functions_fill_python_defaults` | Expected two null fields; received neither. |
+| `a_relayed_message_lands_with_its_approval` | `NotFound: nothing is held under number undefined`. |
+| `one_person_cannot_write_as_another` | Replaced other-person Forbidden with a message hold; test failed because the operation resolved. |
+| `a_relay_without_where_is_refused_as_lodge_0_2_refuses_it` | Held the message before validating where; refusal still occurred, but the empty-holds assertion failed. |
+| `a_relay_to_a_closed_thread_is_refused` | Held the message before the closed-thread refusal; the empty-holds assertion failed. |
+| `a_hold_settled_on_the_last_attempt_is_not_found` | Expected NotFound; received Conflict with `other changes reached the store three times; nothing was written, so try again`. |
+
+An additional mutation disabling where validation also made its refusal test fail.
+All mutations were reverted.
+No test is incompatible with TypeScript.
+The SQLite fixture uses seeded'"'s existing owner "'`author`; app fixtures use ada and bo as specified.
+
+## Commands and results
+
+| Command | Last result |
+| --- | --- |
+| `uv run --frozen --quiet lodge waiting` | Nothing waiting for either actor. |
+| `bun test tests/app tests/store`, before implementation | `Ran 285 tests across 36 files`, 272 pass, 2 todo, 11 fail. |
+| Same command, after implementation | `Ran 285 tests across 36 files`, 283 pass, 2 todo, 0 fail. |
+| Individual refusal mutation runs | Each ended with 0 pass and 1 fail. |
+| `sh scripts/check-ts.sh`, first run | Biome formatting errors; no implementation or rule changes needed. |
+| `bun x biome check --write` on changed TypeScript files | Formatting fixed; subsequent check reported no fixes applied. |
+| `sh scripts/check-ts.sh`, after formatting | 1284 pass, 2 todo, 0 fail; no dependency violations. |
+| Final-retry test before its fix | 0 pass, 1 fail; Conflict instead of NotFound. |
+| `bun test tests/app/held-messages-approve.test.ts`, after retry fix | 6 pass, 0 fail, 18 expect calls. |
+| Final `sh scripts/check-ts.sh` | 1285 pass, 2 todo, 0 fail; Biome, TypeScript, dependency-cruiser, and knip pass. |
+
+## Scope and concerns
+
+No unresolved implementation concerns.
+The two existing todo tests remain deferred to plan 3.
+The parked Task 12b concerns, actor-wide held listing and duplicate holds on retried adds, remain untouched as instructed.
+The coordinator'"'s whole Python and TypeScript gate, merge, and ledger update are outside this task.
+The brief's task-specific instruction to commit and push takes precedence over its repeated sandbox-era prohibition.
+EOF
+sh scripts/check-ts.sh > /tmp/task12c-final-gate.log 2>&1; tail -14 /tmp/task12c-final-gate.log" in /var/tmp/lodge-server-store
+ succeeded in 8471ms:
+$ biome check --error-on-warnings . && tsc --noEmit -p . && depcruise src tests scripts --config .dependency-cruiser.cjs && knip && bun test
+Checked 186 files in 49ms. No fixes applied.
+
+[32m✔[39m no dependency violations found (197 modules, 760 dependencies cruised)
+
+bun test v1.3.14 (0d9b296a)
+
+ 1285 pass
+ 2 todo
+ 0 fail
+ 3322 expect() calls
+Ran 1287 tests across 104 files. [3.92s]
+
+exec
+/bin/bash -lc 'git add ts/src/app/threads.ts ts/src/app/held.ts ts/src/app/results.ts ts/tests/app/ports.test.ts ts/tests/app/held-messages-support.ts ts/tests/app/held-messages.test.ts ts/tests/app/held-messages-approve.test.ts ts/tests/store/held-messages.test.ts docs/superpowers/plans/2026-11-02-lodge-server-store/task-12c-report.md
+git -c "user.name=Svenja Kernig" -c user.email=20756868+Kiibou-chan@users.noreply.github.com commit -m "Hold relayed thread messages until their person approves" -m "Co-Authored-By: Codex <noreply@openai.com>"
+git push origin server-store' in /var/tmp/lodge-server-store
+ succeeded in 1539ms:
+[server-store 3134ce5] Hold relayed thread messages until their person approves
+ 9 files changed, 328 insertions(+), 8 deletions(-)
+ create mode 100644 docs/superpowers/plans/2026-11-02-lodge-server-store/task-12c-report.md
+ create mode 100644 ts/tests/app/held-messages-approve.test.ts
+ create mode 100644 ts/tests/app/held-messages-support.ts
+ create mode 100644 ts/tests/app/held-messages.test.ts
+ create mode 100644 ts/tests/store/held-messages.test.ts
+To github.com:Kiibou-chan/lodge.git
+   f892f81..3134ce5  server-store -> server-store
+
+codex
+DONE — implemented, reported, committed as `3134ce5`, and pushed to `server-store`.
+
+Tests: `sh scripts/check-ts.sh` passed; 1285 pass, 2 existing todo, 0 fail.
+
+Concerns: none new; parked Task 12b issues remain unchanged.
+tokens used
+53,147
+DONE — implemented, reported, committed as `3134ce5`, and pushed to `server-store`.
+
+Tests: `sh scripts/check-ts.sh` passed; 1285 pass, 2 existing todo, 0 fail.
+
+Concerns: none new; parked Task 12b issues remain unchanged.

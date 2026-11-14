@@ -1,0 +1,7 @@
+Implemented and pushed as `7452afe` on `server-store`.
+
+All requested fixes are complete. Regression tests failed before implementation; `sh scripts/check-ts.sh` now passes with 1,302 tests passed, 2 todo, 0 failures.
+
+[Report](/var/tmp/lodge-server-store/docs/superpowers/plans/2026-11-02-lodge-server-store/final-fix-2-report.md)
+
+A-3 and B-3 remain with the coordinator. The existing untracked log was left untouched.

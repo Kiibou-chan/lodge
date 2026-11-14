@@ -1,0 +1,7 @@
+Completed all seven fixes and pushed commit `b709aa8` to `server-store`.
+
+- All nine mutation checks caught the intended regressions.
+- `sh scripts/check-ts.sh`: 1,253 passed, 2 todo, 0 failed.
+- [Report](docs/superpowers/plans/2026-11-02-lodge-server-store/task-12a-fix-1-report.md)
+
+The pre-existing untracked log was left untouched.

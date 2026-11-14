@@ -223,6 +223,7 @@ test("draft_with_a_blank_title_is_a_problem", () => {
   if (result.kind === "problem") expect(result.message).toContain("title");
 });
 
+// TypeScript addition: pins Python repr for list and mapping IDs.
 test.each([
   ["[]", "[]"],
   ["{x: [a]}", "{'x': ['a']}"],

@@ -1,0 +1,5 @@
+DONE — committed and pushed as `7809f42` on `server-store-b`.
+
+Tests: `sh scripts/check-ts.sh` passed; 1,040 tests, zero failures.
+
+Concerns: none. Report: [task-7b-report.md](docs/superpowers/plans/2026-11-02-lodge-server-store/task-7b-report.md).

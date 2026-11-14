@@ -7,3 +7,4 @@ uv run vulture
 uv run pytest -q
 uv run lodge check --gate
 sh scripts/check-ts.sh
+sh scripts/differential.sh

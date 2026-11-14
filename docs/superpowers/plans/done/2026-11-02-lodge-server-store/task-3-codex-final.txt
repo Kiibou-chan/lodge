@@ -1,0 +1,6 @@
+DONE_WITH_CONCERNS — committed `817f49b` and pushed to `server-store-a`.
+
+Tests: `sh scripts/check-ts.sh` passed; 967 tests, 0 failures.
+
+Concern: the cause test followed implementation; a targeted mutation confirmed it catches the defect.
+Details in [task-3-report.md](docs/superpowers/plans/2026-11-02-lodge-server-store/task-3-report.md).

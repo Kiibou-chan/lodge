@@ -6,6 +6,7 @@ import {
   areaPath,
   contentHash,
   decision,
+  decodeUtf8,
   newRecordPath,
   parseArea,
   parseRecord,
@@ -213,11 +214,10 @@ test("crlf_text_parses_and_hashes_as_lf", () => {
   expect(contentHash(EXAMPLE_TEXT)).toEqual(digest.slice(0, 12));
   expect(contentHash("").length).toEqual(12);
 });
-
 test("hash_covers_undecodable_bytes", () => {
-  expect(contentHash("a\udcffb")).toBe(
-    createHash("sha256").update("a�b").digest("hex").slice(0, 12),
-  );
+  const bytes = new Uint8Array([97, 255, 98]);
+  const digest = createHash("sha256").update(bytes).digest("hex");
+  expect(contentHash(decodeUtf8(bytes))).toBe(digest.slice(0, 12));
 });
 
 test("spec_entry_takes_area_from_folder", () => {

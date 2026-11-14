@@ -11,6 +11,9 @@ const rows = Object.entries(parity) as [
   string,
   { status: string; plan?: number; ts: string[]; why?: string },
 ][];
+function held(row: { status: string; plan?: number }, plans = [2]): boolean {
+  return row.status === "ported" || (row.status === "changed" && plans.includes(row.plan ?? 0));
+}
 function files(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
     e.name === "__pycache__"
@@ -38,15 +41,14 @@ test("planned_rows_name_a_plan", () => {
 });
 test("ported_files_exist", () => {
   for (const [, r] of rows)
-    if (r.status === "ported" || (r.status === "changed" && r.plan === 1))
-      for (const p of r.ts) expect(existsSync(`${root}/${p}`)).toBe(true);
+    if (held(r, [1, 2])) for (const p of r.ts) expect(existsSync(`${root}/${p}`)).toBe(true);
 });
 test("ported_files_keep_every_python_test_name", () => {
-  for (const [p, r] of rows) if (r.status === "ported") expect(rowMissing(root, p, r)).toEqual([]);
+  for (const [p, r] of rows) if (held(r)) expect(rowMissing(root, p, r)).toEqual([]);
 });
 test("ported_files_hold_no_todo", () => {
   for (const [, r] of rows)
-    if (r.status === "ported")
+    if (held(r))
       for (const p of r.ts) expect(todoTitles(readFileSync(`${root}/${p}`, "utf8"))).toEqual([]);
 });
 test("a_ported_file_losing_a_name_fails", () => {
@@ -70,4 +72,13 @@ test("parity_names_ignore_non_test_calls", () => {
       'test.each("not a title")("real %p", () => {}); test.helper("not a test");',
     ),
   ).toEqual(["real %p"]);
+});
+
+test("a_changed_plan_2_file_losing_a_name_fails", () => {
+  const fixture = plant({
+    "tests/sample.py": "def test_a(): pass\ndef test_b(): pass",
+    "tests/sample.test.ts": 'test("a", () => {})',
+  });
+  const row = { status: "changed", plan: 2, ts: ["tests/sample.test.ts"] };
+  expect(held(row) ? rowMissing(fixture, "tests/sample.py", row) : []).toEqual(["b"]);
 });

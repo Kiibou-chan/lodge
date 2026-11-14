@@ -1,0 +1,1367 @@
+Reading additional input from stdin...
+OpenAI Codex v0.167.0
+--------
+workdir: /var/tmp/lodge-server-store
+model: gpt-6.1-sol
+provider: openai
+approval: never
+sandbox: danger-full-access
+reasoning effort: none
+reasoning summaries: none
+session id: 01a1dc01-50cc-7292-b34f-81e19443aa0a
+--------
+user
+Read docs/superpowers/plans/2026-11-02-lodge-server-store/task-12a-fix-1.md first, then do it.
+codex
+I’ll read the task file first, then follow its instructions and verify the changes.
+exec
+/bin/bash -lc 'cat docs/superpowers/plans/2026-11-02-lodge-server-store/task-12a-fix-1.md' in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+# Task 12a, fix round 1
+
+Worktree `/var/tmp/lodge-server-store`, branch `server-store`.
+Read `task-12a-review.md` in this folder; fix the findings below, test-first (each new or changed test seen failing against the src mutation the review names, or against the old test), and keep every existing test passing.
+Do not dispatch subagents.
+
+1. I-1: `a_settled_hold_cannot_be_declined` asserts the class `NotFound` as well as the message.
+2. I-2: drop the `deleteFrom("held")` before `rebuild` in `holds_rebuild`, so `rebuild`'s own delete is tested.
+3. I-3: one test with two projects (`projects.create("other", "ada")`, a store each): `held()` lists only its own holds, and `decline` and an approving `publish` with the other project's number answer `NotFound` and `REJECTED` and write no event.
+4. I-4: add `decline` and an approving `publish` (with a held `seq`) to the `test.each` of `ts/tests/store/write-first.test.ts`, and a missing-project case for `hold` and `decline`.
+5. P-M2: `MemoryStore.hold` takes its stamp from `stampOf(START)` instead of the literal.
+6. P-M3: `MemoryStore` keeps `declined: [seq, reason][]`, with a test in `fakes-held.test.ts`.
+7. P-M1: one `openHold(tx, project, seq)` used by `decline` and the approving `publish`.
+
+Hard rules: modules at most 300 lines, British English, no em-dashes, no new dependency, run `sh scripts/check-ts.sh`.
+Write `task-12a-fix-1-report.md` in this folder, commit with explicit paths (trailer `Co-Authored-By: Codex <noreply@openai.com>`), and push `server-store`.
+
+exec
+/bin/bash -lc "pwd; rg --files -g AGENTS.md -g '*held*' -g '*write-first*'; cat docs/superpowers/plans/2026-11-02-lodge-server-store/task-12a-review.md; git status --short" in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+/var/tmp/lodge-server-store
+ts/tests/app/fakes-held.test.ts
+ts/tests/store/held.test.ts
+ts/tests/store/write-first.test.ts
+# Task 12a review
+
+Reviewed commit f103fc0 on `server-store`, in a scratch worktree at that commit (removed after).
+Gate `sh scripts/check-ts.sh` there: exit 0, 1248 pass, 2 todo, 0 fail.
+Method: read the diff and the surrounding source, then applied 20 one-edit mutations to `src` and the `MemoryStore` fake, running `bun test tests/app tests/store` after each and reverting.
+Fourteen mutations were killed; M3, M6, M8, M9, M10, and M15 survived (below).
+
+## Pass 1: correctness
+
+The behaviour matches the plan and d-znagqe, d-2v8vtk, d-thvvzx for what the code does.
+- `publish` with `approves` runs the compare-and-set first (`ts/src/store/sqlite-store.ts:137`), then the open-hold read (`:138-146`), then the file events and the `approved` event in one transaction (`:147-152`); a hold not open answers `REJECTED` with nothing appended.
+- A refusal thrown before the transaction (`:117-134`) leaves the hold open.
+- `applyEvent` throws on a settle of a hold not open (`ts/src/store/events.ts:79-91`), and `rebuild` runs in one transaction, so an impossible history rolls back (`rebuild_refuses_an_impossible_history` fails against M4 and M5).
+- Migration 1 from schema 1 keeps events (`schema_1_is_migrated_to_2` fails against M13).
+- `MemoryStore` answers as the SQLite store does for: unknown hold on decline (`NotFound`), unknown or settled hold on approving publish (`REJECTED`), stale base (`REJECTED`, checked before the hold), listing order, and the rev moving on hold, decline, and approval (M16 to M20 killed).
+- Settle-once holds for both `HeldAdd` and `HeldMessage` because the stores read only `person`.
+
+No Blocking finding.
+
+### I-1 (Important) `a_settled_hold_cannot_be_declined` does not tell `NotFound` from a plain `Error`
+
+`ts/tests/store/held.test.ts:92-94` asserts `.rejects.toThrow(new NotFound(...))`; bun compares an error object by message only.
+Failure scenario: M3 deletes the `if (!held) throw new NotFound(...)` in `decline` (`ts/src/store/sqlite-store.ts:57`); `applyEvent`'s plain `Error` carries the same words, so all tests pass, while plan 3 maps `NotFound` to 404 and the same refusal would reach it as an untyped 500.
+Fix: assert the class, `rejects.toBeInstanceOf(NotFound)` plus a message check (as `fakes-held.test.ts:24` does with `toThrow(NotFound)`).
+
+### I-2 (Important) `holds_rebuild` empties `held` itself, so `rebuild`'s own `deleteFrom("held")` is untested
+
+`ts/tests/store/held.test.ts:119` runs `deleteFrom("held")` before `rebuild`.
+Failure scenario: M6 removes `await tx.deleteFrom("held").execute()` from `rebuild` (`ts/src/store/events.ts:98`); every test still passes, yet `rebuild` over a database with holds then dies on the primary-key conflict of the first replayed `held` event, which is the plan's "`rebuild` empties and refills `held` too".
+Fix: drop line 119, so `rebuild` runs over the populated table and gives the same rows.
+
+### I-3 (Important) Nothing tests that holds are scoped to their project
+
+`ts/src/store/sqlite-store.ts:36`, `:44` (`decline`), and `:141` (`publish`) filter on `project`; M8, M9, and M10 each remove one filter and all tests pass, since every store test uses one project.
+Failure scenario: `held()` without the filter lists another project's held drafts, with a person's quote, to this project's session; an approving `publish` or `decline` with another project's number settles a foreign hold (hold numbers are the global event `seq`, `:29`).
+The plan requires "unless it is this project's and open" (Task 12a, `decline` and `publish`).
+Fix: one test with two projects (`projects.create("other", "ada")`, a store each): `held()` lists only its own; `decline` and an approving `publish` with the other's number answer `NotFound` and `REJECTED`, and write no event.
+
+### I-4 (Important) d-thvvzx's write-first rule for `decline` and an approving `publish` has no test
+
+`ts/tests/store/write-first.test.ts:7` covers `create`, `addMember`, and `publish` without `approves`; M15 removes `decline`'s opening `touchHead` and all tests pass, so the missing-project `NotFound("no project named …")` is untested as well.
+d-thvvzx names `decline` and the approving `publish` explicitly; the plan's Task 12a test list omits it, so the builder was not told.
+Failure scenario: a later edit reads the hold before the write; two connections racing then fail with `database is locked` instead of a typed answer, which is the failure d-thvvzx closes.
+Fix: add `decline` and an approving `publish` (with a held `seq`) to the `test.each` and a missing-project case for `hold` and `decline`.
+
+## Pass 2: practice
+
+### P-M1 (Minor) The hold lookup is written twice
+
+`ts/src/store/sqlite-store.ts:44-50` and `:138-146` are the same select on `held`.
+Fix: one `openHold(tx, project, seq)` in `read-tree.ts` or `events.ts`, used by both.
+
+### P-M2 (Minor) `MemoryStore.hold` hard-codes a stamp
+
+`ts/tests/app/fakes.ts:57` repeats the literal of `START` (`:26`) instead of `stampOf(START)`.
+Failure scenario: a task 12b test using a `FixedClock` with another start reads a `Held.at` that disagrees with the clock, which the SQLite store would take from the clock.
+Fix: `at: stampOf(START)`, or give `MemoryStore` an optional clock.
+
+### P-M3 (Minor) `decline` drops its reason in `MemoryStore`
+
+`ts/tests/app/fakes.ts:64` names it `_reason` and records nothing, so a 12b test cannot assert the reason reached the store.
+Fix: keep `declined: [seq, reason][]` on the fake.
+
+Modules: all under 300 lines (largest test file `database.test.ts`, 204; `sqlite-store.ts`, 157).
+No new dependency (`ts/package.json` and `bun.lock` untouched).
+No em-dashes or non-British spellings in the diff.
+The two files in `git status` (`task-12a-codex.log`, `-final.txt`) are untracked builder output, not part of the commit.
+
+## Pass 3: design
+
+- The port, both stores, and `Interleaving` carry the three methods and `approves`; `tsc` holds them together, as probe 10 predicts.
+- `HeldDraft` is stored as unvalidated JSON and read back with a cast (`ts/src/store/sqlite-store.ts:41`, `events.ts:70`); that is the plan's choice (the stores read only `person`) and a corrupt body fails loudly at the NOT NULL column, so no finding.
+- The plan assumes `MemoryStore` and `SqliteStore` answer alike; the differences left are only the size of a rev step (`land` adds one per publish, SQLite one per event) and hold numbers (the store's rev against the global event `seq`), neither observable to the operations of Task 12b.
+- The `held` table has no index on `(project, state)`; `held()` scans by primary-key order with a filter, fine at this scale.
+- No plan rule is broken that a test could check beyond I-1 to I-4.
+
+## Files
+
+Read: `task-12a-brief.md` (head and the SQLite section), `task-12a-report.md`, the plan (Task 12a, 12b, 12c, Interfaces, Global Constraints, Calls made), `lodge spec`, d-znagqe, d-2v8vtk, d-thvvzx, d-d96y91, the full diff of f103fc0, and the whole of `events.ts`, `read-tree.ts`, `schema.ts`, `sqlite-store.ts`, `fakes.ts`, `rebuild.test.ts`, `write-first.test.ts`, `support.ts`.
+Not read: the rest of the brief (the Global Constraints repeat the plan's), the other `ts/tests` files, `projects.ts`, and the Python source.
+Not run: a concurrent-connection race over an approval (the plan's Task 12a asks for none).
+
+Verdict: 0 Blocking, 4 Important, 3 Minor
+?? docs/superpowers/plans/2026-11-02-lodge-server-store/task-12a-fix-1-codex.log
+
+exec
+/bin/bash -lc 'find .. -name AGENTS.md -print; cat ts/tests/store/held.test.ts ts/tests/store/write-first.test.ts ts/tests/app/fakes-held.test.ts ts/tests/app/fakes.ts ts/src/store/sqlite-store.ts ts/src/store/read-tree.ts ts/tests/store/support.ts ts/src/store/events.ts' in /var/tmp/lodge-server-store
+ succeeded in 2529ms:
+find: ‘../systemd-private-1d0e9058960d426fbdcfec615fbd59b6-NetworkManager.service-ZkPLfw’: Permission denied
+find: ‘../systemd-private-1d0e9058960d426fbdcfec615fbd59b6-polkit.service-i431EF’: Permission denied
+find: ‘../systemd-private-1d0e9058960d426fbdcfec615fbd59b6-dbus-broker.service-36Uykt’: Permission denied
+find: ‘../systemd-private-1d0e9058960d426fbdcfec615fbd59b6-ModemManager.service-S6vRMT’: Permission denied
+find: ‘../systemd-private-1d0e9058960d426fbdcfec615fbd59b6-bolt.service-wLdxHr’: Permission denied
+find: ‘../systemd-private-1d0e9058960d426fbdcfec615fbd59b6-upower.service-GqHnSe’: Permission denied
+find: ‘../systemd-private-1d0e9058960d426fbdcfec615fbd59b6-power-profiles-daemon.service-Q8y6UK’: Permission denied
+find: ‘../systemd-private-1d0e9058960d426fbdcfec615fbd59b6-geoclue.service-FlSyiw’: Permission denied
+find: ‘../systemd-private-1d0e9058960d426fbdcfec615fbd59b6-iio-sensor-proxy.service-CazOwL’: Permission denied
+find: ‘../pamac-build-user/codex-desktop-linux/pkg’: Permission denied
+find: ‘../systemd-private-1d0e9058960d426fbdcfec615fbd59b6-bluetooth.service-IwDOXN’: Permission denied
+find: ‘../systemd-private-1d0e9058960d426fbdcfec615fbd59b6-systemd-logind.service-KkH9na’: Permission denied
+../pamac-build-user/codex-desktop-linux/src/codex-desktop-linux/AGENTS.md
+import { expect, test } from "bun:test";
+import { type HeldDraft, NotFound, PublishOutcome } from "#app";
+import { decodeUtf8, encodeUtf8 } from "#core";
+import { rebuild } from "#store";
+import { events, setup } from "./support.ts";
+
+const draft: HeldDraft = {
+  kind: "add",
+  person: "ada",
+  by: "agent",
+  drafts: [["draft", "text"]],
+  attachments: [],
+  importing: false,
+  message: "add",
+};
+const writes = new Map([["lodge/specs/new.md", "new"]]);
+test("a_hold_is_an_event_and_not_a_file", async () => {
+  const { store, database } = await setup();
+  const [before] = await store.trees();
+  const seq = await store.hold(draft);
+  const event = (await events(database)).at(-1);
+  expect(event?.kind).toBe("held");
+  expect(event?.seq).toBe(seq);
+  expect(JSON.parse(decodeUtf8(event?.body ?? new Uint8Array()))).toEqual(draft);
+  expect((await store.trees())[0].files).toEqual(before.files);
+  expect((await store.trees())[0].rev).toBe(String(seq));
+  expect(await store.held()).toEqual([{ ...draft, seq, at: "2026-10-29T09:30:00+01:00" }]);
+});
+test("approval_and_files_land_together", async () => {
+  const { store, database } = await setup();
+  const [stale] = await store.trees();
+  const seq = await store.hold(draft);
+  const before = await events(database);
+  expect(await store.publish(stale, writes, "approve", seq)).toBe(PublishOutcome.REJECTED);
+  expect(await events(database)).toEqual(before);
+  expect(await store.publish((await store.trees())[0], writes, "approve", seq)).toBe(
+    PublishOutcome.PUBLISHED,
+  );
+  expect(
+    (await events(database))
+      .slice(-2)
+      .map((e) => [
+        e.kind,
+        e.kind === "approved" ? JSON.parse(decodeUtf8(e.body)) : decodeUtf8(e.body),
+      ]),
+  ).toEqual([
+    ["file", "new"],
+    ["approved", { held: seq }],
+  ]);
+  expect((await store.trees())[0].files.get("lodge/specs/new.md")).toBe("new");
+  expect(await store.held()).toEqual([]);
+});
+test("a_declined_hold_cannot_be_approved", async () => {
+  const { store, database } = await setup();
+  const seq = await store.hold(draft);
+  const [stale] = await store.trees();
+  await store.decline(seq, "no");
+  expect((await store.trees())[0].rev).not.toBe(stale.rev);
+  const before = await events(database);
+  expect(JSON.parse(decodeUtf8(before.at(-1)?.body ?? new Uint8Array()))).toEqual({
+    held: seq,
+    reason: "no",
+  });
+  expect(await store.publish((await store.trees())[0], writes, "approve", seq)).toBe(
+    PublishOutcome.REJECTED,
+  );
+  expect(await events(database)).toEqual(before);
+});
+test("a_hold_is_approved_once", async () => {
+  const { store, database } = await setup();
+  const seq = await store.hold(draft);
+  await store.publish((await store.trees())[0], writes, "approve", seq);
+  const before = await events(database);
+  expect(await store.publish((await store.trees())[0], writes, "again", seq)).toBe(
+    PublishOutcome.REJECTED,
+  );
+  expect(await events(database)).toEqual(before);
+});
+test("a_settled_hold_cannot_be_declined", async () => {
+  const { store } = await setup();
+  for (const approve of [false, true]) {
+    const seq = await store.hold(draft);
+    if (approve) await store.publish((await store.trees())[0], new Map(), "approve", seq);
+    else await store.decline(seq, "no");
+    await expect(store.decline(seq, "again")).rejects.toThrow(
+      new NotFound(`nothing is held under number ${seq}`),
+    );
+  }
+});
+test("a_held_message_round_trips", async () => {
+  const { store } = await setup();
+  const message: HeldDraft = {
+    kind: "message",
+    person: "ada",
+    by: "agent builder",
+    operation: "ask",
+    ref: "d-123456",
+    raises: null,
+    text: "words",
+    where: "review",
+    when: "2026-10-29 09:30",
+  };
+  const seq = await store.hold(message);
+  expect(await store.held()).toEqual([{ ...message, seq, at: "2026-10-29T09:30:00+01:00" }]);
+});
+test("holds_rebuild", async () => {
+  const { store, database } = await setup();
+  const first = await store.hold(draft);
+  await store.decline(first, "no");
+  const second = await store.hold(draft);
+  await store.publish((await store.trees())[0], writes, "yes", second);
+  await store.hold(draft);
+  const before = await database.db.selectFrom("held").selectAll().orderBy("seq").execute();
+  await database.db.deleteFrom("held").execute();
+  await rebuild(database);
+  expect(await database.db.selectFrom("held").selectAll().orderBy("seq").execute()).toEqual(before);
+});
+test("rebuild_refuses_an_impossible_history", async () => {
+  const { store, database } = await setup();
+  const seq = await store.hold(draft);
+  await store.decline(seq, "no");
+  const snapshot = async () =>
+    Promise.all([
+      database.db.selectFrom("held").selectAll().execute(),
+      database.db.selectFrom("heads").selectAll().execute(),
+      database.db.selectFrom("files").selectAll().execute(),
+      database.db.selectFrom("members").selectAll().execute(),
+    ]);
+  const before = await snapshot();
+  await database.db
+    .insertInto("events")
+    .values({
+      project: "storage",
+      actor: "ada",
+      at: "now",
+      kind: "approved",
+      path: null,
+      body: encodeUtf8(JSON.stringify({ held: seq })),
+      message: null,
+    })
+    .execute();
+  await expect(rebuild(database)).rejects.toThrow();
+  expect(await snapshot()).toEqual(before);
+});
+import { expect, test } from "bun:test";
+import type { KyselyPlugin, RootOperationNode } from "kysely";
+import { person, Role } from "#app";
+import { SqliteProjects, SqliteStore } from "#store";
+import { setup } from "./support.ts";
+
+test.each(["create", "addMember", "publish"])(
+  "transaction_writes_heads_first: %s",
+  async (operation) => {
+    const { database, clock } = await setup();
+    const statements: RootOperationNode[] = [];
+    const plugin: KyselyPlugin = {
+      transformQuery({ node }) {
+        statements.push(node);
+        return node;
+      },
+      async transformResult({ result }) {
+        return result;
+      },
+    };
+    const observed = { ...database, db: database.db.withPlugin(plugin) };
+    const projects = new SqliteProjects(observed, clock);
+    const store = new SqliteStore(observed, "storage", "ada", clock);
+    const base = (await store.trees())[0];
+    statements.length = 0;
+    if (operation === "create") await projects.create("other", "ada");
+    else if (operation === "addMember")
+      await projects.addMember("storage", "bo", Role.MEMBER, person("author"));
+    else await store.publish(base, new Map([["lodge/a", "a"]]), "");
+    const first = statements[0];
+    expect(first?.kind).toBe(operation === "create" ? "InsertQueryNode" : "UpdateQueryNode");
+    expect(first).toMatchObject(
+      operation === "create"
+        ? { into: { table: { identifier: { name: "heads" } } } }
+        : { table: { table: { identifier: { name: "heads" } } } },
+    );
+  },
+);
+import { expect, test } from "bun:test";
+import { type HeldDraft, NotFound, PublishOutcome } from "#app";
+import { MemoryStore } from "./fakes.ts";
+
+test("memory_store_settles_a_hold_once", async () => {
+  const store = new MemoryStore();
+  const draft: HeldDraft = {
+    kind: "add",
+    person: "ada",
+    by: "agent",
+    drafts: [],
+    attachments: [],
+    importing: false,
+    message: "add",
+  };
+  const [stale] = await store.trees();
+  const seq = await store.hold(draft);
+  expect(seq).toBe(1);
+  expect((await store.held())[0]).toMatchObject({ ...draft, seq, at: expect.any(String) });
+  expect(await store.publish(stale, new Map(), "yes", seq)).toBe(PublishOutcome.REJECTED);
+  await store.decline(seq, "no");
+  expect(store.rev).toBe(2);
+  expect(await store.publish((await store.trees())[0], new Map(), "yes", seq)).toBe(
+    PublishOutcome.REJECTED,
+  );
+  await expect(store.decline(seq, "again")).rejects.toThrow(NotFound);
+  const next = await store.hold(draft);
+  expect(await store.publish((await store.trees())[0], new Map(), "yes", next)).toBe(
+    PublishOutcome.PUBLISHED,
+  );
+  expect(store.rev).toBe(5);
+  expect(await store.publish((await store.trees())[0], new Map(), "yes", next)).toBe(
+    PublishOutcome.REJECTED,
+  );
+  await expect(store.decline(next, "no")).rejects.toThrow(NotFound);
+  expect(await store.held()).toEqual([]);
+});
+import {
+  type Clock,
+  CommitOutcome,
+  type Committed,
+  committed,
+  type Gate,
+  gate,
+  type Held,
+  type HeldDraft,
+  type IdSource,
+  NotFound,
+  type Now,
+  PublishOutcome,
+  type Store,
+} from "#app";
+import {
+  type Area,
+  ATTACHMENTS,
+  type Decision,
+  instant,
+  type SpecEntry,
+  type Tree,
+  tree,
+} from "#core";
+import { filesOf } from "../core/builders.ts";
+
+export const START: Now = { epochMs: instant("2026-10-29T09:30:00+01:00"), offsetMinutes: 60 };
+
+// movesAfterRead and rejectNext land another session’s change before publication.
+export class MemoryStore implements Store {
+  files: Map<string, string>;
+  published: Map<string, string>;
+  staged: boolean;
+  people: ReadonlySet<string>;
+  rev = 0;
+  private holds = new Map<number, Held>();
+  commits: [readonly string[], string][] = [];
+  commitResult: Committed = committed({ outcome: CommitOutcome.COMMITTED });
+  stamp: string | null = "fetched 2026-10-29T08:00:00+00:00";
+  publishes: [Map<string, string>, string][] = [];
+  attempts = 0;
+  gateFor: Gate | null = null;
+  private moves: ReadonlyMap<string, string>[] = [];
+  private rejections: ReadonlyMap<string, string>[] = [];
+
+  constructor(
+    items: (Area | Decision | SpecEntry)[] = [],
+    options: { staged?: boolean; people?: ReadonlySet<string> } = {},
+  ) {
+    this.people = options.people ?? new Set(["author"]);
+    this.files = filesOf(...items);
+    this.published = new Map(this.files);
+    this.staged = options.staged ?? false;
+  }
+  async hold(draft: HeldDraft): Promise<number> {
+    const seq = ++this.rev;
+    this.holds.set(seq, structuredClone({ ...draft, seq, at: "2026-10-29T09:30:00+01:00" }));
+    return seq;
+  }
+  async held(): Promise<readonly Held[]> {
+    return structuredClone([...this.holds.values()]);
+  }
+  async decline(seq: number, _reason: string): Promise<void> {
+    if (!this.holds.delete(seq)) throw new NotFound(`nothing is held under number ${seq}`);
+    this.rev += 1;
+  }
+  async commit(paths: readonly string[], message: string): Promise<Committed> {
+    this.commits.push([[...paths], message]);
+    return this.commitResult;
+  }
+  async trees(): Promise<readonly [Tree, Tree]> {
+    const current = tree({
+      rev: String(this.rev),
+      files: new Map(this.files),
+      people: this.people,
+    });
+    const published = this.staged
+      ? tree({ rev: String(this.rev), files: new Map(this.published), people: this.people })
+      : current;
+    const move = this.moves.shift();
+    if (move !== undefined) this.land(move);
+    return [current, published];
+  }
+  async attachmentTexts(): Promise<ReadonlyMap<string, string>> {
+    return new Map([...this.files].filter(([path]) => path.startsWith(ATTACHMENTS)));
+  }
+  async freshness(): Promise<string | null> {
+    return this.stamp;
+  }
+  async gate(current: Tree): Promise<Gate> {
+    if (this.gateFor !== null) return this.gateFor;
+    const published = this.staged
+      ? tree({ rev: String(this.rev), files: new Map(this.published), people: this.people })
+      : current;
+    return gate({ published, checked: [["", current]] });
+  }
+  async publish(
+    base: Tree,
+    writes: ReadonlyMap<string, string>,
+    message: string,
+    approves: number | null = null,
+  ): Promise<PublishOutcome> {
+    this.attempts += 1;
+    const rejection = this.rejections.shift();
+    if (rejection !== undefined) {
+      this.land(rejection);
+      return PublishOutcome.REJECTED;
+    }
+    if (base.rev !== String(this.rev)) return PublishOutcome.REJECTED;
+    if (approves !== null && !this.holds.has(approves)) return PublishOutcome.REJECTED;
+    this.publishes.push([new Map(writes), message]);
+    this.land(writes);
+    if (approves !== null) {
+      this.holds.delete(approves);
+      this.rev += 1;
+    }
+    return this.staged ? PublishOutcome.STAGED : PublishOutcome.PUBLISHED;
+  }
+  movesAfterRead(change: ReadonlyMap<string, string>): void {
+    this.moves.push(change);
+  }
+  rejectNext(...changes: ReadonlyMap<string, string>[]): void {
+    this.rejections.push(...changes);
+  }
+  private land(change: ReadonlyMap<string, string>): void {
+    for (const [path, text] of change) this.files.set(path, text);
+    this.rev += 1;
+    if (!this.staged) this.published = new Map(this.files);
+  }
+}
+export class FixedClock implements Clock {
+  calls = 0;
+  slept: number[] = [];
+  constructor(
+    public start: Now = START,
+    public stepMs = 0,
+  ) {}
+  now(): Now {
+    this.calls += 1;
+    return { ...this.start, epochMs: this.start.epochMs + this.stepMs * (this.calls - 1) };
+  }
+  async sleep(seconds: number): Promise<void> {
+    this.slept.push(seconds);
+    this.start = { ...this.start, epochMs: this.start.epochMs + seconds * 1000 };
+  }
+}
+export class CountingIds implements IdSource {
+  draws = 0;
+  next: number;
+  constructor(
+    first = 1,
+    public step = 1,
+  ) {
+    this.next = first;
+  }
+  entropy(): Uint8Array {
+    this.draws += 1;
+    const value = this.next;
+    this.next += this.step;
+    if (!Number.isInteger(value) || value < 0 || value > 255)
+      throw new RangeError("byte must be in range(0, 256)");
+    return new Uint8Array(6).fill(value);
+  }
+}
+import {
+  type Clock,
+  CommitOutcome,
+  committed,
+  gate,
+  type Held,
+  type HeldDraft,
+  LodgeError,
+  NotFound,
+  PublishOutcome,
+  type Store,
+  stampOf,
+} from "#app";
+import { ATTACHMENTS, decodeUtf8, encodeUtf8, type Tree, ValueError } from "#core";
+import { appendEvents, json } from "./events.ts";
+import { readTree, touchHead } from "./read-tree.ts";
+import type { LodgeDatabase } from "./schema.ts";
+export class SqliteStore implements Store {
+  constructor(
+    private readonly database: LodgeDatabase,
+    private readonly project: string,
+    private readonly actor: string,
+    private readonly clock: Clock,
+  ) {}
+  async hold(held: HeldDraft): Promise<number> {
+    return this.database.db.transaction().execute(async (tx) => {
+      if (!(await touchHead(tx, this.project)))
+        throw new NotFound(`no project named ${this.project}`);
+      return appendEvents(tx, this.project, this.actor, stampOf(this.clock.now()), [
+        { kind: "held", path: null, body: json(held), message: null },
+      ]);
+    });
+  }
+  async held(): Promise<readonly Held[]> {
+    const rows = await this.database.db
+      .selectFrom("held")
+      .selectAll()
+      .where("project", "=", this.project)
+      .where("state", "=", "open")
+      .orderBy("seq", "asc")
+      .execute();
+    return rows.map((row) => ({
+      ...(JSON.parse(decodeUtf8(row.body)) as HeldDraft),
+      seq: row.seq,
+      at: row.at,
+    }));
+  }
+  async decline(seq: number, reason: string): Promise<void> {
+    await this.database.db.transaction().execute(async (tx) => {
+      if (!(await touchHead(tx, this.project)))
+        throw new NotFound(`no project named ${this.project}`);
+      const held = await tx
+        .selectFrom("held")
+        .select("seq")
+        .where("seq", "=", seq)
+        .where("project", "=", this.project)
+        .where("state", "=", "open")
+        .executeTakeFirst();
+      if (!held) throw new NotFound(`nothing is held under number ${seq}`);
+      await appendEvents(tx, this.project, this.actor, stampOf(this.clock.now()), [
+        { kind: "declined", path: null, body: json({ held: seq, reason }), message: null },
+      ]);
+    });
+  }
+  async trees(): Promise<readonly [Tree, Tree]> {
+    return this.database.db.transaction().execute(async (tx) => {
+      const current = await readTree(tx, this.project);
+      return [current, current] as const;
+    });
+  }
+  async attachmentTexts(): Promise<ReadonlyMap<string, string>> {
+    const rows = await this.database.db
+      .selectFrom("files")
+      .selectAll()
+      .where("project", "=", this.project)
+      .where("path", ">=", ATTACHMENTS)
+      .where("path", "<", "lodge/attachments0")
+      .execute();
+    return new Map(rows.map((row) => [row.path, decodeUtf8(row.body)]));
+  }
+  async freshness() {
+    return null;
+  }
+  async gate(current: Tree) {
+    return gate({ published: current, checked: [["", current]] });
+  }
+  async commit(_paths: readonly string[], _message: string) {
+    return committed({
+      outcome: CommitOutcome.FAILED,
+      detail: "the server keeps no checkout; its writes are published at once",
+    });
+  }
+  async publish(
+    base: Tree,
+    writes: ReadonlyMap<string, string>,
+    message: string,
+    approves: number | null = null,
+  ): Promise<PublishOutcome> {
+    const events: { kind: string; path: string; body: Uint8Array; message: string }[] = [];
+    for (const path of writes.keys()) {
+      const parts = path.split("/");
+      if (
+        parts[0] !== "lodge" ||
+        parts.length < 2 ||
+        path.includes("\\") ||
+        path.includes("\0") ||
+        parts.some((part) => ["", ".", "..", ".git"].includes(part))
+      )
+        throw new LodgeError(`${path} is outside lodge/, which is all the store writes`);
+      if (base.attachments.has(path))
+        throw new LodgeError(`${path} is an attachment, and lodge never overwrites an attachment`);
+    }
+    for (const path of writes.keys()) {
+      if (/\p{Cs}/u.test(path))
+        throw new LodgeError(`${path}: a path holding a lone surrogate cannot be stored`);
+    }
+    for (const [path, text] of writes) {
+      if (
+        path.startsWith("lodge/decisions/") &&
+        base.files.has(path) &&
+        base.files.get(path) !== text
+      )
+        throw new LodgeError(
+          `${path} is a published decision, and lodge never rewrites a decision`,
+        );
+    }
+    for (const [path, text] of writes) {
+      try {
+        events.push({ kind: "file", path, body: encodeUtf8(text), message });
+      } catch (error) {
+        if (!(error instanceof ValueError)) throw error;
+        throw new LodgeError(`${path}: ${error.message}`);
+      }
+    }
+    if (base.rev === null || !/^[0-9]+$/u.test(base.rev)) return PublishOutcome.REJECTED;
+    return this.database.db.transaction().execute(async (tx) => {
+      if (!(await touchHead(tx, this.project, Number(base.rev)))) return PublishOutcome.REJECTED;
+      if (approves !== null) {
+        const held = await tx
+          .selectFrom("held")
+          .select("seq")
+          .where("seq", "=", approves)
+          .where("project", "=", this.project)
+          .where("state", "=", "open")
+          .executeTakeFirst();
+        if (!held) return PublishOutcome.REJECTED;
+      }
+      const at = stampOf(this.clock.now());
+      await appendEvents(tx, this.project, this.actor, at, events);
+      if (approves !== null)
+        await appendEvents(tx, this.project, this.actor, at, [
+          { kind: "approved", path: null, body: json({ held: approves }), message: null },
+        ]);
+      return PublishOutcome.PUBLISHED;
+    });
+  }
+}
+import type { Transaction } from "kysely";
+import { NotFound, Role } from "#app";
+import { ATTACHMENTS, decodeUtf8, type Tree, tree } from "#core";
+import type { Tables } from "./schema.ts";
+export async function headOf(tx: Transaction<Tables>, project: string): Promise<number> {
+  const head = await tx
+    .selectFrom("heads")
+    .select("rev")
+    .where("project", "=", project)
+    .executeTakeFirst();
+  if (!head) throw new NotFound(`no project named ${project}`);
+  return head.rev;
+}
+export async function touchHead(
+  tx: Transaction<Tables>,
+  project: string,
+  rev?: number,
+): Promise<boolean> {
+  let query = tx
+    .updateTable("heads")
+    .set((eb) => ({ rev: eb.ref("rev") }))
+    .where("project", "=", project);
+  if (rev !== undefined) query = query.where("rev", "=", rev);
+  const result = await query.executeTakeFirst();
+  return result.numUpdatedRows !== 0n;
+}
+export async function readTree(tx: Transaction<Tables>, project: string): Promise<Tree> {
+  const rev = await headOf(tx, project);
+  const rows = await tx
+    .selectFrom("files")
+    .selectAll()
+    .where("project", "=", project)
+    .orderBy("path", "asc")
+    .execute();
+  const files = new Map<string, string>(),
+    attachments = new Set<string>();
+  for (const row of rows) {
+    if (row.path.startsWith(ATTACHMENTS)) attachments.add(row.path);
+    else files.set(row.path, decodeUtf8(row.body));
+  }
+  const owners = await tx
+    .selectFrom("members")
+    .select("person")
+    .where("project", "=", project)
+    .where("role", "=", Role.OWNER)
+    .execute();
+  return tree({
+    rev: String(rev),
+    files,
+    attachments,
+    people: new Set(owners.map((row) => row.person)),
+  });
+}
+import { afterEach } from "bun:test";
+import { type LodgeDatabase, openDatabase, SqliteProjects, SqliteStore } from "#store";
+import { FixedClock } from "../app/fakes.ts";
+
+const opened: LodgeDatabase[] = [];
+afterEach(async () => {
+  for (const db of opened.splice(0)) await db.close();
+});
+export async function setup() {
+  const database = await openDatabase(":memory:");
+  opened.push(database);
+  const clock = new FixedClock();
+  const projects = new SqliteProjects(database, clock);
+  await projects.create("storage", "author");
+  const store = new SqliteStore(database, "storage", "author", clock);
+  return { database, projects, store, clock };
+}
+export async function events(database: LodgeDatabase) {
+  return database.db.selectFrom("events").selectAll().orderBy("seq", "asc").execute();
+}
+import type { Selectable, Transaction } from "kysely";
+import { decodeUtf8, encodeUtf8 } from "#core";
+import type { LodgeDatabase, Tables } from "./schema.ts";
+
+interface NewEvent {
+  readonly kind: string;
+  readonly path: string | null;
+  readonly body: Uint8Array;
+  readonly message: string | null;
+}
+export function json(value: unknown): Uint8Array {
+  return encodeUtf8(JSON.stringify(value));
+}
+export async function appendEvents(
+  tx: Transaction<Tables>,
+  project: string,
+  actor: string,
+  at: string,
+  events: readonly NewEvent[],
+): Promise<number> {
+  let seq = 0;
+  for (const event of events) {
+    const row = await tx
+      .insertInto("events")
+      .values({
+        ...event,
+        message: event.message === null ? null : encodeUtf8(event.message),
+        project,
+        actor,
+        at,
+      })
+      .returningAll()
+      .executeTakeFirstOrThrow();
+    await applyEvent(tx, row);
+    seq = row.seq;
+  }
+  return seq;
+}
+async function applyEvent(
+  tx: Transaction<Tables>,
+  row: Selectable<Tables["events"]>,
+): Promise<void> {
+  const { project, seq } = row;
+  switch (row.kind) {
+    case "project":
+      await tx
+        .insertInto("heads")
+        .values({ project, rev: seq })
+        .onConflict((c) => c.column("project").doUpdateSet({ rev: seq }))
+        .execute();
+      break;
+    case "member": {
+      const { person, role } = JSON.parse(decodeUtf8(row.body)) as { person: string; role: string };
+      await tx
+        .insertInto("members")
+        .values({ project, person, role })
+        .onConflict((c) => c.columns(["project", "person"]).doUpdateSet({ role }))
+        .execute();
+      break;
+    }
+    case "file":
+      if (row.path === null) throw new Error("a file event needs a path");
+      await tx
+        .insertInto("files")
+        .values({ project, path: row.path, body: row.body, seq })
+        .onConflict((c) => c.columns(["project", "path"]).doUpdateSet({ body: row.body, seq }))
+        .execute();
+      break;
+    case "held": {
+      const { person } = JSON.parse(decodeUtf8(row.body)) as { person: string };
+      await tx
+        .insertInto("held")
+        .values({ seq, project, person, at: row.at, body: row.body, state: "open" })
+        .execute();
+      break;
+    }
+    case "approved":
+    case "declined": {
+      const { held } = JSON.parse(decodeUtf8(row.body)) as { held: number };
+      const result = await tx
+        .updateTable("held")
+        .set({ state: row.kind })
+        .where("seq", "=", held)
+        .where("project", "=", project)
+        .where("state", "=", "open")
+        .executeTakeFirst();
+      if (result.numUpdatedRows !== 1n) throw new Error(`nothing is held under number ${held}`);
+      break;
+    }
+    default:
+      throw new Error(`unknown event kind: ${row.kind}`);
+  }
+  if (row.kind !== "project")
+    await tx.updateTable("heads").set({ rev: seq }).where("project", "=", project).execute();
+}
+export async function rebuild(database: LodgeDatabase): Promise<void> {
+  await database.db.transaction().execute(async (tx) => {
+    await tx.deleteFrom("held").execute();
+    await tx.deleteFrom("heads").execute();
+    await tx.deleteFrom("files").execute();
+    await tx.deleteFrom("members").execute();
+    const events = await tx.selectFrom("events").selectAll().orderBy("seq", "asc").execute();
+    for (const event of events) await applyEvent(tx, event);
+  });
+}
+
+exec
+/bin/bash -lc 'cat scripts/check-ts.sh; ls -a | head; for p in /AGENTS.md /var/AGENTS.md /var/tmp/AGENTS.md; do if test -f "$p"; then cat "$p"; fi; done; rg --files -g AGENTS.md .; which bun' in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+set -eu
+cd "$(dirname "$0")/../ts"
+command -v bun >/dev/null 2>&1 || { echo "bun is not installed" >&2; exit 2; }
+[ -d node_modules ] || { echo "ts/node_modules is missing; run bun install --frozen-lockfile in ts/" >&2; exit 2; }
+bun --bun run check
+.
+..
+.claude
+.drafts
+.git
+.gitignore
+.lodge.toml
+.mypy_cache
+.pytest_cache
+.ruff_cache
+/home/user/.bun/bin/bun
+
+exec
+/bin/bash -lc "cat > /tmp/fix12-tests.py <<'PY'
+from pathlib import Path
+p=Path('ts/tests/store/held.test.ts');s=p.read_text().replace('import { rebuild }','import { rebuild, SqliteStore }');s=s.replace('    await expect(store.decline(seq, \"again\")).rejects.toThrow(\\n      new NotFound("'`nothing is held under number ${seq}`),'"\\n    );','    const refusal = store.decline(seq, \"again\");\\n    await expect(refusal).rejects.toBeInstanceOf(NotFound);\\n    await expect(refusal).rejects.toThrow("'`nothing is held under number ${seq}`);'"');s=s.replace('  await database.db.deleteFrom(\"held\").execute();\\n','');s+='''
+test(\"holds_belong_to_their_project\", async () => {
+  const { store, database, projects, clock } = await setup();
+  await projects.create(\"other\", \"ada\");
+  const other = new SqliteStore(database, \"other\", \"ada\", clock);
+  const ownSeq = await store.hold(draft);
+  const otherSeq = await other.hold(draft);
+  expect((await store.held()).map((held) => held.seq)).toEqual([ownSeq]);
+  expect((await other.held()).map((held) => held.seq)).toEqual([otherSeq]);
+  const before = await events(database);
+  await expect(store.decline(otherSeq, \"no\")).rejects.toBeInstanceOf(NotFound);
+  expect(await events(database)).toEqual(before);
+  expect(await store.publish((await store.trees())[0], writes, \"yes\", otherSeq)).toBe(
+    PublishOutcome.REJECTED,
+  );
+  expect(await events(database)).toEqual(before);
+});
+''';p.write_text(s)
+p=Path('ts/tests/store/write-first.test.ts');s=p.read_text().replace('import { person, Role }','import { type HeldDraft, NotFound, person, Role }').replace('import { setup }','import { events, setup }');s=s.replace('test.each([\"create\", \"addMember\", \"publish\"])','''const draft: HeldDraft = {
+  kind: \"add\", person: \"ada\", by: \"agent\", drafts: [], attachments: [],
+  importing: false, message: \"add\",
+};
+
+test.each([\"create\", \"addMember\", \"publish\", \"decline\", \"approve\"])''');s=s.replace('    const base = (await store.trees())[0];','    const seq = await store.hold(draft);\\n    const base = (await store.trees())[0];');s=s.replace('    else await store.publish(base,','    else if (operation === \"decline\") await store.decline(seq, \"no\");\\n    else if (operation === \"approve\") await store.publish(base, new Map([[\"lodge/a\", \"a\"]]), \"\", seq);\\n    else await store.publish(base,');s+='''
+test.each([\"hold\", \"decline\"])(\"missing_project: %s\", async (operation) => {
+  const { database, clock } = await setup();
+  const store = new SqliteStore(database, \"missing\", \"ada\", clock);
+  const before = await events(database);
+  const refusal = operation === \"hold\" ? store.hold(draft) : store.decline(1, \"no\");
+  await expect(refusal).rejects.toBeInstanceOf(NotFound);
+  await expect(refusal).rejects.toThrow(\"no project named missing\");
+  expect(await events(database)).toEqual(before);
+});
+''';p.write_text(s)
+p=Path('ts/tests/app/fakes-held.test.ts');s=p.read_text().replace('  expect(await store.held()).toEqual([]);','  expect(await store.held()).toEqual([]);\\n  expect(store.declined).toEqual([[seq, \"no\"]]);');p.write_text(s)
+PY
+python /tmp/fix12-tests.py
+cd ts && bun test tests/store/held.test.ts tests/store/write-first.test.ts tests/app/fakes-held.test.ts > /tmp/fix12-old.log 2>&1; tail -12 /tmp/fix12-old.log" in /var/tmp/lodge-server-store
+ succeeded in 31ms:
++ undefined
+
+- Expected  - 6
++ Received  + 1
+
+      at <anonymous> (/var/tmp/lodge-server-store/ts/tests/app/fakes-held.test.ts:37:26)
+(fail) memory_store_settles_a_hold_once [0.76ms]
+
+ 16 pass
+ 1 fail
+ 60 expect() calls
+Ran 17 tests across 3 files. [138.00ms]
+
+codex
+The regression tests are in place. The fake-store test fails because decline reasons are not recorded yet. I’ll now check that the strengthened tests catch each source mutation named in the review, then make the fixes.
+exec
+/bin/bash -lc "cat > /tmp/fix12-mutations.py <<'PY'
+from pathlib import Path
+import subprocess
+store=Path('ts/src/store/sqlite-store.ts'); events=Path('ts/src/store/events.ts')
+cases=[
+('M3',store,'      if ("'!held) throw new NotFound(`nothing is held under number ${seq}`);'"','', 'a_settled_hold_cannot_be_declined'),
+('M6',events,'    await tx.deleteFrom(\"held\").execute();','', 'holds_rebuild'),
+('M8',store,'      .where(\"project\", \"=\", this.project)\\n','', 'holds_belong_to_their_project'),
+('M9',store,'        .where(\"project\", \"=\", this.project)\\n','', 'holds_belong_to_their_project'),
+('M10',store,'          .where(\"project\", \"=\", this.project)\\n','', 'holds_belong_to_their_project'),
+('M15',store,'      if ("'!(await touchHead(tx, this.project)))'"\\n        throw new NotFound("'`no project named ${this.project}`);'"','', 'transaction_writes_heads_first: decline'),
+('hold-missing',store,'      if ("'!(await touchHead(tx, this.project)))'"\\n        throw new NotFound("'`no project named ${this.project}`);'"','', 'missing_project: hold'),
+('decline-missing',store,'      if ("'!(await touchHead(tx, this.project)))'"\\n        throw new NotFound("'`no project named ${this.project}`);'"','', 'missing_project: decline'),
+('approve-order',store,'      if ("'!(await touchHead(tx, this.project, Number(base.rev)))) return PublishOutcome.REJECTED;'"','', 'transaction_writes_heads_first: approve'),
+]
+for name,path,old,new,test in cases:
+ original=path.read_text()
+ # Choose the decline occurrence of the identical opening guard.
+ if name in ('M15','decline-missing'):
+  pos=original.index('  async decline('); changed=original[:pos]+original[pos:].replace(old,new,1)
+ else: changed=original.replace(old,new,1)
+ assert changed"'!=original,name
+ try:
+  path.write_text(changed)
+  r=subprocess.run(['"'bun','test','tests/store/held.test.ts','tests/store/write-first.test.ts','-t',test],cwd='ts',capture_output=True,text=True)
+  Path('/tmp/fix12-'+name+'.log').write_text(r.stdout+r.stderr)
+  print(name, 'KILLED' if r.returncode else 'SURVIVED')
+  assert r.returncode,name
+ finally: path.write_text(original)
+PY
+python /tmp/fix12-mutations.py" in /var/tmp/lodge-server-store
+ succeeded in 857ms:
+M3 KILLED
+M6 KILLED
+M8 KILLED
+M9 KILLED
+M10 KILLED
+M15 KILLED
+hold-missing KILLED
+decline-missing KILLED
+approve-order KILLED
+
+exec
+/bin/bash -lc "python - <<'PY'
+from pathlib import Path
+p=Path('ts/tests/app/fakes.ts');s=p.read_text().replace('  type Store,','  type Store,\\n  stampOf,').replace('  private holds =','  declined: [number, string][] = [];\\n  private holds =').replace('at: \"2026-10-29T09:30:00+01:00\"','at: stampOf(START)').replace('async decline(seq: number, _reason: string)','async decline(seq: number, reason: string)').replace('    this.rev += 1;\\n  }\\n  async commit','    this.declined.push([seq, reason]);\\n    this.rev += 1;\\n  }\\n  async commit');p.write_text(s)
+p=Path('ts/src/store/read-tree.ts');s=p.read_text();s+='''
+export async function openHold(tx: Transaction<Tables>, project: string, seq: number) {
+  return tx
+    .selectFrom(\"held\")
+    .select(\"seq\")
+    .where(\"seq\", \"=\", seq)
+    .where(\"project\", \"=\", project)
+    .where(\"state\", \"=\", \"open\")
+    .executeTakeFirst();
+}
+''';p.write_text(s)
+p=Path('ts/src/store/sqlite-store.ts');s=p.read_text().replace('import { readTree, touchHead }','import { openHold, readTree, touchHead }');start=s.index('      const held = await tx');end=s.index('      if ("'!held)'"',start);s=s[:start]+'      const held = await openHold(tx, this.project, seq);\\n'+s[end:];start=s.index('        const held = await tx');end=s.index('        if ("'!held)'"',start);s=s[:start]+'        const held = await openHold(tx, this.project, approves);\\n'+s[end:];p.write_text(s)
+PY
+sh scripts/check-ts.sh > /tmp/fix12-check.log 2>&1; tail -25 /tmp/fix12-check.log" in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+       10 │ + ··by:·"agent",
+       11 │ + ··drafts:·[],
+       12 │ + ··attachments:·[],
+       13 │ + ··importing:·false,
+       14 │ + ··message:·"add",
+    10 15 │   };
+    11 16 │   
+    ····· │ 
+    34 39 │         await projects.addMember("storage", "bo", Role.MEMBER, person("author"));
+    35 40 │       else if (operation === "decline") await store.decline(seq, "no");
+    36    │ - ····else·if·(operation·===·"approve")·await·store.publish(base,·new·Map([["lodge/a",·"a"]]),·"",·seq);
+       41 │ + ····else·if·(operation·===·"approve")
+       42 │ + ······await·store.publish(base,·new·Map([["lodge/a",·"a"]]),·"",·seq);
+    37 43 │       else await store.publish(base, new Map([["lodge/a", "a"]]), "");
+    38 44 │       const first = statements[0];
+  
+
+Checked 175 files in 47ms. No fixes applied.
+Found 1 error.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while running checks.
+  
+
+error: script "check" exited with code 1
+
+exec
+/bin/bash -lc 'cd ts && bunx biome format --write tests/store/write-first.test.ts && bun test tests/store/held.test.ts tests/store/write-first.test.ts tests/app/fakes-held.test.ts' in /var/tmp/lodge-server-store
+ succeeded in 42ms:
+Formatted 1 file in 1885µs. Fixed 1 file.
+bun test v1.3.14 (0d9b296a)
+
+ 17 pass
+ 0 fail
+ 60 expect() calls
+Ran 17 tests across 3 files. [133.00ms]
+
+exec
+/bin/bash -lc 'sh scripts/check-ts.sh > /tmp/fix12-check.log 2>&1; tail -12 /tmp/fix12-check.log' in /var/tmp/lodge-server-store
+exec
+/bin/bash -lc 'git diff --stat; git diff; git branch --show-current' in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+ ts/src/store/read-tree.ts          | 10 ++++++++++
+ ts/src/store/sqlite-store.ts       | 18 +++---------------
+ ts/tests/app/fakes-held.test.ts    |  1 +
+ ts/tests/app/fakes.ts              |  7 +++++--
+ ts/tests/store/held.test.ts        | 26 +++++++++++++++++++++-----
+ ts/tests/store/write-first.test.ts | 30 +++++++++++++++++++++++++++---
+ 6 files changed, 67 insertions(+), 25 deletions(-)
+diff --git a/ts/src/store/read-tree.ts b/ts/src/store/read-tree.ts
+index 1597195..4ac8de7 100644
+--- a/ts/src/store/read-tree.ts
++++ b/ts/src/store/read-tree.ts
+@@ -51,3 +51,13 @@ export async function readTree(tx: Transaction<Tables>, project: string): Promis
+     people: new Set(owners.map((row) => row.person)),
+   });
+ }
++
++export async function openHold(tx: Transaction<Tables>, project: string, seq: number) {
++  return tx
++    .selectFrom("held")
++    .select("seq")
++    .where("seq", "=", seq)
++    .where("project", "=", project)
++    .where("state", "=", "open")
++    .executeTakeFirst();
++}
+diff --git a/ts/src/store/sqlite-store.ts b/ts/src/store/sqlite-store.ts
+index ad631d0..3777d3e 100644
+--- a/ts/src/store/sqlite-store.ts
++++ b/ts/src/store/sqlite-store.ts
+@@ -13,7 +13,7 @@ import {
+ } from "#app";
+ import { ATTACHMENTS, decodeUtf8, encodeUtf8, type Tree, ValueError } from "#core";
+ import { appendEvents, json } from "./events.ts";
+-import { readTree, touchHead } from "./read-tree.ts";
++import { openHold, readTree, touchHead } from "./read-tree.ts";
+ import type { LodgeDatabase } from "./schema.ts";
+ export class SqliteStore implements Store {
+   constructor(
+@@ -49,13 +49,7 @@ export class SqliteStore implements Store {
+     await this.database.db.transaction().execute(async (tx) => {
+       if (!(await touchHead(tx, this.project)))
+         throw new NotFound(`no project named ${this.project}`);
+-      const held = await tx
+-        .selectFrom("held")
+-        .select("seq")
+-        .where("seq", "=", seq)
+-        .where("project", "=", this.project)
+-        .where("state", "=", "open")
+-        .executeTakeFirst();
++      const held = await openHold(tx, this.project, seq);
+       if (!held) throw new NotFound(`nothing is held under number ${seq}`);
+       await appendEvents(tx, this.project, this.actor, stampOf(this.clock.now()), [
+         { kind: "declined", path: null, body: json({ held: seq, reason }), message: null },
+@@ -136,13 +130,7 @@ export class SqliteStore implements Store {
+     return this.database.db.transaction().execute(async (tx) => {
+       if (!(await touchHead(tx, this.project, Number(base.rev)))) return PublishOutcome.REJECTED;
+       if (approves !== null) {
+-        const held = await tx
+-          .selectFrom("held")
+-          .select("seq")
+-          .where("seq", "=", approves)
+-          .where("project", "=", this.project)
+-          .where("state", "=", "open")
+-          .executeTakeFirst();
++        const held = await openHold(tx, this.project, approves);
+         if (!held) return PublishOutcome.REJECTED;
+       }
+       const at = stampOf(this.clock.now());
+diff --git a/ts/tests/app/fakes-held.test.ts b/ts/tests/app/fakes-held.test.ts
+index 99a1737..0d04dbf 100644
+--- a/ts/tests/app/fakes-held.test.ts
++++ b/ts/tests/app/fakes-held.test.ts
+@@ -34,4 +34,5 @@ test("memory_store_settles_a_hold_once", async () => {
+   );
+   await expect(store.decline(next, "no")).rejects.toThrow(NotFound);
+   expect(await store.held()).toEqual([]);
++  expect(store.declined).toEqual([[seq, "no"]]);
+ });
+diff --git a/ts/tests/app/fakes.ts b/ts/tests/app/fakes.ts
+index 1989049..1c689b4 100644
+--- a/ts/tests/app/fakes.ts
++++ b/ts/tests/app/fakes.ts
+@@ -12,6 +12,7 @@ import {
+   type Now,
+   PublishOutcome,
+   type Store,
++  stampOf,
+ } from "#app";
+ import {
+   type Area,
+@@ -33,6 +34,7 @@ export class MemoryStore implements Store {
+   staged: boolean;
+   people: ReadonlySet<string>;
+   rev = 0;
++  declined: [number, string][] = [];
+   private holds = new Map<number, Held>();
+   commits: [readonly string[], string][] = [];
+   commitResult: Committed = committed({ outcome: CommitOutcome.COMMITTED });
+@@ -54,14 +56,15 @@ export class MemoryStore implements Store {
+   }
+   async hold(draft: HeldDraft): Promise<number> {
+     const seq = ++this.rev;
+-    this.holds.set(seq, structuredClone({ ...draft, seq, at: "2026-10-29T09:30:00+01:00" }));
++    this.holds.set(seq, structuredClone({ ...draft, seq, at: stampOf(START) }));
+     return seq;
+   }
+   async held(): Promise<readonly Held[]> {
+     return structuredClone([...this.holds.values()]);
+   }
+-  async decline(seq: number, _reason: string): Promise<void> {
++  async decline(seq: number, reason: string): Promise<void> {
+     if (!this.holds.delete(seq)) throw new NotFound(`nothing is held under number ${seq}`);
++    this.declined.push([seq, reason]);
+     this.rev += 1;
+   }
+   async commit(paths: readonly string[], message: string): Promise<Committed> {
+diff --git a/ts/tests/store/held.test.ts b/ts/tests/store/held.test.ts
+index fe785f9..2e17cf7 100644
+--- a/ts/tests/store/held.test.ts
++++ b/ts/tests/store/held.test.ts
+@@ -1,7 +1,7 @@
+ import { expect, test } from "bun:test";
+ import { type HeldDraft, NotFound, PublishOutcome } from "#app";
+ import { decodeUtf8, encodeUtf8 } from "#core";
+-import { rebuild } from "#store";
++import { rebuild, SqliteStore } from "#store";
+ import { events, setup } from "./support.ts";
+ 
+ const draft: HeldDraft = {
+@@ -82,9 +82,9 @@ test("a_settled_hold_cannot_be_declined", async () => {
+     const seq = await store.hold(draft);
+     if (approve) await store.publish((await store.trees())[0], new Map(), "approve", seq);
+     else await store.decline(seq, "no");
+-    await expect(store.decline(seq, "again")).rejects.toThrow(
+-      new NotFound(`nothing is held under number ${seq}`),
+-    );
++    const refusal = store.decline(seq, "again");
++    await expect(refusal).rejects.toBeInstanceOf(NotFound);
++    await expect(refusal).rejects.toThrow(`nothing is held under number ${seq}`);
+   }
+ });
+ test("a_held_message_round_trips", async () => {
+@@ -111,7 +111,6 @@ test("holds_rebuild", async () => {
+   await store.publish((await store.trees())[0], writes, "yes", second);
+   await store.hold(draft);
+   const before = await database.db.selectFrom("held").selectAll().orderBy("seq").execute();
+-  await database.db.deleteFrom("held").execute();
+   await rebuild(database);
+   expect(await database.db.selectFrom("held").selectAll().orderBy("seq").execute()).toEqual(before);
+ });
+@@ -142,3 +141,20 @@ test("rebuild_refuses_an_impossible_history", async () => {
+   await expect(rebuild(database)).rejects.toThrow();
+   expect(await snapshot()).toEqual(before);
+ });
++
++test("holds_belong_to_their_project", async () => {
++  const { store, database, projects, clock } = await setup();
++  await projects.create("other", "ada");
++  const other = new SqliteStore(database, "other", "ada", clock);
++  const ownSeq = await store.hold(draft);
++  const otherSeq = await other.hold(draft);
++  expect((await store.held()).map((held) => held.seq)).toEqual([ownSeq]);
++  expect((await other.held()).map((held) => held.seq)).toEqual([otherSeq]);
++  const before = await events(database);
++  await expect(store.decline(otherSeq, "no")).rejects.toBeInstanceOf(NotFound);
++  expect(await events(database)).toEqual(before);
++  expect(await store.publish((await store.trees())[0], writes, "yes", otherSeq)).toBe(
++    PublishOutcome.REJECTED,
++  );
++  expect(await events(database)).toEqual(before);
++});
+diff --git a/ts/tests/store/write-first.test.ts b/ts/tests/store/write-first.test.ts
+index 556e0c9..195a885 100644
+--- a/ts/tests/store/write-first.test.ts
++++ b/ts/tests/store/write-first.test.ts
+@@ -1,10 +1,20 @@
+ import { expect, test } from "bun:test";
+ import type { KyselyPlugin, RootOperationNode } from "kysely";
+-import { person, Role } from "#app";
++import { type HeldDraft, NotFound, person, Role } from "#app";
+ import { SqliteProjects, SqliteStore } from "#store";
+-import { setup } from "./support.ts";
++import { events, setup } from "./support.ts";
+ 
+-test.each(["create", "addMember", "publish"])(
++const draft: HeldDraft = {
++  kind: "add",
++  person: "ada",
++  by: "agent",
++  drafts: [],
++  attachments: [],
++  importing: false,
++  message: "add",
++};
++
++test.each(["create", "addMember", "publish", "decline", "approve"])(
+   "transaction_writes_heads_first: %s",
+   async (operation) => {
+     const { database, clock } = await setup();
+@@ -21,11 +31,15 @@ test.each(["create", "addMember", "publish"])(
+     const observed = { ...database, db: database.db.withPlugin(plugin) };
+     const projects = new SqliteProjects(observed, clock);
+     const store = new SqliteStore(observed, "storage", "ada", clock);
++    const seq = await store.hold(draft);
+     const base = (await store.trees())[0];
+     statements.length = 0;
+     if (operation === "create") await projects.create("other", "ada");
+     else if (operation === "addMember")
+       await projects.addMember("storage", "bo", Role.MEMBER, person("author"));
++    else if (operation === "decline") await store.decline(seq, "no");
++    else if (operation === "approve")
++      await store.publish(base, new Map([["lodge/a", "a"]]), "", seq);
+     else await store.publish(base, new Map([["lodge/a", "a"]]), "");
+     const first = statements[0];
+     expect(first?.kind).toBe(operation === "create" ? "InsertQueryNode" : "UpdateQueryNode");
+@@ -36,3 +50,13 @@ test.each(["create", "addMember", "publish"])(
+     );
+   },
+ );
++
++test.each(["hold", "decline"])("missing_project: %s", async (operation) => {
++  const { database, clock } = await setup();
++  const store = new SqliteStore(database, "missing", "ada", clock);
++  const before = await events(database);
++  const refusal = operation === "hold" ? store.hold(draft) : store.decline(1, "no");
++  await expect(refusal).rejects.toBeInstanceOf(NotFound);
++  await expect(refusal).rejects.toThrow("no project named missing");
++  expect(await events(database)).toEqual(before);
++});
+server-store
+
+ succeeded in 8283ms:
+$ biome check --error-on-warnings . && tsc --noEmit -p . && depcruise src tests scripts --config .dependency-cruiser.cjs && knip && bun test
+Checked 175 files in 47ms. No fixes applied.
+
+[32m✔[39m no dependency violations found (186 modules, 706 dependencies cruised)
+
+bun test v1.3.14 (0d9b296a)
+
+ 1253 pass
+ 2 todo
+ 0 fail
+ 3205 expect() calls
+Ran 1255 tests across 98 files. [3.80s]
+
+codex
+All nine mutation checks failed as intended, and the full check script passes: 1,253 tests passed, 2 todo, no failures. Both SQLite operations now use the shared hold lookup, and the fake records decline reasons and derives its stamp from `START`. I’ll write the report, commit the explicit file paths, and push `server-store`.
+exec
+/bin/bash -lc "cat > docs/superpowers/plans/2026-11-02-lodge-server-store/task-12a-fix-1-report.md <<'EOF'
+# Task 12a, fix round 1 report
+
+Completed I-1 to I-4 and P-M1 to P-M3 on "'`server-store`.
+
+- Settled-hold decline checks assert both `NotFound` and its message.
+- Rebuild runs over the populated `held` table, exercising its own deletion.
+- A two-project test checks isolated listings, foreign decline and approval refusals, and unchanged events after each refusal.
+- Write-first checks include decline and approval with a held sequence. Missing-project hold and decline check the error class, message and unchanged events.
+- `MemoryStore.hold` uses `stampOf(START)`. Successful declines record `[seq, reason]`; the fake test also checks refused declines leave no record.
+- Both SQLite settlement operations use `openHold(tx, project, seq)` in `read-tree.ts`.
+
+## Test-first evidence
+
+Before changing implementation, the changed fake test failed against the old fake because `declined` was undefined. Each temporary source mutation below was tested separately and restored immediately; every targeted test failed.
+
+| Mutation | Failing regression |
+| --- | --- |
+| M3: remove decline'"'s typed open-hold refusal | "'`a_settled_hold_cannot_be_declined` |
+| M6: remove rebuild'"'s held-table deletion | "'`holds_rebuild` |
+| M8: remove listing'"'s project filter | "'`holds_belong_to_their_project` |
+| M9: remove decline lookup'"'s project filter | "'`holds_belong_to_their_project` |
+| M10: remove approval lookup'"'s project filter | "'`holds_belong_to_their_project` |
+| M15: remove decline'"'s opening head write | "'`transaction_writes_heads_first: decline` |
+| Remove hold'"'s opening project guard | "'`missing_project: hold` |
+| Remove decline'"'s opening project guard | "'`missing_project: decline` |
+| Remove approval'"'s opening compare-and-set | "'`transaction_writes_heads_first: approve` |
+
+## Validation
+
+`sh scripts/check-ts.sh` passed: formatting, TypeScript, dependency checks, unused-code checks and the full suite, with 1,253 pass, 2 todo and 0 fail. The three targeted test modules passed all 17 tests. An initial formatting failure in `write-first.test.ts` was corrected before the successful full run.
+
+All changed modules remain below 300 lines. No dependency was added. No subagents were used.
+EOF
+wc -l ts/src/store/read-tree.ts ts/src/store/sqlite-store.ts ts/tests/app/fakes.ts ts/tests/app/fakes-held.test.ts ts/tests/store/held.test.ts ts/tests/store/write-first.test.ts
+ git diff --check
+ git add ts/src/store/read-tree.ts ts/src/store/sqlite-store.ts ts/tests/app/fakes.ts ts/tests/app/fakes-held.test.ts ts/tests/store/held.test.ts ts/tests/store/write-first.test.ts docs/superpowers/plans/2026-11-02-lodge-server-store/task-12a-fix-1-report.md
+ git commit -m "Strengthen held-store regressions and share open-hold lookup" -m "Co-Authored-By: Codex <noreply@openai.com>"
+ git push origin server-store' in /var/tmp/lodge-server-store
+ succeeded in 1667ms:
+   63 ts/src/store/read-tree.ts
+  145 ts/src/store/sqlite-store.ts
+  167 ts/tests/app/fakes.ts
+   38 ts/tests/app/fakes-held.test.ts
+  160 ts/tests/store/held.test.ts
+   62 ts/tests/store/write-first.test.ts
+  635 total
+[server-store b709aa8] Strengthen held-store regressions and share open-hold lookup
+ 7 files changed, 99 insertions(+), 25 deletions(-)
+ create mode 100644 docs/superpowers/plans/2026-11-02-lodge-server-store/task-12a-fix-1-report.md
+To github.com:Kiibou-chan/lodge.git
+   18b0a78..b709aa8  server-store -> server-store
+
+exec
+/bin/bash -lc 'git status --short' in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+?? docs/superpowers/plans/2026-11-02-lodge-server-store/task-12a-fix-1-codex.log
+
+codex
+Completed all seven fixes and pushed commit `b709aa8` to `server-store`.
+
+- All nine mutation checks caught the intended regressions.
+- `sh scripts/check-ts.sh`: 1,253 passed, 2 todo, 0 failed.
+- [Report](docs/superpowers/plans/2026-11-02-lodge-server-store/task-12a-fix-1-report.md)
+
+The pre-existing untracked log was left untouched.
+tokens used
+24,027
+Completed all seven fixes and pushed commit `b709aa8` to `server-store`.
+
+- All nine mutation checks caught the intended regressions.
+- `sh scripts/check-ts.sh`: 1,253 passed, 2 todo, 0 failed.
+- [Report](docs/superpowers/plans/2026-11-02-lodge-server-store/task-12a-fix-1-report.md)
+
+The pre-existing untracked log was left untouched.

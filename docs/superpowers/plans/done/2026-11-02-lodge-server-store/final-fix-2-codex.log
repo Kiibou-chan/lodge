@@ -1,0 +1,2088 @@
+Reading additional input from stdin...
+OpenAI Codex v0.167.0
+--------
+workdir: /var/tmp/lodge-server-store
+model: gpt-6.1-sol
+provider: openai
+approval: never
+sandbox: danger-full-access
+reasoning effort: none
+reasoning summaries: none
+session id: 01a1dc39-645e-7102-bf33-d8d15a898ed3
+--------
+user
+Read docs/superpowers/plans/2026-11-02-lodge-server-store/final-fix-2.md first, then do it.
+codex
+I’ll read the plan and repository instructions, then implement and verify the fixes.
+exec
+/bin/bash -lc "pwd && rg --files -g 'AGENTS.md' -g 'final-fix-2.md' -g 'package.json' -g 'Cargo.toml' -g 'pyproject.toml'" in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+/var/tmp/lodge-server-store
+pyproject.toml
+docs/superpowers/plans/2026-11-02-lodge-server-store/probes/package.json
+docs/superpowers/plans/2026-11-02-lodge-server-store/final-fix-2.md
+ts/package.json
+docs/superpowers/plans/done/2026-11-02-lodge-server-core/probes/package.json
+docs/superpowers/plans/done/2026-11-02-lodge-server-core/probes/fix2/knip/package.json
+
+exec
+/bin/bash -lc 'cat docs/superpowers/plans/2026-11-02-lodge-server-store/final-fix-2.md' in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+# Final check, fix wave 2
+
+Worktree `/var/tmp/lodge-server-store`, branch `server-store`.
+Read `task-final-check.md` in this folder; fix the findings below, test-first (each new test seen failing before its code), and keep every existing test passing.
+Do not dispatch subagents.
+
+1. B-1 (Important), ruling d-8v05kt (read it with `uv run --frozen --quiet lodge show d-8v05kt --reasoning`): give `confirmableIds` (`ts/src/core/confirmation.ts:16-25`), `behindArea`, `Shown.confirmable` (`ts/src/app/reads.ts:57`), and the expected ids in `ts/src/app/confirm.ts:40` the person; drop a decision only when a confirmation by that person names it (the reading `confirmedByPeople` of `ts/src/core/derive-flags.ts:30`). Pass `w.actor.name` from `confirm.ts` and the reading actor's name from `reads.ts`.
+   Tests in `ts/tests/app/people.test.ts` through `Lodge.confirm`: (a) two people, `d-bbbbbb` touching `ada`'s and `bo`'s decisions, `ada` confirms then `bo` confirms, both `published`, `derive(...).awaiting` empty at the end; (b) one decision awaiting `ada`, `bo` confirms first, `ada` can still confirm.
+2. A-1: restore the guard in `ts/src/store/sqlite-store.ts` as `if (base.rev === null || String(Number(base.rev)) !== base.rev) return PublishOutcome.REJECTED;`; add to the stale-base test one case spelling the live head as `${rev}.0` (and `" 2"`-style), read after the first publish.
+3. A-2: in `Lodge.ask` and `Lodge.reply` (`ts/src/app/lodge.ts:73-89`) pass `{ where, when, commit }` only; add a run-time test that a `reply` given `{ close: true } as never` leaves the thread open.
+4. B-2: set the concurrent-writers row in `ts/tests/parity.json` (about line 565) to `"status": "changed"`.
+
+A-3 and B-3 are the coordinator's.
+Hard rules: modules at most 300 lines, British English, no em-dashes, no new dependency, run `sh scripts/check-ts.sh`.
+Write `final-fix-2-report.md` in this folder, commit with explicit paths (trailer `Co-Authored-By: Codex <noreply@openai.com>`), and push `server-store`.
+
+exec
+/bin/bash -lc 'cat docs/superpowers/plans/2026-11-02-lodge-server-store/task-final-check.md && git status --short && find .. -name AGENTS.md -print' in /var/tmp/lodge-server-store
+ exited 1 in 2525ms:
+# Final check of plan 2 (`server-store`, HEAD a6a4897)
+
+Reviewer: rechecker and last independent read.
+Incremental notes; the verdict line closes the file.
+Scratch worktree `/var/tmp/lodge-review-final2` (detached at a6a4897) holds every gate run and mutation.
+
+## Part A, recheck of fix wave 456071c
+
+Each mutation was applied alone in the scratch worktree, the whole `bun test` suite run, and the file restored (`git status` clean afterwards).
+
+| Finding | Mutation | Failing tests | Result |
+| --- | --- | --- | --- |
+| I-1 | `threads.ts:169` `if (!check.ok)` to `if (false)` | `ask_` and `reply_checks_against_the_published_tree` | killed |
+| I-2 | `threads.ts:168` `load(state.published)` to `load(state.current)` | the same two | killed |
+| I-2 | `writes.ts:124` the same swap | `add_refuses_a_rewrite_already_present_in_current` | killed |
+| I-3 | `read-tree.ts:32` files project filter dropped | `trees_members_and_attachments_are_confined_to_the_project` | killed |
+| I-3 | `read-tree.ts:44` owners project filter dropped | the same | killed |
+| I-3 | `projects.ts:52` `members()` project filter dropped | the same | killed |
+| I-3 | `sqlite-store.ts:69-71` attachment project filter, lower bound, upper bound, each dropped | the same | 3 killed |
+| M-5 | `sqlite-store.ts:99` `path.includes("\\")` dropped | `path_outside_lodge_is_refused` | killed |
+| M-7 | `sqlite-store.ts:40` held `orderBy("seq", "asc")` to `desc` | `holds_are_returned_in_event_order` | killed |
+| M-7 | `projects.ts:56` member sort dropped | `members_are_sorted_by_name` | killed |
+| M-7 | `read-tree.ts:21` `rev: eb.ref("rev")` to `rev: 0` | `touching_a_head_keeps_its_revision` | killed |
+| M-7 | `projects.ts:90` `actorText(actor)` to `"author"` | `store_for_attributes_events_to_its_actor` | killed |
+| M-1 | `close?: boolean` put back on `MessageOptions` | `tsc`: three unused `@ts-expect-error` at `tests/app/message-options.test.ts:5,7,9` | killed (by the gate's `tsc`, not by `bun test`) |
+
+The staged-drift fixture tests what its names say: `project()` holds one decision (`FIRST`, `tests/app/support.ts:28-29`), so in the `add` test the restored rewrite is the only difference between `current` and `published`, and in the `ask` and `reply` tests the missing `FIRST` is.
+The I-3 test's own files `lodge/a` and `lodge/attachments0` sit just below and just above the attachment range, which is why both bounds are killed.
+M-6 removed the guard (`sqlite-store.ts:129` before the fix); see A-1 below for what that changed.
+
+I-4: the brief's `git grep` for the user path and the build directory prints the I-4 finding's own text (`final-review.md:58`, `final-fix-1-codex.log:108`) and the eight `pamac-build-user/...` lines of the four `task-1{1,2a,2b,2c}-fix-1-codex.log` files, nothing else.
+A case-blind `git grep` of the login name outside `Kiibou-chan` (the public GitHub identity, ruled acceptable in `done/2026-10-29-lodge/final-review-design.md:105`) and `git grep` of the host name print nothing.
+The tree is clean; history is not, see A-3.
+
+### A-1 (Minor) · Deleting the `base.rev` guard made `SqliteStore` accept non-canonical spellings of the head
+
+Handle: `ts/src/store/sqlite-store.ts:130` (`touchHead(tx, this.project, Number(base.rev))`), with the removed line `if (base.rev === null || !/^[0-9]+$/u.test(base.rev)) return PublishOutcome.REJECTED;`.
+The review's M-6 premise was that the malformed cases at `tests/store/sqlite-store.test.ts:55-59` fail through `NaN`; only `"x"` does.
+`Number(null)` is 0 and `Number("2.0")` is 2, so `null`, `"2.0"`, and `"-1"` are refused there only because they are stale (the head is 3 after the first publish), and the guard's real behaviour, refusing a different spelling of the current head, was never tested and is now gone.
+Verified by running a probe test in the scratch worktree: on a fresh store with head `2`, `publish` with `rev` set to `"2.0"`, `" 2"`, `"0x2"`, or `"2e0"` (each spelling the head at that moment) returns `published` for all four.
+`MemoryStore.publish` compares strings (`ts/tests/app/fakes.ts:112`, `base.rev !== String(this.rev)`), so the fake refuses what the real store now accepts, which is a differential the app tests cannot see.
+Scenario: plan 3 or 4 carries the base revision as client text (an HTTP field or header), a client sends `"7.0"` or `" 7"`, and the server publishes against it where the Python git store and the fake both refuse.
+Bounded by the parked Task 7b D-1 (publish trusts the caller's base), hence Minor.
+Fix: restore the guard as `if (base.rev === null || String(Number(base.rev)) !== base.rev) return PublishOutcome.REJECTED;` (or the old regex), and add to the stale-base test one case that spells the live head differently, `${current.rev}.0` read after the first publish, so the mutation dies.
+
+### A-2 (Minor) · `close` is hidden from the types of `ask` and `reply` but still honoured at run time
+
+Handle: `ts/src/app/lodge.ts:73-89` passes the caller's `options` object straight to `threads.writeMessage`, which destructures `close` from it (`ts/src/app/threads.ts:118`).
+The fix answers M-1 at the type level only; `tests/app/message-options.test.ts` checks the types and nothing at run time.
+Verified by running a probe test in the scratch worktree: `lodge.reply(id, "coordinator", "Because.", JSON.parse('{"close": true}'))` compiles (`JSON.parse` gives `any`) and returns `published` with the thread's `state` `"closed"`.
+Scenario: plan 3's HTTP handler passes a parsed request body as the options of `reply`, and a reply closes its thread without going through `Lodge.close`.
+Fix: in `Lodge.ask` and `Lodge.reply` pass `{ where: options.where, when: options.when, commit: options.commit }` rather than `options`, and add one run-time test that a `reply` given `{ close: true } as never` leaves the thread open.
+
+### A-3 (Minor) · The scrubbed user path is still in the pushed branch history
+
+Handle: `git log --oneline -S` of the user path over `main..server-store` gives 5d96603 (Task 12a, adds it) and 12a0e39 (removes it); `git branch -r --contains 5d96603` gives `origin/server-store`.
+Scenario: a merge commit (not a squash) of `server-store` into `main` carries 5d96603 into `main`'s history on the public repository, and the remote branch already serves it.
+The content is a login name close to the public `Kiibou-chan` identity, so the harm is small.
+Fix: the author's call, recorded in the ledger: squash-merge plan 2 and delete `origin/server-store` afterwards, or accept it.
+
+## Part B, last independent read of the branch against main
+
+Gate: `sh scripts/check.sh` in the scratch worktree at a6a4897 exits 0 (ruff and ruff format pass, mypy strict no issues in 195 files, pytest 1399 passed, `lodge check --gate` ok, dependency-cruiser 201 modules with no violations, knip, `bun test` 1299 pass, 2 todo, 0 fail, `differential.sh` 0 differences).
+
+### B-1 (Important) · Another person's confirmation makes a flagged decision unconfirmable for the person it waits for
+
+Handle: `ts/src/core/confirmation.ts:16-25` (`confirmableIds` drops a decision once `d.confirmedBy.has(id)`, a confirmation by anyone), read by `ts/src/app/confirm.ts:40` (`expectedIds`), by `behindArea` (`confirmation.ts:28`), and by `Shown.confirmable` (`ts/src/app/reads.ts:57`); the flags themselves clear per person (`ts/src/core/derive-flags.ts:99-113`).
+The seam is between Task 13 (flags per person, d-4spcem) and the carried confirm path of Tasks 6 and 11, where lodge 0.2 had one person, so "confirmed by anyone" meant "confirmed by the author".
+Verified by running two probe tests over `MemoryStore` with people `{ada, bo}` in the scratch worktree (deleted afterwards):
+- An agent decision `d-bbbbbb` replacing `ada`'s `d-aaaaaa` awaits `["ada"]`; `bo` confirms it (`published`), the flag still awaits `["ada"]`, and `ada`'s `confirm(["d-bbbbbb"], …)` then throws `StaleList: the list changed since the page was loaded; nothing was written`.
+- The plan's own case `touching_two_people_waits_for_both` (Task 13, plan line 680): `d-bbbbbb` replaces `ada`'s decision and narrows `bo`'s, awaiting `["ada", "bo"]`; `ada` confirms and it awaits `["bo"]`; `bo`'s `confirm` then throws the same `StaleList`, and the flag stays `["bo"]`.
+So through `Lodge`, a flag can be cleared by confirmation for at most one person, and any other owner can block it, against the Goal's "a review flag on a person's decision clears only when that person confirms" and d-4spcem's "that person's later confirmation or replacement clears their part"; the only way left is a replacement, which changes the record the person wanted to approve.
+The core test `touching_two_people_waits_for_both` passes because it builds the second confirmation as a record, never through `confirm`; no app test confirms a decision twice with two people.
+Scenario: in plan 3's viewer, `bo` confirms an agent decision on `ada`'s entry; `ada` then sees it still awaiting her, with no confirm button (`Shown.confirmable` false) or, from a page loaded earlier, a "list changed" refusal on every retry.
+Fix: give `confirmableIds` (and so `behindArea` and `Shown.confirmable`) the person, and drop a decision only when a confirmation of that person names it (the per-person reading `confirmedByPeople` of `derive-flags.ts:30` already makes); pass `w.actor.name` from `confirm.ts`, and the reading actor's name, or each person's set, from `reads.ts`.
+Test: in `ts/tests/app/people.test.ts`, the two-person case above through `Lodge.confirm`, `ada` then `bo`, ending with `derive(...).awaiting` empty, and the one-person case where `bo` confirms first and `ada` still can.
+Since it changes what a confirmation means for a second owner, the reading belongs to d-4spcem; record the fix's rule with `lodge add` (scope `process`, work item the plan) before the code.
+
+### B-2 (Minor) · The concurrent-writers parity row says `ported` where the plan says `changed`
+
+Handle: `ts/tests/parity.json:565-570` (`"status": "ported"` with a `why` citing design line 72), against plan Task 8's Files line (plan line 452, "changed, design line 72") and Task 14 Step 1 (plan line 693, "`tests/gitstore/test_concurrent.py` is `changed`").
+`held()` in `ts/tests/parity.test.ts:14-15` accepts both statuses, so no test sees the difference, and Task 14 Step 1 was ticked against the wrong status.
+Scenario: plan 3 or a later audit counts the rows the server changed against Python by status, and the store's one deliberate behaviour change is counted as a straight port.
+Fix: set the row's `status` to `changed`; the `why` already says what changed.
+
+### B-3 (Minor) · The ledger does not close the plan
+
+Handle: `docs/superpowers/plans/2026-11-02-lodge-server-store-progress.md:51` is the last line ("Task 14 minors: complete"); there is no line for Task 14's closing checks, the final review, fix wave 456071c, or this check, though plan Task 14 Step 5 (plan line 697) says the ledger line says the plan ends.
+Task 14's Steps 1 to 3 hold apart from B-2, verified by running them: the `planned` rows name only plan 3 (`tests/app/test_thread_fix_paths.py` among them), `knip.json`'s entry is plan 1's two patterns, and `git grep -n "Bun.serve\|fetch(" ts/src/app ts/src/store` prints nothing.
+Scenario: the plan is moved to `done/` and a later session reads the ledger as stopping at Task 14's minors, with no record of the final review's verdict or of which findings were parked.
+Fix: the coordinator adds the Task 14 line, the final-review line (`final-review.md` verdict, fix wave 456071c, this check's verdict), and the parked items, before the move to `done/`.
+
+### Checked and not reported
+
+- The plan's "Interfaces for plans 3 and 4" (plan lines 89 onwards), in part: `Lodge` takes its actor in the constructor and every operation is `async` (`ts/src/app/lodge.ts:24-109`), `ask` and `reply` no longer type `close` (A-2 covers run time), and no module under `ts/src/app` or `ts/src/store` calls `Bun.serve` or `fetch(`; I did not compare every exported name against the interface block.
+- `awaitsPerson` (`ts/src/app/awaits.ts`), `held.ts`'s approve and decline (a person only, `Forbidden` otherwise), and the hold path of `writeMessage` read as the plan and d-vwsnz5 say; a member who is not an owner is treated as a role by that decision, so it is not reported.
+- A person may write under a role name; plan Task 11 allows it.
+- Public-repository scan: no personal path, host name, or user name in the tree beyond A-3's history and the I-4 lines above; fixtures use made-up names (`ada`, `bo`, `storage`, `other`).
+- The parked items (final review M-2 to M-4 and M-8 to M-13, Task 7b D-1, codec speed) were not re-reported.
+
+## Files read
+
+`final-review.md`, `final-fix-1.md`, `final-fix-1-report.md`, the diff of 456071c (`ts/src/app/threads.ts`, `ts/src/store/sqlite-store.ts`, and the tests `message-options`, staged drift, `held`, isolation, `projects`, `sqlite-store-refusals`, `touch-head`), the plan (lines 1-230, 447-483, 556-580, 666-697), the ledger, `lodge spec` (model, writing, and check sections), `lodge search --by author`, `lodge show d-4spcem`, `ts/src/app/{writes,threads,held,awaits,confirm,lodge}.ts`, `ts/src/store/read-tree.ts`, `ts/src/store/projects.ts` (40-92), `ts/src/store/sqlite-store.ts` (40-144), `ts/src/core/derive-flags.ts` (1-120), `ts/src/core/confirmation.ts` (16-39), `ts/tests/store/sqlite-store.test.ts` (1-80), `ts/tests/app/support.ts`, `ts/tests/app/people.test.ts` (in part), `ts/tests/app/fakes.ts` (searched), `ts/tests/app/builders.ts` (in part), `ts/tests/parity.test.ts` (1-60), `ts/tests/parity.json` (searched), `knip.json`.
+
+## Files not read
+
+`ts/src/app/reads.ts` beyond a search, `write-attachments.ts`, `state.ts`, `results.ts`, `ports.ts`, the store's `events.ts` and `schema.ts`, most of `ts/tests`, the structure rule sources, the per-task briefs, reports, and reviews (searched only), the Python sources, `docs/research`, and the server design document.
+
+Scratch worktree removed after the last run.
+
+Verdict: 0 Blocking, 1 Important, 5 Minor
+?? docs/superpowers/plans/2026-11-02-lodge-server-store/final-fix-2-codex.log
+find: ‘../systemd-private-1d0e9058960d426fbdcfec615fbd59b6-NetworkManager.service-ZkPLfw’: Permission denied
+find: ‘../systemd-private-1d0e9058960d426fbdcfec615fbd59b6-polkit.service-i431EF’: Permission denied
+find: ‘../systemd-private-1d0e9058960d426fbdcfec615fbd59b6-dbus-broker.service-36Uykt’: Permission denied
+find: ‘../systemd-private-1d0e9058960d426fbdcfec615fbd59b6-ModemManager.service-S6vRMT’: Permission denied
+find: ‘../systemd-private-1d0e9058960d426fbdcfec615fbd59b6-bolt.service-wLdxHr’: Permission denied
+find: ‘../systemd-private-1d0e9058960d426fbdcfec615fbd59b6-upower.service-GqHnSe’: Permission denied
+find: ‘../systemd-private-1d0e9058960d426fbdcfec615fbd59b6-power-profiles-daemon.service-Q8y6UK’: Permission denied
+find: ‘../systemd-private-1d0e9058960d426fbdcfec615fbd59b6-geoclue.service-FlSyiw’: Permission denied
+find: ‘../systemd-private-1d0e9058960d426fbdcfec615fbd59b6-iio-sensor-proxy.service-CazOwL’: Permission denied
+find: ‘../pamac-build-user/codex-desktop-linux/pkg’: Permission denied
+find: ‘../systemd-private-1d0e9058960d426fbdcfec615fbd59b6-bluetooth.service-IwDOXN’: Permission denied
+find: ‘../systemd-private-1d0e9058960d426fbdcfec615fbd59b6-systemd-logind.service-KkH9na’: Permission denied
+../pamac-build-user/codex-desktop-linux/src/codex-desktop-linux/AGENTS.md
+
+exec
+/bin/bash -lc 'uv run --frozen --quiet lodge show d-8v05kt --reasoning' in /var/tmp/lodge-server-store
+ succeeded in 351ms:
+d-8v05kt · current · coordinator · 2026-11-14 · process
+A confirmation list drops a decision only when the reading person has confirmed it
+
+`confirmableIds` in `ts/src/core/confirmation.ts`, and so `behindArea`, `Shown.confirmable`, and the expected ids of `confirm`, take the person and drop a decision only when a confirmation by that person names it.
+This is the per-person reading of d-4spcem applied to the confirm path, which lodge 0.2 kept at "confirmed by anyone".
+
+## Reasoning
+
+The final check (`task-final-check.md`, B-1) ran two probes over `MemoryStore` with people `ada` and `bo`: after `bo` confirms a decision awaiting `ada`, `ada`'s `confirm` throws `StaleList` (`ts/src/app/confirm.ts:40`), while the flag still awaits `ada` (`ts/src/core/derive-flags.ts:99-113`).
+The core test `touching_two_people_waits_for_both` builds the second confirmation as a record, so it never met this path.
+For one person the reading is unchanged, so the carried tests hold.
+Cost if wrong: a rule where one owner's confirmation settles the list for all needs the person argument removed again, one parameter in three call sites.
+
+exec
+/bin/bash -lc 'for p in /AGENTS.md /var/AGENTS.md /var/tmp/AGENTS.md; do if test -f "$p"; then cat "$p"; fi; done; rg --files -g AGENTS.md -g '"'"'!node_modules'"' -g '"'!'"\\.git' .; cat ts/src/core/confirmation.ts ts/src/app/reads.ts ts/src/app/confirm.ts ts/src/app/lodge.ts" in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+import { compareOrderKeys, type Derived, isAuthor } from "./derive.ts";
+import { LookupError, ValueError } from "./errors.ts";
+import { PLAIN } from "./fileformat.ts";
+import { Action, type Decision, type Scope } from "./model.ts";
+import { confirmationWords, listed } from "./people.ts";
+import type { Snapshot } from "./snapshot.ts";
+import { LINE_BREAKS_AND_TABS, quoted } from "./yamlio.ts";
+
+class IndexError extends LookupError {
+  override name = "IndexError";
+}
+
+export const VIEWER = "lodge viewer";
+export const MINUTE_FORMAT = "%Y-%m-%d %H:%M";
+
+export function confirmableIds(s: Snapshot, d: Derived): ReadonlySet<string> {
+  return new Set(
+    [...s.decisions]
+      .filter(
+        ([id, decision]) =>
+          !isAuthor(decision, s.people) && d.status.get(id) === "current" && !d.confirmedBy.has(id),
+      )
+      .map(([id]) => id),
+  );
+}
+export function behindArea(s: Snapshot, d: Derived, area: string): readonly string[] {
+  const entries = new Set([...s.entries].filter(([, e]) => e.area === area).map(([id]) => id));
+  return [...confirmableIds(s, d)]
+    .filter(
+      (id) =>
+        s.decisions
+          .get(id)
+          ?.changes.some((c) => entries.has(c.entry) && c.action === Action.CREATE) ||
+        [...entries].some((e) => d.changedBy.get(e)?.[0] === id),
+    )
+    .sort((a, b) =>
+      compareOrderKeys(s.decisions.get(a) as Decision, s.decisions.get(b) as Decision),
+    );
+}
+export function confirmationDraft(
+  confirms: readonly string[],
+  scope: Scope,
+  words: string,
+  when: string,
+  area: string | null,
+  person = "author",
+): string {
+  if (area === null && confirms.length !== 1)
+    throw new ValueError("a confirmation without an area needs one decision");
+  const title =
+    area === null ? `Confirms ${confirms[0]}` : `Confirms the decisions behind area ${area}`;
+  if (confirms.length === 0) throw new IndexError("list index out of range");
+  const ids = confirms.map((i) => quoted(i)).join(", ");
+  const text = quoted(words, LINE_BREAKS_AND_TABS);
+  return (
+    `---\nkind: decision\ntitle: ${quoted(title)}\nscope: ${scope}\n` +
+    `decided_by: ${PLAIN.test(person) ? person : quoted(person)}\nconfirms: [${ids}]\n` +
+    `quote: {text: ${text}, where: ${quoted(VIEWER)}, when: ${quoted(when)}}\n---\n\n` +
+    `${confirmationWords(person)} confirms ${listed(confirms)}.\n\n## Reasoning\n\n${words}\n`
+  );
+}
+import {
+  areaPath,
+  byCodePoint,
+  type CheckResult,
+  checkChange,
+  checkResult,
+  confirmableIds,
+  contentHash,
+  type Filters,
+  instant,
+  level1,
+  level2,
+  level2Views,
+  level3,
+  load,
+  newestLast,
+  type Problem,
+  renderSpec,
+  restsOnTree,
+  type SpecArea,
+  searchCounted,
+  specView,
+} from "#core";
+import { LodgeError } from "./errors.ts";
+import { type Listed, listed, type Read, type Shown, type ThreadsWaiting } from "./results.ts";
+import { notFound, readChecked, readState, resolveRef, type State, type Wiring } from "./state.ts";
+import { waitingIn } from "./threads.ts";
+import { stampOf } from "./time.ts";
+
+export async function searchRecords(
+  w: Wiring,
+  query: string,
+  filters: Filters,
+  limit: number,
+): Promise<Listed> {
+  const state = await readChecked(w);
+  const [ids, total] = searchCounted(state.snapshot, state.derived, query, filters, limit);
+  return listed({ items: views(state, ids), read: state.read, more: total - ids.length });
+}
+export async function show(
+  w: Wiring,
+  ref: string,
+  reasoning: boolean,
+  provenance: boolean,
+): Promise<Shown> {
+  const state = await readChecked(w),
+    id = resolveRef(state, ref),
+    s = state.snapshot,
+    d = state.derived;
+  return {
+    level1: level1(s, d, id, state.failing),
+    level2: reasoning ? level2(s, d, id, state.failing) : null,
+    level3: provenance ? level3(s, d, id) : null,
+    read: state.read,
+    changing: reasoning ? level2Views(s, d, id, state.failing) : [],
+    threads: newestLast([...s.threads.values()].filter((t) => t.about === id)),
+    confirmable: confirmableIds(s, d).has(id),
+    restsOn: restsOnTree(s, d, id),
+    supports: views(state, d.supports.get(id) ?? []),
+  };
+}
+export async function waitingAll(w: Wiring): Promise<readonly [Listed, ThreadsWaiting]> {
+  const state = await readChecked(w);
+  return [
+    listed({ items: newestFirst(state, state.derived.awaitingAuthor), read: state.read }),
+    waitingIn(state),
+  ] as const;
+}
+export async function timeline(w: Wiring, limit: number): Promise<Listed> {
+  if (limit < 0) throw new LodgeError(`the limit must not be negative, got ${limit}`);
+  const state = await readChecked(w),
+    all = newestFirst(state, state.snapshot.decisions.keys());
+  return listed({
+    items: all.slice(0, limit),
+    read: state.read,
+    more: Math.max(0, all.length - limit),
+  });
+}
+export async function spec(
+  w: Wiring,
+  area: string | null,
+): Promise<readonly [string, Read, readonly SpecArea[]]> {
+  const state = await readChecked(w),
+    s = state.snapshot;
+  if (area !== null && !s.areas.has(area) && [...s.entries.values()].every((e) => e.area !== area))
+    throw notFound(state, `area named ${area}`, area);
+  return [
+    renderSpec(s, state.derived, state.failing, area),
+    state.read,
+    specView(s, state.derived, state.failing, area),
+  ];
+}
+export async function check(w: Wiring, gate: boolean): Promise<readonly [CheckResult, Read]> {
+  const state = await readChecked(w);
+  if (!gate) return [state.result, state.read] as const;
+  const base = await w.store.gate(state.current),
+    published = load(base.published),
+    now = stampOf(w.clock.now());
+  const found = new Map<string, { problem: Problem; labels: string[] }>(),
+    notes = new Set<string>();
+  for (const [label, tree] of base.checked) {
+    const snapshot = tree === state.current ? state.snapshot : load(tree);
+    const result = checkChange(published, snapshot, w.settings, now);
+    for (const p of result.problems) {
+      const key = JSON.stringify([p.path, p.check, p.line, p.message]);
+      const item = found.get(key);
+      if (item) item.labels.push(label);
+      else found.set(key, { problem: p, labels: [label] });
+    }
+    for (const note of result.notes) notes.add(note);
+  }
+  for (const note of base.notes) notes.add(note);
+  const problems = [...found.values()]
+    .sort(
+      (a, b) =>
+        byCodePoint(a.problem.path, b.problem.path) ||
+        a.problem.check - b.problem.check ||
+        byCodePoint(a.problem.message, b.problem.message),
+    )
+    .map(({ problem, labels }) => {
+      const named = labels.filter(Boolean).join(" and ");
+      return named ? { ...problem, message: `${named}: ${problem.message}` } : problem;
+    });
+  return [checkResult(problems, [...notes]), state.read] as const;
+}
+export async function draft(w: Wiring, ref: string): Promise<string> {
+  const state = await readState(w.store),
+    s = state.snapshot;
+  let path: string,
+    extra = "";
+  if (ref.startsWith("area:")) {
+    const name = ref.slice(5);
+    if (!s.areas.has(name)) throw notFound(state, `area named ${name}`, name);
+    path = areaPath(name);
+    extra = `name: ${name}\n`;
+  } else {
+    const id = resolveRef(state, ref),
+      found = s.paths.get(id);
+    if (found === undefined) throw new Error(`missing path for ${id}`);
+    path = found;
+  }
+  const raw = state.current.files.get(path);
+  if (raw === undefined) throw new Error(`missing file ${path}`);
+  const text = raw.replaceAll("\r\n", "\n");
+  return text.replace("---\n", `---\n${extra}base: ${contentHash(text)}\n`);
+}
+function newestFirst(state: State, ids: Iterable<string>) {
+  const decisions = state.snapshot.decisions;
+  function date(id: string): number {
+    const decision = decisions.get(id);
+    if (decision === undefined) throw new Error(`missing decision ${id}`);
+    return instant(decision.date);
+  }
+  return views(
+    state,
+    [...ids].sort((a, b) => date(b) - date(a) || byCodePoint(b, a)),
+  );
+}
+function views(state: State, ids: Iterable<string>) {
+  return [...ids].map((id) => level1(state.snapshot, state.derived, id, state.failing));
+}
+import {
+  cleanText,
+  confirmableIds,
+  confirmationDraft,
+  behindArea as coreBehindArea,
+  level1,
+  Scope,
+  ValueError,
+  VIEWER,
+} from "#core";
+import { Forbidden, LodgeError, StaleList } from "./errors.ts";
+import { AddOutcome, type Behind, type Written, written } from "./results.ts";
+import { notFound, readState, type State, type Wiring } from "./state.ts";
+import { minuteOf } from "./time.ts";
+import { add } from "./writes.ts";
+
+function behindIds(state: State, name: string): readonly string[] {
+  const s = state.snapshot;
+  if (!s.areas.has(name) && [...s.entries.values()].every((e) => e.area !== name))
+    throw notFound(state, `area named ${name}`, name);
+  return coreBehindArea(s, state.derived, name);
+}
+export async function behindArea(w: Wiring, name: string): Promise<readonly Behind[]> {
+  const state = await readState(w.store);
+  const s = state.snapshot;
+  return behindIds(state, name).map((id) => {
+    const decision = s.decisions.get(id);
+    if (decision === undefined) throw new Error(`missing decision ${id}`);
+    return {
+      decision: level1(s, state.derived, id, state.failing),
+      entries: [...new Set(decision.changes.map((c) => c.entry))].flatMap((id) => {
+        const e = s.entries.get(id);
+        return e ? [[id, e.area] as const] : [];
+      }),
+    };
+  });
+}
+function expectedIds(state: State, ids: readonly string[], area: string | null): readonly string[] {
+  if (area !== null) return behindIds(state, area);
+  if (ids.length === 1 && confirmableIds(state.snapshot, state.derived).has(ids[0] ?? ""))
+    return ids;
+  return [];
+}
+// Callers serialise confirmations across this entire operation, including retries and commit.
+export async function confirmDecisions(
+  w: Wiring,
+  ids: readonly string[],
+  words: string,
+  area: string | null,
+  commit: boolean,
+): Promise<Written> {
+  words = cleanText(words);
+  if (words.includes("\r\n"))
+    throw new LodgeError("your words hold a character lodge cannot store");
+  if (!words) throw new LodgeError("your words are required; nothing was written");
+  if (w.actor.kind !== "person") throw new Forbidden("only a person confirms; nothing was written");
+  const state = await readState(w.store);
+  if (!state.snapshot.people.has(w.actor.name))
+    throw new Forbidden("only an owner of the project confirms; nothing was written");
+  const expected = expectedIds(state, ids, area);
+  const given = new Set(ids);
+  if (!expected.length || ids.length !== expected.length || expected.some((id) => !given.has(id)))
+    throw new StaleList("the list changed since the page was loaded; nothing was written");
+  const scope = expected.some((id) => state.snapshot.decisions.get(id)?.scope === Scope.PRODUCT)
+    ? Scope.PRODUCT
+    : Scope.PROCESS;
+  let draft: string;
+  try {
+    draft = confirmationDraft(expected, scope, words, minuteOf(w.clock.now()), area, w.actor.name);
+  } catch (error) {
+    if (!(error instanceof ValueError)) throw error;
+    throw new LodgeError("your words hold a character lodge cannot store", { cause: error });
+  }
+  const added = await add(w, [[VIEWER, draft]]);
+  const committed =
+    added.outcome === AddOutcome.STAGED && commit
+      ? await w.store.commit(added.paths, `Author confirmation from the viewer: ${added.ids[0]}`)
+      : null;
+  return written({ ids: added.ids, outcome: added.outcome, check: added.check, committed });
+}
+import type { CheckResult, CoreSettings, Filters, Raises, SpecArea } from "#core";
+import * as confirmations from "./confirm.ts";
+import * as holds from "./held.ts";
+import type { Actor, Clock, Held, IdSource, Store } from "./ports.ts";
+import * as reads from "./reads.ts";
+import type {
+  Added,
+  Approved,
+  Behind,
+  Listed,
+  Read,
+  Shown,
+  ThreadList,
+  ThreadShown,
+  ThreadsWaiting,
+  Written,
+} from "./results.ts";
+import type { Wiring } from "./state.ts";
+import * as threads from "./threads.ts";
+import { type AddOptions, add, mint } from "./writes.ts";
+
+export class Lodge {
+  private readonly wiring: Wiring;
+  constructor(store: Store, clock: Clock, ids: IdSource, settings: CoreSettings, actor: Actor) {
+    this.wiring = { store, clock, ids, settings, actor };
+  }
+  async held(): Promise<readonly Held[]> {
+    return holds.held(this.wiring);
+  }
+  async approve(seq: number): Promise<Approved> {
+    return holds.approve(this.wiring, seq);
+  }
+  async decline(seq: number, reason: string): Promise<void> {
+    return holds.decline(this.wiring, seq, reason);
+  }
+  async mint(prefix: "d" | "s"): Promise<string> {
+    return mint(this.wiring, prefix);
+  }
+  async add(
+    drafts: readonly (readonly [string, string])[],
+    options: AddOptions = {},
+  ): Promise<Added> {
+    return add(this.wiring, drafts, options);
+  }
+  async search(query: string, filters: Filters, { limit = 20 } = {}): Promise<Listed> {
+    return reads.searchRecords(this.wiring, query, filters, limit);
+  }
+  async show(ref: string, { reasoning = false, provenance = false } = {}): Promise<Shown> {
+    return reads.show(this.wiring, ref, reasoning, provenance);
+  }
+  async waitingAll(): Promise<readonly [Listed, ThreadsWaiting]> {
+    return reads.waitingAll(this.wiring);
+  }
+  async timeline({ limit = 50 } = {}): Promise<Listed> {
+    return reads.timeline(this.wiring, limit);
+  }
+  async spec({
+    area = null,
+  }: {
+    area?: string | null;
+  } = {}): Promise<readonly [string, Read, readonly SpecArea[]]> {
+    return reads.spec(this.wiring, area);
+  }
+  async problems(): Promise<readonly [CheckResult, Read]> {
+    return this.check(false);
+  }
+  async check(gate: boolean): Promise<readonly [CheckResult, Read]> {
+    return reads.check(this.wiring, gate);
+  }
+  async draft(ref: string): Promise<string> {
+    return reads.draft(this.wiring, ref);
+  }
+  async ask(
+    ref: string,
+    raises: Raises,
+    by: string,
+    text: string,
+    options: threads.MessageOptions = {},
+  ): Promise<Written> {
+    return threads.writeMessage(this.wiring, ref, raises, by, text, options);
+  }
+  async reply(
+    thread: string,
+    by: string,
+    text: string,
+    options: threads.MessageOptions = {},
+  ): Promise<Written> {
+    return threads.writeMessage(this.wiring, thread, null, by, text, options);
+  }
+  async close(
+    thread: string,
+    by: string,
+    { text = null, ...options }: threads.MessageOptions & { text?: string | null } = {},
+  ): Promise<Written> {
+    return threads.writeMessage(this.wiring, thread, null, by, text ?? "", {
+      ...options,
+      close: true,
+    });
+  }
+  async threads(): Promise<ThreadList> {
+    return threads.listOpen(this.wiring);
+  }
+  async thread(ref: string): Promise<ThreadShown> {
+    return threads.show(this.wiring, ref);
+  }
+  async threadsWaiting(): Promise<ThreadsWaiting> {
+    return threads.waiting(this.wiring);
+  }
+  async confirm(
+    ids: readonly string[],
+    words: string,
+    { area = null, commit = false }: { area?: string | null; commit?: boolean } = {},
+  ): Promise<Written> {
+    return confirmations.confirmDecisions(this.wiring, ids, words, area, commit);
+  }
+  async behindArea(name: string): Promise<readonly Behind[]> {
+    return confirmations.behindArea(this.wiring, name);
+  }
+}
+
+exec
+/bin/bash -lc "cat ts/tests/app/people.test.ts ts/tests/app/message-options.test.ts ts/tests/store/sqlite-store.test.ts ts/src/core/derive-flags.ts ts/tests/app/support.ts; cat scripts/check-ts.sh; cat ts/package.json; rg -n 'confirmableIds|behindArea|concurrent' ts/tests ts/src/core/confirmation.ts; sed -n '115,145p' ts/src/store/sqlite-store.ts" in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+import { expect, test } from "bun:test";
+import { agent, Forbidden, LodgeError, NotFound, person } from "#app";
+import { Action, derive, load, Raises } from "#core";
+import { decisionText } from "../core/applying.ts";
+import { area, decision, entry } from "../core/builders.ts";
+import { CountingIds, FixedClock, MemoryStore } from "./fakes.ts";
+import { wired } from "./support.ts";
+
+function setup(actor = person("ada")) {
+  const store = new MemoryStore(
+    [
+      area(),
+      entry({ id: "s-aaaaaa" }),
+      decision({ id: "d-aaaaaa", changes: [{ entry: "s-aaaaaa", action: Action.CREATE }] }),
+    ],
+    { people: new Set(["ada", "bo"]) },
+  );
+  return { store, lodge: wired(store, new FixedClock(), new CountingIds(), actor) };
+}
+test("confirm_writes_the_persons_decision", async () => {
+  const { store, lodge } = setup();
+  await lodge.confirm(["d-aaaaaa"], "Read.");
+  const made = load((await store.trees())[0]).decisions.get("d-111111");
+  expect(made?.decidedBy).toBe("ada");
+  expect(made?.statement).toContain("ada confirms d-aaaaaa");
+});
+test("an_agent_cannot_confirm", async () => {
+  const { store, lodge } = setup(agent());
+  await expect(lodge.confirm(["d-aaaaaa"], "Read.")).rejects.toThrow(
+    new Forbidden("only a person confirms; nothing was written"),
+  );
+  expect(store.publishes).toEqual([]);
+});
+test("a_person_not_among_the_people_cannot_confirm", async () => {
+  const { store, lodge } = setup(person("cy"));
+  await expect(lodge.confirm(["d-aaaaaa"], "Read.")).rejects.toThrow(
+    new Forbidden("only an owner of the project confirms; nothing was written"),
+  );
+  expect(store.publishes).toEqual([]);
+});
+test("a_persons_message_needs_where", async () => {
+  const { store, lodge } = setup();
+  await expect(lodge.ask("d-aaaaaa", Raises.QUESTION, "ada", "Why?")).rejects.toThrow(
+    "a message by ada needs where, the place of ada's words",
+  );
+  expect(store.publishes).toEqual([]);
+});
+test("author_is_a_role_where_no_person_is_author", async () => {
+  const { lodge } = setup();
+  await expect(lodge.ask("d-aaaaaa", Raises.QUESTION, "author", "Why?")).rejects.toThrow(
+    new LodgeError("name a person of the project exactly, or use your own role"),
+  );
+});
+test("a_person_writes_only_as_themselves", async () => {
+  const { store, lodge } = setup(person("bo"));
+  const ada = wired(store, new FixedClock(), new CountingIds(), person("ada"));
+  const result = await ada.ask("d-aaaaaa", Raises.QUESTION, "ada", "Why?", { where: "chat" });
+  expect(store.publishes).toHaveLength(1);
+  const before = new Map(store.files);
+  for (const operation of [
+    () => lodge.ask("d-aaaaaa", Raises.QUESTION, "ada", "Why?", { where: "chat" }),
+    () => lodge.reply(result.ids[0] as string, "ada", "Yes.", { where: "chat" }),
+    () => lodge.close(result.ids[0] as string, "ada", { where: "chat" }),
+  ]) {
+    await expect(operation()).rejects.toThrow(
+      new Forbidden("only ada writes as ada; nothing was written"),
+    );
+  }
+  expect(store.files).toEqual(before);
+  expect(store.publishes).toHaveLength(1);
+});
+test("a_persons_question_waits_for_an_agent", async () => {
+  const { lodge } = setup();
+  const a = await lodge.ask("d-aaaaaa", Raises.QUESTION, "ada", "Why?", { where: "chat" });
+  const b = await lodge.ask("d-aaaaaa", Raises.QUESTION, "reviewer", "Why?");
+  const waiting = await lodge.threadsWaiting();
+  expect(waiting.forAgent.map((t) => t.id)).toEqual([...a.ids]);
+  expect(waiting.forAuthor.map((t) => t.id)).toEqual([...b.ids]);
+});
+test("an_agent_edit_of_a_persons_entry_waits", async () => {
+  const store = new MemoryStore(
+    [
+      area(),
+      entry({ id: "s-aaaaaa" }),
+      decision({
+        id: "d-aaaaaa",
+        decidedBy: "ada",
+        changes: [{ entry: "s-aaaaaa", action: Action.CREATE }],
+      }),
+    ],
+    { people: new Set(["ada", "bo"]) },
+  );
+  const lodge = wired(store, new FixedClock(), new CountingIds(), agent());
+  const result = await lodge.add([
+    ["d.md", decisionText("changes:", "  - {entry: s-aaaaaa, action: edit}")],
+  ]);
+  expect(result.feedback.some((f) => f.message.startsWith("this decision will wait for"))).toBe(
+    true,
+  );
+  expect(derive(load((await store.trees())[0])).awaitingAuthor.has(result.ids[0] as string)).toBe(
+    true,
+  );
+});
+
+test("unknown_reference_is_refused_before_impersonation", async () => {
+  const { store, lodge } = setup(person("bo"));
+  await expect(
+    lodge.ask("d-ffffff", Raises.QUESTION, "ada", "Why?", { where: "chat" }),
+  ).rejects.toThrow(NotFound);
+  await expect(lodge.reply("q-ffffff", "ada", "Yes.", { where: "chat" })).rejects.toThrow(NotFound);
+  expect(store.publishes).toEqual([]);
+});
+test("closed_thread_is_refused_before_impersonation", async () => {
+  const { store, lodge } = setup();
+  const question = await lodge.ask("d-aaaaaa", Raises.QUESTION, "ada", "Why?", { where: "chat" });
+  const id = question.ids[0] as string;
+  await lodge.close(id, "ada", { where: "chat" });
+  const before = new Map(store.files);
+  const bo = wired(store, new FixedClock(), new CountingIds(), person("bo"));
+  await expect(bo.reply(id, "ada", "Yes.", { where: "chat" })).rejects.toThrow(`${id} is closed`);
+  expect(store.files).toEqual(before);
+  expect(store.publishes).toHaveLength(2);
+});
+test("an_agent_is_refused_before_reading_state", async () => {
+  const { store, lodge } = setup(agent());
+  let reads = 0;
+  store.trees = async () => {
+    reads += 1;
+    throw new Error("state must not be read");
+  };
+  await expect(lodge.confirm(["d-aaaaaa"], "Read.")).rejects.toThrow(
+    new Forbidden("only a person confirms; nothing was written"),
+  );
+  expect(reads).toBe(0);
+});
+import { expect, test } from "bun:test";
+import type { Lodge } from "#app";
+
+test("public_message_options_do_not_expose_close", () => {
+  // @ts-expect-error close is internal to the thread writer.
+  const ask: Parameters<Lodge["ask"]>[4] = { close: true };
+  // @ts-expect-error close is internal to the thread writer.
+  const reply: Parameters<Lodge["reply"]>[3] = { close: true };
+  // @ts-expect-error Lodge.close supplies its own close flag.
+  const close: Parameters<Lodge["close"]>[2] = { close: true };
+  expect([ask, reply, close].map((options) => Object.keys(options ?? {}))).toEqual([
+    ["close"],
+    ["close"],
+    ["close"],
+  ]);
+});
+import { expect, test } from "bun:test";
+import { AddOutcome, CommitOutcome, PublishOutcome } from "#app";
+import { decodeUtf8, load, tree } from "#core";
+import { AREA, wired } from "../app/support.ts";
+import { decisionText, specText } from "../core/applying.ts";
+import { filesOf } from "../core/builders.ts";
+import { events, setup } from "./support.ts";
+
+test("trees_give_one_state", async () => {
+  const { store } = await setup();
+  const [a, b] = await store.trees();
+  expect(a).toBe(b);
+  expect(a.rev).toBe("2");
+  expect(a.files.size).toBe(0);
+});
+test("a_write_is_one_event_per_file", async () => {
+  const { store, database } = await setup();
+  expect(
+    await store.publish(
+      (await store.trees())[0],
+      new Map([
+        ["lodge/a", "a"],
+        ["lodge/b", "b"],
+      ]),
+      "write",
+    ),
+  ).toBe(PublishOutcome.PUBLISHED);
+  expect(
+    (await events(database)).slice(2).map(({ kind, path, message, actor, at }) => ({
+      kind,
+      path,
+      message: message === null ? null : decodeUtf8(message),
+      actor,
+      at,
+    })),
+  ).toEqual(
+    ["lodge/a", "lodge/b"].map((path) => ({
+      kind: "file",
+      path,
+      message: "write",
+      actor: "author",
+      at: "2026-10-29T09:30:00+01:00",
+    })),
+  );
+});
+test("file_bytes_survive_exactly", async () => {
+  const { store, database } = await setup();
+  const text = "\uFEFFa\r\n\0😀\uDC80";
+  await store.publish((await store.trees())[0], new Map([["lodge/a", text]]), "");
+  expect((await store.trees())[0].files.get("lodge/a")).toBe(text);
+  expect((await events(database))[2]?.body.at(-1)).toBe(128);
+});
+test("stale_base_is_rejected_and_writes_nothing", async () => {
+  const { store, database } = await setup();
+  const base = (await store.trees())[0];
+  await store.publish(base, new Map([["lodge/a", "a"]]), "");
+  const before = await events(database);
+  for (const rev of [base.rev, null, "x", "2.0", "-1"])
+    expect(await store.publish(tree({ ...base, rev }), new Map([["lodge/b", "b"]]), "")).toBe(
+      PublishOutcome.REJECTED,
+    );
+  expect(await events(database)).toEqual(before);
+});
+test("attachments_are_listed_not_read", async () => {
+  const { store } = await setup();
+  const path = "lodge/attachments/d-aaaaaa/run.log";
+  await store.publish((await store.trees())[0], new Map([[path, "\uFEFF\uDC80"]]), "");
+  const current = (await store.trees())[0];
+  expect(current.attachments.has(path)).toBe(true);
+  expect(current.files.has(path)).toBe(false);
+  expect(await store.attachmentTexts()).toEqual(new Map([[path, "\uFEFF\uDC80"]]));
+});
+test("gate_compares_the_current_state_with_itself", async () => {
+  const { store } = await setup();
+  const current = (await store.trees())[0];
+  const result = await store.gate(current);
+  expect(result.published).toBe(current);
+  expect(result.checked).toEqual([["", current]]);
+  expect(result.notes).toEqual([]);
+});
+test("freshness_is_null_and_commit_is_refused", async () => {
+  const { store, database, clock } = await setup();
+  const before = await events(database);
+  const calls = clock.calls;
+  expect(await store.freshness()).toBeNull();
+  expect(await store.commit([], "")).toEqual({
+    outcome: CommitOutcome.FAILED,
+    detail: "the server keeps no checkout; its writes are published at once",
+  });
+  expect(await events(database)).toEqual(before);
+  expect(clock.calls).toBe(calls);
+});
+test("lodge_adds_through_the_store", async () => {
+  const { store } = await setup();
+  await store.publish((await store.trees())[0], filesOf(AREA), "area");
+  const result = await wired(store).add(
+    [
+      [
+        "d.md",
+        decisionText("changes:", "  - {entry: s-bbbbbb, action: create}", "attachments: [run.log]"),
+      ],
+      ["s.md", specText("id: s-bbbbbb", "area: storage")],
+    ],
+    { attachments: [["run.log", "log"]] },
+  );
+  expect(result.outcome).toBe(AddOutcome.PUBLISHED);
+  const current = (await store.trees())[0];
+  expect(load(current).entries.has("s-bbbbbb")).toBe(true);
+  expect(current.attachments.has("lodge/attachments/d-111111/run.log")).toBe(true);
+});
+
+test.each(["t\uDC80 tail", "\uFEFFlead"])(
+  "event_message_bytes_survive_exactly",
+  async (message) => {
+    const { store, database } = await setup();
+    await store.publish((await store.trees())[0], new Map([["lodge/a", "a"]]), message);
+    const saved = (await events(database))[2]?.message;
+    expect(saved).toBeInstanceOf(Uint8Array);
+    expect(decodeUtf8(saved as Uint8Array)).toBe(message);
+  },
+);
+import type { Decision } from "./model.ts";
+import type { Snapshot } from "./snapshot.ts";
+import { byCodePoint } from "./text.ts";
+
+export function reviewFlags(
+  s: Snapshot,
+  oldest: readonly Decision[],
+  touches: ReadonlyMap<string, readonly string[]>,
+  changes: ReadonlyMap<string, readonly Decision[]>,
+): ReadonlyMap<string, readonly string[]> {
+  const awaiting = new Map<string, string[]>();
+  for (const person of [...s.people].sort(byCodePoint)) {
+    const people = new Set([person]);
+    const confirmed = confirmedByPeople(oldest, people);
+    for (const id of flagged(s.decisions, s.people, person, oldest, touches, changes, confirmed)) {
+      const parts = awaiting.get(id) ?? [];
+      parts.push(person);
+      awaiting.set(id, parts);
+    }
+  }
+  return awaiting;
+}
+export function countsForPeople(
+  oldest: readonly Decision[],
+  people: ReadonlySet<string>,
+  d: Decision,
+): (other: Decision) => boolean {
+  return countsFor(d, confirmedByPeople(oldest, people), people);
+}
+function confirmedByPeople(oldest: readonly Decision[], people: ReadonlySet<string>): Set<string> {
+  return new Set(
+    oldest
+      .filter((d) => people.has(d.decidedBy) && d.importedFrom === null)
+      .flatMap((d) => d.confirms),
+  );
+}
+// An imported decision is flagged only by non-imported ones.
+function countsFor(
+  d: Decision,
+  confirmed: ReadonlySet<string>,
+  people: ReadonlySet<string>,
+): (other: Decision) => boolean {
+  return (other) =>
+    (people.has(other.decidedBy) || confirmed.has(other.id)) &&
+    (d.importedFrom === null || other.importedFrom === null);
+}
+export function behindEntryEdits(
+  d: Decision,
+  entries: readonly string[],
+  changes: ReadonlyMap<string, readonly Decision[]>,
+  counts: (other: Decision) => boolean,
+  replacedBy: ReadonlyMap<string, readonly string[]>,
+): string[] {
+  const behind: string[] = [];
+  for (const entry of entries) {
+    const edits = changes.get(entry) as readonly Decision[];
+    const standing = edits.slice(0, edits.indexOf(d)).filter((c) => !replacedBy.has(c.id));
+    const last = standing.at(-1);
+    if (last && counts(last)) behind.push(last.id);
+  }
+  return behind;
+}
+// Skip changes undone by the person when that person has not confirmed them.
+function flagged(
+  decisions: ReadonlyMap<string, Decision>,
+  people: ReadonlySet<string>,
+  person: string,
+  oldest: readonly Decision[],
+  touches: ReadonlyMap<string, readonly string[]>,
+  changes: ReadonlyMap<string, readonly Decision[]>,
+  confirmed: ReadonlySet<string>,
+): Set<string> {
+  const personOnly = new Set([person]);
+  const clearedIds = cleared(decisions, person, oldest);
+  const undone = new Set<string>();
+  for (const later of oldest) {
+    if (later.decidedBy !== person || later.importedFrom !== null) continue;
+    for (const target of later.replaces) {
+      const other = decisions.get(target);
+      if (other && other.decidedBy !== person && !confirmed.has(target)) undone.add(target);
+    }
+  }
+  const found = new Set<string>();
+  for (const d of oldest) {
+    if (clearedIds.has(d.id) || (people.has(d.decidedBy) && d.importedFrom === null)) continue;
+    const counts = countsFor(d, confirmed, personOnly);
+    const touchesPerson = [...d.replaces, ...d.narrows].some((t) => {
+      const other = decisions.get(t);
+      return other !== undefined && counts(other);
+    });
+    const followsPerson = (touches.get(d.id) as readonly string[]).some((entry) =>
+      followsPersonChange(d, counts, changes.get(entry) as readonly Decision[], undone),
+    );
+    if (touchesPerson || followsPerson) found.add(d.id);
+  }
+  return found;
+}
+
+// Decisions confirmed or replaced by a later, non-imported decision of the person.
+function cleared(
+  decisions: ReadonlyMap<string, Decision>,
+  person: string,
+  oldest: readonly Decision[],
+): Set<string> {
+  const found = new Set<string>();
+  for (const later of oldest) {
+    if (later.decidedBy !== person || later.importedFrom !== null) continue;
+    for (const id of [...later.confirms, ...later.replaces]) {
+      const target = decisions.get(id);
+      if (target && oldest.indexOf(target) < oldest.indexOf(later)) found.add(id);
+    }
+  }
+  return found;
+}
+// Whether the latest preceding change, skipping undone changes, raises a flag.
+function followsPersonChange(
+  d: Decision,
+  counts: (other: Decision) => boolean,
+  edits: readonly Decision[],
+  undone: ReadonlySet<string>,
+): boolean {
+  const before = edits.slice(0, edits.indexOf(d)).filter((c) => !undone.has(c.id));
+  const last = before.at(-1);
+  return last !== undefined && counts(last);
+}
+import { expect } from "bun:test";
+import { Lodge, person, type Store } from "#app";
+import { Action, coreSettings, Raises } from "#core";
+import { area, at, decision, entry } from "../core/builders.ts";
+import { CountingIds, FixedClock, MemoryStore } from "./fakes.ts";
+
+export const AREA = area({
+  name: "storage",
+  title: "Storage",
+  intro: "How it keeps data.",
+  order: ["s-aaaaaa"],
+});
+export const ENTRY = entry({
+  id: "s-aaaaaa",
+  area: "storage",
+  title: "Transcripts are kept",
+  statement: "Held.",
+});
+export const FIRST = decision({
+  id: "d-aaaaaa",
+  title: "Keep whole transcripts",
+  code: "ITEM-1",
+  decidedBy: "author",
+  reasoning: "Because they are evidence.",
+  changes: [{ entry: "s-aaaaaa", action: Action.CREATE }],
+  date: at(0),
+});
+export function project({ staged = false } = {}) {
+  return new MemoryStore([AREA, ENTRY, FIRST], { staged });
+}
+
+export function wired(
+  store: Store,
+  clock = new FixedClock(),
+  ids = new CountingIds(),
+  actor = person("author"),
+) {
+  return new Lodge(store, clock, ids, coreSettings(), actor);
+}
+
+export async function raises(
+  promise: Promise<unknown>,
+  errorClass: new (message: string) => Error,
+  pattern: string | RegExp,
+): Promise<void> {
+  await expect(promise).rejects.toThrow(errorClass);
+  await expect(promise).rejects.toThrow(pattern);
+}
+
+export const Q = "q-111111";
+export const PATH = `lodge/threads/${Q}.md`;
+export async function opened(staged = false) {
+  const store = project({ staged }),
+    lodge = wired(store);
+  await lodge.ask("s-aaaaaa", Raises.DOUBT, "coordinator", "Why?");
+  return { store, lodge };
+}
+export function required<T>(value: T | undefined | null): T {
+  if (value === undefined || value === null) throw new Error("missing fixture value");
+  return value;
+}
+set -eu
+cd "$(dirname "$0")/../ts"
+command -v bun >/dev/null 2>&1 || { echo "bun is not installed" >&2; exit 2; }
+[ -d node_modules ] || { echo "ts/node_modules is missing; run bun install --frozen-lockfile in ts/" >&2; exit 2; }
+bun --bun run check
+{
+  "name": "lodge",
+  "private": true,
+  "type": "module",
+  "packageManager": "bun@1.3.14",
+  "imports": {
+    "#core": "./src/core/index.ts",
+    "#app": "./src/app/index.ts",
+    "#store": "./src/store/index.ts"
+  },
+  "scripts": {
+    "check": "biome check --error-on-warnings . && tsc --noEmit -p . && depcruise src tests scripts --config .dependency-cruiser.cjs && knip && bun test"
+  },
+  "dependencies": {
+    "@noble/hashes": "2.4.0",
+    "kysely": "0.29.7",
+    "yaml": "2.9.1"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.15",
+    "@types/bun": "1.4.3",
+    "dependency-cruiser": "18.6.0",
+    "knip": "6.42.0",
+    "typescript": "6.0.3"
+  }
+}
+ts/src/core/confirmation.ts:16:export function confirmableIds(s: Snapshot, d: Derived): ReadonlySet<string> {
+ts/src/core/confirmation.ts:26:export function behindArea(s: Snapshot, d: Derived, area: string): readonly string[] {
+ts/src/core/confirmation.ts:28:  return [...confirmableIds(s, d)]
+ts/tests/parity.json:565:  "tests/gitstore/test_concurrent.py": {
+ts/tests/parity.json:569:    "ts": ["ts/tests/store/concurrent.test.ts"],
+ts/tests/store/concurrent.test.ts:31:  const root = mkdtempSync(join(tmpdir(), "lodge-concurrent-"));
+ts/tests/app/confirm.test.ts:150:  const rows = await lodge.behindArea("storage");
+ts/tests/app/confirm.test.ts:156:  await expect(lodge.behindArea("unknown")).rejects.toThrow(NotFound);
+ts/tests/app/writes-retry.test.ts:35:test("add_retry_keeps_concurrent_entry", async () => {
+ts/tests/app/writes-retry.test.ts:47:test("add_retry_concurrent_edit_of_same_entry_conflicts", async () => {
+ts/tests/core/people-regressions.test.ts:5:  confirmableIds,
+ts/tests/core/people-regressions.test.ts:24:  expect(confirmableIds(before, derive(before))).toEqual(new Set([agent.id]));
+ts/tests/core/confirmation.test.ts:4:  behindArea,
+ts/tests/core/confirmation.test.ts:5:  confirmableIds,
+ts/tests/core/confirmation.test.ts:24:  expect(confirmableIds(s, derive(s))).toEqual(new Set(["d-cccccc", "d-eeeeee"]));
+ts/tests/core/confirmation.test.ts:45:  expect(behindArea(s, derive(s), "storage")).toEqual(["d-cccccc", "d-aaaaaa"]);
+ts/tests/core/confirmation.test.ts:52:  expect(behindArea(s, derive(s), "storage")).toEqual(["d-aaaaaa"]);
+ts/tests/core/confirmation.test.ts:103:  expect(behindArea(s, derive(s), "storage")).toEqual(["d-aaaaaa", "d-cccccc"]);
+        base.files.get(path) !== text
+      )
+        throw new LodgeError(
+          `${path} is a published decision, and lodge never rewrites a decision`,
+        );
+    }
+    for (const [path, text] of writes) {
+      try {
+        events.push({ kind: "file", path, body: encodeUtf8(text), message });
+      } catch (error) {
+        if (!(error instanceof ValueError)) throw error;
+        throw new LodgeError(`${path}: ${error.message}`);
+      }
+    }
+    return this.database.db.transaction().execute(async (tx) => {
+      if (!(await touchHead(tx, this.project, Number(base.rev)))) return PublishOutcome.REJECTED;
+      if (approves !== null) {
+        const held = await openHold(tx, this.project, approves);
+        if (!held) return PublishOutcome.REJECTED;
+      }
+      const at = stampOf(this.clock.now());
+      await appendEvents(tx, this.project, this.actor, at, events);
+      if (approves !== null)
+        await appendEvents(tx, this.project, this.actor, at, [
+          { kind: "approved", path: null, body: json({ held: approves }), message: null },
+        ]);
+      return PublishOutcome.PUBLISHED;
+    });
+  }
+}
+
+exec
+/bin/bash -lc "cat ts/tests/core/people-flags.test.ts 2>/dev/null; cat ts/tests/core/confirmation.test.ts; cat ts/tests/core/builders.ts | head -100; cat ts/tests/app/fakes.ts | head -85; sed -n '85,110p' ts/src/store/sqlite-store.ts; git branch --show-current" in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+import { expect, test } from "bun:test";
+import {
+  Action,
+  behindArea,
+  confirmableIds,
+  confirmationDraft,
+  derive,
+  LookupError,
+  parseDraft,
+  recordFromDraft,
+  Scope,
+  ValueError,
+} from "#core";
+import { at, decision, entry, snapshotOf } from "./builders.ts";
+
+test("confirmable_ids_skip_author_confirmed_and_replaced", () => {
+  const s = snapshotOf([
+    decision({ id: "d-aaaaaa" }),
+    decision({ id: "d-bbbbbb" }),
+    decision({ id: "d-cccccc" }),
+    decision({ id: "d-dddddd", decidedBy: "author", confirms: ["d-aaaaaa"] }),
+    decision({ id: "d-eeeeee", replaces: ["d-bbbbbb"] }),
+  ]);
+  expect(confirmableIds(s, derive(s))).toEqual(new Set(["d-cccccc", "d-eeeeee"]));
+});
+test("behind_area_lists_creators_and_last_changers_oldest_first", () => {
+  const s = snapshotOf([
+    entry({ id: "s-aaaaaa" }),
+    decision({
+      id: "d-aaaaaa",
+      date: at(2),
+      changes: [{ entry: "s-aaaaaa", action: Action.EDIT }],
+    }),
+    decision({
+      id: "d-cccccc",
+      date: at(0),
+      changes: [{ entry: "s-aaaaaa", action: Action.CREATE }],
+    }),
+    decision({
+      id: "d-bbbbbb",
+      date: at(1),
+      changes: [{ entry: "s-aaaaaa", action: Action.EDIT }],
+    }),
+  ]);
+  expect(behindArea(s, derive(s), "storage")).toEqual(["d-cccccc", "d-aaaaaa"]);
+});
+test("behind_area_includes_the_retirer_of_a_retired_entry", () => {
+  const s = snapshotOf([
+    entry({ id: "s-aaaaaa" }),
+    decision({ id: "d-aaaaaa", changes: [{ entry: "s-aaaaaa", action: Action.RETIRE }] }),
+  ]);
+  expect(behindArea(s, derive(s), "storage")).toEqual(["d-aaaaaa"]);
+});
+test("confirmation_draft_single", () => {
+  const words = 'Read: "yes".\nStill a caveat.';
+  const draft = parseDraft(
+    "viewer",
+    confirmationDraft(["d-aaaaaa"], Scope.PRODUCT, words, "2026-10-29 09:30", null),
+  );
+  expect(draft.kind).not.toBe("problem");
+  if (draft.kind === "problem") throw new Error("expected Draft");
+  const made = recordFromDraft(draft, "d-bbbbbb", at(1), null);
+  expect(made.kind).toBe("decision");
+  if (made.kind !== "decision") throw new Error("expected Decision");
+  expect(made.title).toBe("Confirms d-aaaaaa");
+  expect(made.statement).toBe("The author confirms d-aaaaaa.");
+  expect(made.reasoning).toBe(words);
+  expect(made.quote?.where).toBe("lodge viewer");
+});
+test("confirmation_draft_area_lists_with_the_oxford_comma", () => {
+  const draft = parseDraft(
+    "viewer",
+    confirmationDraft(
+      ["d-aaaaaa", "d-bbbbbb", "d-cccccc"],
+      Scope.PROCESS,
+      "Read.",
+      "now",
+      "storage",
+    ),
+  );
+  expect(draft.kind).not.toBe("problem");
+  if (draft.kind === "problem") throw new Error("expected Draft");
+  const made = recordFromDraft(draft, "d-dddddd", at(1), null);
+  expect(made.kind).toBe("decision");
+  if (made.kind !== "decision") throw new Error("expected Decision");
+  expect(made.title).toBe("Confirms the decisions behind area storage");
+  expect(made.statement).toBe("The author confirms d-aaaaaa, d-bbbbbb, and d-cccccc.");
+});
+test("behind_area_same_date_uses_id_tie_break", () => {
+  const s = snapshotOf([
+    entry({ id: "s-aaaaaa" }),
+    decision({
+      id: "d-cccccc",
+      date: at(0),
+      changes: [{ entry: "s-aaaaaa", action: Action.CREATE }],
+    }),
+    decision({
+      id: "d-aaaaaa",
+      date: at(0),
+      changes: [{ entry: "s-aaaaaa", action: Action.CREATE }],
+    }),
+  ]);
+  expect(behindArea(s, derive(s), "storage")).toEqual(["d-aaaaaa", "d-cccccc"]);
+});
+test("confirmation_draft_two_uses_and", () => {
+  const draft = parseDraft(
+    "viewer",
+    confirmationDraft(["d-aaaaaa", "d-bbbbbb"], Scope.PRODUCT, "Read.", "now", "storage"),
+  );
+  expect(draft.kind).not.toBe("problem");
+  if (draft.kind === "problem") throw new Error("expected Draft");
+  const made = recordFromDraft(draft, "d-cccccc", at(1), null);
+  expect(made.kind).toBe("decision");
+  if (made.kind !== "decision") throw new Error("expected Decision");
+  expect(made.statement).toBe("The author confirms d-aaaaaa and d-bbbbbb.");
+});
+test.each([[], ["d-aaaaaa", "d-bbbbbb"]].map((c) => [c]))(
+  "confirmation_draft_without_area_requires_one_id %p",
+  (ids) => {
+    const call = () => confirmationDraft(ids, Scope.PRODUCT, "Read.", "now", null);
+    expect(call).toThrow(ValueError);
+    expect(call).toThrow(/one decision/u);
+  },
+);
+test("confirmation_draft_empty_area_list_keeps_python_index_error", () => {
+  const call = () => confirmationDraft([], Scope.PRODUCT, "Read.", "now", "storage");
+  expect(call).toThrow(LookupError);
+  expect(call).toThrow("list index out of range");
+});
+import {
+  type Area,
+  areaPath,
+  type Decision,
+  type Message,
+  area as makeArea,
+  decision as makeDecision,
+  message as makeMessage,
+  newRecordPath,
+  type Problem,
+  Raises,
+  type Record,
+  Scope,
+  type Snapshot,
+  type SpecEntry,
+  specEntry,
+  type Thread,
+  ThreadState,
+  threadPath,
+  tree,
+  writeArea,
+  writeRecord,
+  writeThread,
+} from "#core";
+
+let numbers = 0;
+const ALPHABET = "0123456789abcdefghjkmnpqrstvwxyz";
+function nextId(prefix: string): string {
+  const n = ++numbers;
+  return `${prefix}-${ALPHABET[Math.floor(n / 1024) % 32]}${ALPHABET[Math.floor(n / 32) % 32]}${ALPHABET[n % 32]}000`;
+}
+export function at(minute: number): string {
+  return `2026-10-28T${String(10 + Math.floor(minute / 60)).padStart(2, "0")}:${String(minute % 60).padStart(2, "0")}:00+01:00`;
+}
+export function decision(kw: Partial<Decision> = {}): Decision {
+  const value = {
+    id: nextId("d"),
+    title: "A decision",
+    scope: Scope.PRODUCT,
+    decidedBy: "coordinator",
+    date: at(0),
+    statement: "A statement.",
+    ...kw,
+  };
+  return makeDecision({
+    ...value,
+    ...(value.decidedBy === "author" && !("quote" in kw) && !("importedFrom" in kw)
+      ? { quote: { text: "Do it.", where: "a session", when: "2026-10-28 10:00" } }
+      : {}),
+  });
+}
+export function entry(kw: Partial<SpecEntry> = {}): SpecEntry {
+  return specEntry({
+    id: nextId("s"),
+    area: "storage",
+    title: "An entry",
+    statement: "What holds now.",
+    ...kw,
+  });
+}
+export function area(kw: Partial<Area> = {}): Area {
+  return makeArea({ name: "storage", title: "Storage", intro: "", order: [], ...kw });
+}
+export function message(kw: Partial<Message> = {}): Message {
+  return makeMessage({ by: "coordinator", when: at(0), text: "A message.", ...kw });
+}
+export function thread(kw: Partial<Thread> = {}): Thread {
+  return {
+    kind: "thread",
+    id: nextId("q"),
+    about: "s-aaaaaa",
+    raises: Raises.DOUBT,
+    state: ThreadState.OPEN,
+    opened: at(0),
+    messages: [message()],
+    ...kw,
+  };
+}
+type Item = Record | Area | Thread;
+export function filesOf(...items: Item[]): Map<string, string> {
+  return new Map(
+    items.map((i) =>
+      i.kind === "thread"
+        ? [threadPath(i.id), writeThread(i)]
+        : i.kind === "area"
+          ? [areaPath(i.name), writeArea(i)]
+          : [newRecordPath(i), writeRecord(i)],
+    ),
+  );
+}
+// Keeps items as given, without parsing, so tests can construct defects no store could hold.
+export function snapshotOf(
+  items: readonly Item[],
+  options: {
+    attachments?: readonly string[];
+    paths?: ReadonlyMap<string, string> | null;
+    problems?: readonly Problem[];
+  } = {},
+): Snapshot {
+  return {
+import {
+  type Clock,
+  CommitOutcome,
+  type Committed,
+  committed,
+  type Gate,
+  gate,
+  type Held,
+  type HeldDraft,
+  type IdSource,
+  NotFound,
+  type Now,
+  PublishOutcome,
+  type Store,
+  stampOf,
+} from "#app";
+import {
+  type Area,
+  ATTACHMENTS,
+  type Decision,
+  instant,
+  type SpecEntry,
+  type Tree,
+  tree,
+} from "#core";
+import { filesOf } from "../core/builders.ts";
+
+export const START: Now = { epochMs: instant("2026-10-29T09:30:00+01:00"), offsetMinutes: 60 };
+
+// movesAfterRead and rejectNext land another session’s change before publication.
+export class MemoryStore implements Store {
+  files: Map<string, string>;
+  published: Map<string, string>;
+  staged: boolean;
+  people: ReadonlySet<string>;
+  rev = 0;
+  declined: [number, string][] = [];
+  private holds = new Map<number, Held>();
+  commits: [readonly string[], string][] = [];
+  commitResult: Committed = committed({ outcome: CommitOutcome.COMMITTED });
+  stamp: string | null = "fetched 2026-10-29T08:00:00+00:00";
+  publishes: [Map<string, string>, string][] = [];
+  attempts = 0;
+  gateFor: Gate | null = null;
+  private moves: ReadonlyMap<string, string>[] = [];
+  private rejections: ReadonlyMap<string, string>[] = [];
+
+  constructor(
+    items: (Area | Decision | SpecEntry)[] = [],
+    options: { staged?: boolean; people?: ReadonlySet<string> } = {},
+  ) {
+    this.people = options.people ?? new Set(["author"]);
+    this.files = filesOf(...items);
+    this.published = new Map(this.files);
+    this.staged = options.staged ?? false;
+  }
+  async hold(draft: HeldDraft): Promise<number> {
+    const seq = ++this.rev;
+    this.holds.set(seq, structuredClone({ ...draft, seq, at: stampOf(START) }));
+    return seq;
+  }
+  async held(): Promise<readonly Held[]> {
+    return structuredClone([...this.holds.values()]);
+  }
+  async decline(seq: number, reason: string): Promise<void> {
+    if (!this.holds.delete(seq)) throw new NotFound(`nothing is held under number ${seq}`);
+    this.declined.push([seq, reason]);
+    this.rev += 1;
+  }
+  async commit(paths: readonly string[], message: string): Promise<Committed> {
+    this.commits.push([[...paths], message]);
+    return this.commitResult;
+  }
+  async trees(): Promise<readonly [Tree, Tree]> {
+    const current = tree({
+      rev: String(this.rev),
+      files: new Map(this.files),
+      people: this.people,
+    });
+    const published = this.staged
+      ? tree({ rev: String(this.rev), files: new Map(this.published), people: this.people })
+      : current;
+    const move = this.moves.shift();
+    if (move !== undefined) this.land(move);
+    return [current, published];
+    });
+  }
+  async publish(
+    base: Tree,
+    writes: ReadonlyMap<string, string>,
+    message: string,
+    approves: number | null = null,
+  ): Promise<PublishOutcome> {
+    const events: { kind: string; path: string; body: Uint8Array; message: string }[] = [];
+    for (const path of writes.keys()) {
+      const parts = path.split("/");
+      if (
+        parts[0] !== "lodge" ||
+        parts.length < 2 ||
+        path.includes("\\") ||
+        path.includes("\0") ||
+        parts.some((part) => ["", ".", "..", ".git"].includes(part))
+      )
+        throw new LodgeError(`${path} is outside lodge/, which is all the store writes`);
+      if (base.attachments.has(path))
+        throw new LodgeError(`${path} is an attachment, and lodge never overwrites an attachment`);
+    }
+    for (const path of writes.keys()) {
+      if (/\p{Cs}/u.test(path))
+        throw new LodgeError(`${path}: a path holding a lone surrogate cannot be stored`);
+    }
+server-store
+
+codex
+The confirmation ruling is already recorded as `d-8v05kt`. I’ll add regression tests for both multi-person confirmation cases, live revision spellings, and the reply `close` option, then run them before changing the code.
+exec
+/bin/bash -lc "python - <<'PY'
+from pathlib import Path
+p=Path('ts/tests/app/people.test.ts')
+s=p.read_text().replace('agent, Forbidden,','AddOutcome, agent, Forbidden,').replace('{ area, decision, entry }','{ area, at, decision, entry }')
+s+='''
+for (const both of [true, false]) {
+  test("'`confirmations_remain_available_to_each_person_${both ? "both" : "ada"}`, async () => {
+    const quote = { text: "Agreed.", where: "chat", when: "2026-10-28 10:00" };
+    const store = new MemoryStore(
+      [
+        area(),
+        decision({ id: "d-aaaaaa", decidedBy: "ada", quote }),
+        decision({ id: "d-cccccc", decidedBy: "bo", quote }),
+        decision({
+          id: "d-bbbbbb",
+          date: at(1),
+          replaces: ["d-aaaaaa"],
+          narrows: both ? ["d-cccccc"] : [],
+        }),
+      ],
+      { people: new Set(["ada", "bo"]) },
+    );
+    const ids = new CountingIds();
+    const ada = wired(store, new FixedClock(), ids, person("ada"));
+    const bo = wired(store, new FixedClock(), ids, person("bo"));
+    const awaiting = async () => derive(load((await store.trees())[0])).awaiting;
+    expect((await awaiting()).get("d-bbbbbb")).toEqual(both ? ["ada", "bo"] : ["ada"]);
+    const first = both ? ada : bo;
+    const second = both ? bo : ada;
+    expect((await first.confirm(["d-bbbbbb"], "Read.")).outcome).toBe(AddOutcome.PUBLISHED);
+    expect((await awaiting()).get("d-bbbbbb")).toEqual([both ? "bo" : "ada"]);
+    expect((await first.show("d-bbbbbb")).confirmable).toBe(false);
+    expect((await second.show("d-bbbbbb")).confirmable).toBe(true);
+    expect((await second.confirm(["d-bbbbbb"], "Read too.")).outcome).toBe(AddOutcome.PUBLISHED);
+    expect(await awaiting()).toEqual(new Map());
+  });
+}
+'"'''
+p.write_text(s)
+p=Path('ts/tests/store/sqlite-store.test.ts'); s=p.read_text().replace('const before = await events(database);\\n  for (const rev of [base.rev, null, \"x\", \"2.0\", \"-1\"])','const before = await events(database);\\n  const live = (await store.trees())[0];\\n  for (const rev of [base.rev, null, \"x\", \"2.0\", \"-1\", "'`${live.rev}.0`, ` ${live.rev}`])'"'); p.write_text(s)
+p=Path('ts/tests/app/message-options.test.ts'); s=p.read_text().replace('import type { Lodge } from \"#app\";','import type { Lodge } from \"#app\";\\nimport { ThreadState } from \"#core\";\\nimport { opened } from \"./support.ts\";'); s+='''
+test(\"reply_ignores_a_runtime_close_option\", async () => {
+  const { lodge } = await opened();
+  const result = await lodge.reply(\"q-111111\", \"coordinator\", \"Because.\", { close: true } as never);
+  expect(result.outcome).toBe(\"published\");
+  expect((await lodge.thread(\"q-111111\")).thread.state).toBe(ThreadState.OPEN);
+});
+'''; p.write_text(s)
+PY
+cd ts && bun test tests/app/people.test.ts tests/app/message-options.test.ts tests/store/sqlite-store.test.ts" in /var/tmp/lodge-server-store
+ exited 1 in 95ms:
+bun test v1.3.14 (0d9b296a)
+
+tests/app/people.test.ts:
+159 |     const first = both ? ada : bo;
+160 |     const second = both ? bo : ada;
+161 |     expect((await first.confirm(["d-bbbbbb"], "Read.")).outcome).toBe(AddOutcome.PUBLISHED);
+162 |     expect((await awaiting()).get("d-bbbbbb")).toEqual([both ? "bo" : "ada"]);
+163 |     expect((await first.show("d-bbbbbb")).confirmable).toBe(false);
+164 |     expect((await second.show("d-bbbbbb")).confirmable).toBe(true);
+                                                              ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/var/tmp/lodge-server-store/ts/tests/app/people.test.ts:164:57)
+(fail) confirmations_remain_available_to_each_person_both [11.19ms]
+159 |     const first = both ? ada : bo;
+160 |     const second = both ? bo : ada;
+161 |     expect((await first.confirm(["d-bbbbbb"], "Read.")).outcome).toBe(AddOutcome.PUBLISHED);
+162 |     expect((await awaiting()).get("d-bbbbbb")).toEqual([both ? "bo" : "ada"]);
+163 |     expect((await first.show("d-bbbbbb")).confirmable).toBe(false);
+164 |     expect((await second.show("d-bbbbbb")).confirmable).toBe(true);
+                                                              ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/var/tmp/lodge-server-store/ts/tests/app/people.test.ts:164:57)
+(fail) confirmations_remain_available_to_each_person_ada [12.91ms]
+
+tests/app/message-options.test.ts:
+19 | 
+20 | test("reply_ignores_a_runtime_close_option", async () => {
+21 |   const { lodge } = await opened();
+22 |   const result = await lodge.reply("q-111111", "coordinator", "Because.", { close: true } as never);
+23 |   expect(result.outcome).toBe("published");
+24 |   expect((await lodge.thread("q-111111")).thread.state).toBe(ThreadState.OPEN);
+                                                             ^
+error: expect(received).toBe(expected)
+
+Expected: "open"
+Received: "closed"
+
+      at <anonymous> (/var/tmp/lodge-server-store/ts/tests/app/message-options.test.ts:24:57)
+(fail) reply_ignores_a_runtime_close_option [7.38ms]
+
+tests/store/sqlite-store.test.ts:
+55 |   const base = (await store.trees())[0];
+56 |   await store.publish(base, new Map([["lodge/a", "a"]]), "");
+57 |   const before = await events(database);
+58 |   const live = (await store.trees())[0];
+59 |   for (const rev of [base.rev, null, "x", "2.0", "-1", `${live.rev}.0`, ` ${live.rev}`])
+60 |     expect(await store.publish(tree({ ...base, rev }), new Map([["lodge/b", "b"]]), "")).toBe(
+                                                                                              ^
+error: expect(received).toBe(expected)
+
+Expected: "rejected"
+Received: "published"
+
+      at <anonymous> (/var/tmp/lodge-server-store/ts/tests/store/sqlite-store.test.ts:60:90)
+(fail) stale_base_is_rejected_and_writes_nothing [2.42ms]
+
+ 21 pass
+ 4 fail
+ 70 expect() calls
+Ran 25 tests across 3 files. [211.00ms]
+
+exec
+/bin/bash -lc "python - <<'PY'
+from pathlib import Path
+p=Path('ts/tests/store/sqlite-store.test.ts'); s=p.read_text().replace('"'`${live.rev}.0`, ` ${live.rev}`'"','"'` ${live.rev}`, `${live.rev}.0`'"'); p.write_text(s)
+PY
+cd ts && bun test tests/store/sqlite-store.test.ts" in /var/tmp/lodge-server-store
+ exited 1 in 36ms:
+bun test v1.3.14 (0d9b296a)
+
+tests/store/sqlite-store.test.ts:
+55 |   const base = (await store.trees())[0];
+56 |   await store.publish(base, new Map([["lodge/a", "a"]]), "");
+57 |   const before = await events(database);
+58 |   const live = (await store.trees())[0];
+59 |   for (const rev of [base.rev, null, "x", "2.0", "-1", ` ${live.rev}`, `${live.rev}.0`])
+60 |     expect(await store.publish(tree({ ...base, rev }), new Map([["lodge/b", "b"]]), "")).toBe(
+                                                                                              ^
+error: expect(received).toBe(expected)
+
+Expected: "rejected"
+Received: "published"
+
+      at <anonymous> (/var/tmp/lodge-server-store/ts/tests/store/sqlite-store.test.ts:60:90)
+(fail) stale_base_is_rejected_and_writes_nothing [3.03ms]
+
+ 9 pass
+ 1 fail
+ 30 expect() calls
+Ran 10 tests across 1 file. [151.00ms]
+
+exec
+/bin/bash -lc "python - <<'PY'
+from pathlib import Path
+p=Path('ts/src/core/confirmation.ts'); s=p.read_text().replace('d: Derived): ReadonlySet<string>', 'd: Derived, person: string): ReadonlySet<string>').replace('  return new Set(\\n    [...s.decisions]', '  const confirmed = new Set(\\n    [...s.decisions.values()]\\n      .filter((decision) => decision.decidedBy === person && decision.importedFrom === null)\\n      .flatMap((decision) => decision.confirms),\\n  );\\n  return new Set(\\n    [...s.decisions]',1).replace('"'!d.confirmedBy.has(id)'"', '"'!confirmed.has(id)'"').replace('d: Derived, area: string)', 'd: Derived, area: string, person: string)').replace('confirmableIds(s, d)', 'confirmableIds(s, d, person)'); p.write_text(s)
+p=Path('ts/src/app/reads.ts'); s=p.read_text().replace('confirmableIds(s, d)', 'confirmableIds(s, d, w.actor.name)'); p.write_text(s)
+p=Path('ts/src/app/confirm.ts'); s=p.read_text().replace('state: State, name: string)', 'state: State, name: string, person: string)').replace('coreBehindArea(s, state.derived, name)', 'coreBehindArea(s, state.derived, name, person)').replace('behindIds(state, name).map', 'behindIds(state, name, w.actor.name).map').replace('area: string | null): readonly string[]', 'area: string | null, person: string): readonly string[]').replace('behindIds(state, area)', 'behindIds(state, area, person)').replace('confirmableIds(state.snapshot, state.derived)', 'confirmableIds(state.snapshot, state.derived, person)').replace('expectedIds(state, ids, area)', 'expectedIds(state, ids, area, w.actor.name)'); p.write_text(s)
+p=Path('ts/src/app/lodge.ts'); s=p.read_text().replace('text, options);', 'text, {\\n      where: options.where,\\n      when: options.when,\\n      commit: options.commit,\\n    });'); p.write_text(s)
+p=Path('ts/src/store/sqlite-store.ts'); s=p.read_text().replace('    const events: { kind:', '    if (base.rev === null || String(Number(base.rev)) "'!== base.rev) return PublishOutcome.REJECTED;'"\\n    const events: { kind:'); p.write_text(s)
+for name in ['confirmation.test.ts', 'people-regressions.test.ts']:
+ p=Path('ts/tests/core')/name; s=p.read_text().replace('confirmableIds(s, derive(s))', 'confirmableIds(s, derive(s), \"author\")').replace('confirmableIds(before, derive(before))','confirmableIds(before, derive(before), \"author\")').replace('behindArea(s, derive(s), \"storage\")','behindArea(s, derive(s), \"storage\", \"author\")'); p.write_text(s)
+p=Path('ts/tests/parity.json'); s=p.read_text(); i=s.index('\"tests/gitstore/test_concurrent.py\"'); s=s[:i]+s[i:].replace('\"status\": \"ported\"','\"status\": \"changed\"',1); p.write_text(s)
+PY
+cd ts && bun test tests/app/people.test.ts tests/app/message-options.test.ts tests/store/sqlite-store.test.ts tests/core/confirmation.test.ts tests/core/people-regressions.test.ts" in /var/tmp/lodge-server-store
+ succeeded in 124ms:
+bun test v1.3.14 (0d9b296a)
+
+ 44 pass
+ 0 fail
+ 109 expect() calls
+Ran 44 tests across 5 files. [240.00ms]
+
+codex
+The regressions failed as expected, and the fixes now pass the targeted tests. Confirmations are tracked per person, revision strings must use the canonical spelling, and `ask`/`reply` pass only their supported options. I’m running the full TypeScript gate before writing the report and pushing.
+exec
+/bin/bash -lc 'cd ts && bunx biome check --write src/core/confirmation.ts src/app/confirm.ts src/app/reads.ts src/app/lodge.ts src/store/sqlite-store.ts tests/app/people.test.ts tests/app/message-options.test.ts tests/store/sqlite-store.test.ts tests/core/confirmation.test.ts tests/core/people-regressions.test.ts tests/parity.json' in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+Checked 11 files in 10ms. Fixed 2 files.
+
+exec
+/bin/bash -lc 'sh scripts/check-ts.sh' in /var/tmp/lodge-server-store
+ exited 2 in 3764ms:
+$ biome check --error-on-warnings . && tsc --noEmit -p . && depcruise src tests scripts --config .dependency-cruiser.cjs && knip && bun test
+Checked 190 files in 51ms. No fixes applied.
+src/app/confirm.ts(26,41): error TS2339: Property 'name' does not exist on type 'Actor'.
+  Property 'name' does not exist on type '{ readonly kind: "agent"; readonly role: string | null; }'.
+src/app/lodge.ts(80,69): error TS2379: Argument of type '{ where: string | null | undefined; when: string | null | undefined; commit: boolean | undefined; }' is not assignable to parameter of type 'WriteMessageOptions' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+  Types of property 'where' are incompatible.
+    Type 'string | null | undefined' is not assignable to type 'string | null'.
+      Type 'undefined' is not assignable to type 'string | null'.
+src/app/lodge.ts(92,70): error TS2379: Argument of type '{ where: string | null | undefined; when: string | null | undefined; commit: boolean | undefined; }' is not assignable to parameter of type 'WriteMessageOptions' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+  Types of property 'where' are incompatible.
+    Type 'string | null | undefined' is not assignable to type 'string | null'.
+      Type 'undefined' is not assignable to type 'string | null'.
+src/app/reads.ts(57,47): error TS2339: Property 'name' does not exist on type 'Actor'.
+  Property 'name' does not exist on type '{ readonly kind: "agent"; readonly role: string | null; }'.
+
+exec
+/bin/bash -lc 'git diff --stat && git diff -- ts/src ts/tests/parity.json && wc -l ts/src/core/confirmation.ts ts/src/app/confirm.ts ts/src/app/reads.ts ts/src/app/lodge.ts ts/src/store/sqlite-store.ts ts/tests/app/people.test.ts && git status --short' in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+ ts/src/app/confirm.ts                    | 19 ++++++++++------
+ ts/src/app/lodge.ts                      | 12 +++++++++--
+ ts/src/app/reads.ts                      |  2 +-
+ ts/src/core/confirmation.ts              | 18 ++++++++++++----
+ ts/src/store/sqlite-store.ts             |  1 +
+ ts/tests/app/message-options.test.ts     |  9 ++++++++
+ ts/tests/app/people.test.ts              | 37 ++++++++++++++++++++++++++++++--
+ ts/tests/core/confirmation.test.ts       |  8 +++----
+ ts/tests/core/people-regressions.test.ts |  2 +-
+ ts/tests/parity.json                     |  2 +-
+ ts/tests/store/sqlite-store.test.ts      |  3 ++-
+ 11 files changed, 90 insertions(+), 23 deletions(-)
+diff --git a/ts/src/app/confirm.ts b/ts/src/app/confirm.ts
+index c548967..de1ed2d 100644
+--- a/ts/src/app/confirm.ts
++++ b/ts/src/app/confirm.ts
+@@ -14,16 +14,16 @@ import { notFound, readState, type State, type Wiring } from "./state.ts";
+ import { minuteOf } from "./time.ts";
+ import { add } from "./writes.ts";
+ 
+-function behindIds(state: State, name: string): readonly string[] {
++function behindIds(state: State, name: string, person: string): readonly string[] {
+   const s = state.snapshot;
+   if (!s.areas.has(name) && [...s.entries.values()].every((e) => e.area !== name))
+     throw notFound(state, `area named ${name}`, name);
+-  return coreBehindArea(s, state.derived, name);
++  return coreBehindArea(s, state.derived, name, person);
+ }
+ export async function behindArea(w: Wiring, name: string): Promise<readonly Behind[]> {
+   const state = await readState(w.store);
+   const s = state.snapshot;
+-  return behindIds(state, name).map((id) => {
++  return behindIds(state, name, w.actor.name).map((id) => {
+     const decision = s.decisions.get(id);
+     if (decision === undefined) throw new Error(`missing decision ${id}`);
+     return {
+@@ -35,9 +35,14 @@ export async function behindArea(w: Wiring, name: string): Promise<readonly Behi
+     };
+   });
+ }
+-function expectedIds(state: State, ids: readonly string[], area: string | null): readonly string[] {
+-  if (area !== null) return behindIds(state, area);
+-  if (ids.length === 1 && confirmableIds(state.snapshot, state.derived).has(ids[0] ?? ""))
++function expectedIds(
++  state: State,
++  ids: readonly string[],
++  area: string | null,
++  person: string,
++): readonly string[] {
++  if (area !== null) return behindIds(state, area, person);
++  if (ids.length === 1 && confirmableIds(state.snapshot, state.derived, person).has(ids[0] ?? ""))
+     return ids;
+   return [];
+ }
+@@ -57,7 +62,7 @@ export async function confirmDecisions(
+   const state = await readState(w.store);
+   if (!state.snapshot.people.has(w.actor.name))
+     throw new Forbidden("only an owner of the project confirms; nothing was written");
+-  const expected = expectedIds(state, ids, area);
++  const expected = expectedIds(state, ids, area, w.actor.name);
+   const given = new Set(ids);
+   if (!expected.length || ids.length !== expected.length || expected.some((id) => !given.has(id)))
+     throw new StaleList("the list changed since the page was loaded; nothing was written");
+diff --git a/ts/src/app/lodge.ts b/ts/src/app/lodge.ts
+index 5778458..73f91d8 100644
+--- a/ts/src/app/lodge.ts
++++ b/ts/src/app/lodge.ts
+@@ -77,7 +77,11 @@ export class Lodge {
+     text: string,
+     options: threads.MessageOptions = {},
+   ): Promise<Written> {
+-    return threads.writeMessage(this.wiring, ref, raises, by, text, options);
++    return threads.writeMessage(this.wiring, ref, raises, by, text, {
++      where: options.where,
++      when: options.when,
++      commit: options.commit,
++    });
+   }
+   async reply(
+     thread: string,
+@@ -85,7 +89,11 @@ export class Lodge {
+     text: string,
+     options: threads.MessageOptions = {},
+   ): Promise<Written> {
+-    return threads.writeMessage(this.wiring, thread, null, by, text, options);
++    return threads.writeMessage(this.wiring, thread, null, by, text, {
++      where: options.where,
++      when: options.when,
++      commit: options.commit,
++    });
+   }
+   async close(
+     thread: string,
+diff --git a/ts/src/app/reads.ts b/ts/src/app/reads.ts
+index faffdcd..d3a5d74 100644
+--- a/ts/src/app/reads.ts
++++ b/ts/src/app/reads.ts
+@@ -54,7 +54,7 @@ export async function show(
+     read: state.read,
+     changing: reasoning ? level2Views(s, d, id, state.failing) : [],
+     threads: newestLast([...s.threads.values()].filter((t) => t.about === id)),
+-    confirmable: confirmableIds(s, d).has(id),
++    confirmable: confirmableIds(s, d, w.actor.name).has(id),
+     restsOn: restsOnTree(s, d, id),
+     supports: views(state, d.supports.get(id) ?? []),
+   };
+diff --git a/ts/src/core/confirmation.ts b/ts/src/core/confirmation.ts
+index 3949198..71c6ed0 100644
+--- a/ts/src/core/confirmation.ts
++++ b/ts/src/core/confirmation.ts
+@@ -13,19 +13,29 @@ class IndexError extends LookupError {
+ export const VIEWER = "lodge viewer";
+ export const MINUTE_FORMAT = "%Y-%m-%d %H:%M";
+ 
+-export function confirmableIds(s: Snapshot, d: Derived): ReadonlySet<string> {
++export function confirmableIds(s: Snapshot, d: Derived, person: string): ReadonlySet<string> {
++  const confirmed = new Set(
++    [...s.decisions.values()]
++      .filter((decision) => decision.decidedBy === person && decision.importedFrom === null)
++      .flatMap((decision) => decision.confirms),
++  );
+   return new Set(
+     [...s.decisions]
+       .filter(
+         ([id, decision]) =>
+-          !isAuthor(decision, s.people) && d.status.get(id) === "current" && !d.confirmedBy.has(id),
++          !isAuthor(decision, s.people) && d.status.get(id) === "current" && !confirmed.has(id),
+       )
+       .map(([id]) => id),
+   );
+ }
+-export function behindArea(s: Snapshot, d: Derived, area: string): readonly string[] {
++export function behindArea(
++  s: Snapshot,
++  d: Derived,
++  area: string,
++  person: string,
++): readonly string[] {
+   const entries = new Set([...s.entries].filter(([, e]) => e.area === area).map(([id]) => id));
+-  return [...confirmableIds(s, d)]
++  return [...confirmableIds(s, d, person)]
+     .filter(
+       (id) =>
+         s.decisions
+diff --git a/ts/src/store/sqlite-store.ts b/ts/src/store/sqlite-store.ts
+index b1886b6..88a3e43 100644
+--- a/ts/src/store/sqlite-store.ts
++++ b/ts/src/store/sqlite-store.ts
+@@ -90,6 +90,7 @@ export class SqliteStore implements Store {
+     message: string,
+     approves: number | null = null,
+   ): Promise<PublishOutcome> {
++    if (base.rev === null || String(Number(base.rev)) !== base.rev) return PublishOutcome.REJECTED;
+     const events: { kind: string; path: string; body: Uint8Array; message: string }[] = [];
+     for (const path of writes.keys()) {
+       const parts = path.split("/");
+diff --git a/ts/tests/parity.json b/ts/tests/parity.json
+index 67339ff..be1057d 100644
+--- a/ts/tests/parity.json
++++ b/ts/tests/parity.json
+@@ -563,7 +563,7 @@
+     "why": "design line 72: records live in the server's events, not in files in git"
+   },
+   "tests/gitstore/test_concurrent.py": {
+-    "status": "ported",
++    "status": "changed",
+     "plan": 2,
+     "task": ["8"],
+     "ts": ["ts/tests/store/concurrent.test.ts"],
+   71 ts/src/core/confirmation.ts
+   85 ts/src/app/confirm.ts
+  161 ts/src/app/reads.ts
+  127 ts/src/app/lodge.ts
+  145 ts/src/store/sqlite-store.ts
+  168 ts/tests/app/people.test.ts
+  757 total
+ M ts/src/app/confirm.ts
+ M ts/src/app/lodge.ts
+ M ts/src/app/reads.ts
+ M ts/src/core/confirmation.ts
+ M ts/src/store/sqlite-store.ts
+ M ts/tests/app/message-options.test.ts
+ M ts/tests/app/people.test.ts
+ M ts/tests/core/confirmation.test.ts
+ M ts/tests/core/people-regressions.test.ts
+ M ts/tests/parity.json
+ M ts/tests/store/sqlite-store.test.ts
+?? docs/superpowers/plans/2026-11-02-lodge-server-store/final-fix-2-codex.log
+
+exec
+/bin/bash -lc "sed -n '1,38p' ts/src/app/threads.ts; sed -n '106,128p' ts/src/app/threads.ts; rg -n 'actor.kind|behindArea|confirmable' ts/tests/app/confirm.test.ts ts/tests/app/reads.test.ts" in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+import {
+  appended,
+  type CheckResult,
+  checkChange,
+  cleanText,
+  level1,
+  load,
+  type Message,
+  newestLast,
+  Raises,
+  strip,
+  type Thread,
+  ThreadState,
+  threadPath,
+  tree,
+  ValueError,
+  writeThread,
+} from "#core";
+import { Conflict, Forbidden, LodgeError, NotFound } from "./errors.ts";
+import { actorText, type Now, PublishOutcome } from "./ports.ts";
+import {
+  AddOutcome,
+  type ThreadList,
+  type ThreadShown,
+  type ThreadsWaiting,
+  type Written,
+  written,
+} from "./results.ts";
+import { notFound, readChecked, readState, resolveRef, type State, type Wiring } from "./state.ts";
+import { minuteOf, stampOf } from "./time.ts";
+import { mintUnused } from "./writes.ts";
+
+function find(state: State, ref: string): Thread {
+  const thread = state.snapshot.threads.get(ref.toLowerCase());
+  if (!thread) throw notFound(state, `thread named ${ref}`, ref);
+  return thread;
+}
+function message(
+    check,
+    about: thread.about,
+    awaits: msg.by,
+    held,
+  });
+}
+export async function writeMessage(
+  w: Wiring,
+  ref: string,
+  raises: Raises | null,
+  by: string,
+  text: string,
+  { where = null, when = null, commit = false, close = false }: WriteMessageOptions = {},
+  approves: number | null = null,
+): Promise<Written> {
+  for (let i = 0; i < 3; i++) {
+    const state = await readState(w.store),
+      now = w.clock.now(),
+      msg = message(now, state.snapshot.people, by, text, where, when, close),
+      s = state.snapshot;
+    let thread: Thread, description: string;
+    if (raises !== null) {
+      const about = resolveRef(state, ref),
+ts/tests/app/confirm.test.ts:150:  const rows = await lodge.behindArea("storage");
+ts/tests/app/confirm.test.ts:156:  await expect(lodge.behindArea("unknown")).rejects.toThrow(NotFound);
+ts/tests/app/confirm.test.ts:158:test("show_marks_confirmable", async () => {
+ts/tests/app/confirm.test.ts:161:  expect((await lodge.show(AGENT.id)).confirmable).toBe(true);
+ts/tests/app/confirm.test.ts:162:  expect((await lodge.show("s-aaaaaa")).confirmable).toBe(false);
+ts/tests/app/confirm.test.ts:164:  expect((await lodge.show(AGENT.id)).confirmable).toBe(false);
+ts/tests/app/confirm.test.ts:165:  expect((await lodge.show("d-111111")).confirmable).toBe(false);
+
+exec
+/bin/bash -lc "python - <<'PY'
+from pathlib import Path
+for name in ['ts/src/core/confirmation.ts','ts/src/app/confirm.ts']:
+ p=Path(name); s=p.read_text().replace('person: string)', 'person: string | null)').replace('person: string,\\n', 'person: string | null,\\n'); p.write_text(s)
+for name in ['ts/src/app/confirm.ts','ts/src/app/reads.ts']:
+ p=Path(name); s=p.read_text().replace('w.actor.name).map', '(w.actor.kind === \"person\" ? w.actor.name : null)).map').replace('confirmableIds(s, d, w.actor.name)', 'confirmableIds(s, d, w.actor.kind === \"person\" ? w.actor.name : null)'); p.write_text(s)
+p=Path('ts/src/app/lodge.ts'); s=p.read_text().replace('where: options.where,','where: options.where ?? null,').replace('when: options.when,','when: options.when ?? null,').replace('commit: options.commit,','commit: options.commit ?? false,'); p.write_text(s)
+PY
+cd ts && bunx biome check --write src/core/confirmation.ts src/app/confirm.ts src/app/reads.ts src/app/lodge.ts" in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+Checked 4 files in 7ms. Fixed 2 files.
+
+exec
+/bin/bash -lc 'sh scripts/check-ts.sh' in /var/tmp/lodge-server-store
+ succeeded in 8779ms:
+$ biome check --error-on-warnings . && tsc --noEmit -p . && depcruise src tests scripts --config .dependency-cruiser.cjs && knip && bun test
+Checked 190 files in 48ms. No fixes applied.
+
+[32m✔[39m no dependency violations found (201 modules, 778 dependencies cruised)
+
+bun test v1.3.14 (0d9b296a)
+
+ 1302 pass
+ 2 todo
+ 0 fail
+ 3383 expect() calls
+Ran 1304 tests across 108 files. [3.97s]
+
+exec
+/bin/bash -lc "git diff --check; sed -n '14,40p' ts/src/app/confirm.ts; rg -n 'person:' ts/src/core/confirmation.ts ts/src/app/confirm.ts; git remote -v" in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+import { minuteOf } from "./time.ts";
+import { add } from "./writes.ts";
+
+function behindIds(state: State, name: string, person: string | null): readonly string[] {
+  const s = state.snapshot;
+  if (!s.areas.has(name) && [...s.entries.values()].every((e) => e.area !== name))
+    throw notFound(state, `area named ${name}`, name);
+  return coreBehindArea(s, state.derived, name, person);
+}
+export async function behindArea(w: Wiring, name: string): Promise<readonly Behind[]> {
+  const state = await readState(w.store);
+  const s = state.snapshot;
+  return behindIds(state, name, w.actor.kind === "person" ? w.actor.name : null).map((id) => {
+    const decision = s.decisions.get(id);
+    if (decision === undefined) throw new Error(`missing decision ${id}`);
+    return {
+      decision: level1(s, state.derived, id, state.failing),
+      entries: [...new Set(decision.changes.map((c) => c.entry))].flatMap((id) => {
+        const e = s.entries.get(id);
+        return e ? [[id, e.area] as const] : [];
+      }),
+    };
+  });
+}
+function expectedIds(
+  state: State,
+  ids: readonly string[],
+ts/src/app/confirm.ts:17:function behindIds(state: State, name: string, person: string | null): readonly string[] {
+ts/src/app/confirm.ts:42:  person: string | null,
+ts/src/core/confirmation.ts:19:  person: string | null,
+ts/src/core/confirmation.ts:39:  person: string | null,
+origin	git@github.com:Kiibou-chan/lodge.git (fetch)
+origin	git@github.com:Kiibou-chan/lodge.git (push)
+
+codex
+The TypeScript gate passed: 1,302 tests passed, 2 remain marked todo, and lint, type, dependency and unused-code checks passed. I’ll record the results, commit the requested files and report, then push `server-store`. A-3 and B-3 remain with the coordinator as instructed.
+exec
+/bin/bash -lc "cat > docs/superpowers/plans/2026-11-02-lodge-server-store/final-fix-2-report.md <<'EOF'
+# Final fix wave 2 report
+
+Implemented B-1, A-1, A-2 and B-2 on "'`server-store`.
+Read `task-final-check.md` and the reasoning of ruling d-8v05kt before implementation. No subagents or new dependencies were used.
+
+- B-1: confirmation lists, area lists, `Shown.confirmable` and confirmation validation now use the reading person'"'s name. Only that person's non-imported confirmations remove decisions from their list, following "'`confirmedByPeople`. Agent reads pass no person. Added app regressions in which Ada then Bo confirm a decision touching both people'"'s decisions, and Bo confirms a decision awaiting Ada before Ada confirms it. Both confirmations publish and the final awaiting map is empty.
+- A-1: restored the canonical revision guard. The stale-base test reads the live head after publishing and refuses both its decimal-suffix spelling and its leading-space spelling without writing events.
+- A-2: "'`ask` and `reply` forward only `where`, `when` and `commit`, with the thread writer'"'s existing defaults. A run-time reply supplied "'`{ close: true } as never` leaves its thread open.
+- B-2: marked the concurrent-writers parity row `changed`.
+
+## Verification
+
+Before implementation, the targeted run had 21 passes and four failures: both new person scenarios exposed the second person'"'s missing confirmation availability, the reply closed its thread, and the live decimal revision spelling published. A separate run put the leading-space spelling first and also observed it publishing incorrectly. Thus both revision spellings were seen failing before the guard was restored.
+
+After implementation, the targeted run passed all 44 tests. The final "'`sh scripts/check-ts.sh` passed Biome, TypeScript, dependency-cruiser (201 modules), knip and the full suite: 1,302 passed, 2 todo, 0 failed. `git diff --check` passed. Every changed TypeScript module remains below 300 lines.
+
+A-3 and B-3 remain the coordinator'"'s responsibility, as specified in the brief. The pre-existing untracked "'`final-fix-2-codex.log` was left out of this commit.
+EOF
+git add ts/src/app/confirm.ts ts/src/app/lodge.ts ts/src/app/reads.ts ts/src/core/confirmation.ts ts/src/store/sqlite-store.ts ts/tests/app/message-options.test.ts ts/tests/app/people.test.ts ts/tests/core/confirmation.test.ts ts/tests/core/people-regressions.test.ts ts/tests/parity.json ts/tests/store/sqlite-store.test.ts docs/superpowers/plans/2026-11-02-lodge-server-store/final-fix-2-report.md
+git commit -m "Fix per-person confirmations and final store review findings" -m "Co-Authored-By: Codex <noreply@openai.com>"' in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+[server-store 7452afe] Fix per-person confirmations and final store review findings
+ 12 files changed, 111 insertions(+), 23 deletions(-)
+ create mode 100644 docs/superpowers/plans/2026-11-02-lodge-server-store/final-fix-2-report.md
+
+exec
+/bin/bash -lc 'git push origin server-store' in /var/tmp/lodge-server-store
+ succeeded in 1661ms:
+To github.com:Kiibou-chan/lodge.git
+   4ee6cf4..7452afe  server-store -> server-store
+
+exec
+/bin/bash -lc 'git status --short' in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+?? docs/superpowers/plans/2026-11-02-lodge-server-store/final-fix-2-codex.log
+
+codex
+Implemented and pushed as `7452afe` on `server-store`.
+
+All requested fixes are complete. Regression tests failed before implementation; `sh scripts/check-ts.sh` now passes with 1,302 tests passed, 2 todo, 0 failures.
+
+[Report](/var/tmp/lodge-server-store/docs/superpowers/plans/2026-11-02-lodge-server-store/final-fix-2-report.md)
+
+A-3 and B-3 remain with the coordinator. The existing untracked log was left untouched.
+tokens used
+71,859
+Implemented and pushed as `7452afe` on `server-store`.
+
+All requested fixes are complete. Regression tests failed before implementation; `sh scripts/check-ts.sh` now passes with 1,302 tests passed, 2 todo, 0 failures.
+
+[Report](/var/tmp/lodge-server-store/docs/superpowers/plans/2026-11-02-lodge-server-store/final-fix-2-report.md)
+
+A-3 and B-3 remain with the coordinator. The existing untracked log was left untouched.

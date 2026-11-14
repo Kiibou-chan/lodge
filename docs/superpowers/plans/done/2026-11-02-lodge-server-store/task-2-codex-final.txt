@@ -1,0 +1,5 @@
+DONE — implemented Task 2, committed as `5ebe9f5`, and pushed to `server-store-a`.
+
+Tests: `sh scripts/check-ts.sh` exited 0; 941 passed, 0 failed.
+
+Concerns: none. Report: [task-2-report.md](/var/tmp/lodge-store-a/docs/superpowers/plans/2026-11-02-lodge-server-store/task-2-report.md).

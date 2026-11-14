@@ -1,0 +1,7 @@
+{
+  "name": "probe",
+  "private": true,
+  "type": "module",
+  "dependencies": { "kysely": "0.29.7" },
+  "devDependencies": { "@types/bun": "1.4.3" }
+}
