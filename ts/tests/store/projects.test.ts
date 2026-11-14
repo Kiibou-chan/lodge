@@ -18,7 +18,7 @@ test("create_writes_the_project_and_its_owner", async () => {
       JSON.parse(new TextDecoder().decode(e.body)),
     ]),
   ).toEqual([
-    ["project", "author", { owner: "author" }],
+    ["project", "author", { owner: "author", settings: {} }],
     ["member", "author", { person: "author", role: "owner" }],
   ]);
   expect(await projects.members("storage")).toEqual(new Map([["author", Role.OWNER]]));
