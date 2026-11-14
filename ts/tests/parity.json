@@ -23,9 +23,10 @@
     "ts": ["ts/tests/app/confirm.test.ts"]
   },
   "tests/app/test_reads.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 2,
-    "ts": ["ts/tests/app/reads.test.ts"]
+    "ts": ["ts/tests/app/reads.test.ts", "ts/tests/app/reads-checks.test.ts"],
+    "task": ["4"]
   },
   "tests/app/test_reads_published.py": {
     "status": "changed",
@@ -44,9 +45,10 @@
     "ts": ["ts/tests/app/thread-ops.test.ts"]
   },
   "tests/app/test_writes.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 2,
-    "ts": ["ts/tests/app/writes.test.ts"]
+    "ts": ["ts/tests/app/writes.test.ts"],
+    "task": ["3", "4"]
   },
   "tests/app/test_writes_attach.py": {
     "status": "ported",
@@ -55,9 +57,10 @@
     "task": ["3"]
   },
   "tests/app/test_writes_dates.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 2,
-    "ts": ["ts/tests/app/writes-dates.test.ts"]
+    "ts": ["ts/tests/app/writes-dates.test.ts"],
+    "task": ["4"]
   },
   "tests/app/test_writes_retry.py": {
     "status": "changed",

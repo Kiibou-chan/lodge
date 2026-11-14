@@ -93,14 +93,14 @@ export function callViolations(root: string): string[] {
       if (pkg === "core" && ts.isCatchClause(node) && !guardedCatch(node))
         report(node, "catch must rethrow other errors");
       if (
-        pkg === "core" &&
+        pure &&
         ts.isObjectLiteralExpression(node) &&
         path !== "src/core/check-state.ts" &&
         node.properties.some((p) => {
           const name = p.name;
           if (!name) return false;
           if (ts.isComputedPropertyName(name))
-            return ts.isStringLiteral(name.expression) && name.expression.text === "ok";
+            return ts.isStringLiteralLike(name.expression) && name.expression.text === "ok";
           return (ts.isIdentifier(name) || ts.isStringLiteral(name)) && name.text === "ok";
         })
       )

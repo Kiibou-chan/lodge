@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { AddOutcome, LodgeError } from "#app";
+import { AddOutcome, Conflict, LodgeError } from "#app";
 import { checkState, load, parseRecord, tree } from "#core";
 import { areaText, decisionText, specText } from "../core/applying.ts";
 import { at, decision, entry } from "../core/builders.ts";
@@ -145,5 +145,106 @@ test("rest_on_entry_retired_in_the_same_add_is_refused", async () => {
       (p) => p.check === 6 && p.message === "s-bbbbbb: rests on s-aaaaaa, which is retired",
     ),
   ).toBe(true);
+  expect(store.publishes).toEqual([]);
+});
+test("add_stale_base_conflicts_writes_nothing", async () => {
+  const store = project(),
+    stale = (await wired(store).draft("s-aaaaaa")).replace("base: ", "base: 000");
+  const call = wired(store).add([["edit.md", stale]]);
+  await raises(call, Conflict, "it changed since the draft was made");
+  await expect(call).rejects.toMatchObject({ exitCode: 1 });
+  expect(store.publishes).toEqual([]);
+  expect(store.attempts).toBe(0);
+});
+test("feedback_skips_edited_decisions_which_the_check_refuses", async () => {
+  const wordy = decision({
+    id: "d-cccccc",
+    title: "Wordy",
+    statement: Array(100).fill("word").join(" "),
+    reasoning: "First part.\n\nSecond part.",
+    date: at(5),
+  });
+  const store = new MemoryStore([
+      AREA,
+      entry({ id: "s-aaaaaa", area: "storage", title: "Transcripts are kept" }),
+      FIRST,
+      wordy,
+    ]),
+    lodge = wired(store);
+  const shorter = (await lodge.draft("d-cccccc")).replace("\n\nSecond part.", ""),
+    longer = (await lodge.draft("s-aaaaaa")).replace(
+      "What holds now.",
+      Array(160).fill("word").join(" "),
+    );
+  const added = await lodge.add([
+    ["a.md", shorter],
+    ["b.md", longer],
+    ["c.md", decisionText("changes:", "  - {entry: s-aaaaaa, action: edit}")],
+  ]);
+  expect(added.outcome).toBe(AddOutcome.CHECK_FAILED);
+  expect(added.check.problems.map((p) => p.check)).toEqual([5]);
+  expect(added.feedback.map((f) => f.recordId)).toContain("s-aaaaaa");
+  expect(added.feedback.map((f) => f.recordId)).not.toContain("d-cccccc");
+});
+test("staged_second_edit_builds_on_first", async () => {
+  const store = project({ staged: true }),
+    lodge = wired(store),
+    edit = decisionText("changes:", "  - {entry: s-aaaaaa, action: edit}");
+  for (const [old, next] of [
+    ["Held.", "Second."],
+    ["Second.", "Third."],
+  ] as const) {
+    expect(
+      (
+        await lodge.add([
+          ["e.md", (await lodge.draft("s-aaaaaa")).replace(old, next)],
+          ["d.md", edit],
+        ])
+      ).outcome,
+    ).toBe(AddOutcome.STAGED);
+  }
+  const path = [...store.files.keys()].find((p) => p.startsWith("lodge/spec/storage/s-")) ?? "";
+  expect(store.files.get(path)).toContain("Third.");
+  expect(store.published.get(path)).toContain("Held.");
+  expect([...store.files.keys()].filter((p) => p.startsWith("lodge/decisions/d-")).length).toBe(3);
+});
+test("unchanged_draft_publishes_nothing", async () => {
+  const store = project(),
+    lodge = wired(store),
+    added = await lodge.add([
+      ["e.md", await lodge.draft("s-aaaaaa")],
+      ["a.md", await lodge.draft("area:storage")],
+    ]);
+  expect(added.outcome).toBe(AddOutcome.UNCHANGED);
+  expect(added.check.notes).toEqual([]);
+  expect(store.attempts).toBe(0);
+  expect(store.publishes).toEqual([]);
+});
+test("only_changed_files_are_published", async () => {
+  const store = project(),
+    lodge = wired(store);
+  await lodge.add([
+    ["e.md", (await lodge.draft("s-aaaaaa")).replace("Held.", "Changed.")],
+    ["a.md", await lodge.draft("area:storage")],
+    ["d.md", decisionText("changes:", "  - {entry: s-aaaaaa, action: edit}")],
+  ]);
+  const written = [...(store.publishes[0]?.[0].keys() ?? [])];
+  expect(written).not.toContain("lodge/spec/storage/_area.md");
+  expect(written.length).toBe(2);
+});
+test("cycle_made_in_one_add_is_refused", async () => {
+  const store = project(),
+    lodge = wired(store),
+    a = (await lodge.draft("s-aaaaaa")).replace("---\n", "---\nrests_on: [s-bbbbbb]\n");
+  const added = await lodge.add([
+    ["a.md", a],
+    ["b.md", specText("id: s-bbbbbb", "area: storage", "rests_on: [s-aaaaaa]")],
+    [
+      "d.md",
+      decisionText("changes: [{entry: s-aaaaaa, action: link}, {entry: s-bbbbbb, action: link}]"),
+    ],
+  ]);
+  expect(added.outcome).toBe(AddOutcome.CHECK_FAILED);
+  expect(added.check.problems.filter((p) => p.check === 8).length).toBe(2);
   expect(store.publishes).toEqual([]);
 });
