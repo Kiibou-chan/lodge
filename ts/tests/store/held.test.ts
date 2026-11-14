@@ -158,3 +158,10 @@ test("holds_belong_to_their_project", async () => {
   );
   expect(await events(database)).toEqual(before);
 });
+
+test("holds_are_returned_in_event_order", async () => {
+  const { store } = await setup();
+  const first = await store.hold(draft);
+  const second = await store.hold(draft);
+  expect((await store.held()).map((held) => held.seq)).toEqual([first, second]);
+});

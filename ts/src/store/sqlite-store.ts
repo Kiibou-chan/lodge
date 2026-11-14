@@ -126,7 +126,6 @@ export class SqliteStore implements Store {
         throw new LodgeError(`${path}: ${error.message}`);
       }
     }
-    if (base.rev === null || !/^[0-9]+$/u.test(base.rev)) return PublishOutcome.REJECTED;
     return this.database.db.transaction().execute(async (tx) => {
       if (!(await touchHead(tx, this.project, Number(base.rev)))) return PublishOutcome.REJECTED;
       if (approves !== null) {

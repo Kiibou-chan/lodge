@@ -77,6 +77,8 @@ export interface MessageOptions {
   readonly where?: string | null;
   readonly when?: string | null;
   readonly commit?: boolean;
+}
+interface WriteMessageOptions extends MessageOptions {
   readonly close?: boolean;
 }
 async function holdMessage(
@@ -113,7 +115,7 @@ export async function writeMessage(
   raises: Raises | null,
   by: string,
   text: string,
-  { where = null, when = null, commit = false, close = false }: MessageOptions = {},
+  { where = null, when = null, commit = false, close = false }: WriteMessageOptions = {},
   approves: number | null = null,
 ): Promise<Written> {
   for (let i = 0; i < 3; i++) {

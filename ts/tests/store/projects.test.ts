@@ -2,6 +2,7 @@ import { expect, test } from "bun:test";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { sql } from "kysely";
 import { Conflict, LodgeError, NotFound, person, Role } from "#app";
 import { openDatabase, SqliteProjects, SqliteStore } from "#store";
 import { FixedClock } from "../app/fakes.ts";
@@ -105,4 +106,18 @@ test("a_name_used_as_a_role_cannot_join", async () => {
       projects.addMember("storage", name, Role.MEMBER, person("author")),
     ).rejects.toThrow(`${name} is a role in ${id}, so it cannot name a person`);
   expect(await events(database)).toEqual(before);
+});
+
+test("members_are_sorted_by_name", async () => {
+  const { projects, database } = await setup();
+  await projects.addMember("storage", "zoe", Role.MEMBER, person("author"));
+  await projects.addMember("storage", "ada", Role.MEMBER, person("author"));
+  await sql`PRAGMA reverse_unordered_selects = ON`.execute(database.db);
+  expect([...(await projects.members("storage")).keys()]).toEqual(["ada", "author", "zoe"]);
+});
+test("store_for_attributes_events_to_its_actor", async () => {
+  const { projects, database } = await setup();
+  const store = projects.storeFor("storage", person("bo"));
+  await store.publish((await store.trees())[0], new Map([["lodge/a", "text"]]), "write");
+  expect((await events(database)).at(-1)?.actor).toBe("bo");
 });

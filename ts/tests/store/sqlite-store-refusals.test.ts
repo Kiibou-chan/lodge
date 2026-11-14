@@ -13,6 +13,7 @@ test.each(
     "lodge/./x",
     "lodge/.git/x",
     "lodge\\x",
+    "lodge/a\\b",
     "lodge/x\0",
   ].map((c) => [c]),
 )("path_outside_lodge_is_refused", async (path) => {
