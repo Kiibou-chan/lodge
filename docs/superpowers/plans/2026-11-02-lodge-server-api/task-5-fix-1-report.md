@@ -16,7 +16,7 @@ The earlier report's missing-module failures and broad throw mutation remain thi
 | I-2 | `arguments_are_checked`, invalid kind, `ts/tests/api/operations.test.ts:33` | Replaced the `filters.kind` value-check condition with `false`. | Expected 400, received 200; 40 pass, 1 fail. |
 | I-2 | `arguments_are_checked`, invalid scope, `ts/tests/api/operations.test.ts:34` | Replaced the `filters.scope` value-check condition with `false`. | Expected 400, received 200; 40 pass, 1 fail. |
 | I-2 | `arguments_are_checked`, invalid status, `ts/tests/api/operations.test.ts:35` | Replaced the `filters.status` value-check condition with `false`. | Expected 400, received 200; 40 pass, 1 fail. |
-| I-2 | `arguments_are_checked`, three-element draft pair, `ts/tests/api/operations.test.ts:47` | Removed `p.length === 2` from `Args.pairs`. | Expected 400, received 422; 40 pass, 1 fail. |
+| I-2 | `arguments_are_checked`, three-element draft pair, `ts/tests/api/operations.test.ts:47` | Removed `p.length === 2` from `Args.pairs`. | Status remained 400, but the expected pair-shape sentence was replaced by a draft-header error; 40 pass, 1 fail. |
 | I-2 | `arguments_are_checked`, non-string draft text, `ts/tests/api/operations.test.ts:48` | Replaced the pair element string check with `true`. | Expected 400, received 500; 40 pass, 1 fail. |
 | Requested minor | `other_authorization_scheme_is_unauthorised`, `ts/tests/api/bearer.test.ts:15` | Replaced the literal `Bearer` scheme in the regex with `\S+`, accepting `Basic` with a valid token. | Expected 401, received 200; 7 pass, 1 fail. |
 
