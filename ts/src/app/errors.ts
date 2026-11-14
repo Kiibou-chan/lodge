@@ -2,8 +2,8 @@ import { type CoreSettings, parseCoreSettings, SettingsError } from "#core";
 
 export class LodgeError extends Error {
   readonly exitCode: number = 2;
-  constructor(message: string) {
-    super(message);
+  constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
     this.name = new.target.name;
   }
 }
@@ -17,6 +17,6 @@ export function coreSettings(table: Readonly<Record<string, unknown>>): CoreSett
     return parseCoreSettings(table);
   } catch (error) {
     if (!(error instanceof SettingsError)) throw error;
-    throw new LodgeError(`.lodge.toml: ${error.message}`);
+    throw new LodgeError(`.lodge.toml: ${error.message}`, { cause: error });
   }
 }

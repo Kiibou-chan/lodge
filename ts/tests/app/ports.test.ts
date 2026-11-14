@@ -44,3 +44,35 @@ test("default_filling_functions_fill_python_defaults", () => {
     about: null,
   });
 });
+
+test("explicit_defaulted_fields_survive", () => {
+  const current = tree({ rev: null, files: new Map() });
+  const statuses = new Map([["s-aaaaaa", "current"]]);
+  const reading = read({ freshness: null, unrecorded: [], statuses });
+  const check = checkResult([], []);
+  const commit = committed({ outcome: CommitOutcome.COMMITTED, detail: "x" });
+  expect(commit.detail).toBe("x");
+  expect(gate({ published: current, checked: [], notes: ["x"] }).notes).toEqual(["x"]);
+  expect(reading.statuses).toBe(statuses);
+  expect(listed({ items: [], read: reading, more: 2 }).more).toBe(2);
+  expect(
+    added({
+      ids: [],
+      feedback: [],
+      check,
+      outcome: AddOutcome.PUBLISHED,
+      freshness: "x",
+      minted: ["d-aaaaaa"],
+      paths: ["x"],
+    }),
+  ).toMatchObject({ freshness: "x", minted: ["d-aaaaaa"], paths: ["x"] });
+  expect(
+    written({
+      ids: [],
+      outcome: AddOutcome.PUBLISHED,
+      check,
+      committed: commit,
+      about: "s-aaaaaa",
+    }),
+  ).toMatchObject({ committed: commit, about: "s-aaaaaa" });
+});

@@ -1,8 +1,9 @@
 {
   "tests/app/conftest.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 2,
-    "ts": ["ts/tests/app/support.ts"]
+    "ts": ["ts/tests/app/support.ts"],
+    "task": ["3"]
   },
   "tests/app/fakes.py": {
     "status": "ported",
@@ -11,9 +12,10 @@
     "task": ["2"]
   },
   "tests/app/support.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 2,
-    "ts": ["ts/tests/app/support.ts"]
+    "ts": ["ts/tests/app/support.ts"],
+    "task": ["3"]
   },
   "tests/app/test_confirm.py": {
     "status": "planned",
@@ -47,9 +49,10 @@
     "ts": ["ts/tests/app/writes.test.ts"]
   },
   "tests/app/test_writes_attach.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 2,
-    "ts": ["ts/tests/app/writes-attach.test.ts"]
+    "ts": ["ts/tests/app/writes-attach.test.ts"],
+    "task": ["3"]
   },
   "tests/app/test_writes_dates.py": {
     "status": "planned",

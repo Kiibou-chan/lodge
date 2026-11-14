@@ -6,9 +6,11 @@ export interface Now {
 }
 export interface Clock {
   now(): Now;
+  // Wait so that now moves on by at least seconds.
   sleep(seconds: number): Promise<void>;
 }
 export interface IdSource {
+  // At least six random bytes.
   entropy(): Uint8Array;
 }
 export const PublishOutcome = {
@@ -42,11 +44,18 @@ export function gate(value: Omit<Gate, "notes"> & Partial<Gate>): Gate {
   return { notes: [], ...value };
 }
 export interface Store {
+  // Commit exactly these paths with checkout identity and hooks, leaving other staged files staged.
+  // The outcome explains why when no commit is made.
   commit(paths: readonly string[], message: string): Promise<Committed>;
+  // The current and published states from one read.
   trees(): Promise<readonly [Tree, Tree]>;
+  // Every attachment’s text by path.
   attachmentTexts(): Promise<ReadonlyMap<string, string>>;
+  // Freshness of shared branch data, or null for local data.
   freshness(): Promise<string | null>;
+  // What the gate compares for current, the tree trees() returned; a LodgeError when there is no published state.
   gate(current: Tree): Promise<Gate>;
+  // Write on base; reject when a written path or the branch tip no longer matches base.
   publish(
     base: Tree,
     writes: ReadonlyMap<string, string>,
