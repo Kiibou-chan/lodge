@@ -6,7 +6,8 @@
   "imports": {
     "#core": "./src/core/index.ts",
     "#app": "./src/app/index.ts",
-    "#store": "./src/store/index.ts"
+    "#store": "./src/store/index.ts",
+    "#cli": "./src/cli/index.ts"
   },
   "scripts": {
     "check": "biome check --error-on-warnings . && tsc --noEmit -p . && depcruise src tests scripts --config .dependency-cruiser.cjs && knip && bun test"
