@@ -10,8 +10,10 @@ import {
   type SpecEntry,
   uniqueChanges,
 } from "./model.ts";
+import { listed, personWords, waitingPeople } from "./people.ts";
 import type { Snapshot } from "./snapshot.ts";
 import { orderInstant } from "./stamps.ts";
+import { byCodePoint } from "./text.ts";
 export interface Level1 {
   readonly id: string;
   readonly kind: string;
@@ -179,14 +181,20 @@ function flags(
     if (rep?.length) result.push(`its decision replaced by ${rep.join(", ")}`);
     if (nar?.length) result.push(`its decision narrowed by ${nar.join(", ")}`);
   }
-  if (d.awaitingAuthor.has(id)) result.push("awaiting the author");
+  const awaiting = d.awaiting.get(id);
+  if (awaiting) result.push(`awaiting ${waitingPeople(awaiting)}`);
   else {
     const waiting = d.touchedByFlagged.get(id);
-    if (waiting?.length) result.push(`awaiting the author on ${waiting.join(", ")}`);
+    if (waiting?.length) {
+      const people = [...new Set(waiting.flatMap((i) => d.awaiting.get(i) ?? []))].sort(
+        byCodePoint,
+      );
+      result.push(`awaiting ${waitingPeople(people)} on ${waiting.join(", ")}`);
+    }
   }
   const confirmed = d.confirmedBy.get(id);
   if (record.kind === "decision" && confirmed?.length)
-    result.push(`confirmed by the author (${confirmed.join(", ")})`);
+    result.push(`confirmed by ${confirmedPeople(s, confirmed)}`);
   result.push(...(d.doubts.get(id) ?? []));
   if (record.kind === "spec")
     for (const target of record.restsOn) {
@@ -210,4 +218,19 @@ function flags(
   if (failing.has(id)) result.push("fails check");
   if (record.kind === "spec" && who && failing.has(who.id)) result.push("decision fails check");
   return result;
+}
+
+function confirmedPeople(s: Snapshot, confirmed: readonly string[]): string {
+  const groups = new Map<string, string[]>();
+  for (const id of confirmed) {
+    const person = (s.decisions.get(id) as Decision).decidedBy;
+    const ids = groups.get(person) ?? [];
+    ids.push(id);
+    groups.set(person, ids);
+  }
+  return listed(
+    [...groups.keys()]
+      .sort(byCodePoint)
+      .map((person) => `${personWords(person)} (${(groups.get(person) as string[]).join(", ")})`),
+  );
 }

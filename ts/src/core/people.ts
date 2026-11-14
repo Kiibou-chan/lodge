@@ -24,3 +24,22 @@ export function messageWords(person: string): string {
 export function confirmationWords(person: string): string {
   return person === "author" ? "The author" : person;
 }
+
+export function listed(items: readonly string[]): string {
+  if (items.length < 3) return items.join(" and ");
+  return `${items.slice(0, -1).join(", ")}, and ${items.at(-1)}`;
+}
+export function waitingPeople(people: readonly string[]): string {
+  return people.length === 1 ? personWords(people[0] as string) : listed(people);
+}
+
+export function personWords(person: string): string {
+  return person === "author" ? "the author" : person;
+}
+export function waitWords(people: readonly string[]): string {
+  const later =
+    people.length === 1
+      ? reasoningWords(people[0] as string)
+      : `decision of ${waitingPeople(people)}`;
+  return `this decision will wait for ${waitingPeople(people)}: it takes effect at once, and a later ${later} that confirms or replaces it clears the flag`;
+}

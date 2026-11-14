@@ -1,7 +1,8 @@
 import { compareOrderKeys, type Derived, isAuthor } from "./derive.ts";
 import { LookupError, ValueError } from "./errors.ts";
+import { PLAIN } from "./fileformat.ts";
 import { Action, type Decision, type Scope } from "./model.ts";
-import { confirmationWords } from "./people.ts";
+import { confirmationWords, listed } from "./people.ts";
 import type { Snapshot } from "./snapshot.ts";
 import { LINE_BREAKS_AND_TABS, quoted } from "./yamlio.ts";
 
@@ -49,18 +50,12 @@ export function confirmationDraft(
   const title =
     area === null ? `Confirms ${confirms[0]}` : `Confirms the decisions behind area ${area}`;
   if (confirms.length === 0) throw new IndexError("list index out of range");
-  const listed =
-    confirms.length === 1
-      ? confirms[0]
-      : confirms.length === 2
-        ? confirms.join(" and ")
-        : `${confirms.slice(0, -1).join(", ")}, and ${confirms[confirms.length - 1]}`;
   const ids = confirms.map((i) => quoted(i)).join(", ");
   const text = quoted(words, LINE_BREAKS_AND_TABS);
   return (
     `---\nkind: decision\ntitle: ${quoted(title)}\nscope: ${scope}\n` +
-    `decided_by: ${/^[A-Za-z0-9][A-Za-z0-9._-]*$/u.test(person) ? person : quoted(person)}\nconfirms: [${ids}]\n` +
+    `decided_by: ${PLAIN.test(person) ? person : quoted(person)}\nconfirms: [${ids}]\n` +
     `quote: {text: ${text}, where: ${quoted(VIEWER)}, when: ${quoted(when)}}\n---\n\n` +
-    `${confirmationWords(person)} confirms ${listed}.\n\n## Reasoning\n\n${words}\n`
+    `${confirmationWords(person)} confirms ${listed(confirms)}.\n\n## Reasoning\n\n${words}\n`
   );
 }
