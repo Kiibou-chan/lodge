@@ -10,7 +10,7 @@ import {
 } from "#app";
 import { ATTACHMENTS, decodeUtf8, encodeUtf8, type Tree, ValueError } from "#core";
 import { appendEvents } from "./events.ts";
-import { readTree } from "./read-tree.ts";
+import { readTree, touchHead } from "./read-tree.ts";
 import type { LodgeDatabase } from "./schema.ts";
 export class SqliteStore implements Store {
   constructor(
@@ -30,12 +30,10 @@ export class SqliteStore implements Store {
       .selectFrom("files")
       .selectAll()
       .where("project", "=", this.project)
+      .where("path", ">=", ATTACHMENTS)
+      .where("path", "<", "lodge/attachments0")
       .execute();
-    return new Map(
-      rows
-        .filter((row) => row.path.startsWith(ATTACHMENTS))
-        .map((row) => [row.path, decodeUtf8(row.body)]),
-    );
+    return new Map(rows.map((row) => [row.path, decodeUtf8(row.body)]));
   }
   async freshness() {
     return null;
@@ -55,7 +53,7 @@ export class SqliteStore implements Store {
     message: string,
   ): Promise<PublishOutcome> {
     const events: { kind: string; path: string; body: Uint8Array; message: string }[] = [];
-    for (const [path, text] of writes) {
+    for (const path of writes.keys()) {
       const parts = path.split("/");
       if (
         parts[0] !== "lodge" ||
@@ -67,8 +65,12 @@ export class SqliteStore implements Store {
         throw new LodgeError(`${path} is outside lodge/, which is all the store writes`);
       if (base.attachments.has(path))
         throw new LodgeError(`${path} is an attachment, and lodge never overwrites an attachment`);
+    }
+    for (const path of writes.keys()) {
       if (/\p{Cs}/u.test(path))
         throw new LodgeError(`${path}: a path holding a lone surrogate cannot be stored`);
+    }
+    for (const [path, text] of writes) {
       if (
         path.startsWith("lodge/decisions/") &&
         base.files.has(path) &&
@@ -77,6 +79,8 @@ export class SqliteStore implements Store {
         throw new LodgeError(
           `${path} is a published decision, and lodge never rewrites a decision`,
         );
+    }
+    for (const [path, text] of writes) {
       try {
         events.push({ kind: "file", path, body: encodeUtf8(text), message });
       } catch (error) {
@@ -86,13 +90,7 @@ export class SqliteStore implements Store {
     }
     if (base.rev === null || !/^[0-9]+$/u.test(base.rev)) return PublishOutcome.REJECTED;
     return this.database.db.transaction().execute(async (tx) => {
-      const result = await tx
-        .updateTable("heads")
-        .set((eb) => ({ rev: eb.ref("rev") }))
-        .where("project", "=", this.project)
-        .where("rev", "=", Number(base.rev))
-        .executeTakeFirst();
-      if (result.numUpdatedRows === 0n) return PublishOutcome.REJECTED;
+      if (!(await touchHead(tx, this.project, Number(base.rev)))) return PublishOutcome.REJECTED;
       await appendEvents(tx, this.project, this.actor, stampOf(this.clock.now()), events);
       return PublishOutcome.PUBLISHED;
     });

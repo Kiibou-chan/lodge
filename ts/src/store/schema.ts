@@ -10,7 +10,7 @@ interface EventsTable {
   kind: string;
   path: string | null;
   body: Uint8Array;
-  message: string | null;
+  message: Uint8Array | null;
 }
 interface HeadsTable {
   project: string;
@@ -40,7 +40,7 @@ export interface LodgeDatabase {
 const MIGRATIONS = [
   `
 create table events(seq integer primary key autoincrement, project text not null,
-  at text not null, actor text not null, kind text not null, path text, body blob not null, message text);
+  at text not null, actor text not null, kind text not null, path text, body blob not null, message blob);
 create trigger events_no_replace before insert on events
   when exists (select 1 from events where seq = new.seq) begin
   select raise(abort, 'events are append-only'); end;

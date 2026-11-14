@@ -22,7 +22,13 @@ export async function appendEvents(
   for (const event of events) {
     const row = await tx
       .insertInto("events")
-      .values({ ...event, project, actor, at })
+      .values({
+        ...event,
+        message: event.message === null ? null : encodeUtf8(event.message),
+        project,
+        actor,
+        at,
+      })
       .returningAll()
       .executeTakeFirstOrThrow();
     await applyEvent(tx, row);

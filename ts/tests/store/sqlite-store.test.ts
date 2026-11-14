@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 import { AddOutcome, CommitOutcome, PublishOutcome } from "#app";
-import { load, tree } from "#core";
+import { decodeUtf8, load, tree } from "#core";
 import { AREA, wired } from "../app/support.ts";
 import { decisionText, specText } from "../core/applying.ts";
 import { filesOf } from "../core/builders.ts";
@@ -26,9 +26,13 @@ test("a_write_is_one_event_per_file", async () => {
     ),
   ).toBe(PublishOutcome.PUBLISHED);
   expect(
-    (await events(database))
-      .slice(2)
-      .map(({ kind, path, message, actor, at }) => ({ kind, path, message, actor, at })),
+    (await events(database)).slice(2).map(({ kind, path, message, actor, at }) => ({
+      kind,
+      path,
+      message: message === null ? null : decodeUtf8(message),
+      actor,
+      at,
+    })),
   ).toEqual(
     ["lodge/a", "lodge/b"].map((path) => ({
       kind: "file",
@@ -104,3 +108,14 @@ test("lodge_adds_through_the_store", async () => {
   expect(load(current).entries.has("s-bbbbbb")).toBe(true);
   expect(current.attachments.has("lodge/attachments/d-111111/run.log")).toBe(true);
 });
+
+test.each(["t\uDC80 tail", "\uFEFFlead"])(
+  "event_message_bytes_survive_exactly",
+  async (message) => {
+    const { store, database } = await setup();
+    await store.publish((await store.trees())[0], new Map([["lodge/a", "a"]]), message);
+    const saved = (await events(database))[2]?.message;
+    expect(saved).toBeInstanceOf(Uint8Array);
+    expect(decodeUtf8(saved as Uint8Array)).toBe(message);
+  },
+);

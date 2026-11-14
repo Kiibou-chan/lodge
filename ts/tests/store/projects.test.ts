@@ -33,12 +33,16 @@ test.each([
   ["Lodge", "ada"],
   ["-x", "ada"],
   ["x".repeat(64), "ada"],
-  ["storage", "Ada"],
-  ["storage", "1ada"],
+  ["other", "Ada"],
+  ["other", "1ada"],
 ])("names_are_checked", async (project, owner) => {
   const { projects, database } = await setup();
   const before = await events(database);
-  await expect(projects.create(project, owner)).rejects.toThrow(LodgeError);
+  const expected =
+    owner === "ada"
+      ? `${project} is not a project name: ^[a-z0-9][a-z0-9-]{0,62}$`
+      : `${owner} is not a person's name: ^[a-z][a-z0-9-]{0,31}$`;
+  await expect(projects.create(project, owner)).rejects.toThrow(new LodgeError(expected));
   expect(await events(database)).toEqual(before);
 });
 test("add_member_needs_a_new_name", async () => {

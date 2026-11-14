@@ -11,18 +11,15 @@ import {
 } from "#app";
 import { byCodePoint, load } from "#core";
 import { appendEvents, json } from "./events.ts";
-import { readTree } from "./read-tree.ts";
+import { headOf, readTree, touchHead } from "./read-tree.ts";
 import type { LodgeDatabase } from "./schema.ts";
 import { SqliteStore } from "./sqlite-store.ts";
 
-const PROJECT = /^[a-z0-9][a-z0-9-]{0,62}$/u;
-const PERSON = /^[a-z][a-z0-9-]{0,31}$/u;
-function checkName(name: string, project = false): void {
-  const pattern = project ? PROJECT : PERSON;
-  if (!pattern.test(name))
-    throw new LodgeError(
-      `${name} is not ${project ? "a project name" : "a person's name"}: ${pattern.source}`,
-    );
+const PROJECT_NAME = { pattern: /^[a-z0-9][a-z0-9-]{0,62}$/u, what: "a project name" };
+const PERSON_NAME = { pattern: /^[a-z][a-z0-9-]{0,31}$/u, what: "a person's name" };
+function checkName(name: string, rule: { pattern: RegExp; what: string }): void {
+  if (!rule.pattern.test(name))
+    throw new LodgeError(`${name} is not ${rule.what}: ${rule.pattern.source}`);
 }
 export class SqliteProjects implements Projects {
   constructor(
@@ -30,8 +27,8 @@ export class SqliteProjects implements Projects {
     private readonly clock: Clock,
   ) {}
   async create(project: string, owner: string): Promise<void> {
-    checkName(project, true);
-    checkName(owner);
+    checkName(project, PROJECT_NAME);
+    checkName(owner, PERSON_NAME);
     await this.database.db.transaction().execute(async (tx) => {
       const result = await tx
         .insertInto("heads")
@@ -48,12 +45,7 @@ export class SqliteProjects implements Projects {
   }
   async members(project: string): Promise<ReadonlyMap<string, Role>> {
     return this.database.db.transaction().execute(async (tx) => {
-      const head = await tx
-        .selectFrom("heads")
-        .select("rev")
-        .where("project", "=", project)
-        .executeTakeFirst();
-      if (!head) throw new NotFound(`no project named ${project}`);
+      await headOf(tx, project);
       const rows = await tx
         .selectFrom("members")
         .selectAll()
@@ -67,14 +59,9 @@ export class SqliteProjects implements Projects {
     });
   }
   async addMember(project: string, person: string, role: Role, by: Actor): Promise<void> {
-    checkName(person);
+    checkName(person, PERSON_NAME);
     await this.database.db.transaction().execute(async (tx) => {
-      const result = await tx
-        .updateTable("heads")
-        .set((eb) => ({ rev: eb.ref("rev") }))
-        .where("project", "=", project)
-        .executeTakeFirst();
-      if (result.numUpdatedRows === 0n) throw new NotFound(`no project named ${project}`);
+      if (!(await touchHead(tx, project))) throw new NotFound(`no project named ${project}`);
       const member = await tx
         .selectFrom("members")
         .select("person")
