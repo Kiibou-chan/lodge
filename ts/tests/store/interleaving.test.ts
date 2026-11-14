@@ -2,6 +2,7 @@ import { expect, test } from "bun:test";
 import { PublishOutcome } from "#app";
 import { MemoryStore } from "../app/fakes.ts";
 import { Interleaving } from "./interleaving.ts";
+import { setup } from "./support.ts";
 
 test("reject_next_lands_one_change_per_attempt_and_records_only_publications", async () => {
   const inner = new MemoryStore();
@@ -38,4 +39,34 @@ test("moves_after_read_returns_stale_tree_and_files_include_attachments", async 
   expect(await store.gate(base)).toEqual(await inner.gate(base));
   expect(await store.commit([path], "commit")).toEqual(inner.commitResult);
   expect(inner.commits).toEqual([[[path], "commit"]]);
+});
+
+test("memory_store_attachment_texts_include_attachment_paths", async () => {
+  const inner = new MemoryStore();
+  const path = "lodge/attachments/d-aaaaaa/log.txt";
+  inner.files.set(path, "log");
+  inner.files.set("lodge/other", "other");
+  expect(await inner.attachmentTexts()).toEqual(new Map([[path, "log"]]));
+});
+test("sqlite_interleaving_includes_and_forwards_attachment_texts", async () => {
+  const { store: inner } = await setup();
+  const store = new Interleaving(inner);
+  const path = "lodge/attachments/d-aaaaaa/log.txt";
+  const attachments = new Map([[path, "log"]]);
+  expect(await inner.publish((await inner.trees())[0], attachments, "attachment")).toBe(
+    PublishOutcome.PUBLISHED,
+  );
+  expect((await inner.trees())[0].files.has(path)).toBe(false);
+  expect(await store.files()).toEqual(attachments);
+  expect(await store.attachmentTexts()).toEqual(attachments);
+});
+test("interleaving_refuses_a_change_that_did_not_publish", async () => {
+  const inner = new MemoryStore([], { staged: true });
+  const store = new Interleaving(inner);
+  store.rejectNext(new Map([["lodge/a", "a"]]));
+  const [base] = await store.trees();
+  await expect(store.publish(base, new Map(), "ours")).rejects.toThrow(
+    "the interleaved change did not publish",
+  );
+  expect(store.publishes).toEqual([]);
 });

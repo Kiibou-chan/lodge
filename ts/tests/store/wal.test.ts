@@ -3,6 +3,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { sql } from "kysely";
+import { LodgeError } from "#app";
 import { type LodgeDatabase, openDatabase } from "#store";
 
 test("contended_first_open_enters_wal", async () => {
@@ -40,5 +41,19 @@ test("contended_first_open_enters_wal", async () => {
     await holder.exited;
     await database?.close();
     rmSync(root, { recursive: true });
+  }
+});
+
+test("private_temporary_database_is_refused_when_it_cannot_enter_wal", async () => {
+  let database: LodgeDatabase | undefined;
+  try {
+    const opening = openDatabase("").then((opened) => {
+      database = opened;
+      return opened;
+    });
+    await expect(opening).rejects.toBeInstanceOf(LodgeError);
+    await expect(opening).rejects.toThrow("the database at  could not enter WAL mode");
+  } finally {
+    await database?.close();
   }
 });
