@@ -1,0 +1,5 @@
+DONE — committed `fada0f3` and pushed to `server-store-a`.
+
+Tests: `sh scripts/check-ts.sh` exited 0; 1,176 passed, 2 existing TODOs.
+
+Concerns: none. Report: [task-6-report.md](docs/superpowers/plans/2026-11-02-lodge-server-store/task-6-report.md).
