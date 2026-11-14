@@ -15,7 +15,7 @@ import {
   ValueError,
   writeThread,
 } from "#core";
-import { Conflict, LodgeError } from "./errors.ts";
+import { Conflict, Forbidden, LodgeError } from "./errors.ts";
 import { type Now, PublishOutcome } from "./ports.ts";
 import {
   AddOutcome,
@@ -36,6 +36,7 @@ function find(state: State, ref: string): Thread {
 }
 function message(
   now: Now,
+  people: ReadonlySet<string>,
   by: string,
   text: string,
   where: string | null,
@@ -45,16 +46,28 @@ function message(
   text = cleanText(text);
   if (!text && !close) throw new LodgeError("the message is empty");
   if (!strip(by)) throw new LodgeError("by needs a non-empty role");
-  if (by !== "author" && by.toLowerCase().includes("author"))
-    throw new LodgeError("write author exactly, or use your own role");
+  if (!people.has(by) && by.toLowerCase().includes("author"))
+    throw new LodgeError(
+      people.has("author")
+        ? "write author exactly, or use your own role"
+        : "name a person of the project exactly, or use your own role",
+    );
   let stamp: string;
-  if (by === "author") {
+  if (people.has(by)) {
     if (where === null || !strip(where))
-      throw new LodgeError("a message by author needs where, the place of the author's words");
+      throw new LodgeError(
+        by === "author"
+          ? "a message by author needs where, the place of the author's words"
+          : `a message by ${by} needs where, the place of ${by}'s words`,
+      );
     stamp = when ?? minuteOf(now);
   } else {
     if (where !== null || when !== null)
-      throw new LodgeError("where and when are for messages by author");
+      throw new LodgeError(
+        people.has("author")
+          ? "where and when are for messages by author"
+          : "where and when are for messages by a person",
+      );
     stamp = stampOf(now);
   }
   return { by, when: stamp, text, where };
@@ -76,8 +89,10 @@ export async function writeMessage(
   for (let i = 0; i < 3; i++) {
     const state = await readState(w.store),
       now = w.clock.now(),
-      msg = message(now, by, text, where, when, close),
+      msg = message(now, state.snapshot.people, by, text, where, when, close),
       s = state.snapshot;
+    if (s.people.has(by) && w.actor.kind === "person" && w.actor.name !== by)
+      throw new Forbidden(`only ${by} writes as ${by}; nothing was written`);
     let thread: Thread, description: string;
     if (raises !== null) {
       const about = resolveRef(state, ref),
@@ -105,7 +120,7 @@ export async function writeMessage(
     const path = threadPath(thread.id);
     let content: string;
     try {
-      content = writeThread(thread);
+      content = writeThread(thread, s.people);
     } catch (error) {
       if (!(error instanceof ValueError)) throw error;
       throw new LodgeError(error.message);
@@ -113,6 +128,7 @@ export async function writeMessage(
     const after = load(
       tree({
         rev: state.current.rev,
+        people: state.current.people,
         files: new Map([...state.current.files, [path, content]]),
         attachments: state.current.attachments,
       }),
@@ -177,8 +193,8 @@ export async function waiting(w: Wiring): Promise<ThreadsWaiting> {
 export function waitingIn(state: State): ThreadsWaiting {
   const listed = openIn(state);
   return {
-    forAgent: listed.items.filter((t) => t.messages.at(-1)?.by === "author"),
-    forAuthor: listed.items.filter((t) => t.messages.at(-1)?.by !== "author"),
+    forAgent: listed.items.filter((t) => state.snapshot.people.has(t.messages.at(-1)?.by ?? "")),
+    forAuthor: listed.items.filter((t) => !state.snapshot.people.has(t.messages.at(-1)?.by ?? "")),
     titles: listed.titles,
     read: listed.read,
   };

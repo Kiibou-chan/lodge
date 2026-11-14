@@ -28,6 +28,7 @@ export class MemoryStore implements Store {
   files: Map<string, string>;
   published: Map<string, string>;
   staged: boolean;
+  people: ReadonlySet<string>;
   rev = 0;
   commits: [readonly string[], string][] = [];
   commitResult: Committed = committed({ outcome: CommitOutcome.COMMITTED });
@@ -38,7 +39,11 @@ export class MemoryStore implements Store {
   private moves: ReadonlyMap<string, string>[] = [];
   private rejections: ReadonlyMap<string, string>[] = [];
 
-  constructor(items: (Area | Decision | SpecEntry)[] = [], options: { staged?: boolean } = {}) {
+  constructor(
+    items: (Area | Decision | SpecEntry)[] = [],
+    options: { staged?: boolean; people?: ReadonlySet<string> } = {},
+  ) {
+    this.people = options.people ?? new Set(["author"]);
     this.files = filesOf(...items);
     this.published = new Map(this.files);
     this.staged = options.staged ?? false;
@@ -48,9 +53,13 @@ export class MemoryStore implements Store {
     return this.commitResult;
   }
   async trees(): Promise<readonly [Tree, Tree]> {
-    const current = tree({ rev: String(this.rev), files: new Map(this.files) });
+    const current = tree({
+      rev: String(this.rev),
+      files: new Map(this.files),
+      people: this.people,
+    });
     const published = this.staged
-      ? tree({ rev: String(this.rev), files: new Map(this.published) })
+      ? tree({ rev: String(this.rev), files: new Map(this.published), people: this.people })
       : current;
     const move = this.moves.shift();
     if (move !== undefined) this.land(move);
@@ -65,7 +74,7 @@ export class MemoryStore implements Store {
   async gate(current: Tree): Promise<Gate> {
     if (this.gateFor !== null) return this.gateFor;
     const published = this.staged
-      ? tree({ rev: String(this.rev), files: new Map(this.published) })
+      ? tree({ rev: String(this.rev), files: new Map(this.published), people: this.people })
       : current;
     return gate({ published, checked: [["", current]] });
   }

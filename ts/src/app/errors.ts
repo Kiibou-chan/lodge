@@ -7,6 +7,7 @@ export class LodgeError extends Error {
     this.name = new.target.name;
   }
 }
+export class Forbidden extends LodgeError {}
 export class NotFound extends LodgeError {}
 export class Conflict extends LodgeError {
   override readonly exitCode: number = 1;

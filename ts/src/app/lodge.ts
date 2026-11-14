@@ -1,6 +1,6 @@
 import type { CheckResult, CoreSettings, Filters, Raises, SpecArea } from "#core";
 import * as confirmations from "./confirm.ts";
-import type { Clock, IdSource, Store } from "./ports.ts";
+import type { Actor, Clock, IdSource, Store } from "./ports.ts";
 import * as reads from "./reads.ts";
 import type {
   Added,
@@ -19,8 +19,8 @@ import { type AddOptions, add, mint } from "./writes.ts";
 
 export class Lodge {
   private readonly wiring: Wiring;
-  constructor(store: Store, clock: Clock, ids: IdSource, settings: CoreSettings) {
-    this.wiring = { store, clock, ids, settings };
+  constructor(store: Store, clock: Clock, ids: IdSource, settings: CoreSettings, actor: Actor) {
+    this.wiring = { store, clock, ids, settings, actor };
   }
   async mint(prefix: "d" | "s"): Promise<string> {
     return mint(this.wiring, prefix);

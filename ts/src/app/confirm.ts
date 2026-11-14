@@ -8,7 +8,7 @@ import {
   ValueError,
   VIEWER,
 } from "#core";
-import { LodgeError, StaleList } from "./errors.ts";
+import { Forbidden, LodgeError, StaleList } from "./errors.ts";
 import { AddOutcome, type Behind, type Written, written } from "./results.ts";
 import { notFound, readState, type State, type Wiring } from "./state.ts";
 import { minuteOf } from "./time.ts";
@@ -50,6 +50,9 @@ export async function confirmDecisions(
     throw new LodgeError("your words hold a character lodge cannot store");
   if (!words) throw new LodgeError("your words are required; nothing was written");
   const state = await readState(w.store);
+  if (w.actor.kind !== "person") throw new Forbidden("only a person confirms; nothing was written");
+  if (!state.snapshot.people.has(w.actor.name))
+    throw new Forbidden("only an owner of the project confirms; nothing was written");
   const expected = expectedIds(state, ids, area);
   const given = new Set(ids);
   if (!expected.length || ids.length !== expected.length || expected.some((id) => !given.has(id)))
@@ -59,7 +62,7 @@ export async function confirmDecisions(
     : Scope.PROCESS;
   let draft: string;
   try {
-    draft = confirmationDraft(expected, scope, words, minuteOf(w.clock.now()), area);
+    draft = confirmationDraft(expected, scope, words, minuteOf(w.clock.now()), area, w.actor.name);
   } catch (error) {
     if (!(error instanceof ValueError)) throw error;
     throw new LodgeError("your words hold a character lodge cannot store", { cause: error });

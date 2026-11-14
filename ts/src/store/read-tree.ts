@@ -1,5 +1,5 @@
 import type { Transaction } from "kysely";
-import { NotFound } from "#app";
+import { NotFound, Role } from "#app";
 import { ATTACHMENTS, decodeUtf8, type Tree, tree } from "#core";
 import type { Tables } from "./schema.ts";
 export async function headOf(tx: Transaction<Tables>, project: string): Promise<number> {
@@ -38,5 +38,16 @@ export async function readTree(tx: Transaction<Tables>, project: string): Promis
     if (row.path.startsWith(ATTACHMENTS)) attachments.add(row.path);
     else files.set(row.path, decodeUtf8(row.body));
   }
-  return tree({ rev: String(rev), files, attachments });
+  const owners = await tx
+    .selectFrom("members")
+    .select("person")
+    .where("project", "=", project)
+    .where("role", "=", Role.OWNER)
+    .execute();
+  return tree({
+    rev: String(rev),
+    files,
+    attachments,
+    people: new Set(owners.map((row) => row.person)),
+  });
 }

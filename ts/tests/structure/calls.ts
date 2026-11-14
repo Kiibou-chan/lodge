@@ -169,6 +169,13 @@ export function callViolations(root: string): string[] {
           node.arguments.length === 0
         )
           report(node, "sort requires a code point comparator");
+        if (
+          pkg !== "core" &&
+          ts.isCallExpression(node) &&
+          ["isAuthor", "parseThread", "writeThread"].includes(attr) &&
+          node.arguments.length < 2
+        )
+          report(node, `${attr} requires explicit people`);
         const fsName = imported(expr);
         const flags = ts.isTaggedTemplateExpression(node) ? undefined : node.arguments?.[1];
         const writingOpen =

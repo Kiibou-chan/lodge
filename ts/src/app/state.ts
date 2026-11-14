@@ -17,11 +17,12 @@ import {
   unrecordedProblems,
 } from "#core";
 import { LodgeError, NotFound } from "./errors.ts";
-import type { Clock, IdSource, Store } from "./ports.ts";
+import type { Actor, Clock, IdSource, Store } from "./ports.ts";
 import { type Read, read } from "./results.ts";
 import { stampOf } from "./time.ts";
 
 export interface Wiring {
+  readonly actor: Actor;
   readonly store: Store;
   readonly clock: Clock;
   readonly ids: IdSource;

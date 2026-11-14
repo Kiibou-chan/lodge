@@ -91,6 +91,7 @@ async function attempt(
   const after = load(
     tree({
       rev: current.rev,
+      people: current.people,
       files: new Map([...current.files, ...files]),
       attachments: new Set([...current.attachments, ...placed.keys()]),
     }),

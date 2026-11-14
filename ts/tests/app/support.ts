@@ -1,5 +1,5 @@
 import { expect } from "bun:test";
-import { Lodge, type Store } from "#app";
+import { Lodge, person, type Store } from "#app";
 import { Action, coreSettings } from "#core";
 import { area, at, decision, entry } from "../core/builders.ts";
 import { CountingIds, FixedClock, MemoryStore } from "./fakes.ts";
@@ -29,8 +29,13 @@ export function project({ staged = false } = {}) {
   return new MemoryStore([AREA, ENTRY, FIRST], { staged });
 }
 
-export function wired(store: Store, clock = new FixedClock(), ids = new CountingIds()) {
-  return new Lodge(store, clock, ids, coreSettings());
+export function wired(
+  store: Store,
+  clock = new FixedClock(),
+  ids = new CountingIds(),
+  actor = person("author"),
+) {
+  return new Lodge(store, clock, ids, coreSettings(), actor);
 }
 
 export async function raises(

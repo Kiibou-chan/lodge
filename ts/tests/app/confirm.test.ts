@@ -207,3 +207,22 @@ test("duplicate_confirmation_ids_are_stale", async () => {
   ).rejects.toThrow(StaleList);
   expect(store.publishes).toEqual([]);
 });
+test("empty_confirmation_ids_are_stale", async () => {
+  const store = storeFor();
+  await expect(wired(store).confirm([], "Read.")).rejects.toThrow(StaleList);
+  expect(store.publishes).toEqual([]);
+});
+test("same_length_wrong_area_subset_is_stale", async () => {
+  const store = both();
+  await expect(
+    wired(store).confirm([AGENT.id, "d-cccccc"], "Read.", { area: "storage" }),
+  ).rejects.toThrow(StaleList);
+  expect(store.publishes).toEqual([]);
+});
+test("confirmation_defaults_to_no_commit", async () => {
+  const store = storeFor(true);
+  const result = await wired(store).confirm([AGENT.id], "Read.");
+  expect(result.outcome).toBe(AddOutcome.STAGED);
+  expect(result.committed).toBeNull();
+  expect(store.commits).toEqual([]);
+});
