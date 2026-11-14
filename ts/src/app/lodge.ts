@@ -1,9 +1,11 @@
 import type { CheckResult, CoreSettings, Filters, Raises, SpecArea } from "#core";
 import * as confirmations from "./confirm.ts";
-import type { Actor, Clock, IdSource, Store } from "./ports.ts";
+import * as holds from "./held.ts";
+import type { Actor, Clock, Held, IdSource, Store } from "./ports.ts";
 import * as reads from "./reads.ts";
 import type {
   Added,
+  Approved,
   Behind,
   Listed,
   Read,
@@ -21,6 +23,15 @@ export class Lodge {
   private readonly wiring: Wiring;
   constructor(store: Store, clock: Clock, ids: IdSource, settings: CoreSettings, actor: Actor) {
     this.wiring = { store, clock, ids, settings, actor };
+  }
+  async held(): Promise<readonly Held[]> {
+    return holds.held(this.wiring);
+  }
+  async approve(seq: number): Promise<Approved> {
+    return holds.approve(this.wiring, seq);
+  }
+  async decline(seq: number, reason: string): Promise<void> {
+    return holds.decline(this.wiring, seq, reason);
   }
   async mint(prefix: "d" | "s"): Promise<string> {
     return mint(this.wiring, prefix);

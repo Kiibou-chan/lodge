@@ -35,6 +35,8 @@ test("default_filling_functions_fill_python_defaults", () => {
     freshness: null,
     minted: [],
     paths: [],
+    awaits: null,
+    held: null,
   });
   expect(written({ ids: [], outcome: AddOutcome.PUBLISHED, check })).toEqual({
     ids: [],

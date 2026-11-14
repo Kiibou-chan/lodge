@@ -2,6 +2,7 @@ import type { Branch, CheckResult, Feedback, Level1, Level3, Problem, Thread } f
 import type { Committed } from "./ports.ts";
 
 export const AddOutcome = {
+  HELD: "held for approval",
   PUBLISHED: "published",
   STAGED: "staged",
   CHECK_FAILED: "check failed",
@@ -36,7 +37,12 @@ export interface Listed {
 export function listed(value: Omit<Listed, "more"> & Partial<Listed>): Listed {
   return { more: 0, ...value };
 }
+export type Approved =
+  | { readonly kind: "add"; readonly added: Added }
+  | { readonly kind: "message"; readonly written: Written };
 export interface Added {
+  readonly awaits: string | null;
+  readonly held: number | null;
   readonly ids: readonly string[];
   readonly feedback: readonly Feedback[];
   readonly check: CheckResult;
@@ -46,9 +52,9 @@ export interface Added {
   readonly paths: readonly string[];
 }
 export function added(
-  value: Omit<Added, "freshness" | "minted" | "paths"> & Partial<Added>,
+  value: Omit<Added, "freshness" | "minted" | "paths" | "awaits" | "held"> & Partial<Added>,
 ): Added {
-  return { freshness: null, minted: [], paths: [], ...value };
+  return { freshness: null, minted: [], paths: [], awaits: null, held: null, ...value };
 }
 export interface Written {
   readonly ids: readonly string[];

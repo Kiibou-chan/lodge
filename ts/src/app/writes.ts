@@ -2,9 +2,7 @@ import {
   applyDrafts,
   areaFeedback,
   attachmentPath,
-  byCodePoint,
   checkChange,
-  type Decision,
   type Draft,
   derive,
   feedback,
@@ -13,23 +11,34 @@ import {
   mintId,
   type Problem,
   parseDraft,
-  pyRepr,
   type Record,
   rstrip,
   type Snapshot,
   tree,
 } from "#core";
+import { awaitsPerson } from "./awaits.ts";
 import { Conflict, LodgeError } from "./errors.ts";
-import { type Clock, type IdSource, type Now, PublishOutcome } from "./ports.ts";
+import {
+  actorText,
+  type Clock,
+  type HeldAdd,
+  type IdSource,
+  type Now,
+  PublishOutcome,
+} from "./ports.ts";
 import { type Added, AddOutcome, added } from "./results.ts";
 import { readState, type State, type Wiring } from "./state.ts";
 import { stampOf } from "./time.ts";
+import { attached, requireListed } from "./write-attachments.ts";
 
 const MINT_DRAWS = 10,
   ATTEMPTS = 3,
   WAITS = 3;
 interface Request {
   readonly drafts: readonly Draft[];
+  readonly raw: readonly (readonly [string, string])[];
+  readonly attachments: readonly (readonly [string, string])[];
+  readonly approves: number | null;
   readonly importing: boolean;
   readonly dryRun: boolean;
   readonly attached: ReadonlyMap<string, string>;
@@ -48,16 +57,38 @@ export async function add(
   w: Wiring,
   drafts: readonly (readonly [string, string])[],
   { importing = false, dryRun = false, attachments = [] }: AddOptions = {},
+  approval: { readonly seq: number; readonly refresh: () => Promise<HeldAdd> } | null = null,
 ): Promise<Added> {
   const parsed = parse(drafts);
-  const request = { drafts: parsed, importing, dryRun, attached: attached(attachments, parsed) };
+  let request: Request = {
+    drafts: parsed,
+    raw: drafts,
+    attachments,
+    approves: approval?.seq ?? null,
+    importing,
+    dryRun,
+    attached: attached(attachments, parsed),
+  };
   let first: Snapshot | null = null;
   for (let i = 0; i < ATTEMPTS; i++) {
+    if (approval) {
+      const fresh = await approval.refresh();
+      const parsed = parse(fresh.drafts);
+      request = {
+        ...request,
+        raw: fresh.drafts,
+        drafts: parsed,
+        importing: fresh.importing,
+        attachments: fresh.attachments,
+        attached: attached(fresh.attachments, parsed),
+      };
+    }
     const state = await readState(w.store);
     first ??= state.snapshot;
     const result = await attempt(w, state, first, request);
     if (result !== null) return result;
   }
+  if (approval) await approval.refresh();
   throw new Conflict(
     "other changes reached the store three times while this one was being published; nothing was written, so add the drafts again",
   );
@@ -115,20 +146,43 @@ async function attempt(
       freshness: state.read.freshness,
       minted: newIds,
     });
+  const awaits = awaitsPerson(s, after, w.actor);
   if (request.dryRun)
     return added({
       ids: applied.ids,
       feedback: notes,
       check,
       outcome: AddOutcome.DRY_RUN,
+      awaits,
       minted: newIds,
     });
-  if (!files.size)
+  if (awaits !== null) {
+    const held = await w.store.hold({
+      kind: "add",
+      person: awaits,
+      by: actorText(w.actor),
+      drafts: request.raw,
+      attachments: request.attachments,
+      importing,
+      message: message(after, applied.ids),
+    });
+    return added({
+      ids: applied.ids,
+      feedback: notes,
+      check,
+      outcome: AddOutcome.HELD,
+      minted: newIds,
+      awaits,
+      held,
+    });
+  }
+  if (!files.size && request.approves === null)
     return added({ ids: applied.ids, feedback: notes, check, outcome: AddOutcome.UNCHANGED });
   const outcome = await w.store.publish(
     current,
     new Map([...files, ...placed]),
     message(after, applied.ids),
+    request.approves,
   );
   if (outcome === PublishOutcome.REJECTED) return null;
   return added({
@@ -138,31 +192,6 @@ async function attempt(
     outcome: outcome === PublishOutcome.PUBLISHED ? AddOutcome.PUBLISHED : AddOutcome.STAGED,
     paths: [...files.keys(), ...placed.keys()],
   });
-}
-function attached(
-  attachments: readonly (readonly [string, string])[],
-  drafts: readonly Draft[],
-): ReadonlyMap<string, string> {
-  const named = new Map<string, string>();
-  if (!attachments.length) return named;
-  const created = drafts.filter((d) => d.kind === "decision" && !d.header.has("id")).length;
-  if (created !== 1)
-    throw new LodgeError(`--attach needs the add to create one decision, not ${created}`);
-  for (const [name, text] of attachments) {
-    if (["", ".", "..", ".git"].includes(name) || [...name].some((c) => "/\\\0".includes(c)))
-      throw new LodgeError(`${pyRepr(name)} is not a plain file name`);
-    if (named.has(name)) throw new LodgeError(`${name} is attached twice`);
-    named.set(name, text);
-  }
-  return named;
-}
-function requireListed(decision: Decision, attached: ReadonlyMap<string, string>): void {
-  const listed = [...new Set(decision.attachments)].sort(byCodePoint),
-    wanted = [...attached.keys()].sort(byCodePoint);
-  if (JSON.stringify(listed) !== JSON.stringify(wanted))
-    throw new LodgeError(
-      `the new decision lists [${listed.join(", ")}] in attachments, but the attached files are [${wanted.join(", ")}]; list exactly the attached names`,
-    );
 }
 // Wait until the clock's whole second follows the newest decision, up to three waits.
 async function afterNewest(clock: Clock, s: Snapshot): Promise<Now> {
