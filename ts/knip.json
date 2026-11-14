@@ -1,5 +1,4 @@
 {
-  "entry": ["tests/**/*.test.ts", "scripts/*.ts", "tests/app/fakes.ts"],
-  "project": ["src/**/*.ts", "tests/**/*.ts", "scripts/**/*.ts"],
-  "ignoreDependencies": ["kysely"]
+  "entry": ["tests/**/*.test.ts", "scripts/*.ts", "tests/app/fakes.ts", "src/store/events.ts"],
+  "project": ["src/**/*.ts", "tests/**/*.ts", "scripts/**/*.ts"]
 }

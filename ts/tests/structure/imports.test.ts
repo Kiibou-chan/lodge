@@ -87,7 +87,12 @@ test.each([
 ])("fs_outside_git_and_cli %p %p", async (path, name) => {
   const found = await cruise(plant({ [path]: `import "${name}";` }));
   expect(found.sort()).toEqual(
-    [`file-confinement: ${path} -> ${name.replace("node:", "")}`].sort(),
+    [
+      `file-confinement: ${path} -> ${name.replace("node:", "")}`,
+      ...(path.startsWith("src/store/")
+        ? [`store-imports: ${path} -> ${name.replace("node:", "")}`]
+        : []),
+    ].sort(),
   );
 });
 test("http_outside_api", async () => {
@@ -144,4 +149,26 @@ test("source_cannot_escape_to_tests", async () => {
       plant({ "src/core/a.ts": 'import "../../tests/helper.ts";', "tests/helper.ts": "" }),
     ),
   ).toEqual(["front-door: src/core/a.ts -> tests/helper.ts"]);
+});
+
+test("store_importing_another_package", async () => {
+  expect(await cruise(plant({ "src/store/a.ts": 'import "yaml";' }))).toEqual([
+    "store-imports: src/store/a.ts -> node_modules/yaml/dist/index.js",
+  ]);
+});
+test("store_importing_node_builtin", async () => {
+  expect((await cruise(plant({ "src/store/a.ts": 'import "node:fs";' }))).sort()).toEqual([
+    "file-confinement: src/store/a.ts -> fs",
+    "store-imports: src/store/a.ts -> fs",
+  ]);
+});
+test("store_imports_its_own", async () => {
+  expect(
+    await cruise(
+      plant({
+        "src/store/a.ts": 'import "kysely"; import "bun:sqlite"; import "#app"; import "#core";',
+        "src/app/index.ts": "",
+      }),
+    ),
+  ).toEqual([]);
 });

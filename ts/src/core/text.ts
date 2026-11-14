@@ -1,3 +1,5 @@
+import { ValueError } from "./errors.ts";
+
 export const WORD_CLASS = "[\\p{L}\\p{N}_]";
 export const PY_SPACE_CLASS =
   "[\\u{9}-\\u{d}\\u{1c}-\\u{1f}\\u{20}\\u{85}\\u{a0}\\u{1680}\\u{2000}-\\u{200a}\\u{2028}\\u{2029}\\u{202f}\\u{205f}\\u{3000}]";
@@ -99,4 +101,48 @@ export function byCodePoint(a: string, b: string): number {
     if (d) return d;
   }
   return aa.length - bb.length;
+}
+
+export function encodeUtf8(text: string): Uint8Array {
+  const bytes: number[] = [];
+  const encoder = new TextEncoder();
+  for (const ch of text) {
+    const cp = ch.codePointAt(0) as number;
+    if (cp >= 0xdc80 && cp <= 0xdcff) bytes.push(cp - 0xdc00);
+    else if (cp >= 0xd800 && cp <= 0xdfff)
+      throw new ValueError(`cannot encode lone surrogate ${pyRepr(ch)}`);
+    else bytes.push(...encoder.encode(ch));
+  }
+  return new Uint8Array(bytes);
+}
+export function decodeUtf8(bytes: Uint8Array): string {
+  let text = "";
+  for (let i = 0; i < bytes.length; ) {
+    const first = bytes[i] as number;
+    const size =
+      first < 0x80
+        ? 1
+        : first >= 0xc2 && first <= 0xdf
+          ? 2
+          : first >= 0xe0 && first <= 0xef
+            ? 3
+            : first >= 0xf0 && first <= 0xf4
+              ? 4
+              : 0;
+    let cp = first & (size === 2 ? 31 : size === 3 ? 15 : size === 4 ? 7 : 127);
+    let valid = size > 0 && i + size <= bytes.length;
+    for (let j = 1; valid && j < size; j++) {
+      const next = bytes[i + j] as number;
+      valid = next >= 0x80 && next <= 0xbf;
+      cp = (cp << 6) | (next & 63);
+    }
+    valid =
+      valid &&
+      (size === 1 || cp >= (size === 2 ? 0x80 : size === 3 ? 0x800 : 0x10000)) &&
+      cp <= 0x10ffff &&
+      !(cp >= 0xd800 && cp <= 0xdfff);
+    text += String.fromCodePoint(valid ? cp : 0xdc00 + first);
+    i += valid ? size : 1;
+  }
+  return text;
 }
