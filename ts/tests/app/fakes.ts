@@ -57,7 +57,7 @@ export class MemoryStore implements Store {
     return [current, published];
   }
   async attachmentTexts(): Promise<ReadonlyMap<string, string>> {
-    return new Map([...this.files].filter(([path]) => path.startsWith(`${ATTACHMENTS}/`)));
+    return new Map([...this.files].filter(([path]) => path.startsWith(ATTACHMENTS)));
   }
   async freshness(): Promise<string | null> {
     return this.stamp;

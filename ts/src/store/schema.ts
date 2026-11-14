@@ -58,7 +58,11 @@ create table members(project text not null, person text not null, role text not 
 export async function openDatabase(path: string): Promise<LodgeDatabase> {
   const raw = new Database(path, { strict: true, create: true });
   try {
-    raw.exec("PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000");
+    raw.exec("PRAGMA busy_timeout=5000");
+    const mode = (raw.query("PRAGMA journal_mode=WAL").get() as { journal_mode: string })
+      .journal_mode;
+    if (mode !== (path === ":memory:" ? "memory" : "wal"))
+      throw new LodgeError(`the database at ${path} could not enter WAL mode`);
     raw
       .transaction(() => {
         const version = (raw.query("PRAGMA user_version").get() as { user_version: number })
