@@ -1,0 +1,1515 @@
+Reading additional input from stdin...
+OpenAI Codex v0.167.0
+--------
+workdir: /var/tmp/lodge-server-store
+model: gpt-6.1-sol
+provider: openai
+approval: never
+sandbox: danger-full-access
+reasoning effort: none
+reasoning summaries: none
+session id: 01a1dc1a-5166-7ce3-a845-d8e1966ebeb7
+--------
+user
+Read docs/superpowers/plans/2026-11-02-lodge-server-store/task-12c-fix-1.md first, then do it.
+codex
+I’ll read the task instructions first, then make and verify the requested changes.
+exec
+/bin/bash -lc 'cat docs/superpowers/plans/2026-11-02-lodge-server-store/task-12c-fix-1.md' in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+# Task 12c, fix round 1
+
+Worktree `/var/tmp/lodge-server-store`, branch `server-store`.
+Read `task-12c-review.md` in this folder; fix the findings below, test-first (each new or changed test seen failing against the mutation the review names), and keep every existing test passing.
+Do not dispatch subagents.
+
+1. I-1: add `a_relayed_close_is_held_and_closes_the_thread_at_approval` in `tests/app/held-messages-approve.test.ts` as the review describes (held `operation: "close"`, `text: null`; after `ada.approve` the thread is `closed`); M1, M2, M3, M14, and M25 must each fail.
+2. I-2: assert the held answer's `ids` (the thread's ID for a reply or close, one `q-` ID for an ask) and `about` (`s-aaaaaa`); M5 and M6 must fail.
+3. M-1: keep one open-hold check per attempt (extract `isOpen(w, seq)` or drop the top-of-loop one), with a test of the behaviour kept.
+4. M-2: remove the unreadable unreachable `hold ${seq} is not an add` throw at `ts/src/app/held.ts:37` by narrowing without it.
+5. M-3: extract the held branch of `writeMessage` (`threads.ts:147-165`) into `holdMessage`.
+6. M-4 and M-5: two plain waiting tests; `relay()` returns `held` as a number; a second `where` value in the approval test.
+7. M-6: one test whose ask `ref` is a title-style ref, if the code resolves refs that way; otherwise say in the report why not.
+
+M-7 (check fails at approval) only if you can build it from an existing fixture; otherwise say so in the report.
+Hard rules: modules at most 300 lines, British English, no em-dashes, no new dependency, run `sh scripts/check-ts.sh`.
+Write `task-12c-fix-1-report.md` in this folder, commit with explicit paths (trailer `Co-Authored-By: Codex <noreply@openai.com>`), and push `server-store`.
+
+exec
+/bin/bash -lc "cat docs/superpowers/plans/2026-11-02-lodge-server-store/task-12c-review.md; rg --files -g AGENTS.md -g '*held*' -g '*waiting*' -g '*relay*'; git status --short; git branch --show-current" in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+# Task 12c review
+
+Commit 3134ce5 on `server-store`, reviewed in the scratch worktree `/var/tmp/lodge-review-12c` (removed after).
+Gate: `sh scripts/check-ts.sh` exits 0 there (1285 pass, 2 todo, 0 fail; biome, tsc, depcruise, knip clean).
+Mutations: 26 on `ts/src/app/threads.ts` and `ts/src/app/held.ts`, each run against `bun test tests/app tests/store` and reverted; three were equivalent (M18, M21) or constant-for-constant (where `"chat"`, which killed with `"mail"`).
+Probes: a relayed close approved over MemoryStore, and a relayed ask, a relayed close, and their approvals over SqliteStore, all gave the expected answers (thread closed, last message by the person with the held where and when).
+
+## Correctness
+
+Held and approved as specified, verified by reading and by mutation:
+- The hold sits after the `where` refusal, the ref resolution, the closed-thread refusal, the message build, and the check (`ts/src/app/threads.ts:147`, after the check at `:140` and beside the Task 11 `Forbidden` at `:122`); moving the hold or the refusals is killed by the three tests the report lists (reported; not re-run for the first two).
+- An agent writing under a role is not held (M20 killed), a person's own message is not held (M19 killed), another person's is `Forbidden`.
+- The approval publishes with `approves` = `seq` (M13 killed), a `REJECTED` answer rereads and a settled hold throws `NotFound` (M8, M23 killed), a closed thread leaves the hold open (test), a wrong approver is `Forbidden` before anything is read of the thread (`held.ts:12`).
+- Waiting functions are untouched; a held message changes no thread's waiting.
+- Task 12b's parked items are untouched: `held()` at `held.ts:9` and the add path (`writes.ts` is not in the diff).
+
+### Important
+
+**I-1. A relayed close is not tested at all** (`ts/src/app/threads.ts:152`, `ts/src/app/held.ts:29`-`:30`).
+Five mutations survive the whole app and store suites: `operation: raises !== null ? "ask" : close ? "close" : "reply"` to `"ask" : "reply"` (M1) or to always `"reply"` (M2), `text: close && !msg.text ? null : msg.text` to `msg.text` (M3), `close: initial.operation === "close"` to `close: false` (M14), and `initial.text ?? ""` to `?? "x"` (M25).
+Failure scenario: M1 or M14 lets an agent relay "ada closes this thread", ada approves, and the approved message is appended while the thread stays open and keeps waiting; no test fails.
+My probe shows the unmutated code is right (held `operation: "close"`, `text: null`; approval leaves `state` closed with an empty message by ada), so this is a missing test, not a bug.
+Fix: add `a_relayed_close_is_held_and_closes_the_thread_at_approval` in `tests/app/held-messages-approve.test.ts` (relay `close` by `ada` with where; `held()` lists `operation: "close"`; after `ada.approve` the thread's `state` is `closed`); a store twin in `tests/store/held-messages.test.ts` is optional.
+
+**I-2. The held answer's `ids` and `about` are asserted nowhere** (`ts/src/app/threads.ts:158`-`:164`).
+`ids: [thread.id]` to `ids: []` (M5) and `about: thread.about` to `null` (M6) both survive; the plan's Interfaces name `ids` as the thread's ID for a reply or close and the provisional ID for an ask, and plan 3 builds its HTTP answer from them.
+`a_relayed_question_mints_its_thread_at_approval` only asserts `approved.written.ids` differs from `result.ids`, which an empty array also satisfies.
+Fix: assert `result.ids` equals `[id]` for the relayed reply (`held-messages.test.ts`), that the held ask's `ids` has one `q-` ID, and that `about` is `s-aaaaaa`.
+
+## Practice
+
+### Minor
+
+**M-1. The top-of-loop settle check is redundant** (`ts/src/app/threads.ts:91`-`:92`).
+Removing it (M7) survives: `authorised` has just checked the hold, and a hold settling afterwards makes `publish` answer `REJECTED`, which the branch at `:176`-`:178` already turns into `NotFound`; it costs one `store.held()` read per attempt, and the only difference is that a hold settled in the window answers `NotFound` before a closed-thread or check refusal.
+The same `held().some(seq)` test is written twice (`:91`, `:176`).
+Fix: drop the first, or extract `isOpen(w, seq)` and keep one use, with a test for whichever behaviour is wanted.
+
+**M-2. The `refresh` branch in `approve` for a message is unreachable** (`ts/src/app/held.ts:37`).
+A hold's kind never changes, so `hold ${seq} is not an add` cannot fire; M26 (changing its text) survives.
+Fix: narrow without a throw, for example have `authorised` take the kind it expects, or keep the throw and accept it as a type guard with a comment-free `satisfies`; at least do not leave a message nobody can read.
+
+**M-3. `writeMessage` grew to about 140 lines with a seventh positional parameter** (`ts/src/app/threads.ts:81`-`:196`).
+`approves` defaults to `null`, so d-d96y91 holds, but the held branch (`:147`-`:165`) is a block that could be `holdMessage(w, ...)`, which also keeps the file well under 300 lines (234 now).
+
+**M-4. Test shape** (`tests/app/held-messages.test.ts:32`-`:45`, `held-messages-support.ts:8`).
+The two waiting tests are one loop with ternary names and a boolean `own` flag on `setup`; `result.held as number` is cast eleven times.
+Fix: two plain tests, and have `relay()` return `held` as a number.
+
+**M-5. Where is `"chat"` in every test**, so a held `where` of the constant `"chat"` is indistinguishable from the real one (M10, M17 survive as `"chat"`, die as `"mail"`); use a second value in the approval test.
+
+## Design
+
+No Blocking or Important.
+`held.ts → threads.ts` adds no cycle (depcruise green); the hold stores text, place, and minute rather than the file, so approval rereads the thread and checks it against the state it lands on, which is d-znagqe's rule for adds applied to messages.
+A held ask mints its ID again at approval, as the plan says.
+
+### Minor
+
+**M-6. The ask's `ref` is held as `thread.about`, the resolved ID** (`threads.ts:153`), so a ref given as a name resolves at hold time and again at approval; M24 (holding the raw ref) survives because the test uses the ID.
+Harmless today; a test with a title-style ref would pin it.
+
+**M-7. Not exercised.** An approval whose check fails (`CHECK_FAILED`, hold stays open) has no message test; the plan lists it.
+I could not construct a state where a check passes at hold and fails at approval without a new fixture, so I did not run it.
+
+## Files
+
+Read: the brief, report, plan Task 12c and Calls made, d-2v8vtk, d-znagqe, d-thvvzx, `git show 3134ce5`, `ts/src/app/{threads,held}.ts`, `ts/src/app/ports.ts` (held types), the five new or changed test files.
+Not read: `ts/src/store/*` internals, `memory` fake store, plan 1 and 3 documents beyond the cited lines, the Python tree.
+
+Verdict: 0 Blocking, 2 Important, 7 Minor
+ts/src/app/held.ts
+tests/e2e/test_waiting.py
+ts/tests/store/held.test.ts
+ts/tests/store/held-messages.test.ts
+ts/tests/app/held.test.ts
+ts/tests/app/fakes-held.test.ts
+ts/tests/app/held-payload.test.ts
+ts/tests/app/held-support.ts
+ts/tests/app/held-approve.test.ts
+ts/tests/app/held-messages-approve.test.ts
+ts/tests/app/held-messages-support.ts
+ts/tests/app/held-messages.test.ts
+lodge/spec/writing/s-nda0br-waiting-separates-agent-and-author-work.md
+lodge/decisions/d-2v8vtk-an-agent-may-relay-a-person.md
+?? docs/superpowers/plans/2026-11-02-lodge-server-store/task-12c-fix-1-codex.log
+server-store
+
+exec
+/bin/bash -lc 'pwd; rg --files -g AGENTS.md /var/tmp 2>/dev/null | head -30; cat ts/src/app/held.ts ts/src/app/threads.ts ts/tests/app/held-messages-support.ts ts/tests/app/held-messages.test.ts ts/tests/app/held-messages-approve.test.ts' in /var/tmp/lodge-server-store
+ succeeded in 150ms:
+/var/tmp/lodge-server-store
+import { cleanText } from "#core";
+import { Forbidden, LodgeError, NotFound } from "./errors.ts";
+import type { Held, HeldAdd } from "./ports.ts";
+import type { Approved } from "./results.ts";
+import type { Wiring } from "./state.ts";
+import { writeMessage } from "./threads.ts";
+import { add } from "./writes.ts";
+
+export async function held(w: Wiring): Promise<readonly Held[]> {
+  return w.store.held();
+}
+async function authorised(w: Wiring, seq: number): Promise<Held> {
+  const found = (await w.store.held()).find((h) => h.seq === seq);
+  if (!found) throw new NotFound(`nothing is held under number ${seq}`);
+  if (w.actor.kind !== "person" || w.actor.name !== found.person)
+    throw new Forbidden(`only ${found.person} approves this; nothing was written`);
+  return found;
+}
+export async function approve(w: Wiring, seq: number): Promise<Approved> {
+  const initial = await authorised(w, seq);
+  if (initial.kind === "message") {
+    return {
+      kind: "message",
+      written: await writeMessage(
+        w,
+        initial.ref,
+        initial.raises,
+        initial.person,
+        initial.text ?? "",
+        { where: initial.where, when: initial.when, close: initial.operation === "close" },
+        seq,
+      ),
+    };
+  }
+  const refresh = async (): Promise<HeldAdd> => {
+    const found = await authorised(w, seq);
+    if (found.kind === "message") throw new LodgeError(`hold ${seq} is not an add`);
+    return found;
+  };
+  const found = await refresh();
+  return {
+    kind: "add",
+    added: await add(
+      w,
+      found.drafts,
+      {
+        importing: found.importing,
+        attachments: found.attachments,
+      },
+      { seq, refresh },
+    ),
+  };
+}
+export async function decline(w: Wiring, seq: number, reason: string): Promise<void> {
+  await authorised(w, seq);
+  reason = cleanText(reason);
+  if (!reason) throw new LodgeError("a reason is required; nothing was written");
+  await w.store.decline(seq, reason);
+}
+import {
+  appended,
+  checkChange,
+  cleanText,
+  level1,
+  load,
+  type Message,
+  newestLast,
+  Raises,
+  strip,
+  type Thread,
+  ThreadState,
+  threadPath,
+  tree,
+  ValueError,
+  writeThread,
+} from "#core";
+import { Conflict, Forbidden, LodgeError, NotFound } from "./errors.ts";
+import { actorText, type Now, PublishOutcome } from "./ports.ts";
+import {
+  AddOutcome,
+  type ThreadList,
+  type ThreadShown,
+  type ThreadsWaiting,
+  type Written,
+  written,
+} from "./results.ts";
+import { notFound, readChecked, readState, resolveRef, type State, type Wiring } from "./state.ts";
+import { minuteOf, stampOf } from "./time.ts";
+import { mintUnused } from "./writes.ts";
+
+function find(state: State, ref: string): Thread {
+  const thread = state.snapshot.threads.get(ref.toLowerCase());
+  if (!thread) throw notFound(state, `thread named ${ref}`, ref);
+  return thread;
+}
+function message(
+  now: Now,
+  people: ReadonlySet<string>,
+  by: string,
+  text: string,
+  where: string | null,
+  when: string | null,
+  close: boolean,
+): Message {
+  text = cleanText(text);
+  if (!text && !close) throw new LodgeError("the message is empty");
+  if (!strip(by)) throw new LodgeError("by needs a non-empty role");
+  if (!people.has(by) && by.toLowerCase().includes("author"))
+    throw new LodgeError(
+      people.has("author")
+        ? "write author exactly, or use your own role"
+        : "name a person of the project exactly, or use your own role",
+    );
+  let stamp: string;
+  if (people.has(by)) {
+    if (where === null || !strip(where))
+      throw new LodgeError(
+        by === "author"
+          ? "a message by author needs where, the place of the author's words"
+          : `a message by ${by} needs where, the place of ${by}'s words`,
+      );
+    stamp = when ?? minuteOf(now);
+  } else {
+    if (where !== null || when !== null)
+      throw new LodgeError(
+        people.has("author")
+          ? "where and when are for messages by author"
+          : "where and when are for messages by a person",
+      );
+    stamp = stampOf(now);
+  }
+  return { by, when: stamp, text, where };
+}
+export interface MessageOptions {
+  readonly where?: string | null;
+  readonly when?: string | null;
+  readonly commit?: boolean;
+  readonly close?: boolean;
+}
+export async function writeMessage(
+  w: Wiring,
+  ref: string,
+  raises: Raises | null,
+  by: string,
+  text: string,
+  { where = null, when = null, commit = false, close = false }: MessageOptions = {},
+  approves: number | null = null,
+): Promise<Written> {
+  for (let i = 0; i < 3; i++) {
+    if (approves !== null && !(await w.store.held()).some((h) => h.seq === approves))
+      throw new NotFound(`nothing is held under number ${approves}`);
+    const state = await readState(w.store),
+      now = w.clock.now(),
+      msg = message(now, state.snapshot.people, by, text, where, when, close),
+      s = state.snapshot;
+    let thread: Thread, description: string;
+    if (raises !== null) {
+      const about = resolveRef(state, ref),
+        id = mintUnused(
+          w.ids,
+          "q",
+          new Set([...s.decisions.keys(), ...s.entries.keys(), ...s.threads.keys()]),
+        );
+      thread = {
+        kind: "thread",
+        id,
+        about,
+        raises,
+        state: ThreadState.OPEN,
+        opened: stampOf(now),
+        messages: [msg],
+      };
+      description = `${raises === Raises.DOUBT ? "doubt raised" : "question asked"} by ${by}`;
+    } else {
+      thread = find(state, ref);
+      if (thread.state === ThreadState.CLOSED) throw new LodgeError(`${thread.id} is closed`);
+      thread = appended(thread, msg, close);
+      description = close ? `closed by ${by}` : `${by} reply`;
+    }
+    if (s.people.has(by) && w.actor.kind === "person" && w.actor.name !== by)
+      throw new Forbidden(`only ${by} writes as ${by}; nothing was written`);
+    const path = threadPath(thread.id);
+    let content: string;
+    try {
+      content = writeThread(thread, s.people);
+    } catch (error) {
+      if (!(error instanceof ValueError)) throw error;
+      throw new LodgeError(error.message);
+    }
+    const after = load(
+      tree({
+        rev: state.current.rev,
+        people: state.current.people,
+        files: new Map([...state.current.files, [path, content]]),
+        attachments: state.current.attachments,
+      }),
+    );
+    const check = checkChange(load(state.published), after, w.settings, stampOf(now), s);
+    if (!check.ok)
+      return written({
+        ids: [thread.id],
+        outcome: AddOutcome.CHECK_FAILED,
+        check,
+        about: thread.about,
+      });
+    if (s.people.has(by) && w.actor.kind === "agent") {
+      const held = await w.store.hold({
+        kind: "message",
+        person: by,
+        by: actorText(w.actor),
+        operation: raises !== null ? "ask" : close ? "close" : "reply",
+        ref: raises !== null ? thread.about : thread.id,
+        raises,
+        text: close && !msg.text ? null : msg.text,
+        where: msg.where as string,
+        when: msg.when,
+      });
+      return written({
+        ids: [thread.id],
+        outcome: AddOutcome.HELD,
+        check,
+        about: thread.about,
+        awaits: by,
+        held,
+      });
+    }
+    const commitMessage = `Thread ${thread.id}: ${description}`;
+    const outcome = await w.store.publish(
+      state.current,
+      new Map([[path, content]]),
+      commitMessage,
+      approves,
+    );
+    if (outcome === PublishOutcome.REJECTED) {
+      if (approves !== null && !(await w.store.held()).some((h) => h.seq === approves))
+        throw new NotFound(`nothing is held under number ${approves}`);
+      continue;
+    }
+    const committed =
+      commit && outcome === PublishOutcome.STAGED
+        ? await w.store.commit([path], commitMessage)
+        : null;
+    return written({
+      ids: [thread.id],
+      outcome: outcome === PublishOutcome.PUBLISHED ? AddOutcome.PUBLISHED : AddOutcome.STAGED,
+      check,
+      committed,
+      about: thread.about,
+    });
+  }
+  throw new Conflict(
+    "other changes reached the store three times; nothing was written, so try again",
+  );
+}
+export async function listOpen(w: Wiring): Promise<ThreadList> {
+  return openIn(await readChecked(w));
+}
+function openIn(state: State): ThreadList {
+  const s = state.snapshot,
+    items = newestLast([...s.threads.values()].filter((t) => t.state === ThreadState.OPEN));
+  const records = new Map<string, { readonly title: string }>([...s.decisions, ...s.entries]);
+  const titles = new Map<string, string>();
+  for (const t of items) {
+    const r = records.get(t.about);
+    if (r) titles.set(t.about, r.title);
+  }
+  return { items, titles, read: state.read };
+}
+export async function show(w: Wiring, ref: string): Promise<ThreadShown> {
+  const state = await readChecked(w),
+    thread = find(state, ref),
+    s = state.snapshot;
+  return {
+    thread,
+    about:
+      s.decisions.has(thread.about) || s.entries.has(thread.about)
+        ? level1(s, state.derived, thread.about, state.failing)
+        : null,
+    read: state.read,
+  };
+}
+export async function waiting(w: Wiring): Promise<ThreadsWaiting> {
+  return waitingIn(await readChecked(w));
+}
+export function waitingIn(state: State): ThreadsWaiting {
+  const listed = openIn(state);
+  return {
+    forAgent: listed.items.filter((t) => state.snapshot.people.has(t.messages.at(-1)?.by ?? "")),
+    forAuthor: listed.items.filter((t) => !state.snapshot.people.has(t.messages.at(-1)?.by ?? "")),
+    titles: listed.titles,
+    read: listed.read,
+  };
+}
+import { agent, person } from "#app";
+import { Raises } from "#core";
+import { CountingIds, FixedClock, MemoryStore } from "./fakes.ts";
+import { AREA, ENTRY, FIRST, wired } from "./support.ts";
+
+export async function setup(own = false) {
+  const store = new MemoryStore([AREA, ENTRY, FIRST], { people: new Set(["ada", "bo"]) });
+  const clock = new FixedClock();
+  const ids = new CountingIds();
+  const lodge = wired(store, clock, ids, agent("coordinator"));
+  const ada = wired(store, clock, ids, person("ada"));
+  const bo = wired(store, clock, ids, person("bo"));
+  const question = await (own ? ada : lodge).ask(
+    "s-aaaaaa",
+    Raises.QUESTION,
+    own ? "ada" : "reviewer",
+    "Why?",
+    own ? { where: "chat" } : {},
+  );
+  store.publishes.length = 0;
+  const id = question.ids[0] as string;
+  const relay = () =>
+    lodge.reply(id, "ada", "  Yes.  ", { where: "chat", when: "2026-10-29 09:00" });
+  return { store, lodge, ada, bo, id, relay };
+}
+import { expect, test } from "bun:test";
+import { AddOutcome, Forbidden, LodgeError } from "#app";
+import { setup } from "./held-messages-support.ts";
+
+test("an_agent_relaying_a_persons_words_is_held", async () => {
+  const { store, lodge, relay } = await setup();
+  const result = await relay();
+  expect(result).toMatchObject({
+    outcome: AddOutcome.HELD,
+    awaits: "ada",
+    held: expect.any(Number),
+  });
+  expect(store.publishes).toEqual([]);
+  expect(await lodge.held()).toMatchObject([
+    {
+      seq: result.held,
+      kind: "message",
+      person: "ada",
+      by: "agent coordinator",
+      operation: "reply",
+      text: "Yes.",
+      where: "chat",
+      when: "2026-10-29 09:00",
+    },
+  ]);
+});
+for (const own of [false, true]) {
+  test(
+    own ? "a_persons_thread_still_waits_for_an_agent" : "the_thread_still_waits_for_the_person",
+    async () => {
+      const { lodge, ada, id, relay } = await setup(own);
+      const result = await relay();
+      const key = own ? "forAgent" : "forAuthor";
+      expect((await lodge.threadsWaiting())[key].map((t) => t.id)).toEqual([id]);
+      expect((await lodge.waitingAll())[1][key].map((t) => t.id)).toEqual([id]);
+      expect((await lodge.thread(id)).thread.messages.at(-1)?.text).toBe("Why?");
+      expect(await lodge.held()).toHaveLength(1);
+      await ada.approve(result.held as number);
+      expect((await lodge.threadsWaiting()).forAgent.map((t) => t.id)).toEqual([id]);
+      expect((await lodge.thread(id)).thread.messages.at(-1)?.text).toBe("Yes.");
+    },
+  );
+}
+test("a_persons_own_message_is_published_at_once", async () => {
+  const { ada, id } = await setup();
+  expect(await ada.reply(id, "ada", "Yes.", { where: "chat" })).toMatchObject({
+    outcome: AddOutcome.PUBLISHED,
+    held: null,
+    awaits: null,
+  });
+});
+test("one_person_cannot_write_as_another", async () => {
+  const { bo, lodge, store, id } = await setup();
+  await expect(bo.reply(id, "ada", "Yes.", { where: "chat" })).rejects.toThrow(Forbidden);
+  expect(await lodge.held()).toEqual([]);
+  expect(store.publishes).toEqual([]);
+});
+test("a_relay_without_where_is_refused_as_lodge_0_2_refuses_it", async () => {
+  const { lodge, id } = await setup();
+  await expect(lodge.reply(id, "ada", "Yes.")).rejects.toThrow(
+    new LodgeError("a message by ada needs where, the place of ada's words"),
+  );
+  expect(await lodge.held()).toEqual([]);
+});
+test("a_relay_to_a_closed_thread_is_refused", async () => {
+  const { lodge, id, relay } = await setup();
+  await lodge.close(id, "reviewer");
+  await expect(relay()).rejects.toThrow(`${id} is closed`);
+  expect(await lodge.held()).toEqual([]);
+});
+import { expect, test } from "bun:test";
+import { AddOutcome, Forbidden, NotFound, PublishOutcome } from "#app";
+import { Raises } from "#core";
+import { setup } from "./held-messages-support.ts";
+
+test("the_person_approves_and_the_message_is_published", async () => {
+  const { lodge, ada, id, relay } = await setup();
+  const result = await relay();
+  expect(await ada.approve(result.held as number)).toMatchObject({
+    kind: "message",
+    written: { outcome: AddOutcome.PUBLISHED },
+  });
+  expect((await lodge.thread(id)).thread.messages.at(-1)).toMatchObject({
+    by: "ada",
+    text: "Yes.",
+    where: "chat",
+    when: "2026-10-29 09:00",
+  });
+  expect((await lodge.threadsWaiting()).forAgent.map((t) => t.id)).toEqual([id]);
+  expect(await lodge.held()).toEqual([]);
+});
+test("a_relayed_question_mints_its_thread_at_approval", async () => {
+  const { lodge, ada } = await setup();
+  const before = (await lodge.threads()).items.map((t) => t.id);
+  const result = await lodge.ask("s-aaaaaa", Raises.QUESTION, "ada", "Another?", { where: "chat" });
+  expect(result.outcome).toBe(AddOutcome.HELD);
+  expect((await lodge.threads()).items.map((t) => t.id)).toEqual(before);
+  const approved = await ada.approve(result.held as number);
+  expect(approved.kind).toBe("message");
+  if (approved.kind !== "message") throw new Error("message expected");
+  expect(approved.written.ids).not.toEqual(result.ids);
+  expect((await lodge.thread(approved.written.ids[0] as string)).thread.messages[0]?.by).toBe(
+    "ada",
+  );
+});
+test("decline_publishes_nothing", async () => {
+  const { store, lodge, ada, id, relay } = await setup();
+  const result = await relay();
+  await ada.decline(result.held as number, "No.");
+  expect(store.publishes).toEqual([]);
+  expect(await lodge.held()).toEqual([]);
+  expect((await lodge.threadsWaiting()).forAuthor.map((t) => t.id)).toEqual([id]);
+});
+test("another_person_or_an_agent_cannot_approve_a_message", async () => {
+  const { lodge, bo, relay } = await setup();
+  const result = await relay();
+  for (const actor of [bo, lodge])
+    await expect(actor.approve(result.held as number)).rejects.toThrow(Forbidden);
+});
+test("approval_after_the_thread_closed_leaves_it_held", async () => {
+  const { lodge, ada, id, relay } = await setup();
+  const result = await relay();
+  await lodge.close(id, "reviewer");
+  await expect(ada.approve(result.held as number)).rejects.toThrow(`${id} is closed`);
+  expect(await lodge.held()).toMatchObject([{ seq: result.held }]);
+});
+
+test("a_hold_settled_on_the_last_attempt_is_not_found", async () => {
+  const { store, ada, relay } = await setup();
+  const result = await relay();
+  let attempts = 0;
+  store.publish = async () => {
+    if (++attempts === 3) await store.decline(result.held as number, "No.");
+    return PublishOutcome.REJECTED;
+  };
+  await expect(ada.approve(result.held as number)).rejects.toThrow(NotFound);
+  expect(attempts).toBe(3);
+});
+
+exec
+/bin/bash -lc "cat ts/tests/app/support.ts | head -85; cat ts/tests/app/held-approve.test.ts; cat scripts/check-ts.sh; rg 'CHECK_FAILED|check fails|check_failed' ts/tests/app/*thread* ts/tests/app/*held*; cat ts/src/app/state.ts | rg -A25 'function resolveRef'; ls -a | head; find .. -name AGENTS.md -print" in /var/tmp/lodge-server-store
+ exited 1 in 2824ms:
+import { expect } from "bun:test";
+import { Lodge, person, type Store } from "#app";
+import { Action, coreSettings } from "#core";
+import { area, at, decision, entry } from "../core/builders.ts";
+import { CountingIds, FixedClock, MemoryStore } from "./fakes.ts";
+
+export const AREA = area({
+  name: "storage",
+  title: "Storage",
+  intro: "How it keeps data.",
+  order: ["s-aaaaaa"],
+});
+export const ENTRY = entry({
+  id: "s-aaaaaa",
+  area: "storage",
+  title: "Transcripts are kept",
+  statement: "Held.",
+});
+export const FIRST = decision({
+  id: "d-aaaaaa",
+  title: "Keep whole transcripts",
+  code: "ITEM-1",
+  decidedBy: "author",
+  reasoning: "Because they are evidence.",
+  changes: [{ entry: "s-aaaaaa", action: Action.CREATE }],
+  date: at(0),
+});
+export function project({ staged = false } = {}) {
+  return new MemoryStore([AREA, ENTRY, FIRST], { staged });
+}
+
+export function wired(
+  store: Store,
+  clock = new FixedClock(),
+  ids = new CountingIds(),
+  actor = person("author"),
+) {
+  return new Lodge(store, clock, ids, coreSettings(), actor);
+}
+
+export async function raises(
+  promise: Promise<unknown>,
+  errorClass: new (message: string) => Error,
+  pattern: string | RegExp,
+): Promise<void> {
+  await expect(promise).rejects.toThrow(errorClass);
+  await expect(promise).rejects.toThrow(pattern);
+}
+import { expect, test } from "bun:test";
+import { AddOutcome, agent, Forbidden, LodgeError, NotFound, person, stampOf } from "#app";
+import { Action, load } from "#core";
+import { decisionText, specText } from "../core/applying.ts";
+import { area, decision, entry, filesOf } from "../core/builders.ts";
+import { CountingIds, FixedClock } from "./fakes.ts";
+import { draft, setup } from "./held-support.ts";
+import { wired } from "./support.ts";
+
+async function pending() {
+  const context = setup();
+  const added = await context.lodge.add([["d.md", draft()]]);
+  const clock = new FixedClock({
+    ...context.clock.start,
+    epochMs: context.clock.start.epochMs + 60000,
+  });
+  return {
+    ...context,
+    seq: added.held as number,
+    ada: wired(context.store, clock, new CountingIds(), person("ada")),
+    approvalClock: clock,
+  };
+}
+test("the_person_approves_and_it_becomes_current", async () => {
+  const { store, seq, ada, approvalClock } = await pending();
+  const result = await ada.approve(seq);
+  expect(result.kind).toBe("add");
+  if (result.kind !== "add") throw new Error("expected add");
+  expect(result.added.outcome).toBe(AddOutcome.PUBLISHED);
+  expect(load((await store.trees())[0]).decisions.get(result.added.ids[0] as string)?.date).toBe(
+    stampOf(approvalClock.start),
+  );
+  expect(await ada.held()).toEqual([]);
+});
+test("another_person_or_an_agent_cannot_approve", async () => {
+  const { store, seq } = await pending();
+  for (const actor of [person("bo"), agent()]) {
+    await expect(
+      wired(store, new FixedClock(), new CountingIds(), actor).approve(seq),
+    ).rejects.toThrow(new Forbidden("only ada approves this; nothing was written"));
+  }
+  expect(store.files.size).toBe(0);
+});
+test("approval_runs_the_check_again", async () => {
+  const { store, lodge } = setup();
+  const initial = filesOf(
+    area(),
+    entry({ id: "s-aaaaaa" }),
+    decision({ changes: [{ entry: "s-aaaaaa", action: Action.CREATE }] }),
+  );
+  store.files = new Map(initial);
+  store.published = new Map(initial);
+  const held = await lodge.add([
+    [
+      "d.md",
+      draft().replace(
+        "scope: process",
+        "scope: product\nchanges: [{entry: s-bbbbbb, action: create}]",
+      ),
+    ],
+    ["s.md", specText("id: s-bbbbbb", "area: storage", "rests_on: [s-aaaaaa]")],
+  ]);
+  expect(held.outcome).toBe(AddOutcome.HELD);
+  const retired = await lodge.add([
+    ["retire.md", decisionText("changes: [{entry: s-aaaaaa, action: retire}]")],
+  ]);
+  expect(retired.outcome).toBe(AddOutcome.PUBLISHED);
+  const ada = wired(store, new FixedClock(), new CountingIds(8), person("ada"));
+  const seq = held.held as number;
+  const result = await ada.approve(seq);
+  expect(result.kind).toBe("add");
+  if (result.kind !== "add") throw new Error("expected add");
+  expect(result.added.outcome).toBe(AddOutcome.CHECK_FAILED);
+  expect(result.added.check.problems.some((p) => p.check === 6)).toBe(true);
+  expect(await ada.held()).toHaveLength(1);
+});
+test("a_declined_hold_cannot_be_approved", async () => {
+  const { seq, ada } = await pending();
+  await ada.decline(seq, "No.");
+  await expect(ada.approve(seq)).rejects.toThrow(
+    new NotFound(`nothing is held under number ${seq}`),
+  );
+});
+test("decline_needs_the_person_and_a_reason", async () => {
+  const { store, seq, ada, lodge } = await pending();
+  await expect(lodge.decline(seq, "No.")).rejects.toThrow(Forbidden);
+  const bo = wired(store, new FixedClock(), new CountingIds(), person("bo"));
+  await expect(bo.decline(seq, " ")).rejects.toThrow(Forbidden);
+  await expect(ada.decline(seq, " \n ")).rejects.toThrow(
+    new LodgeError("a reason is required; nothing was written"),
+  );
+  expect(await ada.held()).toHaveLength(1);
+  await ada.decline(seq, " No. \n");
+  expect(store.declined).toEqual([[seq, "No."]]);
+  expect(await ada.held()).toEqual([]);
+  await expect(ada.decline(seq, "Again.")).rejects.toThrow(NotFound);
+});
+
+test("a_hold_settled_during_the_last_rejection_is_not_found", async () => {
+  const { store, seq, ada } = await pending();
+  store.publish = async () => {
+    store.attempts += 1;
+    if (store.attempts === 3) await store.decline(seq, "No.");
+    return "rejected";
+  };
+  await expect(ada.approve(seq)).rejects.toThrow(
+    new NotFound(`nothing is held under number ${seq}`),
+  );
+  expect(store.attempts).toBe(3);
+  expect(store.files.size).toBe(0);
+});
+
+test("a_hold_settled_after_the_first_rejection_stops_the_next_attempt", async () => {
+  const { store, seq, ada } = await pending();
+  store.publish = async () => {
+    store.attempts += 1;
+    if (store.attempts === 1) await store.decline(seq, "No.");
+    return "rejected";
+  };
+  await expect(ada.approve(seq)).rejects.toThrow(NotFound);
+  expect(store.attempts).toBe(1);
+  expect(store.files.size).toBe(0);
+});
+set -eu
+cd "$(dirname "$0")/../ts"
+command -v bun >/dev/null 2>&1 || { echo "bun is not installed" >&2; exit 2; }
+[ -d node_modules ] || { echo "ts/node_modules is missing; run bun install --frozen-lockfile in ts/" >&2; exit 2; }
+bun --bun run check
+ts/tests/app/held.test.ts:  expect(result.outcome).toBe(AddOutcome.CHECK_FAILED);
+ts/tests/app/held-approve.test.ts:  expect(result.added.outcome).toBe(AddOutcome.CHECK_FAILED);
+export function resolveRef(state: State, ref: string): string {
+  let found: string | null;
+  try {
+    found = resolve(state.snapshot, ref);
+  } catch (error) {
+    if (!(error instanceof AmbiguousRef)) throw error;
+    throw new LodgeError(error.message, { cause: error });
+  }
+  if (found === null) throw notFound(state, `record named ${ref}`, ref);
+  return found;
+}
+export function notFound(state: State, what: string, needle: string): NotFound {
+  const paths = state.read.unrecorded.filter((p) => p.check === 1).map((p) => p.path);
+  const matching = paths.filter((p) => p.toLowerCase().includes(strip(needle).toLowerCase()));
+  const named = matching.length ? matching : paths;
+  return new NotFound(
+    named.length
+      ? `no ${what}; lodge could not read ${named.join(", ")}, which may hold it`
+      : `no ${what}`,
+  );
+}
+.
+..
+.claude
+.drafts
+.git
+.gitignore
+.lodge.toml
+.mypy_cache
+.pytest_cache
+.ruff_cache
+find: ‘../systemd-private-1d0e9058960d426fbdcfec615fbd59b6-NetworkManager.service-ZkPLfw’: Permission denied
+find: ‘../systemd-private-1d0e9058960d426fbdcfec615fbd59b6-polkit.service-i431EF’: Permission denied
+find: ‘../systemd-private-1d0e9058960d426fbdcfec615fbd59b6-dbus-broker.service-36Uykt’: Permission denied
+find: ‘../systemd-private-1d0e9058960d426fbdcfec615fbd59b6-ModemManager.service-S6vRMT’: Permission denied
+find: ‘../systemd-private-1d0e9058960d426fbdcfec615fbd59b6-bolt.service-wLdxHr’: Permission denied
+find: ‘../systemd-private-1d0e9058960d426fbdcfec615fbd59b6-upower.service-GqHnSe’: Permission denied
+find: ‘../systemd-private-1d0e9058960d426fbdcfec615fbd59b6-power-profiles-daemon.service-Q8y6UK’: Permission denied
+find: ‘../systemd-private-1d0e9058960d426fbdcfec615fbd59b6-geoclue.service-FlSyiw’: Permission denied
+find: ‘../systemd-private-1d0e9058960d426fbdcfec615fbd59b6-iio-sensor-proxy.service-CazOwL’: Permission denied
+find: ‘../<build-dir>/codex-desktop-linux/pkg’: Permission denied
+find: ‘../systemd-private-1d0e9058960d426fbdcfec615fbd59b6-bluetooth.service-IwDOXN’: Permission denied
+find: ‘../systemd-private-1d0e9058960d426fbdcfec615fbd59b6-systemd-logind.service-KkH9na’: Permission denied
+../<build-dir>/codex-desktop-linux/src/codex-desktop-linux/AGENTS.md
+
+codex
+The review identifies missing test coverage for behaviour the code already supports. I’ll add those assertions, verify that each named mutation fails, then refactor the approval and hold code.
+exec
+/bin/bash -lc "python - <<'PY'
+from pathlib import Path
+p=Path('ts/tests/app/held-messages-support.ts')
+s=p.read_text().replace('setup(own = false)','setup(by = \"reviewer\")').replace('await (own ? ada : lodge).ask(', 'await (by === \"ada\" ? ada : lodge).ask(').replace('own ? \"ada\" : \"reviewer\",','by,').replace('own ? { where: \"chat\" } : {},','by === \"ada\" ? { where: \"chat\" } : {},')
+s=s.replace('const relay = () =>\\n    lodge.reply(id, \"ada\", \"  Yes.  \", { where: \"chat\", when: \"2026-10-29 09:00\" });','''const relay = async (where = \"chat\") => {
+    const result = await lodge.reply(id, \"ada\", \"  Yes.  \", { where, when: \"2026-10-29 09:00\" });
+    if (result.held === null) throw new Error(\"expected a held message\");
+    return { ...result, held: result.held };
+  };''')
+p.write_text(s)
+p=Path('ts/tests/app/held-messages.test.ts');s=p.read_text().replace('store, lodge, relay','store, lodge, id, relay',1).replace('outcome: AddOutcome.HELD,','ids: [id],\\n    about: \"s-aaaaaa\",\\n    outcome: AddOutcome.HELD,',1)
+a=s.index('for (const own');b=s.index('test(\"a_persons_own',a)
+s=s[:a]+'''test(\"the_thread_still_waits_for_the_person\", async () => {
+  const { lodge, ada, id, relay } = await setup();
+  const result = await relay();
+  expect((await lodge.threadsWaiting()).forAuthor.map((t) => t.id)).toEqual([id]);
+  expect((await lodge.waitingAll())[1].forAuthor.map((t) => t.id)).toEqual([id]);
+  expect((await lodge.thread(id)).thread.messages.at(-1)?.text).toBe(\"Why?\");
+  expect(await lodge.held()).toHaveLength(1);
+  await ada.approve(result.held);
+  expect((await lodge.threadsWaiting()).forAgent.map((t) => t.id)).toEqual([id]);
+  expect((await lodge.thread(id)).thread.messages.at(-1)?.text).toBe(\"Yes.\");
+});
+test(\"a_persons_thread_still_waits_for_an_agent\", async () => {
+  const { lodge, ada, id, relay } = await setup(\"ada\");
+  const result = await relay();
+  expect((await lodge.threadsWaiting()).forAgent.map((t) => t.id)).toEqual([id]);
+  expect((await lodge.waitingAll())[1].forAgent.map((t) => t.id)).toEqual([id]);
+  expect((await lodge.thread(id)).thread.messages.at(-1)?.text).toBe(\"Why?\");
+  expect(await lodge.held()).toHaveLength(1);
+  await ada.approve(result.held);
+  expect((await lodge.threadsWaiting()).forAgent.map((t) => t.id)).toEqual([id]);
+  expect((await lodge.thread(id)).thread.messages.at(-1)?.text).toBe(\"Yes.\");
+});
+'''+s[b:];p.write_text(s)
+p=Path('ts/tests/app/held-messages-approve.test.ts');s=p.read_text().replace('import { Raises }','import { Raises, ThreadState }').replace('await relay();','await relay(\"mail\");',1).replace('where: \"chat\",','where: \"mail\",',1).replace('lodge.ask(\"s-aaaaaa\",','lodge.ask(\"Transcripts are kept\",',1).replace('expect(result.outcome).toBe(AddOutcome.HELD);','''expect(result.outcome).toBe(AddOutcome.HELD);
+  expect(result.ids).toEqual([expect.stringMatching(/"'^q-[a-z0-9]{6}$/)]);
+  expect(result.about).toBe("s-aaaaaa");
+  expect(await lodge.held()).toMatchObject([{ ref: "s-aaaaaa" }]);'"''',1)
+s=s.replace('result.held as number','result.held') # ask needs narrowing
+s=s.replace('const approved = await ada.approve(result.held);','if (result.held === null) throw new Error(\"expected a held message\");\\n  const approved = await ada.approve(result.held);')
+s+='''\\ntest(\"a_relayed_close_is_held_and_closes_the_thread_at_approval\", async () => {
+  const { lodge, ada, id } = await setup();
+  const result = await lodge.close(id, \"ada\", { where: \"mail\" });
+  expect(result).toMatchObject({ outcome: AddOutcome.HELD, ids: [id], about: \"s-aaaaaa\" });
+  expect(await lodge.held()).toMatchObject([{ operation: \"close\", text: null, where: \"mail\" }]);
+  expect((await lodge.thread(id)).thread.state).toBe(ThreadState.OPEN);
+  if (result.held === null) throw new Error(\"expected a held message\");
+  await ada.approve(result.held);
+  const thread = (await lodge.thread(id)).thread;
+  expect(thread.state).toBe(ThreadState.CLOSED);
+  expect(thread.messages.at(-1)).toMatchObject({ by: \"ada\", text: \"\", where: \"mail\" });
+  expect((await lodge.threadsWaiting()).forAgent).toEqual([]);
+  expect((await lodge.threadsWaiting()).forAuthor).toEqual([]);
+  expect(await lodge.held()).toEqual([]);
+});
+'''
+p.write_text(s)
+PY
+cd ts
+bun test tests/app/held-messages*.test.ts" in /var/tmp/lodge-server-store
+ exited 1 in 66ms:
+bun test v1.3.14 (0d9b296a)
+
+tests/app/held-messages-approve.test.ts:
+ 95 | }
+ 96 | export function notFound(state: State, what: string, needle: string): NotFound {
+ 97 |   const paths = state.read.unrecorded.filter((p) => p.check === 1).map((p) => p.path);
+ 98 |   const matching = paths.filter((p) => p.toLowerCase().includes(strip(needle).toLowerCase()));
+ 99 |   const named = matching.length ? matching : paths;
+100 |   return new NotFound(
+               ^
+NotFound: no record named Transcripts are kept
+ exitCode: 2,
+
+      at notFound (/var/tmp/lodge-server-store/ts/src/app/state.ts:100:10)
+      at resolveRef (/var/tmp/lodge-server-store/ts/src/app/state.ts:93:29)
+      at writeMessage (/var/tmp/lodge-server-store/ts/src/app/threads.ts:99:21)
+(fail) a_relayed_question_mints_its_thread_at_approval [3.90ms]
+
+ 13 pass
+ 1 fail
+ 44 expect() calls
+Ran 14 tests across 2 files. [181.00ms]
+
+exec
+/bin/bash -lc "rg -n 'function resolve|title|slug' ts/src/core/refs*; rg -n 'close\\(' ts/src/app/lodge.ts; cat ts/src/core/refs.ts" in /var/tmp/lodge-server-store
+ exited 1 in 0ms:
+rg: ts/src/core/refs*: IO error for operation on ts/src/core/refs*: No such file or directory (os error 2)
+90:  async close(
+cat: ts/src/core/refs.ts: No such file or directory
+
+exec
+/bin/bash -lc "rg -n 'function resolve' ts/src; sed -n '85,105p' ts/src/app/lodge.ts; rg -n 'title|slug' ts/src/resolve* ts/src/core.ts" in /var/tmp/lodge-server-store
+ exited 2 in 0ms:
+ts/src/app/state.ts:85:export function resolveRef(state: State, ref: string): string {
+ts/src/core/search.ts:31:export function resolve(s: Snapshot, ref: string): string | null {
+    text: string,
+    options: threads.MessageOptions = {},
+  ): Promise<Written> {
+    return threads.writeMessage(this.wiring, thread, null, by, text, options);
+  }
+  async close(
+    thread: string,
+    by: string,
+    { text = null, ...options }: threads.MessageOptions & { text?: string | null } = {},
+  ): Promise<Written> {
+    return threads.writeMessage(this.wiring, thread, null, by, text ?? "", {
+      ...options,
+      close: true,
+    });
+  }
+  async threads(): Promise<ThreadList> {
+    return threads.listOpen(this.wiring);
+  }
+  async thread(ref: string): Promise<ThreadShown> {
+    return threads.show(this.wiring, ref);
+  }
+rg: ts/src/resolve*: No such file or directory (os error 2)
+rg: ts/src/core.ts: No such file or directory (os error 2)
+
+exec
+/bin/bash -lc "cat ts/src/core/search.ts | head -75; cat ts/tests/app/fakes-store.ts 2>/dev/null | head; rg -n 'check|CHECK_FAILED' ts/tests/app/threads*; cat ts/tests/app/fakes.ts | head -60" in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+import type { Derived } from "./derive.ts";
+import { LookupError } from "./errors.ts";
+import type { Decision, Scope } from "./model.ts";
+import type { Snapshot } from "./snapshot.ts";
+import { orderInstant } from "./stamps.ts";
+import { byCodePoint, isDigit, strip } from "./text.ts";
+import { type Level1, level1 } from "./views.ts";
+import { words } from "./words.ts";
+
+const NEVER = orderInstant("0001-01-01T00:00:00+00:00");
+const TITLE_WEIGHT = 3,
+  STATEMENT_WEIGHT = 1;
+const RELATED_SCORE = 2,
+  RELATED_WORDS = 2,
+  COMMON_FROM = 5;
+const NONE: ReadonlySet<string> = new Set();
+
+export interface Filters {
+  readonly kind: "decision" | "spec" | null;
+  readonly scope: Scope | null;
+  readonly status: "current" | "replaced" | "retired" | "any";
+  readonly area: string | null;
+  readonly decidedBy: string | null;
+}
+export function filters(value: Partial<Filters> = {}): Filters {
+  return { kind: null, scope: null, status: "current", area: null, decidedBy: null, ...value };
+}
+export class AmbiguousRef extends LookupError {
+  override name = "AmbiguousRef";
+}
+export function resolve(s: Snapshot, ref: string): string | null {
+  const wanted = strip(ref).toLowerCase();
+  if (s.decisions.has(wanted) || s.entries.has(wanted)) return wanted;
+  const records = new Map<string, { readonly code: string | null }>([...s.decisions, ...s.entries]);
+  const coded = [...records]
+    .filter(([, r]) => r.code && r.code.toLowerCase() === wanted)
+    .map(([id]) => id)
+    .sort(byCodePoint);
+  if (coded.length > 1)
+    throw new AmbiguousRef(`the code ${ref} names more than one record: ${coded.join(", ")}`);
+  return coded[0] ?? null;
+}
+export function search(s: Snapshot, d: Derived, query: string, f: Filters, limit = 20): string[] {
+  return searchCounted(s, d, query, f, limit)[0];
+}
+export function searchCounted(
+  s: Snapshot,
+  d: Derived,
+  query: string,
+  f: Filters,
+  limit: number,
+): readonly [string[], number] {
+  const views = newestFirst(s, d, f);
+  if (!strip(query)) return [views.slice(0, limit).map((v) => v.id), views.length];
+  const exact = strip(query).toLowerCase();
+  const hits = views.filter((v) => exact === v.id || exact === (v.code ?? "").toLowerCase());
+  const queryWords = words(query);
+  const ranked = views
+    .filter((v) => !hits.includes(v))
+    .map((v) => ({ v, score: score(v, queryWords) }))
+    .filter((p) => p.score > 0)
+    .sort((a, b) => b.score - a.score);
+  const found = [...hits, ...ranked.map((p) => p.v)].map((v) => v.id);
+  return [found.slice(0, limit), found.length];
+}
+export function related(s: Snapshot, d: Derived, decision: Decision, limit = 3): string[] {
+  const views = newestFirst(s, d, filters({ kind: "decision" })).filter(
+    (v) => v.id !== decision.id,
+  );
+  const shared = new Set(decision.changes.map((c) => c.entry));
+  const sharing = views.filter((v) =>
+    s.decisions.get(v.id)?.changes.some((c) => shared.has(c.entry)),
+  );
+  const common = commonWords(views);
+  const query = new Set(
+rg: ts/tests/app/threads*: IO error for operation on ts/tests/app/threads*: No such file or directory (os error 2)
+import {
+  type Clock,
+  CommitOutcome,
+  type Committed,
+  committed,
+  type Gate,
+  gate,
+  type Held,
+  type HeldDraft,
+  type IdSource,
+  NotFound,
+  type Now,
+  PublishOutcome,
+  type Store,
+  stampOf,
+} from "#app";
+import {
+  type Area,
+  ATTACHMENTS,
+  type Decision,
+  instant,
+  type SpecEntry,
+  type Tree,
+  tree,
+} from "#core";
+import { filesOf } from "../core/builders.ts";
+
+export const START: Now = { epochMs: instant("2026-10-29T09:30:00+01:00"), offsetMinutes: 60 };
+
+// movesAfterRead and rejectNext land another session’s change before publication.
+export class MemoryStore implements Store {
+  files: Map<string, string>;
+  published: Map<string, string>;
+  staged: boolean;
+  people: ReadonlySet<string>;
+  rev = 0;
+  declined: [number, string][] = [];
+  private holds = new Map<number, Held>();
+  commits: [readonly string[], string][] = [];
+  commitResult: Committed = committed({ outcome: CommitOutcome.COMMITTED });
+  stamp: string | null = "fetched 2026-10-29T08:00:00+00:00";
+  publishes: [Map<string, string>, string][] = [];
+  attempts = 0;
+  gateFor: Gate | null = null;
+  private moves: ReadonlyMap<string, string>[] = [];
+  private rejections: ReadonlyMap<string, string>[] = [];
+
+  constructor(
+    items: (Area | Decision | SpecEntry)[] = [],
+    options: { staged?: boolean; people?: ReadonlySet<string> } = {},
+  ) {
+    this.people = options.people ?? new Set(["author"]);
+    this.files = filesOf(...items);
+    this.published = new Map(this.files);
+    this.staged = options.staged ?? false;
+  }
+  async hold(draft: HeldDraft): Promise<number> {
+    const seq = ++this.rev;
+    this.holds.set(seq, structuredClone({ ...draft, seq, at: stampOf(START) }));
+    return seq;
+
+exec
+/bin/bash -lc "python - <<'PY'
+from pathlib import Path
+p=Path('ts/tests/app/held-messages-approve.test.ts');p.write_text(p.read_text().replace('\"Transcripts are kept\"','\"s-aaaaaa\"'))
+PY
+cat > /tmp/lodge-mutations.py <<'PY'
+from pathlib import Path
+import subprocess
+t=Path('ts/src/app/threads.ts');h=Path('ts/src/app/held.ts')
+mutations=[
+('M1',t,'raises "'!== null ? "ask" : close ? "close" : "reply"'"','raises "'!== null ? "ask" : "reply"'"'),
+('M2',t,'raises "'!== null ? "ask" : close ? "close" : "reply"'"','\"reply\"'),
+('M3',t,'text: close && "'!msg.text ? null : msg.text'"','text: msg.text'),
+('M5',t,'ids: [thread.id],\\n        outcome: AddOutcome.HELD','ids: [],\\n        outcome: AddOutcome.HELD'),
+('M6',t,'about: thread.about,\\n        awaits','about: null,\\n        awaits'),
+('M14',h,'close: initial.operation === \"close\"','close: false'),
+('M25',h,'initial.text ?? \"\"','initial.text ?? \"x\"'),
+('M10',t,'where: msg.where as string','where: \"chat\"'),
+('M17',h,'where: initial.where','where: \"chat\"'),
+]
+for name,p,a,b in mutations:
+ original=p.read_text()
+ assert a in original,name
+ try:
+  p.write_text(original.replace(a,b,1))
+  r=subprocess.run(['bun','test','tests/app/held-messages.test.ts','tests/app/held-messages-approve.test.ts'],cwd='ts',capture_output=True,text=True)
+  print(name, 'KILLED' if r.returncode else 'SURVIVED')
+  print('\\n'.join(line for line in (r.stdout+r.stderr).splitlines() if '(fail)' in line))
+ finally:p.write_text(original)
+ if not r.returncode:raise SystemExit(1)
+PY
+python /tmp/lodge-mutations.py" in /var/tmp/lodge-server-store
+ succeeded in 1703ms:
+M1 KILLED
+(fail) a_relayed_close_is_held_and_closes_the_thread_at_approval [3.60ms]
+M2 KILLED
+(fail) a_relayed_close_is_held_and_closes_the_thread_at_approval [3.47ms]
+M3 KILLED
+(fail) a_relayed_close_is_held_and_closes_the_thread_at_approval [3.35ms]
+M5 KILLED
+(fail) an_agent_relaying_a_persons_words_is_held [33.15ms]
+(fail) a_relayed_question_mints_its_thread_at_approval [5.04ms]
+(fail) a_relayed_close_is_held_and_closes_the_thread_at_approval [3.47ms]
+M6 KILLED
+(fail) an_agent_relaying_a_persons_words_is_held [30.14ms]
+(fail) a_relayed_question_mints_its_thread_at_approval [5.27ms]
+(fail) a_relayed_close_is_held_and_closes_the_thread_at_approval [3.85ms]
+M14 KILLED
+(fail) a_relayed_close_is_held_and_closes_the_thread_at_approval [4.83ms]
+M25 KILLED
+(fail) a_relayed_close_is_held_and_closes_the_thread_at_approval [8.52ms]
+M10 KILLED
+(fail) the_person_approves_and_the_message_is_published [8.32ms]
+(fail) a_relayed_close_is_held_and_closes_the_thread_at_approval [3.42ms]
+M17 KILLED
+(fail) the_person_approves_and_the_message_is_published [8.65ms]
+(fail) a_relayed_close_is_held_and_closes_the_thread_at_approval [8.14ms]
+
+exec
+/bin/bash -lc "python - <<'PY'
+from pathlib import Path
+p=Path('ts/src/app/held.ts');s=p.read_text().replace('async function authorised(w: Wiring, seq: number): Promise<Held> {\\n  const found = (await w.store.held()).find((h) => h.seq === seq);','''async function authorised<K extends Held[\"kind\"] = Held[\"kind\"]>(
+  w: Wiring,
+  seq: number,
+  kind?: K,
+): Promise<Extract<Held, { kind: K }>> {
+  const found = (await w.store.held()).find(
+    (h): h is Extract<Held, { kind: K }> => h.seq === seq && (kind === undefined || h.kind === kind),
+  );''')
+a=s.index('  const refresh = async');b=s.index('  const found = await refresh()',a)
+s=s[:a]+'  const refresh = (): Promise<HeldAdd> => authorised(w, seq, \"add\");\\n'+s[b:];p.write_text(s)
+p=Path('ts/src/app/threads.ts');s=p.read_text().replace('actorText, type Now','actorText, type Now').replace('  type Message,','  type Check,\\n  type Message,') # check type verify
+s=s.replace('    if (approves "'!== null && !(await w.store.held()).some((h) => h.seq === approves))'"\\n      throw new NotFound("'`nothing is held under number ${approves}`);'"\\n','',1)
+a=s.index('    if (s.people.has(by) && w.actor.kind === \"agent\") {');b=s.index('    const commitMessage',a)
+block=s[a:b]
+s=s[:a]+'''    if (s.people.has(by) && w.actor.kind === \"agent\")
+      return holdMessage(w, thread, msg, raises, close, check);
+'''+s[b:]
+fn='''async function holdMessage(
+  w: Wiring,
+  thread: Thread,
+  msg: Message,
+  raises: Raises | null,
+  close: boolean,
+  check: Check,
+): Promise<Written> {
+'''+block[block.index('      const held'):block.rindex('    }')].replace('person: by','person: msg.by').replace('awaits: by','awaits: msg.by')+'}\\n'
+s=s.replace('export async function writeMessage(',fn+'export async function writeMessage(');p.write_text(s)
+PY
+rg 'export.*Check|interface Check' ts/src/core
+cd ts
+bun test tests/app/held-messages.test.ts tests/app/held-messages-approve.test.ts
+bunx tsc --noEmit" in /var/tmp/lodge-server-store
+ exited 2 in 2723ms:
+ts/src/core/views.ts:export function failingIds(s: Snapshot, result: CheckResult): ReadonlySet<string> {
+ts/src/core/views.ts:export function unrecordedProblems(s: Snapshot, result: CheckResult): readonly Problem[] {
+ts/src/core/check-state.ts:export interface CheckResult {
+ts/src/core/check-state.ts:export function checkResult(problems: readonly Problem[], notes: readonly string[]): CheckResult {
+ts/src/core/check-state.ts:export function checkState(s: Snapshot): CheckResult {
+ts/src/core/index.ts:export { type CheckResult, checkResult, checkState } from "./check-state.ts";
+bun test v1.3.14 (0d9b296a)
+
+ 14 pass
+ 0 fail
+ 52 expect() calls
+Ran 14 tests across 2 files. [189.00ms]
+src/app/threads.ts(7,8): error TS2305: Module '"#core"' has no exported member 'Check'.
+
+codex
+The required mutations all fail the new assertions, including all five close mutations. The second `where` value also catches both `"chat"` substitutions. Title-style refs are unsupported: the resolver accepts IDs and codes only, so I’ll document that limitation.
+exec
+/bin/bash -lc "python - <<'PY'
+from pathlib import Path
+p=Path('ts/src/app/threads.ts');s=p.read_text().replace('type Check,','type CheckResult,').replace('check: Check,','check: CheckResult,');p.write_text(s)
+p=Path('ts/tests/app/held-messages-approve.test.ts');s=p.read_text().replace('  let attempts = 0;','''  let reads = 0;
+  const held = store.held.bind(store);
+  store.held = async () => {
+    reads++;
+    return held();
+  };
+  let attempts = 0;''').replace('  expect(attempts).toBe(3);','  expect(attempts).toBe(3);\\n  expect(reads).toBe(4);');p.write_text(s)
+PY
+python - <<'PY'
+from pathlib import Path
+import subprocess
+p=Path('ts/src/app/threads.ts');s=p.read_text()
+needle='  for (let i = 0; i < 3; i++) {'
+p.write_text(s.replace(needle,needle+'\\n    if (approves "'!== null && !(await w.store.held()).some((h) => h.seq === approves))'"\\n      throw new NotFound(\"settled\");',1))
+try:
+ r=subprocess.run(['bun','test','tests/app/held-messages-approve.test.ts'],cwd='ts',capture_output=True,text=True)
+ print('Redundant open-hold read mutation:',r.returncode)
+ print('\\n'.join(x for x in (r.stdout+r.stderr).splitlines() if '(fail)' in x))
+ assert r.returncode
+finally:p.write_text(s)
+PY
+cd ts
+bunx biome check --write src/app/held.ts src/app/threads.ts tests/app/held-messages-support.ts tests/app/held-messages.test.ts tests/app/held-messages-approve.test.ts
+cd ..
+sh scripts/check-ts.sh > /tmp/lodge-check-ts.log 2>&1" in /var/tmp/lodge-server-store
+ succeeded in 8859ms:
+Redundant open-hold read mutation: 1
+(fail) a_hold_settled_on_the_last_attempt_is_not_found [11.86ms]
+Checked 5 files in 10ms. Fixed 2 files.
+
+exec
+/bin/bash -lc 'tail -12 /tmp/lodge-check-ts.log; git diff --stat; wc -l ts/src/app/threads.ts ts/src/app/held.ts; git diff -- ts/src/app/held.ts ts/src/app/threads.ts' in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+$ biome check --error-on-warnings . && tsc --noEmit -p . && depcruise src tests scripts --config .dependency-cruiser.cjs && knip && bun test
+Checked 186 files in 48ms. No fixes applied.
+
+[32m✔[39m no dependency violations found (197 modules, 760 dependencies cruised)
+
+bun test v1.3.14 (0d9b296a)
+
+ 1286 pass
+ 2 todo
+ 0 fail
+ 3334 expect() calls
+Ran 1288 tests across 104 files. [3.97s]
+ ts/src/app/held.ts                         | 17 ++++++----
+ ts/src/app/threads.ts                      | 54 +++++++++++++++++-------------
+ ts/tests/app/held-messages-approve.test.ts | 47 ++++++++++++++++++++------
+ ts/tests/app/held-messages-support.ts      | 15 +++++----
+ ts/tests/app/held-messages.test.ts         | 43 ++++++++++++++----------
+ 5 files changed, 112 insertions(+), 64 deletions(-)
+ 242 ts/src/app/threads.ts
+  62 ts/src/app/held.ts
+ 304 total
+diff --git a/ts/src/app/held.ts b/ts/src/app/held.ts
+index c6daf0d..c39d0eb 100644
+--- a/ts/src/app/held.ts
++++ b/ts/src/app/held.ts
+@@ -9,8 +9,15 @@ import { add } from "./writes.ts";
+ export async function held(w: Wiring): Promise<readonly Held[]> {
+   return w.store.held();
+ }
+-async function authorised(w: Wiring, seq: number): Promise<Held> {
+-  const found = (await w.store.held()).find((h) => h.seq === seq);
++async function authorised<K extends Held["kind"] = Held["kind"]>(
++  w: Wiring,
++  seq: number,
++  kind?: K,
++): Promise<Extract<Held, { kind: K }>> {
++  const found = (await w.store.held()).find(
++    (h): h is Extract<Held, { kind: K }> =>
++      h.seq === seq && (kind === undefined || h.kind === kind),
++  );
+   if (!found) throw new NotFound(`nothing is held under number ${seq}`);
+   if (w.actor.kind !== "person" || w.actor.name !== found.person)
+     throw new Forbidden(`only ${found.person} approves this; nothing was written`);
+@@ -32,11 +39,7 @@ export async function approve(w: Wiring, seq: number): Promise<Approved> {
+       ),
+     };
+   }
+-  const refresh = async (): Promise<HeldAdd> => {
+-    const found = await authorised(w, seq);
+-    if (found.kind === "message") throw new LodgeError(`hold ${seq} is not an add`);
+-    return found;
+-  };
++  const refresh = (): Promise<HeldAdd> => authorised(w, seq, "add");
+   const found = await refresh();
+   return {
+     kind: "add",
+diff --git a/ts/src/app/threads.ts b/ts/src/app/threads.ts
+index 6b9b12e..d7baa45 100644
+--- a/ts/src/app/threads.ts
++++ b/ts/src/app/threads.ts
+@@ -1,5 +1,6 @@
+ import {
+   appended,
++  type CheckResult,
+   checkChange,
+   cleanText,
+   level1,
+@@ -78,6 +79,34 @@ export interface MessageOptions {
+   readonly commit?: boolean;
+   readonly close?: boolean;
+ }
++async function holdMessage(
++  w: Wiring,
++  thread: Thread,
++  msg: Message,
++  raises: Raises | null,
++  close: boolean,
++  check: CheckResult,
++): Promise<Written> {
++  const held = await w.store.hold({
++    kind: "message",
++    person: msg.by,
++    by: actorText(w.actor),
++    operation: raises !== null ? "ask" : close ? "close" : "reply",
++    ref: raises !== null ? thread.about : thread.id,
++    raises,
++    text: close && !msg.text ? null : msg.text,
++    where: msg.where as string,
++    when: msg.when,
++  });
++  return written({
++    ids: [thread.id],
++    outcome: AddOutcome.HELD,
++    check,
++    about: thread.about,
++    awaits: msg.by,
++    held,
++  });
++}
+ export async function writeMessage(
+   w: Wiring,
+   ref: string,
+@@ -88,8 +117,6 @@ export async function writeMessage(
+   approves: number | null = null,
+ ): Promise<Written> {
+   for (let i = 0; i < 3; i++) {
+-    if (approves !== null && !(await w.store.held()).some((h) => h.seq === approves))
+-      throw new NotFound(`nothing is held under number ${approves}`);
+     const state = await readState(w.store),
+       now = w.clock.now(),
+       msg = message(now, state.snapshot.people, by, text, where, when, close),
+@@ -144,27 +171,8 @@ export async function writeMessage(
+         check,
+         about: thread.about,
+       });
+-    if (s.people.has(by) && w.actor.kind === "agent") {
+-      const held = await w.store.hold({
+-        kind: "message",
+-        person: by,
+-        by: actorText(w.actor),
+-        operation: raises !== null ? "ask" : close ? "close" : "reply",
+-        ref: raises !== null ? thread.about : thread.id,
+-        raises,
+-        text: close && !msg.text ? null : msg.text,
+-        where: msg.where as string,
+-        when: msg.when,
+-      });
+-      return written({
+-        ids: [thread.id],
+-        outcome: AddOutcome.HELD,
+-        check,
+-        about: thread.about,
+-        awaits: by,
+-        held,
+-      });
+-    }
++    if (s.people.has(by) && w.actor.kind === "agent")
++      return holdMessage(w, thread, msg, raises, close, check);
+     const commitMessage = `Thread ${thread.id}: ${description}`;
+     const outcome = await w.store.publish(
+       state.current,
+
+exec
+/bin/bash -lc "rg -n 'CHECK_FAILED|check' ts/tests/app/messages.test.ts ts/tests/app/held.test.ts; cat ts/tests/app/held.test.ts | head -95; rg -n 'checkChange' ts/src/core/check-change.ts" in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+rg: ts/tests/app/messages.test.ts: No such file or directory (os error 2)
+ts/tests/app/held.test.ts:65:test("a_failing_check_is_not_held", async () => {
+ts/tests/app/held.test.ts:68:  expect(result.outcome).toBe(AddOutcome.CHECK_FAILED);
+ts/tests/app/held.test.ts:69:  expect(result.check.problems.some((p) => p.check === 3)).toBe(true);
+import { expect, test } from "bun:test";
+import { AddOutcome, LodgeError, NotFound, person } from "#app";
+import { filters } from "#core";
+import { draft, setup } from "./held-support.ts";
+
+test("an_agents_add_of_a_persons_decision_is_held", async () => {
+  const { store, lodge } = setup();
+  const result = await lodge.add([["d.md", draft()]]);
+  expect(result.outcome).toBe(AddOutcome.HELD);
+  expect(result.awaits).toBe("ada");
+  expect(result.minted).toEqual(result.ids);
+  expect(result.paths).toEqual([]);
+  expect(await lodge.held()).toEqual(await store.held());
+  expect(await lodge.held()).toMatchObject([
+    { seq: result.held, kind: "add", person: "ada", by: "agent", drafts: [["d.md", draft()]] },
+  ]);
+});
+test("another_persons_add_is_held", async () => {
+  const { lodge } = setup(person("bo"));
+  expect(await lodge.add([["d.md", draft()]])).toMatchObject({
+    outcome: AddOutcome.HELD,
+    awaits: "ada",
+  });
+  expect(await lodge.held()).toMatchObject([{ by: "bo" }]);
+});
+test("a_dry_run_names_who_must_approve", async () => {
+  const { lodge } = setup();
+  expect(await lodge.add([["d.md", draft()]], { dryRun: true })).toMatchObject({
+    outcome: AddOutcome.DRY_RUN,
+    awaits: "ada",
+    held: null,
+  });
+  expect(await lodge.held()).toEqual([]);
+});
+test("a_held_add_is_not_current", async () => {
+  const { store, lodge } = setup();
+  const result = await lodge.add([["d.md", draft()]]);
+  await expect(lodge.show(result.ids[0] as string)).rejects.toThrow(NotFound);
+  expect((await lodge.search("", filters())).items).toEqual([]);
+  expect(store.files.size).toBe(0);
+});
+test("a_persons_own_decision_is_not_held", async () => {
+  const { lodge } = setup(person("ada"));
+  expect(await lodge.add([["d.md", draft()]])).toMatchObject({
+    outcome: AddOutcome.PUBLISHED,
+    awaits: null,
+    held: null,
+  });
+  expect(await lodge.held()).toEqual([]);
+});
+test("an_add_for_two_people_is_refused", async () => {
+  const { lodge } = setup();
+  await expect(
+    lodge.add([
+      ["a.md", draft()],
+      ["b.md", draft("bo")],
+    ]),
+  ).rejects.toThrow(
+    new LodgeError(
+      "an add holds the decisions of one person at a time; split the drafts by person",
+    ),
+  );
+  expect(await lodge.held()).toEqual([]);
+});
+test("a_failing_check_is_not_held", async () => {
+  const { lodge } = setup();
+  const result = await lodge.add([["d.md", draft("ada", false)]]);
+  expect(result.outcome).toBe(AddOutcome.CHECK_FAILED);
+  expect(result.check.problems.some((p) => p.check === 3)).toBe(true);
+  expect(await lodge.held()).toEqual([]);
+});
+
+test("held_adds_are_listed_in_seq_order", async () => {
+  const { lodge } = setup();
+  const first = await lodge.add([["first.md", draft()]]);
+  const second = await lodge.add([["second.md", draft()]]);
+  const seqs = [first.held as number, second.held as number];
+  expect(seqs[0]).toBeLessThan(seqs[1] as number);
+  expect((await lodge.held()).map((hold) => hold.seq)).toEqual(seqs);
+});
+test("held_has_the_public_wire_value", () => {
+  expect(AddOutcome.HELD).toBe("held for approval");
+});
+19:export function checkChange(
+
+codex
+The refactors are complete, and the full TypeScript check passes: 1,286 tests passed, with two existing todos. The settlement test also confirms one hold read per rejected attempt and fails if the redundant read returns. I found no existing message fixture for M-7, so I’ll record that gap in the report.
+exec
+/bin/bash -lc "cat > docs/superpowers/plans/2026-11-02-lodge-server-store/task-12c-fix-1-report.md <<'EOF'
+# Task 12c, fix round 1 report
+
+Implemented I-1, I-2 and M-1 through M-5.
+
+- Added the relayed-close approval test. It checks the held close operation, null text, thread ID and about, the open state before approval, and the closed state, empty message, preserved place and cleared waiting afterwards.
+- Asserted reply and close held IDs and about, plus one provisional q- ID and about for a held ask.
+- Removed the top-of-loop open-hold read. The last-rejection test retains the NotFound behaviour and asserts four reads: authorisation and one for each of three rejected attempts.
+- Narrowed authorisation by the expected hold kind, removing the unreachable add-refresh throw.
+- Extracted holdMessage. threads.ts is 242 lines and held.ts is 62 lines.
+- Replaced the waiting-test loop with two plain tests, replaced the setup boolean with the opening speaker, and made relay return held as a number. Approval now exercises mail as well as chat.
+
+## Test-first evidence
+
+Before the production refactors, each of M1, M2, M3, M14 and M25 failed the new close test. M5 and M6 failed the reply, ask and close answer assertions. Each mutation was applied separately and restored after its failing run.
+
+The changed approval-place assertions also failed M10 and M17 when the respective place was replaced with the constant chat. Restoring the redundant top-of-loop read failed the strengthened last-rejection test. The two waiting tests retain the previous behavioural assertions as separate tests.
+
+## Conditional findings
+
+M-6: title-style refs are unsupported. core/search.ts resolve accepts record IDs and exact record codes, not titles. A trial using the existing entry title, Transcripts are kept, returned NotFound. The final ask test retains the supported ID ref and asserts that the hold stores that resolved ID.
+
+M-7: no existing message fixture was found where the check passes at hold time and fails at approval. The existing held-add approval fixture retires an entry required by a new dependent spec; approving a message does not introduce that dependency. No new fixture was introduced, as requested. This conditional coverage gap remains.
+
+## Validation
+
+sh scripts/check-ts.sh passed: Biome, TypeScript, dependency-cruiser and knip clean; 1286 tests passed, 2 todo, 0 failed. No dependency added.
+EOF
+git diff --check
+git add ts/src/app/held.ts ts/src/app/threads.ts ts/tests/app/held-messages-support.ts ts/tests/app/held-messages.test.ts ts/tests/app/held-messages-approve.test.ts docs/superpowers/plans/2026-11-02-lodge-server-store/task-12c-fix-1-report.md
+git commit -m \"Cover held message approvals and simplify hold handling\" -m \"Co-Authored-By: Codex <noreply@openai.com>\"
+git push origin server-store" in /var/tmp/lodge-server-store
+ succeeded in 1653ms:
+[server-store b43f63b] Cover held message approvals and simplify hold handling
+ 6 files changed, 138 insertions(+), 64 deletions(-)
+ create mode 100644 docs/superpowers/plans/2026-11-02-lodge-server-store/task-12c-fix-1-report.md
+To github.com:Kiibou-chan/lodge.git
+   622cef7..b43f63b  server-store -> server-store
+
+codex
+Implemented and pushed as `b43f63b` on `server-store`.
+
+Required mutations fail the new assertions. `sh scripts/check-ts.sh` passes: 1,286 passed, 2 todo.
+
+[Report](docs/superpowers/plans/2026-11-02-lodge-server-store/task-12c-fix-1-report.md) documents the changes and conditional gaps: title refs are unsupported; M-7 lacked an existing suitable fixture.
+tokens used
+28,560
+Implemented and pushed as `b43f63b` on `server-store`.
+
+Required mutations fail the new assertions. `sh scripts/check-ts.sh` passes: 1,286 passed, 2 todo.
+
+[Report](docs/superpowers/plans/2026-11-02-lodge-server-store/task-12c-fix-1-report.md) documents the changes and conditional gaps: title refs are unsupported; M-7 lacked an existing suitable fixture.
