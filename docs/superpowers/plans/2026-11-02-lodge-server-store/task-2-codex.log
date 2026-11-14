@@ -1,0 +1,1820 @@
+Reading additional input from stdin...
+OpenAI Codex v0.167.0
+--------
+workdir: /var/tmp/lodge-store-a
+model: gpt-6.1-sol
+provider: openai
+approval: never
+sandbox: danger-full-access
+reasoning effort: none
+reasoning summaries: none
+session id: 01a1dbb6-5cad-7f52-8934-ea144381e148
+--------
+user
+Read /var/tmp/lodge-store-a/docs/superpowers/plans/2026-11-02-lodge-server-store/task-2-brief.md first, then build it.
+codex
+I’ll read the task brief first, then implement it and run the relevant checks.
+exec
+/bin/bash -lc 'cat /var/tmp/lodge-store-a/docs/superpowers/plans/2026-11-02-lodge-server-store/task-2-brief.md' in /var/tmp/lodge-store-a
+ succeeded in 0ms:
+# Brief: Task 2 of `docs/superpowers/plans/2026-11-02-lodge-server-store.md`
+
+You build Task 2 of the plan named above, in the worktree `/var/tmp/lodge-store-a`, on branch `server-store-a`.
+Read `CLAUDE.md` first, then this brief; it is your requirements, with the exact values to use verbatim.
+Test-first: write each test, run it and see it fail, then write the code; all existing tests keep passing.
+You have full access (d-94tynf). Run `sh scripts/check-ts.sh` last; it must exit 0. The structure checks gate the finished task, not intermediate commits.
+Never run `bun install` or `bun add`: a package the task needs and `ts/package.json` lacks stops the task with BLOCKED and its name.
+Never edit earlier briefs, reports, or reviews in `docs/superpowers/plans/2026-11-02-lodge-server-store/`: they are history.
+Line handles in this brief drift as tasks land; re-locate them by content.
+Commit when the gate is green, with explicit paths: `git -c "user.name=Svenja Kernig" -c user.email=20756868+Kiibou-chan@users.noreply.github.com commit`, message ending with the trailer `Co-Authored-By: Codex <noreply@openai.com>`; then `git push origin server-store-a`. Never touch `main`.
+Write your report to `docs/superpowers/plans/2026-11-02-lodge-server-store/task-2-report.md`: what you changed per file, each test added or carried with its first failing output (or the mutation it failed against, as a table), the commands you ran and their last lines, every test that cannot hold in TypeScript with the reason, anything you were unsure of. Commit the report too.
+Your final message: DONE, DONE_WITH_CONCERNS, or BLOCKED, one line on the tests, and your concerns.
+The "Coordinator" step of the task is not yours: the coordinator runs the whole gate, merges, and updates the ledger.
+Plan 1's code is in `ts/`; the plan's Global Constraints, Calls made, and Interfaces follow, then your task.
+
+## Global Constraints
+
+Plan 1's Global Constraints hold for every task of this plan, and each brief repeats them; in short, with what this plan adds:
+
+- Builders are Codex (`codex exec`), one task per brief; Codex sees its brief, `CLAUDE.md`, and the repository, with no network, a read-only git index, and no sockets: the builder never stages, commits, or pushes, and never runs `bun install` or `bun add`; a package the task needs and `ts/package.json` lacks stops the task with BLOCKED and its name.
+- The builder's gate is `sh scripts/check-ts.sh` (Biome with `--error-on-warnings`, d-f18pz7; `tsc`, dependency-cruiser, knip, and `bun test`); the coordinator's gate after every task is `sh scripts/check.sh` outside the sandbox, then it stages with explicit paths, commits with `git -c user.name="Svenja Kernig" -c user.email=20756868+Kiibou-chan@users.noreply.github.com commit`, the message ending `Co-Authored-By: Claude <noreply@anthropic.com>`, and pushes `server-store` to `origin`; never `main`.
+- lodge 0.2 keeps working: `src/`, `tests/`, `pyproject.toml`, and `uv.lock` are not edited.
+- Test-first: each carried or new test is written and seen failing before its code (a missing module or export counts as failing); a carried test over code an earlier task ported is seen failing against a targeted mutation of that code, never a throw at a function's entry, one per test or per named group, listed in the report as a table and then reverted (d-mfayy5, as plan 1's Task 8c did); every existing test keeps passing, edited only where a task says so.
+- Plan 1's final state is `origin/server-core` at 4f5d5fb; every line this plan cites in `ts/` is at that commit, and the coordinator checks each against the merged code before the task that reads it.
+- Rules in `core` only (`ts/tests/structure/calls.ts` and `guards.ts` at 4f5d5fb), which bind Tasks 7a, 10, and 13, the tasks that edit `ts/src/core`: every `catch` begins with `if (!(e instanceof X)) throw e;`; no object literal has an `ok` key outside `check-state.ts`, so a check result is built through `checkResult` (d-snrhjs); a regular expression literal carries the `u` flag, never `m`, and no Python shorthand; and no `sort()` or `toSorted()` is called without a comparator.
+- Check results in `app` are built through `checkResult` of `#core` too (d-snrhjs), where Python builds `CheckResult(…)` (`src/lodge/app/state.py:69`, `src/lodge/app/reads.py:96`), as plan 1's hand-off asks (`docs/superpowers/plans/done/2026-11-02-lodge-server-core/plan-2-writes-handoff.md` on `server-core`).
+- Lanes (d-d96y91): a task's tests call only what its lane and the tasks it waits for provide; a parameter a later task adds to a function plan 1 ported, or that another lane calls, is trailing and has a default, so every carried call stays as it is.
+- Porting (d-88p8h9), as plan 1's Global Constraints say: each Python test becomes a test titled with its name without `test_`, in the file the parity table names, asserting no less; a parametrised test becomes `test.each(cases.map((c) => [c]))` or `test.each([[a, b], …])` with every case; a test that cannot hold keeps its title, asserts the TypeScript behaviour, and is listed in the report; the task's last step flips its rows of `ts/tests/parity.json` and sets each row's `task` to the task's number, as plan 1's rows have it (`"task": ["5a"]`); a row whose port is split over two files names both in its `ts`.
+- Types, names, and exceptions follow plan 1: a frozen dataclass is an `interface` with `readonly` fields and, where a Python call leaves a defaulted field out, a default-filling function of the same name in camelCase beside it (`committed`, `gate`, `read`, `listed`, `added`, and `written`; probe 5, d-ca6wbw); `X | None` is `X | null`; a tuple is `readonly T[]`, a `Mapping` a `ReadonlyMap`; a `StrEnum` a `const` object and its union type; `raise E(m)` is `throw new E(m)`, and `except E` a `catch` that rethrows anything not an `E`.
+- Calls (d-vd3175): a Python method's parameters without a default stay positional, and those with a default become one trailing options object with their names in camelCase (`add(drafts, { dryRun: true, attachments })`); a test calling Python with keywords calls TypeScript with that object.
+- Asynchrony (d-59q4jc): every method of `Store` and `Projects` returns a `Promise`, `Clock.sleep` returns a `Promise`, and every operation of `Lodge` is `async`; a carried test `await`s each operation, and a `pytest.raises` becomes `await expect(promise).rejects.toThrow(Class)` with the pattern where Python matched one.
+- Time (d-59q4jc): `Clock.now()` gives a `Now`, `{ epochMs, offsetMinutes }`, never a `Date`; `app/time.ts` (Task 2) turns it into stamps; `app` uses no clock, randomness, local time, or `Date` without `new` (d-mfskz3), so it may write `new Date(ms)` and call its UTC methods, and `core` still sees only stamps.
+- Structure (plan 1, Task 3; d-x6f9za; d-s5s2c3; d-nf7wvx): `app` imports only `#core`; `store` imports `#app`, `#core`, `kysely`, and `bun:sqlite`, which the rule `store-imports` (Task 7a) checks, and its confinements hold it to no `fs`, no `fetch`, no socket, and no child process; another package only through its front door (`#app`, `#store`); no file over 300 lines, tests included; a module nearing it is split by topic, as plan 1 says.
+- Exports read in a later task (d-tha8st): a file with an export whose first reader comes in a later task goes into `ts/knip.json`'s `entry` in the task that creates it and leaves in the task that gives it that reader; the files and tasks are listed in "Exports read in a later task" below.
+- Bytes (d-0q54zn, d-wje1cn): text crosses into the database only as UTF-8 bytes through `encodeUtf8` and back through `decodeUtf8` of `core/text.ts` (Task 7a), which map a byte of an invalid sequence to U+DC00 plus the byte and back, as Python's `surrogateescape` does; a `text` column never holds a record's or a file's text, since it drops a leading U+FEFF and corrupts a lone surrogate (probes 1 and 2).
+- No test of this plan needs a socket, so the builder runs every one; tests never touch a real repository or the network; a database is `":memory:"` or a file under a folder from `mkdtempSync` in the system's temporary folder; fixtures are the made-up project of lodge 0.2's tests (the `storage` area), and the people in them are made up (`ada`, `bo`).
+- User-facing text and Markdown: British English, no em-dashes, the Oxford comma, one sentence per line; code comments state the fact.
+
+### Exports read in a later task
+
+From the import lines of `src/lodge/app/*.py` and `tests/app/*.py` (`grep -n '^from' tests/app/*.py`):
+
+| File | Into `entry` | Names and the task that first reads them | Out of `entry` |
+|---|---|---|---|
+| `tests/app/fakes.ts` | Task 2 | `MemoryStore`, `FixedClock`, `CountingIds`, `START` (3) | Task 3 |
+| `src/app/state.ts` | Task 3 | `readChecked`, `resolveRef`, `notFound` (4) | Task 4 |
+| `src/app/writes.ts` | Task 3 | `mintUnused` (4) | Task 4 |
+| `tests/app/support.ts` | Task 3 | `project`, `FIRST` (3); `ENTRY` (4) | Task 4 |
+| `src/store/events.ts` | Task 7a | `appendEvents`, `json` (7b) | Task 7b |
+| `tests/store/interleaving.ts` | Task 8 | `Interleaving` (9) | Task 9 |
+
+Declared without `export`, so knip reports nothing: the Kysely table interfaces `EventsTable`, `HeadsTable`, `FilesTable`, `MembersTable`, and `HeldTable`, and `MIGRATIONS` of `schema.ts`; `NewEvent` of `events.ts` is exported only if another module names the type.
+
+## Calls made
+
+Each is the planner's ruling, recorded in lodge with scope `process` and this plan as its work item; its reasoning there holds a handle per argument and the cost if wrong.
+Every task repeats what it needs of them, so no brief needs this section.
+
+1. d-59q4jc: the ports are asynchronous and `Clock.now()` gives `{ epochMs, offsetMinutes }`.
+2. d-ae1vn5: the `Store` port keeps lodge 0.2's methods and outcomes, and the SQLite store gives one state.
+3. d-wje1cn: the events table, one event per file written with the file's bytes, the derived tables, and the compare-and-set that publishes; d-0q54zn's codec is this plan's.
+4. d-vd3175: defaulted parameters become one trailing options object.
+5. d-t7er56: the task cut, `Lodge` ported method by method with the modules it delegates to, and the lanes; d-d96y91 narrows it: a lane's tests call only what its waits provide, a new parameter of a function another lane calls has a default, and Task 12 is split into 12a and 12b; the held thread messages of d-2v8vtk are Task 12c, on the same hold machinery.
+6. d-rp74dr: `test_thread_fix_paths.py`'s two command tests wait for plan 3 as `test.todo`, and its row becomes plan 3's.
+7. d-vwsnz5 (replacing d-kj59bz): a person is an owner of the project, people reach the core in `Tree.people` and as a defaulted parameter, the words of lodge 0.2 stay for a person named `author`, and a name the records use as a role cannot join.
+8. d-znagqe: a person's decision drafted by anyone else is held whole until that person approves or declines it.
+9. d-4spcem: a review flag waits for each person whose decision raised it, and each clears their part.
+10. d-fv20kp: the check on every write needs no new write path; plan 2 proves it over the events store; d-j28rp0 (replacing d-pmaw3a, which replaced d-pprhpz) narrows it for plan 4's import, which publishes through the store after running the change check from an empty state with the store's settings and then the project's (d-n9nm8h, narrowing d-j28rp0), and has `publish` refuse what lodge 0.2's stores refuse, a path holding a surrogate, and a changed decision.
+11. d-wx7d0f: projects and their members are events behind the `Projects` port.
+12. d-2v8vtk (the author's answer to STORE-1): an agent may relay a person's words into a thread under that person's name, with where and when; the message is held, and the thread waits for that person until they approve it signed in; a person's own message is not held, and one person writing under another's name is refused (Task 12c).
+13. d-nf7wvx: the rule `store-imports` holds `store` to `kysely` and `bun:sqlite` among outside modules.
+14. d-thvvzx: a store transaction that reads before it writes opens with a write, and a hold is approved or declined once.
+
+## Interfaces for plans 3 and 4
+
+The names are those of `src/lodge/app/__init__.py`'s `__all__` in camelCase, with the additions marked; every operation is `async`.
+
+```ts
+// #app, ports
+export interface Now { readonly epochMs: number; readonly offsetMinutes: number }          // added
+export interface Clock { now(): Now; sleep(seconds: number): Promise<void> }
+export interface IdSource { entropy(): Uint8Array }                                         // at least six bytes
+export const PublishOutcome = { PUBLISHED: "published", STAGED: "staged", REJECTED: "rejected" } as const;
+export const CommitOutcome = { COMMITTED: "committed", ON_BASE: "on the base branch", DETACHED: "on a detached HEAD",
+  IN_PROGRESS: "during a merge, rebase, cherry-pick, or revert", LOCKED: "git's index is locked by another process",
+  FAILED: "git could not commit" } as const;
+export interface Committed { readonly outcome: CommitOutcome; readonly detail: string }    // committed() fills detail ""
+export interface Gate { readonly published: Tree; readonly checked: readonly (readonly [string, Tree])[]; readonly notes: readonly string[] }  // gate() fills notes
+export interface Store {
+  commit(paths: readonly string[], message: string): Promise<Committed>;
+  trees(): Promise<readonly [Tree, Tree]>;                 // current, published
+  attachmentTexts(): Promise<ReadonlyMap<string, string>>; // added: every attachment's text by path, for plan 4's export
+  freshness(): Promise<string | null>;
+  gate(current: Tree): Promise<Gate>;
+  publish(base: Tree, writes: ReadonlyMap<string, string>, message: string, approves?: number | null): Promise<PublishOutcome>;  // approves: Task 12a
+  hold(held: HeldDraft): Promise<number>;                  // Task 12a
+  held(): Promise<readonly Held[]>;                        // Task 12a
+  decline(seq: number, reason: string): Promise<void>;     // Task 12a: NotFound unless the hold is open
+}
+export type Actor = { readonly kind: "person"; readonly name: string } | { readonly kind: "agent"; readonly role: string | null };  // added
+export function person(name: string): Actor;               // added
+export function agent(role?: string | null): Actor;        // added
+export function actorText(actor: Actor): string;           // added: "ada", "agent", "agent builder"
+export const Role = { OWNER: "owner", MEMBER: "member" } as const;                          // added
+export interface Projects {                                // added
+  create(project: string, owner: string): Promise<void>;
+  members(project: string): Promise<ReadonlyMap<string, Role>>;
+  addMember(project: string, person: string, role: Role, by: Actor): Promise<void>;
+  storeFor(project: string, actor: Actor): Store;
+}
+export function stampOf(now: Now): string;               // added: datetime.isoformat(timespec="seconds"), "2026-10-29T09:30:00+01:00"
+export function minuteOf(now: Now): string;              // added: strftime("%Y-%m-%d %H:%M") in the offset's own time
+export type HeldDraft = HeldAdd | HeldMessage;             // added, Task 12a: what waits for one person's approval
+export interface HeldAdd {                                 // added, Task 12a: an add holding a person's decision (d-znagqe)
+  readonly kind: "add"; readonly person: string; readonly by: string; readonly drafts: readonly (readonly [string, string])[];
+  readonly attachments: readonly (readonly [string, string])[]; readonly importing: boolean; readonly message: string;
+}
+export interface HeldMessage {                             // added, Task 12a: a person's words relayed into a thread by an agent (d-2v8vtk)
+  readonly kind: "message"; readonly person: string; readonly by: string;   // by: actorText of the agent that relayed it
+  readonly operation: "ask" | "reply" | "close"; readonly ref: string;      // ask: the record's ref; reply and close: the thread's ID
+  readonly raises: Raises | null; readonly text: string | null;            // raises: ask only; text: null only for close
+  readonly where: string; readonly when: string;                            // the person's place and minute, as the relay gave them
+}
+export type Held = HeldDraft & { readonly seq: number; readonly at: string };  // added, Task 12a
+export type Approved = { readonly kind: "add"; readonly added: Added } | { readonly kind: "message"; readonly written: Written };  // added, Task 12b
+
+// #app, errors
+export class LodgeError extends Error { readonly exitCode: number }  // 2
+export class NotFound extends LodgeError {}                // 2
+export class Conflict extends LodgeError {}                // 1
+export class StaleList extends Conflict {}                 // 1
+export class Forbidden extends LodgeError {}               // added, Task 11: 2; the API's 403
+export function coreSettings(table: Readonly<Record<string, unknown>>): CoreSettings;  // as parseCoreSettings takes it; shares its name with #core's default-filling coreSettings: import one under an alias
+
+// #app, results: AddOutcome (and HELD: "held for approval", Task 12b), Read, Shown, Listed, Added, Written,
+// ThreadList, ThreadShown, ThreadsWaiting, Behind, as results.py, fields in camelCase;
+// Added gains awaits: string | null and held: number | null (Task 12b);
+// Written gains awaits: string | null and held: number | null, both filled null by written() (Task 12c).
+
+// #app, the operations
+export class Lodge {
+  constructor(store: Store, clock: Clock, ids: IdSource, settings: CoreSettings, actor: Actor);  // actor: Task 11
+  search(query: string, filters: Filters, options?: { limit?: number }): Promise<Listed>;
+  show(ref: string, options?: { reasoning?: boolean; provenance?: boolean }): Promise<Shown>;
+  waitingAll(): Promise<readonly [Listed, ThreadsWaiting]>;
+  timeline(options?: { limit?: number }): Promise<Listed>;
+  spec(options?: { area?: string | null }): Promise<readonly [string, Read, readonly SpecArea[]]>;
+  problems(): Promise<readonly [CheckResult, Read]>;
+  check(gate: boolean): Promise<readonly [CheckResult, Read]>;
+  draft(ref: string): Promise<string>;
+  mint(prefix: "d" | "s"): Promise<string>;
+  add(drafts: readonly (readonly [string, string])[], options?: { importing?: boolean; dryRun?: boolean; attachments?: readonly (readonly [string, string])[] }): Promise<Added>;
+  ask(ref: string, raises: Raises, by: string, text: string, options?: { where?: string | null; when?: string | null; commit?: boolean }): Promise<Written>;
+  reply(thread: string, by: string, text: string, options?: { where?: string | null; when?: string | null; commit?: boolean }): Promise<Written>;
+  close(thread: string, by: string, options?: { text?: string | null; where?: string | null; when?: string | null; commit?: boolean }): Promise<Written>;
+  threads(): Promise<ThreadList>;
+  thread(ref: string): Promise<ThreadShown>;
+  threadsWaiting(): Promise<ThreadsWaiting>;
+  confirm(ids: readonly string[], words: string, options?: { area?: string | null; commit?: boolean }): Promise<Written>;
+  behindArea(name: string): Promise<readonly Behind[]>;
+  held(): Promise<readonly Held[]>;                          // added, Task 12b
+  approve(seq: number): Promise<Approved>;                   // added, Task 12b; a held message's approval, Task 12c
+  decline(seq: number, reason: string): Promise<void>;       // added, Task 12b
+}
+
+// #store
+export interface LodgeDatabase { readonly db: Kysely<Tables>; close(): Promise<void> }
+export function openDatabase(path: string): Promise<LodgeDatabase>;   // ":memory:" or a file; creates or checks the schema
+export class SqliteStore implements Store { constructor(database: LodgeDatabase, project: string, actor: string, clock: Clock) }
+export class SqliteProjects implements Projects { constructor(database: LodgeDatabase, clock: Clock) }
+export function rebuild(database: LodgeDatabase): Promise<void>;       // every derived table from the events
+export interface Tables { events: EventsTable; heads: HeadsTable; files: FilesTable; members: MembersTable; held: HeldTable }  // held: Task 12a
+```
+
+- The events table (d-wje1cn): `events(seq integer primary key autoincrement, project text not null, at text not null, actor text not null, kind text not null, path text, body blob not null, message text)`, refused `update` and `delete` by two triggers raising `events are append-only` (probe 3); plan 2's kinds are `project`, `member`, `file`, `held`, `approved`, and `declined`, a `file` event's body the file's bytes and every other body UTF-8 JSON.
+- A later plan adds an event kind by adding its case to `applyEvent` of `store/events.ts`, which both a write and `rebuild` run, and a derived table to `Tables`, `openDatabase`'s schema (raising `user_version`), and `rebuild`'s list; nothing ever updates or deletes an event.
+- `applyEvent` inserts the project's `heads` row only for a `project` event; for every other kind it runs `update heads set rev = <seq> where project = <project>`, never an upsert, so an event whose `project` names no project (plan 3's account events, whose `project` is the empty text) adds no `heads` row.
+- `Store.publish` refuses, before it writes anything, what lodge 0.2's `check_writes` refuses (`src/lodge/gitstore/plumbing.py:14-25`) with its two messages, a path holding a surrogate, and a changed text for a decision file the base holds (d-j28rp0, replacing d-pmaw3a); it runs no other check: `app` checks before it calls it (d-fv20kp), and plan 4's import, which publishes a lodge 0.2 store's files through the project's store into an empty project, first runs the change check from an empty state with that store's settings and then with the project's (d-n9nm8h, narrowing d-j28rp0); a test that writes through `publish` directly stands for a hand edit of lodge 0.2 that leaves decisions and attachments as they are.
+- Every store transaction that reads before it writes opens with a write on the project's `heads` row (d-thvvzx, probe 4): `publish` with its compare-and-set, `create` with an insert that does nothing on an existing name, and `addMember`, `decline`, and an approving `publish` with an update that keeps the revision (probe 8).
+- The SQLite store answers `trees()` with one tree twice, `gate(current)` with `gate({ published: current, checked: [["", current]] })`, `freshness()` with `null`, and `commit(…)` with `committed({ outcome: CommitOutcome.FAILED, detail: "the server keeps no checkout; its writes are published at once" })`, and `publish` never answers `STAGED` (d-ae1vn5).
+- A person's name is `^[a-z][a-z0-9-]{0,31}$` and a project's `^[a-z0-9][a-z0-9-]{0,62}$` (d-wx7d0f); `decided_by` names a person when it names an owner of the project, `Tree.people` being the owners (d-vwsnz5, design lines 74 and 261); a name the project's records use as `decided_by` or as a thread message's `by` cannot join it.
+- A thread message whose `by` names a person (d-2v8vtk): from that person it is published at once; from another person it is refused with `Forbidden` (Task 11); from an agent, with where and when, it is held as a `HeldMessage` and published only when that person approves it, the thread waiting for that person meanwhile (Task 12c).
+
+## Lanes
+Lanes A, B, and C run in parallel in their own worktrees, merged into `server-store` as each task passes its review (Tasks 2 and 7a both edit `ts/package.json`'s `imports` and `ts/knip.json`'s one-line `entry`, so the second merge meets a textual conflict, which the integrator resolves by keeping both sides), as plan 1's lanes are (d-xdqsmf, recorded on `server-core` and here once plan 1 merges); within a lane, tasks run in order.
+The import graph decides the lanes (d-d96y91): lane B's code and tests need only `#app`'s ports, `Lodge.add`, and `tests/app/support.ts` (Tasks 2 and 3), reading the store through `load` of `#core` where a later task's `show` would do; lane C touches only `ts/src/core` and `ts/tests/core`, which no task of lanes A and B edits except Task 7a's `text.ts` and `fileformat.ts`, which lane C does not touch.
+Lane C's new parameters (`people` of `isAuthor`, `parseThread`, and `writeThread`) default to `author` alone, so lane A's `app/threads.ts` and plan 1's carried tests compile whichever lane merges first.
+Tasks 11 and 13 may also run in parallel, since Task 13 touches only the core's derivation, views, and feedback, and Task 11 only the operations, the store, and their tests; Task 11's test reads a flag's feedback by its first words, which Task 13 keeps.
+Tasks 9, 11, 12a, 12b, and 12c run in that order, since each edits or extends the tests or modules the one before it wrote; in `app` the imports run `held.ts → threads.ts → writes.ts → awaits.ts` and `held.ts → writes.ts`, and neither `threads.ts` nor `writes.ts` imports `held.ts`, so plan 1's `no-circular` rule holds.
+
+### Task 2: App ports, results, errors, and time
+
+**Files:**
+- Port: `src/lodge/app/errors.py`, `ports.py`, `results.py`
+- Create: `ts/src/app/errors.ts`, `ts/src/app/ports.ts`, `ts/src/app/results.ts`, `ts/src/app/time.ts`, `ts/src/app/index.ts`, `ts/tests/app/fakes.ts`
+- Modify: `ts/package.json` (`imports` gains `"#app": "./src/app/index.ts"`, no dependency), `ts/tests/parity.json` (`tests/app/fakes.py` to `ported`), `ts/knip.json` (`tests/app/fakes.ts` into `entry`, d-tha8st)
+- Test: `ts/tests/app/time.test.ts`, `ts/tests/app/ports.test.ts`, `ts/tests/app/errors.test.ts` (new)
+
+**Interfaces:**
+- Consumes: plan 1's `#core`.
+- Produces, through `#app`: the ports, errors, and results of "Interfaces for plans 3 and 4" as of this task: `Now`, `Clock`, `IdSource`, `PublishOutcome`, `CommitOutcome`, `Committed` and `committed`, `Gate` and `gate`, `Store` (the five methods of `ports.py` and `attachmentTexts`, no `approves`, `hold`, `held`, or `decline` yet), `Actor`, `person`, `agent`, `actorText`, `Role`, `Projects`, `stampOf`, `minuteOf`; `LodgeError`, `NotFound`, `Conflict`, `StaleList`, `coreSettings`; `AddOutcome` (without `HELD`), `Read` and `read`, `Shown`, `Listed` and `listed`, `Added` and `added`, `Written` and `written`, `ThreadList`, `ThreadShown`, `ThreadsWaiting`, `Behind`.
+- The default-filling functions are those of probe 5: `committed` (detail `""`), `gate` (notes `[]`), `read` (statuses an empty `Map`), `listed` (more `0`), `added` (freshness `null`, minted `[]`, paths `[]`), and `written` (committed `null`, about `null`); `Shown` has none, since every call passes all its fields (probe 5).
+- `LodgeError` extends `Error` with `exitCode` 2 and `name` its class name; `Conflict` sets `exitCode` 1, and `StaleList` extends it; `NotFound` extends `LodgeError`.
+- `coreSettings(table)` calls `parseCoreSettings` and throws `new LodgeError(".lodge.toml: " + message)` for a `SettingsError`, as `src/lodge/app/errors.py:28-33`; it shares its name with `#core`'s default-filling `coreSettings`, so `errors.ts` imports that one as `import { coreSettings as defaultCoreSettings }` if it needs it.
+- `Store.attachmentTexts()` is an addition for plan 4's export, which writes every file of the project; `MemoryStore` answers with its files under `lodge/attachments/`.
+- `Actor`, `person`, `agent`, `actorText`, `Role`, `Projects`, `stampOf`, and `minuteOf` are additions (d-vwsnz5, d-wx7d0f), declared here so that lanes B and C build on one port: `actorText(person("ada"))` is `"ada"`, `actorText(agent())` is `"agent"`, and `actorText(agent("builder"))` is `"agent builder"`.
+- `time.ts`, exported through `#app` as additions, since the store stamps its events with them (Task 7b):
+  ```ts
+  export function stampOf(now: Now): string    // datetime.isoformat(timespec="seconds"): "2026-10-29T09:30:00+01:00"
+  export function minuteOf(now: Now): string   // strftime(MINUTE_FORMAT), "%Y-%m-%d %H:%M" in the offset's own time: "2026-10-29 09:30"
+  ```
+  Both compute from `new Date(now.epochMs + now.offsetMinutes * 60_000)` and its UTC methods (d-mfskz3), the offset written `+HH:MM` or `-HH:MM`, `+00:00` for zero.
+- `fakes.ts` carries `tests/app/fakes.py`; its constructors stay positional, since d-vd3175 binds `app` only, so the carried keyword calls are written out: `CountingIds(step=0)` (`tests/app/test_writes.py:149`) is `new CountingIds(1, 0)`, `CountingIds(first=9, step=-1)` (`tests/app/test_thread_ops.py:186`) is `new CountingIds(9, -1)`, and `FixedClock(step=timedelta(seconds=1))` (`tests/app/test_writes.py:39`) is `new FixedClock(START, 1000)`:
+  - `START: Now`, 2026-10-29 09:30 at offset +01:00 (`epochMs` from `instant("2026-10-29T09:30:00+01:00")` of `#core`, `offsetMinutes` 60);
+  - `MemoryStore(items: (Area | Decision | SpecEntry)[] = [], options: { staged?: boolean } = {})`, building its trees with `tree()` of `#core`, with `files` and `published` as `Map`s, `staged`, `rev`, `commits`, `commitResult`, `stamp`, `publishes` (each `[Map, message]`), `attempts`, `gateFor`, and `movesAfterRead` and `rejectNext`, its methods `async` and otherwise line for line `fakes.py`'s;
+  - `FixedClock(start: Now = START, stepMs = 0)`, with `calls`, `slept` (seconds), `now()`, and `async sleep(seconds)`, which adds `seconds * 1000` to `start`;
+  - `CountingIds(first = 1, step = 1)`, with `draws` and `entropy()` giving six equal bytes.
+- `filesOf` and the builders come from `ts/tests/core/builders.ts`, as `fakes.py` imports them from `builders`.
+
+- [ ] **Step 1: Write the failing tests.**
+  - `time.test.ts`: `stamp_keeps_the_offset` (`START` gives `2026-10-29T09:30:00+01:00`, and `isStamp` of `#core` accepts it); `stamp_drops_the_fraction` (`START` plus 999 ms gives the same stamp); `negative_and_zero_offsets` (offset -150 gives `-02:30`, offset 0 gives `+00:00`); `minute_is_local_to_the_offset` (`START` gives `2026-10-29 09:30`, and the same instant at offset 0 gives `2026-10-29 08:30`); `minute_crosses_midnight` (23:59 UTC at offset +60 gives the next day's `00:59`).
+  - `ports.test.ts`: `actor_text_names_the_person_or_the_role`; `default_filling_functions_fill_python_defaults` (each of the six against the defaults above).
+  - `errors.test.ts`: `exit_codes_follow_lodge_0_2` (`LodgeError` 2, `NotFound` 2, `Conflict` 1, `StaleList` 1, each `instanceof` its base); `core_settings_reports_a_bad_table_as_a_lodge_error` (a `[length]` table with a negative number throws a `LodgeError` whose message starts `.lodge.toml: `).
+- [ ] **Step 2: Run** `cd ts && bun test tests/app`; expected: the new tests FAIL.
+- [ ] **Step 3: Implement** the interfaces above, `ts/tests/app/fakes.ts` with them; add `#app` to `package.json`'s `imports` and `tests/app/fakes.ts` to `ts/knip.json`'s `entry`.
+- [ ] **Step 4: Run** `sh scripts/check-ts.sh`; green; flip `tests/app/fakes.py` to `ported`; run it again.
+- [ ] **Step 5: Coordinator:** `sh scripts/check.sh`, commit, push.
+
+
+exec
+/bin/bash -lc 'cat CLAUDE.md; cat src/lodge/app/{errors,ports,results}.py; cat tests/app/fakes.py' in /var/tmp/lodge-store-a
+ succeeded in 0ms:
+# lodge
+
+Knowledge tool for agent-built software: decisions and specification entries, levelled reads, a check.
+Authority: `lodge spec`; the plan argues from it, never over it.
+Run `uv run --frozen --quiet lodge waiting` at the start of a session and answer what waits for an agent first.
+Read decisions and her rulings with `lodge show` and `lodge search`; her own decisions have `decided_by: author` (`lodge search --by author`).
+The entries are agent text written from the design documents (the first approved by her, the viewer design by the advisor, d-7w5aq0), awaiting her confirmation through the viewer.
+Both design documents (`docs/superpowers/specs/2026-10-29-lodge-design.md` and `docs/superpowers/specs/2026-10-31-lodge-viewer-interaction-design.md`) are frozen history.
+Read through lodge, never by opening record files; run `uv run --frozen --quiet lodge guide` for the writing rules.
+Drafts go under `.drafts/`, and `lodge add --dry-run` precedes every `lodge add`.
+Open plans in `docs/superpowers/plans/`, each with `-progress.md` (the ledger) and a folder of briefs, reports, and reviews.
+Plan's last task merged → same branch `git mv`s plan, progress, folder to `docs/superpowers/plans/done/`, links fixed (`git grep 'plans/<file>'` = 0 outside `done/`).
+
+## Commands
+
+`sh scripts/check.sh` (the whole gate: ruff format, ruff, mypy strict, vulture, pytest, and once lodge holds records `lodge check --gate`) · `uv run pytest <files> -q` · `uv run lodge …`.
+Code: `src/lodge/{core,app,gitstore,cli,viewer,hook}` behind front doors (`__init__.py`), wired in `src/lodge/main.py`; tests in `tests/`, `tests/structure_rules.py` the import and size rules.
+
+## Structure checks
+
+`tests/test_structure.py` runs in every pytest: allowed imports, front doors, no cycles, modules ≤ 300 lines, core purity, I/O confinement (LODGE-5).
+There is no baseline: lodge starts clean.
+Fix a violation in the code; never loosen a rule to pass.
+Raising a limit or adding an allowed edge is the author's call, recorded as a decision.
+In `core` and `app`, take the time and randomness through the ports; never read the clock or `secrets`.
+
+## Hard rules
+
+- Test-first; see each new test fail before its code; all existing tests keep passing.
+- Public repository: no personal paths, machine names, secrets, or another project's records in code, tests, or docs; fixtures synthetic (a made-up project), never her words or another project's records.
+- Tests never touch a real repository: git only in `tmp_path` with `GIT_CONFIG_GLOBAL` empty, `GIT_CONFIG_NOSYSTEM=1`, `git init -b main`; no network.
+- Record files are written only through `lodge add`, never by hand, here too.
+- The hook in `.claude/settings.json` advises on a hand edit of a record file or of a file matching a `frozen` glob in `.lodge.toml` (both design documents and the done ledger of the first build); those files are not edited.
+- User-facing text and Markdown: British English, no em-dashes, Oxford comma, one sentence per line.
+
+## Build process (adapted from an existing project)
+
+Plan → plan review (two angles) → one fix round → rechecks until 0 Blocking, 0 Important → preflight scan in the ledger (each task's Produces against the next tasks' Consumes) → build.
+Agents in `.claude/agents/`: `builder` (Sonnet, one task from its brief), `reviewer` (Opus, first reviews), `rechecker` (fix diffs), `integrator` (merges, rulings), `planner` (plans, fix rounds).
+Tasks run in order on one build branch in its own worktree; each task: brief, build, report, review (correctness, then practice, then design), fix round if needed, ledger line.
+Minors are parked in the ledger and taken by the next round touching those files.
+Final whole-branch review, fix wave, recheck.
+A finding that conflicts with the plan is recorded with `lodge add` (scope `process`, `work_item` the plan), with a handle per argument and the cost if wrong in its reasoning.
+The ledger line gives the decision's ID; a ruling that changes what the spec says goes to the author.
+
+## Git
+
+Branch per work item; `main` takes only merges, and code reaches `main` only on the author's go.
+`git -c user.name="Svenja Kernig" -c user.email=20756868+Kiibou-chan@users.noreply.github.com commit` with explicit paths, trailer `Co-Authored-By: Claude <noreply@anthropic.com>`; push the branch to `origin` (GitHub) after each commit; never push `main` from a builder, reviewer, or rechecker.
+"""The errors a command reports as one sentence."""
+
+from collections.abc import Mapping
+
+from lodge.core import CoreSettings, SettingsError, parse_core_settings
+
+
+class LodgeError(Exception):
+    """A usage or environment error; the command line exits 2."""
+
+    exit_code: int = 2
+
+
+class NotFound(LodgeError):
+    """No record or area has the name given; the command line exits 2."""
+
+
+class Conflict(LodgeError):
+    """Another change got in the way; the command line exits 1."""
+
+    exit_code = 1
+
+
+class StaleList(Conflict):
+    """The confirmation list changed since it was displayed."""
+
+
+def core_settings(table: Mapping[str, object]) -> CoreSettings:
+    """The core settings of a parsed `.lodge.toml`, an error in them reported as a `LodgeError`."""
+    try:
+        return parse_core_settings(table)
+    except SettingsError as error:
+        raise LodgeError(f".lodge.toml: {error}") from error
+"""What the operations need from outside: the store, the clock, and the entropy."""
+
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
+from datetime import datetime
+from enum import StrEnum
+from typing import Protocol
+
+from lodge.core import Tree
+
+
+class PublishOutcome(StrEnum):
+    PUBLISHED = "published"
+    STAGED = "staged"
+    REJECTED = "rejected"
+
+
+class CommitOutcome(StrEnum):
+    COMMITTED = "committed"
+    ON_BASE = "on the base branch"
+    DETACHED = "on a detached HEAD"
+    IN_PROGRESS = "during a merge, rebase, cherry-pick, or revert"
+    LOCKED = "git's index is locked by another process"
+    FAILED = "git could not commit"
+
+
+@dataclass(frozen=True)
+class Committed:
+    outcome: CommitOutcome
+    detail: str = ""
+
+
+@dataclass(frozen=True)
+class Gate:
+    """What `check --gate` compares: each of the `checked` states, by label, with `published`.
+
+    A label is empty when there is one state; `notes` are printed with the result.
+    """
+
+    published: Tree
+    checked: tuple[tuple[str, Tree], ...]
+    notes: tuple[str, ...] = ()
+
+
+class Store(Protocol):
+    def commit(self, paths: Sequence[str], message: str) -> Committed:
+        """Commit exactly `paths` with the checkout's identity and hooks.
+
+        Leave other staged files staged; the outcome says why when it does not commit.
+        """
+        ...
+
+    def trees(self) -> tuple[Tree, Tree]:
+        """The current and the published state, from one read."""
+        ...
+
+    def freshness(self) -> str | None:
+        """How fresh the data is when it comes from a shared branch; None when it is local."""
+        ...
+
+    def gate(self, current: Tree) -> Gate:
+        """What the gate compares for `current`, the tree `trees` returned; a `LodgeError` when
+        there is no published state to compare with."""
+        ...
+
+    def publish(self, base: Tree, writes: Mapping[str, str], message: str) -> PublishOutcome:
+        """Write `writes` on top of `base`; REJECTED when a path in `writes`, or the branch tip, no
+        longer matches `base`."""
+        ...
+
+
+class Clock(Protocol):
+    def now(self) -> datetime:
+        """The time, timezone-aware."""
+        ...
+
+    def sleep(self, seconds: float) -> None:
+        """Wait, so that `now` moves on by at least `seconds`."""
+        ...
+
+
+class IdSource(Protocol):
+    def entropy(self) -> bytes:
+        """At least six random bytes."""
+        ...
+"""What the operations return."""
+
+from collections.abc import Mapping
+from dataclasses import dataclass, field
+from enum import StrEnum
+
+from lodge.app.ports import Committed
+from lodge.core import Branch, CheckResult, Feedback, Level1, Level3, Problem, Thread
+
+
+class AddOutcome(StrEnum):
+    PUBLISHED = "published"
+    STAGED = "staged"
+    CHECK_FAILED = "check failed"
+    DRY_RUN = "dry run"
+    UNCHANGED = "nothing changed"
+
+
+@dataclass(frozen=True)
+class Read:
+    """What every read carries: freshness, the problems no record holds, and every status."""
+
+    freshness: str | None
+    unrecorded: tuple[Problem, ...]
+    statuses: Mapping[str, str] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class Shown:
+    level1: Level1
+    level2: str | None
+    level3: Level3 | None
+    read: Read
+    changing: tuple[Level1, ...] = ()
+    threads: tuple[Thread, ...] = ()
+    confirmable: bool = False
+    rests_on: tuple[Branch, ...] = ()
+    supports: tuple[Level1, ...] = ()
+
+
+@dataclass(frozen=True)
+class Listed:
+    items: tuple[Level1, ...]
+    read: Read
+    more: int = 0
+
+
+@dataclass(frozen=True)
+class Added:
+    ids: tuple[str, ...]
+    feedback: tuple[Feedback, ...]
+    check: CheckResult
+    outcome: AddOutcome
+    freshness: str | None = None
+    minted: tuple[str, ...] = ()
+    paths: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
+class Written:
+    ids: tuple[str, ...]
+    outcome: AddOutcome
+    check: CheckResult
+    committed: Committed | None = None
+    about: str | None = None
+
+
+@dataclass(frozen=True)
+class ThreadList:
+    items: tuple[Thread, ...]
+    titles: Mapping[str, str]
+    read: Read
+
+
+@dataclass(frozen=True)
+class ThreadShown:
+    thread: Thread
+    about: Level1 | None
+    read: Read
+
+
+@dataclass(frozen=True)
+class ThreadsWaiting:
+    for_agent: tuple[Thread, ...]
+    for_author: tuple[Thread, ...]
+    titles: Mapping[str, str]
+    read: Read
+
+
+@dataclass(frozen=True)
+class Behind:
+    decision: Level1
+    entries: tuple[tuple[str, str], ...]
+"""In-memory ports for the app tests; the project is made up."""
+
+from collections.abc import Mapping, Sequence
+from datetime import datetime, timedelta, timezone
+
+from builders import files_of
+
+from lodge.app import CommitOutcome, Committed, Gate, PublishOutcome
+from lodge.core import Area, Decision, SpecEntry, Tree
+
+START = datetime(2026, 10, 29, 9, 30, tzinfo=timezone(timedelta(hours=1)))
+
+
+class MemoryStore:
+    """One tree, or with `staged=True` a working tree and a published one that stays put.
+
+    Another session's change lands as `moves_after_read` (after the next `trees()`) or as one of
+    `reject_next`'s changes (applied, then the publish is rejected).
+    """
+
+    def __init__(self, *items: Area | Decision | SpecEntry, staged: bool = False) -> None:
+        self.files = files_of(*items)
+        self.published = dict(self.files)
+        self.staged = staged
+        self.rev = 0
+        self.commits: list[tuple[tuple[str, ...], str]] = []
+        self.commit_result = Committed(CommitOutcome.COMMITTED)
+        self.stamp: str | None = "fetched 2026-10-29T08:00:00+00:00"
+        self.publishes: list[tuple[dict[str, str], str]] = []
+        self.attempts = 0
+        self.gate_for: Gate | None = None
+        self._moves: list[Mapping[str, str]] = []
+        self._rejections: list[Mapping[str, str]] = []
+
+    def commit(self, paths: Sequence[str], message: str) -> Committed:
+        self.commits.append((tuple(paths), message))
+        return self.commit_result
+
+    def trees(self) -> tuple[Tree, Tree]:
+        current = Tree(str(self.rev), dict(self.files))
+        published = Tree(str(self.rev), dict(self.published)) if self.staged else current
+        if self._moves:
+            self._land(self._moves.pop(0))
+        return current, published
+
+    def freshness(self) -> str | None:
+        return self.stamp
+
+    def gate(self, current: Tree) -> Gate:
+        if self.gate_for is not None:
+            return self.gate_for
+        published = Tree(str(self.rev), dict(self.published)) if self.staged else current
+        return Gate(published, (("", current),))
+
+    def publish(self, base: Tree, writes: Mapping[str, str], message: str) -> PublishOutcome:
+        self.attempts += 1
+        if self._rejections:
+            self._land(self._rejections.pop(0))
+            return PublishOutcome.REJECTED
+        if base.rev != str(self.rev):
+            return PublishOutcome.REJECTED
+        self.publishes.append((dict(writes), message))
+        self.files.update(writes)
+        self.rev += 1
+        if not self.staged:
+            self.published = dict(self.files)
+        return PublishOutcome.STAGED if self.staged else PublishOutcome.PUBLISHED
+
+    def moves_after_read(self, change: Mapping[str, str]) -> None:
+        self._moves.append(change)
+
+    def reject_next(self, *changes: Mapping[str, str]) -> None:
+        self._rejections.extend(changes)
+
+    def _land(self, change: Mapping[str, str]) -> None:
+        self.files.update(change)
+        self.rev += 1
+        if not self.staged:
+            self.published = dict(self.files)
+
+
+class FixedClock:
+    """The reading `start`, then one `step` later at each further call; sleeping moves it on."""
+
+    def __init__(self, start: datetime = START, step: timedelta = timedelta(0)) -> None:
+        self.start = start
+        self.step = step
+        self.calls = 0
+        self.slept: list[float] = []
+
+    def now(self) -> datetime:
+        self.calls += 1
+        return self.start + self.step * (self.calls - 1)
+
+    def sleep(self, seconds: float) -> None:
+        self.slept.append(seconds)
+        self.start += timedelta(seconds=seconds)
+
+
+class CountingIds:
+    """Entropy of six equal bytes, counting up from `first`: the IDs `x-111111`, `x-222222`, ..."""
+
+    def __init__(self, first: int = 1, step: int = 1) -> None:
+        self.next = first
+        self.step = step
+        self.draws = 0
+
+    def entropy(self) -> bytes:
+        self.draws += 1
+        value = self.next
+        self.next += self.step
+        return bytes([value]) * 6
+
+exec
+/bin/bash -lc 'cat ts/tests/core/builders.ts; cat ts/package.json; cat ts/knip.json; cat ts/src/core/index.ts; rg --files -g AGENTS.md' in /var/tmp/lodge-store-a
+ exited 1 in 0ms:
+import {
+  type Area,
+  areaPath,
+  type Decision,
+  type Message,
+  area as makeArea,
+  decision as makeDecision,
+  message as makeMessage,
+  newRecordPath,
+  type Problem,
+  Raises,
+  type Record,
+  Scope,
+  type Snapshot,
+  type SpecEntry,
+  specEntry,
+  type Thread,
+  ThreadState,
+  threadPath,
+  tree,
+  writeArea,
+  writeRecord,
+  writeThread,
+} from "#core";
+
+let numbers = 0;
+const ALPHABET = "0123456789abcdefghjkmnpqrstvwxyz";
+function nextId(prefix: string): string {
+  const n = ++numbers;
+  return `${prefix}-${ALPHABET[Math.floor(n / 1024) % 32]}${ALPHABET[Math.floor(n / 32) % 32]}${ALPHABET[n % 32]}000`;
+}
+export function at(minute: number): string {
+  return `2026-10-28T${String(10 + Math.floor(minute / 60)).padStart(2, "0")}:${String(minute % 60).padStart(2, "0")}:00+01:00`;
+}
+export function decision(kw: Partial<Decision> = {}): Decision {
+  const value = {
+    id: nextId("d"),
+    title: "A decision",
+    scope: Scope.PRODUCT,
+    decidedBy: "coordinator",
+    date: at(0),
+    statement: "A statement.",
+    ...kw,
+  };
+  return makeDecision({
+    ...value,
+    ...(value.decidedBy === "author" && !("quote" in kw) && !("importedFrom" in kw)
+      ? { quote: { text: "Do it.", where: "a session", when: "2026-10-28 10:00" } }
+      : {}),
+  });
+}
+export function entry(kw: Partial<SpecEntry> = {}): SpecEntry {
+  return specEntry({
+    id: nextId("s"),
+    area: "storage",
+    title: "An entry",
+    statement: "What holds now.",
+    ...kw,
+  });
+}
+export function area(kw: Partial<Area> = {}): Area {
+  return makeArea({ name: "storage", title: "Storage", intro: "", order: [], ...kw });
+}
+export function message(kw: Partial<Message> = {}): Message {
+  return makeMessage({ by: "coordinator", when: at(0), text: "A message.", ...kw });
+}
+export function thread(kw: Partial<Thread> = {}): Thread {
+  return {
+    kind: "thread",
+    id: nextId("q"),
+    about: "s-aaaaaa",
+    raises: Raises.DOUBT,
+    state: ThreadState.OPEN,
+    opened: at(0),
+    messages: [message()],
+    ...kw,
+  };
+}
+type Item = Record | Area | Thread;
+export function filesOf(...items: Item[]): Map<string, string> {
+  return new Map(
+    items.map((i) =>
+      i.kind === "thread"
+        ? [threadPath(i.id), writeThread(i)]
+        : i.kind === "area"
+          ? [areaPath(i.name), writeArea(i)]
+          : [newRecordPath(i), writeRecord(i)],
+    ),
+  );
+}
+// Keeps items as given, without parsing, so tests can construct defects no store could hold.
+export function snapshotOf(
+  items: readonly Item[],
+  options: {
+    attachments?: readonly string[];
+    paths?: ReadonlyMap<string, string> | null;
+    problems?: readonly Problem[];
+  } = {},
+): Snapshot {
+  return {
+    decisions: new Map(items.filter((i) => i.kind === "decision").map((i) => [i.id, i])),
+    entries: new Map(items.filter((i) => i.kind === "spec").map((i) => [i.id, i])),
+    areas: new Map(items.filter((i) => i.kind === "area").map((i) => [i.name, i])),
+    threads: new Map(items.filter((i) => i.kind === "thread").map((i) => [i.id, i])),
+    paths: new Map([
+      ...items.flatMap((i) =>
+        i.kind === "area"
+          ? []
+          : [[i.id, i.kind === "thread" ? threadPath(i.id) : newRecordPath(i)] as const],
+      ),
+      ...(options.paths ?? []),
+    ]),
+    problems: options.problems ?? [],
+    attachments: new Set(options.attachments ?? []),
+  };
+}
+export function treeOf(...items: Item[]) {
+  return tree({ rev: null, files: filesOf(...items) });
+}
+{
+  "name": "lodge",
+  "private": true,
+  "type": "module",
+  "packageManager": "bun@1.3.14",
+  "imports": {
+    "#core": "./src/core/index.ts"
+  },
+  "scripts": {
+    "check": "biome check --error-on-warnings . && tsc --noEmit -p . && depcruise src tests scripts --config .dependency-cruiser.cjs && knip && bun test"
+  },
+  "dependencies": {
+    "@noble/hashes": "2.4.0",
+    "kysely": "0.29.7",
+    "yaml": "2.9.1"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.15",
+    "@types/bun": "1.4.3",
+    "dependency-cruiser": "18.6.0",
+    "knip": "6.42.0",
+    "typescript": "6.0.3"
+  }
+}
+{
+  "entry": ["tests/**/*.test.ts", "scripts/*.ts"],
+  "project": ["src/**/*.ts", "tests/**/*.ts", "scripts/**/*.ts"],
+  "ignoreDependencies": ["kysely"]
+}
+export { type Applied, applyDrafts, type StaleBase } from "./apply.ts";
+export { checkChange } from "./check-change.ts";
+export { type CheckResult, checkResult, checkState } from "./check-state.ts";
+export {
+  behindArea,
+  confirmableIds,
+  confirmationDraft,
+  MINUTE_FORMAT,
+  VIEWER,
+} from "./confirmation.ts";
+export { type Derived, derive, isAuthor } from "./derive.ts";
+export { type Draft, parseDraft, recordFromDraft } from "./drafts.ts";
+export * from "./errors.ts";
+export { areaFeedback, type Feedback, feedback } from "./feedback.ts";
+export {
+  areaPath,
+  contentHash,
+  newRecordPath,
+  parseArea,
+  parseRecord,
+  slug,
+  writeArea,
+  writeRecord,
+} from "./fileformat.ts";
+export * from "./ids.ts";
+export {
+  Action,
+  type Area,
+  area,
+  type Change,
+  type Decision,
+  decision,
+  type Imported,
+  type Message,
+  message,
+  type NumberHandle,
+  type Problem,
+  problem,
+  type Quote,
+  Raises,
+  type Record,
+  Scope,
+  type SpecEntry,
+  specEntry,
+  type Thread,
+  ThreadState,
+} from "./model.ts";
+export {
+  areaNames,
+  type Branch,
+  derivedOrder,
+  type Placement,
+  restsOnTree,
+  writtenOrder,
+} from "./order.ts";
+export { type Placed, renderSpec, type SpecArea, specView } from "./render.ts";
+export {
+  AmbiguousRef,
+  type Filters,
+  filters,
+  related,
+  resolve,
+  search,
+  searchCounted,
+} from "./search.ts";
+export * from "./settings.ts";
+export * from "./snapshot.ts";
+export * from "./stamps.ts";
+export * from "./text.ts";
+export * from "./threads.ts";
+export {
+  failingIds,
+  formatLevel1,
+  formatLevel3,
+  headParts,
+  type Level1,
+  type Level3,
+  level1,
+  level2,
+  level2Views,
+  level3,
+  unrecordedProblems,
+} from "./views.ts";
+export { loadYaml, YamlError } from "./yamlio.ts";
+
+exec
+/bin/bash -lc "uv run --frozen --quiet lodge waiting; git status --short; git branch --show-current; cat ts/src/core/settings.ts | head -80; rg 'fakes.py' ts/tests/parity.json" in /var/tmp/lodge-store-a
+ succeeded in 879ms:
+waiting for an agent
+nothing
+
+waiting for the author
+nothing
+?? docs/superpowers/plans/2026-11-02-lodge-server-store/task-2-codex.log
+server-store-a
+import { ValueError } from "./errors.ts";
+export class SettingsError extends ValueError {
+  override name = "SettingsError";
+}
+export interface LengthGuidance {
+  readonly titleChars: number;
+  readonly decisionStatementWords: number;
+  readonly specStatementWords: number;
+  readonly reasoningWords: number;
+}
+export function lengthGuidance(value: Partial<LengthGuidance> = {}): LengthGuidance {
+  return {
+    titleChars: 100,
+    decisionStatementWords: 80,
+    specStatementWords: 150,
+    reasoningWords: 1000,
+    ...value,
+  };
+}
+export interface CoreSettings {
+  readonly length: LengthGuidance;
+  readonly importSources: readonly string[];
+}
+export function coreSettings(value: Partial<CoreSettings> = {}): CoreSettings {
+  return { length: lengthGuidance(), importSources: [], ...value };
+}
+function isTable(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+function section(table: Readonly<Record<string, unknown>>, name: string): Record<string, unknown> {
+  const value = Object.hasOwn(table, name) ? table[name] : {};
+  if (!isTable(value)) throw new SettingsError(`${name} must be a table`);
+  return value;
+}
+export function parseCoreSettings(table: Readonly<Record<string, unknown>>): CoreSettings {
+  for (const [name, value] of Object.entries(table)) {
+    if (["store", "hook", "length", "import"].includes(name)) continue;
+    throw new SettingsError(isTable(value) ? `unknown section [${name}]` : `unknown key ${name}`);
+  }
+  const names = {
+    title_chars: "titleChars",
+    decision_statement_words: "decisionStatementWords",
+    spec_statement_words: "specStatementWords",
+    reasoning_words: "reasoningWords",
+  } as const;
+  const values: Partial<{ -readonly [K in keyof LengthGuidance]: number }> = {};
+  for (const [key, value] of Object.entries(section(table, "length"))) {
+    if (!Object.hasOwn(names, key)) throw new SettingsError(`unknown key length.${key}`);
+    if (typeof value !== "number" || !Number.isInteger(value) || value < 1)
+      throw new SettingsError(`length.${key} must be a positive whole number`);
+    values[names[key as keyof typeof names]] = value;
+  }
+  const imports = section(table, "import");
+  for (const key of Object.keys(imports))
+    if (key !== "sources") throw new SettingsError(`unknown key import.${key}`);
+  const { sources = [] } = imports;
+  if (!Array.isArray(sources) || !sources.every((s) => typeof s === "string" && s !== ""))
+    throw new SettingsError("import.sources must be a list of file names");
+  return coreSettings({ length: lengthGuidance(values), importSources: [...sources] });
+}
+  "tests/app/fakes.py": {
+
+exec
+/bin/bash -lc "mkdir -p ts/tests/app ts/src/app
+cat > ts/tests/app/time.test.ts <<'EOF'
+import { expect, test } from \"bun:test\";
+import { minuteOf, stampOf } from \"#app\";
+import { instant, isStamp } from \"#core\";
+import { START } from \"./fakes.ts\";
+
+test(\"stamp_keeps_the_offset\", () => {
+  expect(stampOf(START)).toBe(\"2026-10-29T09:30:00+01:00\");
+  expect(isStamp(stampOf(START))).toBe(true);
+});
+test(\"stamp_drops_the_fraction\", () => {
+  expect(stampOf({ ...START, epochMs: START.epochMs + 999 })).toBe(stampOf(START));
+});
+test(\"negative_and_zero_offsets\", () => {
+  expect(stampOf({ ...START, offsetMinutes: -150 })).toBe(\"2026-10-29T06:00:00-02:30\");
+  expect(stampOf({ ...START, offsetMinutes: 0 })).toBe(\"2026-10-29T08:30:00+00:00\");
+});
+test(\"minute_is_local_to_the_offset\", () => {
+  expect(minuteOf(START)).toBe(\"2026-10-29 09:30\");
+  expect(minuteOf({ ...START, offsetMinutes: 0 })).toBe(\"2026-10-29 08:30\");
+});
+test(\"minute_crosses_midnight\", () => {
+  expect(minuteOf({ epochMs: instant(\"2026-10-29T23:59:00+00:00\"), offsetMinutes: 60 })).toBe(\"2026-10-30 00:59\");
+});
+EOF
+cat > ts/tests/app/ports.test.ts <<'EOF'
+import { expect, test } from \"bun:test\";
+import { actorText, added, AddOutcome, agent, committed, CommitOutcome, gate, listed, person, read, written } from \"#app\";
+import { checkResult, tree } from \"#core\";
+
+test(\"actor_text_names_the_person_or_the_role\", () => {
+  expect(actorText(person(\"ada\"))).toBe(\"ada\");
+  expect(actorText(agent())).toBe(\"agent\");
+  expect(actorText(agent(\"builder\"))).toBe(\"agent builder\");
+});
+test(\"default_filling_functions_fill_python_defaults\", () => {
+  const current = tree({ rev: null, files: new Map() });
+  const reading = read({ freshness: null, unrecorded: [] });
+  const check = checkResult({});
+  expect(committed({ outcome: CommitOutcome.COMMITTED }).detail).toBe(\"\");
+  expect(gate({ published: current, checked: [[\"\", current]] }).notes).toEqual([]);
+  expect(reading.statuses).toEqual(new Map());
+  expect(listed({ items: [], read: reading }).more).toBe(0);
+  expect(added({ ids: [], feedback: [], check, outcome: AddOutcome.PUBLISHED })).toEqual({ ids: [], feedback: [], check, outcome: AddOutcome.PUBLISHED, freshness: null, minted: [], paths: [] });
+  expect(written({ ids: [], outcome: AddOutcome.PUBLISHED, check })).toEqual({ ids: [], outcome: AddOutcome.PUBLISHED, check, committed: null, about: null });
+});
+EOF
+cat > ts/tests/app/errors.test.ts <<'EOF'
+import { expect, test } from \"bun:test\";
+import { Conflict, coreSettings, LodgeError, NotFound, StaleList } from \"#app\";
+
+test(\"exit_codes_follow_lodge_0_2\", () => {
+  for (const [ErrorClass, code] of [[LodgeError, 2], [NotFound, 2], [Conflict, 1], [StaleList, 1]] as const) {
+    const error = new ErrorClass(\"problem\");
+    expect(error.exitCode).toBe(code);
+    expect(error).toBeInstanceOf(LodgeError);
+    expect(error).toBeInstanceOf(Error);
+    expect(error.name).toBe(ErrorClass.name);
+  }
+  expect(new StaleList(\"problem\")).toBeInstanceOf(Conflict);
+});
+test(\"core_settings_reports_a_bad_table_as_a_lodge_error\", () => {
+  expect(() => coreSettings({ length: { title_chars: -1 } })).toThrow(LodgeError);
+  expect(() => coreSettings({ length: { title_chars: -1 } })).toThrow(/"'^'"\\.lodge\\.toml: /u);
+});
+EOF
+cd ts && bun test tests/app" in /var/tmp/lodge-store-a
+ exited 1 in 0ms:
+bun test v1.3.14 (0d9b296a)
+
+tests/app/time.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find package '#app' from '/var/tmp/lodge-store-a/ts/tests/app/time.test.ts'
+-------------------------------
+
+
+tests/app/errors.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find package '#app' from '/var/tmp/lodge-store-a/ts/tests/app/errors.test.ts'
+-------------------------------
+
+
+tests/app/ports.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find package '#app' from '/var/tmp/lodge-store-a/ts/tests/app/ports.test.ts'
+-------------------------------
+
+
+ 0 pass
+ 3 fail
+ 3 errors
+Ran 3 tests across 3 files. [13.00ms]
+
+exec
+/bin/bash -lc "cat > ts/src/app/ports.ts <<'EOF'
+import type { Tree } from \"#core\";
+
+export interface Now { readonly epochMs: number; readonly offsetMinutes: number }
+export interface Clock { now(): Now; sleep(seconds: number): Promise<void> }
+export interface IdSource { entropy(): Uint8Array }
+export const PublishOutcome = { PUBLISHED: \"published\", STAGED: \"staged\", REJECTED: \"rejected\" } as const;
+export type PublishOutcome = typeof PublishOutcome[keyof typeof PublishOutcome];
+export const CommitOutcome = {
+  COMMITTED: \"committed\", ON_BASE: \"on the base branch\", DETACHED: \"on a detached HEAD\",
+  IN_PROGRESS: \"during a merge, rebase, cherry-pick, or revert\", LOCKED: \"git's index is locked by another process\", FAILED: \"git could not commit\",
+} as const;
+export type CommitOutcome = typeof CommitOutcome[keyof typeof CommitOutcome];
+export interface Committed { readonly outcome: CommitOutcome; readonly detail: string }
+export function committed(value: Pick<Committed, \"outcome\"> & Partial<Committed>): Committed {
+  return { detail: \"\", ...value };
+}
+export interface Gate {
+  readonly published: Tree;
+  readonly checked: readonly (readonly [string, Tree])[];
+  readonly notes: readonly string[];
+}
+export function gate(value: Omit<Gate, \"notes\"> & Partial<Gate>): Gate { return { notes: [], ...value }; }
+export interface Store {
+  commit(paths: readonly string[], message: string): Promise<Committed>;
+  trees(): Promise<readonly [Tree, Tree]>;
+  attachmentTexts(): Promise<ReadonlyMap<string, string>>;
+  freshness(): Promise<string | null>;
+  gate(current: Tree): Promise<Gate>;
+  publish(base: Tree, writes: ReadonlyMap<string, string>, message: string): Promise<PublishOutcome>;
+}
+export type Actor = { readonly kind: \"person\"; readonly name: string } | { readonly kind: \"agent\"; readonly role: string | null };
+export function person(name: string): Actor { return { kind: \"person\", name }; }
+export function agent(role: string | null = null): Actor { return { kind: \"agent\", role }; }
+export function actorText(actor: Actor): string {
+  return actor.kind === \"person\" ? actor.name : actor.role === null ? \"agent\" : "'`agent ${actor.role}`;
+}
+export const Role = { OWNER: "owner", MEMBER: "member" } as const;
+export type Role = typeof Role[keyof typeof Role];
+export interface Projects {
+  create(project: string, owner: string): Promise<void>;
+  members(project: string): Promise<ReadonlyMap<string, Role>>;
+  addMember(project: string, person: string, role: Role, by: Actor): Promise<void>;
+  storeFor(project: string, actor: Actor): Store;
+}
+EOF
+cat > ts/src/app/errors.ts <<'"'EOF'
+import { type CoreSettings, parseCoreSettings, SettingsError } from \"#core\";
+
+export class LodgeError extends Error {
+  readonly exitCode: number = 2;
+  constructor(message: string) {
+    super(message);
+    this.name = new.target.name;
+  }
+}
+export class NotFound extends LodgeError {}
+export class Conflict extends LodgeError { override readonly exitCode: number = 1; }
+export class StaleList extends Conflict {}
+export function coreSettings(table: Readonly<Record<string, unknown>>): CoreSettings {
+  try { return parseCoreSettings(table); }
+  catch (error) {
+    if ("'!(error instanceof SettingsError)) throw error;
+    throw new LodgeError(`.lodge.toml: ${error.message}`);
+  }
+}
+EOF
+cat > ts/src/app/results.ts <<'"'EOF'
+import type { Branch, CheckResult, Feedback, Level1, Level3, Problem, Thread } from \"#core\";
+import type { Committed } from \"./ports.ts\";
+
+export const AddOutcome = { PUBLISHED: \"published\", STAGED: \"staged\", CHECK_FAILED: \"check failed\", DRY_RUN: \"dry run\", UNCHANGED: \"nothing changed\" } as const;
+export type AddOutcome = typeof AddOutcome[keyof typeof AddOutcome];
+export interface Read {
+  readonly freshness: string | null;
+  readonly unrecorded: readonly Problem[];
+  readonly statuses: ReadonlyMap<string, string>;
+}
+export function read(value: Omit<Read, \"statuses\"> & Partial<Read>): Read { return { statuses: new Map(), ...value }; }
+export interface Shown {
+  readonly level1: Level1;
+  readonly level2: string | null;
+  readonly level3: Level3 | null;
+  readonly read: Read;
+  readonly changing: readonly Level1[];
+  readonly threads: readonly Thread[];
+  readonly confirmable: boolean;
+  readonly restsOn: readonly Branch[];
+  readonly supports: readonly Level1[];
+}
+export interface Listed { readonly items: readonly Level1[]; readonly read: Read; readonly more: number }
+export function listed(value: Omit<Listed, \"more\"> & Partial<Listed>): Listed { return { more: 0, ...value }; }
+export interface Added {
+  readonly ids: readonly string[];
+  readonly feedback: readonly Feedback[];
+  readonly check: CheckResult;
+  readonly outcome: AddOutcome;
+  readonly freshness: string | null;
+  readonly minted: readonly string[];
+  readonly paths: readonly string[];
+}
+export function added(value: Omit<Added, \"freshness\" | \"minted\" | \"paths\"> & Partial<Added>): Added {
+  return { freshness: null, minted: [], paths: [], ...value };
+}
+export interface Written {
+  readonly ids: readonly string[];
+  readonly outcome: AddOutcome;
+  readonly check: CheckResult;
+  readonly committed: Committed | null;
+  readonly about: string | null;
+}
+export function written(value: Omit<Written, \"committed\" | \"about\"> & Partial<Written>): Written {
+  return { committed: null, about: null, ...value };
+}
+export interface ThreadList { readonly items: readonly Thread[]; readonly titles: ReadonlyMap<string, string>; readonly read: Read }
+export interface ThreadShown { readonly thread: Thread; readonly about: Level1 | null; readonly read: Read }
+export interface ThreadsWaiting {
+  readonly forAgent: readonly Thread[];
+  readonly forAuthor: readonly Thread[];
+  readonly titles: ReadonlyMap<string, string>;
+  readonly read: Read;
+}
+export interface Behind { readonly decision: Level1; readonly entries: readonly (readonly [string, string])[] }
+EOF
+cat > ts/src/app/time.ts <<'EOF'
+import type { Now } from \"./ports.ts\";
+
+function localParts(now: Now): readonly [string, string, string] {
+  const date = new Date(now.epochMs + now.offsetMinutes * 60_000);
+  const pad = (n: number) => String(n).padStart(2, \"0\");
+  return [
+    "'`${String(date.getUTCFullYear()).padStart(4, "0")}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}`,
+    `${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}`,
+    pad(date.getUTCSeconds()),
+  ];
+}
+export function stampOf(now: Now): string {
+  const [day, minute, second] = localParts(now);
+  const offset = Math.abs(now.offsetMinutes);
+  return `${day}T${minute}:${second}${now.offsetMinutes < 0 ? "-" : "+"}${String(Math.floor(offset / 60)).padStart(2, "0")}:${String(offset % 60).padStart(2, "0")}`;
+}
+export function minuteOf(now: Now): string {
+  const [day, minute] = localParts(now);
+  return `${day} ${minute}`;
+}
+EOF
+cat > ts/src/app/index.ts <<'"'EOF'
+export * from \"./errors.ts\";
+export * from \"./ports.ts\";
+export * from \"./results.ts\";
+export * from \"./time.ts\";
+EOF
+python - <<'PY'
+import json
+p='ts/package.json'
+d=json.load(open(p));d['imports']['#app']='./src/app/index.ts';open(p,'w').write(json.dumps(d,indent=2)+'\\n')
+p='ts/knip.json';d=json.load(open(p));d['entry'].append('tests/app/fakes.ts');open(p,'w').write(json.dumps(d,indent=2)+'\\n')
+PY" in /var/tmp/lodge-store-a
+ succeeded in 0ms:
+codex
+The new tests failed as expected because `#app` was missing. The ports, results, errors, and time helpers are implemented; I’m now porting the test fakes before running the full TypeScript gate.
+exec
+/bin/bash -lc "cat > ts/tests/app/fakes.ts <<'EOF'
+import {
+  type Clock, type Committed, committed, CommitOutcome, type Gate, gate,
+  type IdSource, type Now, PublishOutcome, type Store,
+} from \"#app\";
+import { type Area, type Decision, instant, type SpecEntry, type Tree, tree } from \"#core\";
+import { filesOf } from \"../core/builders.ts\";
+
+export const START: Now = { epochMs: instant(\"2026-10-29T09:30:00+01:00\"), offsetMinutes: 60 };
+
+export class MemoryStore implements Store {
+  files: Map<string, string>;
+  published: Map<string, string>;
+  staged: boolean;
+  rev = 0;
+  commits: [readonly string[], string][] = [];
+  commitResult: Committed = committed({ outcome: CommitOutcome.COMMITTED });
+  stamp: string | null = \"fetched 2026-10-29T08:00:00+00:00\";
+  publishes: [Map<string, string>, string][] = [];
+  attempts = 0;
+  gateFor: Gate | null = null;
+  private moves: ReadonlyMap<string, string>[] = [];
+  private rejections: ReadonlyMap<string, string>[] = [];
+
+  constructor(items: (Area | Decision | SpecEntry)[] = [], options: { staged?: boolean } = {}) {
+    this.files = filesOf(...items);
+    this.published = new Map(this.files);
+    this.staged = options.staged ?? false;
+  }
+  async commit(paths: readonly string[], message: string): Promise<Committed> {
+    this.commits.push([[...paths], message]);
+    return this.commitResult;
+  }
+  async trees(): Promise<readonly [Tree, Tree]> {
+    const current = tree({ rev: String(this.rev), files: new Map(this.files) });
+    const published = this.staged ? tree({ rev: String(this.rev), files: new Map(this.published) }) : current;
+    const move = this.moves.shift();
+    if (move "'!== undefined) this.land(move);
+    return [current, published];
+  }
+  async attachmentTexts(): Promise<ReadonlyMap<string, string>> {
+    return new Map([...this.files].filter(([path]) => path.startsWith("lodge/attachments/")));
+  }
+  async freshness(): Promise<string | null> { return this.stamp; }
+  async gate(current: Tree): Promise<Gate> {
+    if (this.gateFor !== null) return this.gateFor;
+    const published = this.staged ? tree({ rev: String(this.rev), files: new Map(this.published) }) : current;
+    return gate({ published, checked: [["", current]] });
+  }
+  async publish(base: Tree, writes: ReadonlyMap<string, string>, message: string): Promise<PublishOutcome> {
+    this.attempts += 1;
+    const rejection = this.rejections.shift();
+    if (rejection !== undefined) {
+      this.land(rejection);
+      return PublishOutcome.REJECTED;
+    }
+    if (base.rev !== String(this.rev)) return PublishOutcome.REJECTED;
+    this.publishes.push([new Map(writes), message]);
+    this.land(writes);
+    return this.staged ? PublishOutcome.STAGED : PublishOutcome.PUBLISHED;
+  }
+  movesAfterRead(change: ReadonlyMap<string, string>): void { this.moves.push(change); }
+  rejectNext(...changes: ReadonlyMap<string, string>[]): void { this.rejections.push(...changes); }
+  private land(change: ReadonlyMap<string, string>): void {
+    for (const [path, text] of change) this.files.set(path, text);
+    this.rev += 1;
+    if (!this.staged) this.published = new Map(this.files);
+  }
+}
+export class FixedClock implements Clock {
+  calls = 0;
+  slept: number[] = [];
+  constructor(public start: Now = START, public stepMs = 0) {}
+  now(): Now {
+    this.calls += 1;
+    return { ...this.start, epochMs: this.start.epochMs + this.stepMs * (this.calls - 1) };
+  }
+  async sleep(seconds: number): Promise<void> {
+    this.slept.push(seconds);
+    this.start = { ...this.start, epochMs: this.start.epochMs + seconds * 1000 };
+  }
+}
+export class CountingIds implements IdSource {
+  draws = 0;
+  constructor(public next = 1, public step = 1) {}
+  entropy(): Uint8Array {
+    this.draws += 1;
+    const value = this.next;
+    this.next += this.step;
+    if (!Number.isInteger(value) || value < 0 || value > 255) throw new RangeError("byte must be in range(0, 256)");
+    return new Uint8Array(6).fill(value);
+  }
+}
+EOF
+cd ts && bunx biome check --write src/app tests/app package.json knip.json && bun test tests/app' in /var/tmp/lodge-store-a
+ succeeded in 0ms:
+Checked 11 files in 6ms. Fixed 8 files.
+bun test v1.3.14 (0d9b296a)
+
+ 9 pass
+ 0 fail
+ 36 expect() calls
+Ran 9 tests across 3 files. [32.00ms]
+
+exec
+/bin/bash -lc 'sh scripts/check-ts.sh' in /var/tmp/lodge-store-a
+ exited 2 in 3529ms:
+$ biome check --error-on-warnings . && tsc --noEmit -p . && depcruise src tests scripts --config .dependency-cruiser.cjs && knip && bun test
+Checked 125 files in 37ms. No fixes applied.
+tests/app/ports.test.ts(25,17): error TS2554: Expected 2 arguments, but got 1.
+
+exec
+/bin/bash -lc "cat ts/src/core/check-state.ts | head -55; cat ts/tests/structure/exports.test.ts 2>/dev/null; rg -n 'app|exports' ts/knip* ts/tests/structure*; rg -A5 '\"tests/app/fakes.py\"' ts/tests/parity.json" in /var/tmp/lodge-store-a
+ succeeded in 0ms:
+import { checkAreas } from "./check-areas.ts";
+import { checkCycles } from "./check-cycles.ts";
+import { isAuthor } from "./derive.ts";
+import { type Decision, type Problem, problem, type Record } from "./model.ts";
+import { attachmentPath, type Snapshot } from "./snapshot.ts";
+import { byCodePoint, casefold, strip } from "./text.ts";
+export interface CheckResult {
+  readonly problems: readonly Problem[];
+  readonly notes: readonly string[];
+  readonly ok: boolean;
+}
+export function checkResult(problems: readonly Problem[], notes: readonly string[]): CheckResult {
+  return { problems, notes, ok: problems.length === 0 };
+}
+export function sortKey(p: Problem): readonly [string, number, string] {
+  return [p.path, p.check, p.message];
+}
+export function problemAt(s: Snapshot, recordId: string, check: number, message: string): Problem {
+  return problem({ path: s.paths.get(recordId) ?? "", check, message: `${recordId}: ${message}` });
+}
+function decisions(s: Snapshot): Decision[] {
+  return [...s.decisions.keys()].sort(byCodePoint).map((id) => s.decisions.get(id) as Decision);
+}
+export function newDecisions(published: Snapshot, after: Snapshot): Decision[] {
+  return decisions(after).filter((d) => !published.decisions.has(d.id));
+}
+function records(s: Snapshot): Record[] {
+  return [
+    ...decisions(s),
+    ...[...s.entries.keys()].sort(byCodePoint).map((id) => s.entries.get(id) as Record),
+  ];
+}
+function* fileNames(s: Snapshot): Generator<Problem> {
+  for (const r of [...records(s), ...s.threads.values()]) {
+    const name = (s.paths.get(r.id) as string).split("/").at(-1) as string;
+    if (name !== `${r.id}.md` && !name.startsWith(`${r.id}-`))
+      yield problemAt(s, r.id, 1, `the file name ${name} does not start with the ID`);
+  }
+}
+function* unresolved(s: Snapshot): Generator<Problem> {
+  for (const t of s.threads.values())
+    if (!s.decisions.has(t.about) && !s.entries.has(t.about))
+      yield problemAt(s, t.id, 2, `about ${t.about}, which does not exist`);
+  for (const id of [...s.entries.keys()].sort(byCodePoint)) {
+    const e = s.entries.get(id);
+    for (const target of new Set(e?.restsOn)) {
+      if (target === id) yield problemAt(s, id, 2, "rests_on itself");
+      else if (!s.entries.has(target))
+        yield problemAt(s, id, 2, `rests_on ${target}, which does not exist`);
+    }
+  }
+  for (const d of decisions(s)) {
+    const targets: readonly [string, readonly string[], ReadonlyMap<string, unknown>][] = [
+      ["changes", d.changes.map((c) => c.entry), s.entries],
+      ["replaces", d.replaces, s.decisions],
+ts/knip.json:2:  "entry": ["tests/**/*.test.ts", "scripts/*.ts", "tests/app/fakes.ts"],
+ts/tests/structure/core-rules.test.ts:14:  expect(callViolations(plant({ "src/core/apply.ts": code })).length > 0).toBe(refused);
+ts/tests/structure/core-rules.test.ts:19:  ["src/app/a.ts", "/a\\s/"],
+ts/tests/structure/calls.ts:60:    "appendFile",
+ts/tests/structure/calls.ts:76:    const pure = pkg === "core" || pkg === "app";
+ts/tests/structure/calls.ts:145:          pkg === "app" &&
+ts/tests/structure/layout.test.ts:12:  const root = plant({ "src/app/a.ts": "" });
+ts/tests/structure/imports.test.ts:5:test("core_importing_app", async () => {
+ts/tests/structure/imports.test.ts:6:  const found = await cruise(plant({ "src/core/a.ts": 'import "#app";', "src/app/index.ts": "" }));
+ts/tests/structure/imports.test.ts:7:  expect(found.sort()).toEqual(["allowed-imports: src/core/a.ts -> src/app/index.ts"]);
+ts/tests/structure/imports.test.ts:18:      "src/app/a.ts": 'import "#core"; import "../core/check.ts";',
+ts/tests/structure/imports.test.ts:22:  expect(found.sort()).toEqual(["front-door: src/app/a.ts -> src/core/check.ts"]);
+ts/tests/structure/imports.test.ts:25:  const found = await cruise(plant({ "src/app/a.ts": 'import "../core/index.ts";' }));
+ts/tests/structure/imports.test.ts:26:  expect(found.sort()).toEqual(["front-door: src/app/a.ts -> src/core/index.ts"]);
+ts/tests/structure/imports.test.ts:36:    plant({ "src/core/a.ts": 'import "#app";', "src/app/index.ts": 'import "../core/a.ts";' }),
+ts/tests/structure/imports.test.ts:39:    "allowed-imports: src/core/a.ts -> src/app/index.ts",
+ts/tests/structure/imports.test.ts:40:    "front-door: src/app/index.ts -> src/core/a.ts",
+ts/tests/structure/imports.test.ts:41:    "no-circular: src/app/index.ts -> src/core/a.ts",
+ts/tests/structure/imports.test.ts:72:test("app_importing_builtin", async () => {
+ts/tests/structure/imports.test.ts:73:  const found = await cruise(plant({ "src/app/a.ts": 'import "node:path";' }));
+ts/tests/structure/imports.test.ts:74:  expect(found.sort()).toEqual(["app-imports: src/app/a.ts -> path"]);
+ts/tests/structure/imports.test.ts:110:    "src/app/index.ts": "",
+ts/tests/structure/imports.test.ts:113:      'import "#core";import "#app";import "#git";import "#cli";import "#store";import "#api";import "#hook"',
+ts/tests/structure/table.ts:3:  ["app", ["core"]],
+ts/tests/structure/table.ts:4:  ["store", ["app", "core"]],
+ts/tests/structure/table.ts:5:  ["git", ["app", "core"]],
+ts/tests/structure/table.ts:6:  ["api", ["app", "core"]],
+ts/tests/structure/table.ts:7:  ["cli", ["app", "core"]],
+ts/tests/structure/table.ts:8:  ["hook", ["app", "core"]],
+ts/tests/structure/table.ts:9:  ["main", ["core", "app", "store", "git", "api", "cli", "hook"]],
+ts/tests/structure/calls.test.ts:23:  ["app", "Date.now()"],
+ts/tests/structure/calls.test.ts:24:  ["app", "new Date()"],
+ts/tests/structure/calls.test.ts:25:  ["app", "Date()"],
+ts/tests/structure/calls.test.ts:26:  ["app", 'Date("x")'],
+ts/tests/structure/calls.test.ts:28:  ["app", "Intl"],
+ts/tests/structure/calls.test.ts:29:  ["app", "performance"],
+ts/tests/structure/calls.test.ts:30:  ["app", "Math.random()"],
+ts/tests/structure/calls.test.ts:31:  ["app", "crypto"],
+ts/tests/structure/calls.test.ts:32:  ["app", "process"],
+ts/tests/structure/calls.test.ts:33:  ["app", "Bun"],
+ts/tests/structure/calls.test.ts:34:  ["app", "fetch"],
+ts/tests/structure/calls.test.ts:35:  ["app", "new WebSocket(x)"],
+ts/tests/structure/calls.test.ts:36:  ["app", "console"],
+ts/tests/structure/calls.test.ts:37:  ["app", "setTimeout"],
+ts/tests/structure/calls.test.ts:38:  ["app", "setInterval"],
+ts/tests/structure/calls.test.ts:39:  ["app", "queueMicrotask"],
+ts/tests/structure/calls.test.ts:40:  ["app", "navigator"],
+ts/tests/structure/calls.test.ts:41:  ["app", "globalThis"],
+ts/tests/structure/calls.test.ts:72:  ["app", "d.getTimezoneOffset()"],
+ts/tests/structure/calls.test.ts:73:  ["app", "d.toLocaleString()"],
+ts/tests/structure/calls.test.ts:74:  ["app", "d.toLocaleDateString()"],
+ts/tests/structure/calls.test.ts:75:  ["app", "d.toLocaleTimeString()"],
+ts/tests/structure/calls.test.ts:76:  ["app", "d.toDateString()"],
+ts/tests/structure/calls.test.ts:77:  ["app", "d.toTimeString()"],
+ts/tests/structure/calls.test.ts:78:  ["app", "d.getFullYear()"],
+ts/tests/structure/calls.test.ts:79:  ["app", "d.getMonth()"],
+ts/tests/structure/calls.test.ts:80:  ["app", "d.getDate()"],
+ts/tests/structure/calls.test.ts:81:  ["app", "d.getDay()"],
+ts/tests/structure/calls.test.ts:82:  ["app", "d.getHours()"],
+ts/tests/structure/calls.test.ts:83:  ["app", "d.getMinutes()"],
+ts/tests/structure/calls.test.ts:84:  ["app", "d.getSeconds()"],
+ts/tests/structure/calls.test.ts:85:  ["app", "d.getMilliseconds()"],
+ts/tests/structure/calls.test.ts:86:  ["app", "d.setFullYear()"],
+ts/tests/structure/calls.test.ts:87:  ["app", "d.setMonth()"],
+ts/tests/structure/calls.test.ts:88:  ["app", "d.setDate()"],
+ts/tests/structure/calls.test.ts:89:  ["app", "d.setDay()"],
+ts/tests/structure/calls.test.ts:90:  ["app", "d.setHours()"],
+ts/tests/structure/calls.test.ts:91:  ["app", "d.setMinutes()"],
+ts/tests/structure/calls.test.ts:92:  ["app", "d.setSeconds()"],
+ts/tests/structure/calls.test.ts:93:  ["app", "d.setMilliseconds()"],
+ts/tests/structure/calls.test.ts:94:  ["app", "new Date(2026, 2, 29)"],
+ts/tests/structure/calls.test.ts:95:])("local_time_in_core_and_app %p %p", (pkg, code) => {
+ts/tests/structure/calls.test.ts:185:  expect(callViolations(plant({ "src/app/a.ts": "clock.now()" }))).toEqual([]);
+ts/tests/structure/calls.test.ts:187:test("app_may_parse_a_stamp", () => {
+ts/tests/structure/calls.test.ts:190:      plant({ "src/app/a.ts": 'new Date("2026-10-29T12:00:00+01:00").getUTCHours()' }),
+ts/tests/structure/calls.test.ts:211:test.each(["core", "app"])("property_names_are_not_globals %p", (pkg) => {
+ts/tests/structure/calls.test.ts:233:test.each(["core", "app"])("new_purity_globals %p", (pkg) => {
+ts/tests/structure/calls.test.ts:260:  ["src/app/a.ts", "port.write(x)"],
+ts/tests/structure/table.test.ts:7:    ["app", ["core"]],
+ts/tests/structure/table.test.ts:8:    ["store", ["app", "core"]],
+ts/tests/structure/table.test.ts:9:    ["git", ["app", "core"]],
+ts/tests/structure/table.test.ts:10:    ["api", ["app", "core"]],
+ts/tests/structure/table.test.ts:11:    ["cli", ["app", "core"]],
+ts/tests/structure/table.test.ts:12:    ["hook", ["app", "core"]],
+ts/tests/structure/table.test.ts:13:    ["main", ["core", "app", "store", "git", "api", "cli", "hook"]],
+  "tests/app/fakes.py": {
+    "status": "planned",
+    "plan": 2,
+    "ts": ["ts/tests/app/fakes.ts"]
+  },
+  "tests/app/support.py": {
+
+exec
+/bin/bash -lc "sed -i 's/checkResult({})/checkResult([], [])/' ts/tests/app/ports.test.ts
+sh scripts/check-ts.sh" in /var/tmp/lodge-store-a
+ succeeded in 5499ms:
+$ biome check --error-on-warnings . && tsc --noEmit -p . && depcruise src tests scripts --config .dependency-cruiser.cjs && knip && bun test
+Checked 125 files in 40ms. No fixes applied.
+
+[32m✔[39m no dependency violations found (134 modules, 431 dependencies cruised)
+
+bun test v1.3.14 (0d9b296a)
+
+ 941 pass
+ 0 fail
+ 2326 expect() calls
+Ran 941 tests across 66 files. [1.98s]
+
+exec
+/bin/bash -lc "python - <<'PY'
+import json
+p='ts/tests/parity.json';d=json.load(open(p));d['tests/app/fakes.py']['status']='ported';d['tests/app/fakes.py']['task']=['2'];open(p,'w').write(json.dumps(d,indent=2)+'\\n')
+PY
+cat > docs/superpowers/plans/2026-11-02-lodge-server-store/task-2-report.md <<'EOF'
+# Task 2 report
+
+Implemented the Task 2 app foundation on "'`server-store-a`.
+
+## Changes per file
+
+| File | Change |
+| --- | --- |
+| `ts/src/app/errors.ts` | Ported the error hierarchy, class names, exit codes, and settings-error translation, rethrowing unrelated errors. |
+| `ts/src/app/ports.ts` | Added asynchronous store methods, clock and entropy ports, outcomes, default builders, actors, roles, and projects. |
+| `ts/src/app/results.ts` | Ported all Task 2 result interfaces and their default builders, with readonly fields and collections. |
+| `ts/src/app/time.ts` | Added second and minute formatting using explicit offsets and UTC date methods. |
+| `ts/src/app/index.ts` | Exported the Task 2 app front door. |
+| `ts/tests/app/fakes.ts` | Carried MemoryStore, FixedClock, CountingIds, and START, adding attachment enumeration and asynchronous port methods. |
+| `ts/tests/app/time.test.ts` | Added the five specified time tests. |
+| `ts/tests/app/ports.test.ts` | Added actor text and all seven default-builder checks in the specified two tests. |
+| `ts/tests/app/errors.test.ts` | Added error inheritance, names, exit codes, and bad-settings checks. |
+| `ts/package.json` | Added the `#app` import alias without dependencies. |
+| `ts/knip.json` | Added the fakes entry for exports first consumed in Task 3. |
+| `ts/tests/parity.json` | Marked `tests/app/fakes.py` ported with task `["2"]`. |
+
+## First failing evidence
+
+All three test files were written before implementation and run together with `cd ts && bun test tests/app`.
+Each file failed to load with `error: Cannot find package '"'#app'"'`, giving `0 pass`, `3 fail`, and `3 errors`.
+A missing module counts as a failure under the brief.
+
+| Test | First failure |
+| --- | --- |
+| `stamp_keeps_the_offset` | Missing `#app` in time.test.ts. |
+| `stamp_drops_the_fraction` | Missing `#app` in time.test.ts. |
+| `negative_and_zero_offsets` | Missing `#app` in time.test.ts. |
+| `minute_is_local_to_the_offset` | Missing `#app` in time.test.ts. |
+| `minute_crosses_midnight` | Missing `#app` in time.test.ts. |
+| `actor_text_names_the_person_or_the_role` | Missing `#app` in ports.test.ts. |
+| `default_filling_functions_fill_python_defaults` | Missing `#app` in ports.test.ts. |
+| `exit_codes_follow_lodge_0_2` | Missing `#app` in errors.test.ts. |
+| `core_settings_reports_a_bad_table_as_a_lodge_error` | Missing `#app` in errors.test.ts. |
+
+The carried `tests/app/fakes.py` contains helpers, not test functions, so there are no carried test titles or mutations for it.
+No tests were omitted or changed because they cannot hold in TypeScript.
+Existing tests were left unchanged.
+
+## Commands and results
+
+| Command | Result or last lines |
+| --- | --- |
+| `cat .../task-2-brief.md` | Read the brief first, as requested by the user. |
+| `cat CLAUDE.md` and source/configuration inspection with `cat`, `head`, and `rg` | Read Python ports, results, errors, fakes, TypeScript builders, settings, exports, and configuration. |
+| `uv run --frozen --quiet lodge waiting` | Both waiting lists: `nothing`. |
+| `git status --short` and `git branch --show-current` | Branch `server-store-a`; existing untracked task log left untouched. |
+| `cd ts && bun test tests/app` before implementation | `Ran 3 tests across 3 files. [13.00ms]`, with the missing-module failures above. |
+| `cd ts && bunx biome check --write src/app tests/app package.json knip.json && bun test tests/app` | Fixed formatting in eight files; `9 pass`, `0 fail`, `36 expect() calls`. |
+| `sh scripts/check-ts.sh` first run | TypeScript caught the test'"'s wrong "'`checkResult` call: `Expected 2 arguments, but got 1`. |
+| `sh scripts/check-ts.sh` after correcting the test to `checkResult([], [])` | No dependency violations; `941 pass`, `0 fail`, `2326 expect() calls`. |
+| Final `sh scripts/check-ts.sh`, after parity update and this report | Exit 0; `941 pass`, `0 fail`, `2326 expect() calls`. |
+
+No packages were installed or added.
+No Python implementation or tests were edited.
+The coordinator'"'s whole gate, merge, and ledger update remain with the coordinator.
+
+## Concerns and interpretation
+
+The brief's opening explicitly authorises committing and pushing this worktree with a Codex trailer, overriding the repeated sandbox-era builder restriction and the general Claude trailer.
+The report and implementation are included in that commit with explicit paths.
+There are no implementation concerns.
+EOF
+sh scripts/check-ts.sh" in /var/tmp/lodge-store-a
+ exited 1 in 0ms:
+$ biome check --error-on-warnings . && tsc --noEmit -p . && depcruise src tests scripts --config .dependency-cruiser.cjs && knip && bun test
+tests/parity.json format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+       3   3 │       "status": "planned",
+       4   4 │       "plan": 2,
+       5     │ - ····"ts":·[
+       6     │ - ······"ts/tests/app/support.ts"
+       7     │ - ····]
+           5 │ + ····"ts":·["ts/tests/app/support.ts"]
+       8   6 │     },
+       9   7 │     "tests/app/fakes.py": {
+      10   8 │       "status": "ported",
+      11   9 │       "plan": 2,
+      12     │ - ····"ts":·[
+      13     │ - ······"ts/tests/app/fakes.ts"
+      14     │ - ····],
+      15     │ - ····"task":·[
+      16     │ - ······"2"
+      17     │ - ····]
+          10 │ + ····"ts":·["ts/tests/app/fakes.ts"],
+          11 │ + ····"task":·["2"]
+      18  12 │     },
+      19  13 │     "tests/app/support.py": {
+      20  14 │       "status": "planned",
+      21  15 │       "plan": 2,
+      22     │ - ····"ts":·[
+      23     │ - ······"ts/tests/app/support.ts"
+      24     │ - ····]
+          16 │ + ····"ts":·["ts/tests/app/support.ts"]
+      25  17 │     },
+      26  18 │     "tests/app/test_confirm.py": {
+      27  19 │       "status": "planned",
+      28  20 │       "plan": 2,
+      29     │ - ····"ts":·[
+      30     │ - ······"ts/tests/app/confirm.test.ts"
+      31     │ - ····]
+          21 │ + ····"ts":·["ts/tests/app/confirm.test.ts"]
+      32  22 │     },
+      33  23 │     "tests/app/test_reads.py": {
+      34  24 │       "status": "planned",
+      35  25 │       "plan": 2,
+      36     │ - ····"ts":·[
+      37     │ - ······"ts/tests/app/reads.test.ts"
+      38     │ - ····]
+          26 │ + ····"ts":·["ts/tests/app/reads.test.ts"]
+      39  27 │     },
+      40  28 │     "tests/app/test_reads_published.py": {
+      41  29 │       "status": "changed",
+      42  30 │       "plan": 2,
+      43     │ - ····"ts":·[
+      44     │ - ······"ts/tests/app/reads-published.test.ts"
+      45     │ - ····],
+          31 │ + ····"ts":·["ts/tests/app/reads-published.test.ts"],
+      46  32 │       "why": "design line 79: the check runs on every write, and the published state becomes the server's current state"
+      47  33 │     },
+    ········ │ 
+      49  35 │       "status": "planned",
+      50  36 │       "plan": 2,
+      51     │ - ····"ts":·[
+      52     │ - ······"ts/tests/app/thread-fix-paths.test.ts"
+      53     │ - ····]
+          37 │ + ····"ts":·["ts/tests/app/thread-fix-paths.test.ts"]
+      54  38 │     },
+      55  39 │     "tests/app/test_thread_ops.py": {
+      56  40 │       "status": "planned",
+      57  41 │       "plan": 2,
+      58     │ - ····"ts":·[
+      59     │ - ······"ts/tests/app/thread-ops.test.ts"
+      60     │ - ····]
+          42 │ + ····"ts":·["ts/tests/app/thread-ops.test.ts"]
+      61  43 │     },
+      62  44 │     "tests/app/test_writes.py": {
+      63  45 │       "status": "planned",
+      64  46 │       "plan": 2,
+      65     │ - ····"ts":·[
+      66     │ - ······"ts/tests/app/writes.test.ts"
+      67     │ - ····]
+          47 │ + ····"ts":·["ts/tests/app/writes.test.ts"]
+      68  48 │     },
+      69  49 │     "tests/app/test_writes_attach.py": {
+      70  50 │       "status": "planned",
+      71  51 │       "plan": 2,
+      72     │ - ····"ts":·[
+      73     │ - ······"ts/tests/app/writes-attach.test.ts"
+      74     │ - ····]
+          52 │ + ····"ts":·["ts/tests/app/writes-attach.test.ts"]
+      75  53 │     },
+      76  54 │     "tests/app/test_writes_dates.py": {
+      77  55 │       "status": "planned",
+      78  56 │       "plan": 2,
+      79     │ - ····"ts":·[
+      80     │ - ······"ts/tests/app/writes-dates.test.ts"
+      81     │ - ····]
+          57 │ + ····"ts":·["ts/tests/app/writes-dates.test.ts"]
+      82  58 │     },
+      83  59 │     "tests/app/test_writes_retry.py": {
+      84  60 │       "status": "changed",
+      85  61 │       "plan": 2,
+      86     │ - ····"ts":·[
+      87     │ - ······"ts/tests/app/writes-retry.test.ts"
+      88     │ - ····],
+          62 │ + ····"ts":·["ts/tests/app/writes-retry.test.ts"],
+      89  63 │       "why": "design line 72: records live in the server's events, not in files in git; a write that loses a race is retried against the store, not a push"
+      90  64 │     },
+    ········ │ 
+      92  66 │       "status": "ported",
+      93  67 │       "plan": 1,
+      94     │ - ····"task":·[
+      95     │ - ······"11"
+      96     │ - ····],
+      97     │ - ····"ts":·[
+      98     │ - ······"ts/tests/core/applying.ts"
+      99     │ - ····]
+          68 │ + ····"task":·["11"],
+          69 │ + ····"ts":·["ts/tests/core/applying.ts"]
+     100  70 │     },
+     101  71 │     "tests/core/builders.py": {
+     102  72 │       "status": "ported",
+     103  73 │       "plan": 1,
+     104     │ - ····"task":·[
+     105     │ - ······"6"
+     106     │ - ····],
+     107     │ - ····"ts":·[
+     108     │ - ······"ts/tests/core/builders.ts"
+     109     │ - ····]
+          74 │ + ····"task":·["6"],
+          75 │ + ····"ts":·["ts/tests/core/builders.ts"]
+     110  76 │     },
+     111  77 │     "tests/core/checks.py": {
+     112  78 │       "status": "ported",
+     113  79 │       "plan": 1,
+     114     │ - ····"task":·[
+     115     │ - ······"8a",
+     116     │ - ······"8b"
+     117     │ - ····],
+     118     │ - ····"ts":·[
+     119     │ - ······"ts/tests/core/checks.ts"
+     120     │ - ····]
+          80 │ + ····"task":·["8a",·"8b"],
+          81 │ + ····"ts":·["ts/tests/core/checks.ts"]
+     121  82 │     },
+     122  83 │     "tests/core/derivation.py": {
+     123  84 │       "status": "ported",
+     124  85 │       "plan": 1,
+     125     │ - ····"task":·[
+     126     │ - ······"7a"
+     127     │ - ····],
+     128     │ - ····"ts":·[
+     129     │ - ······"ts/tests/core/derivation.ts"
+     130     │ - ····]
+          86 │ + ····"task":·["7a"],
+          87 │ + ····"ts":·["ts/tests/core/derivation.ts"]
+     131  88 │     },
+     132  89 │     "tests/core/samples.py": {
+     133  90 │       "status": "ported",
+  809 more lines truncated
+  
+
+Checked 125 files in 36ms. No fixes applied.
+Found 1 error.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while running checks.
+  
+
+error: script "check" exited with code 1
+
+codex
+All 941 tests pass, along with TypeScript, dependency, and unused-export checks. The parity update triggered a JSON formatting failure; I’m fixing that and rerunning the final gate before committing and pushing.
+exec
+/bin/bash -lc 'cd ts && bunx biome check --write tests/parity.json' in /var/tmp/lodge-store-a
+ succeeded in 0ms:
+Checked 1 file in 4ms. Fixed 1 file.
+
+exec
+/bin/bash -lc "python - <<'PY'
+p='docs/superpowers/plans/2026-11-02-lodge-server-store/task-2-report.md'
+s=open(p).read().replace('| Final "'`sh scripts/check-ts.sh`, after parity update and this report |'"', '| "'`sh scripts/check-ts.sh` immediately after parity update | Biome rejected JSON array formatting; corrected with `cd ts && bunx biome check --write tests/parity.json` (`Fixed 1 file`). |'"\\n| Final "'`sh scripts/check-ts.sh`, after formatting and this report |'"')
+open(p,'w').write(s)
+PY
+ git diff --stat; git diff -- ts/tests/parity.json; sh scripts/check-ts.sh" in /var/tmp/lodge-store-a
+ succeeded in 5287ms:
+ ts/knip.json         | 2 +-
+ ts/package.json      | 3 ++-
+ ts/tests/parity.json | 5 +++--
+ 3 files changed, 6 insertions(+), 4 deletions(-)
+diff --git a/ts/tests/parity.json b/ts/tests/parity.json
+index 99ad443..5bce3be 100644
+--- a/ts/tests/parity.json
++++ b/ts/tests/parity.json
+@@ -5,9 +5,10 @@
+     "ts": ["ts/tests/app/support.ts"]
+   },
+   "tests/app/fakes.py": {
+-    "status": "planned",
++    "status": "ported",
+     "plan": 2,
+-    "ts": ["ts/tests/app/fakes.ts"]
++    "ts": ["ts/tests/app/fakes.ts"],
++    "task": ["2"]
+   },
+   "tests/app/support.py": {
+     "status": "planned",
+$ biome check --error-on-warnings . && tsc --noEmit -p . && depcruise src tests scripts --config .dependency-cruiser.cjs && knip && bun test
+Checked 125 files in 35ms. No fixes applied.
+
+[32m✔[39m no dependency violations found (134 modules, 431 dependencies cruised)
+
+bun test v1.3.14 (0d9b296a)
+
+ 941 pass
+ 0 fail
+ 2328 expect() calls
+Ran 941 tests across 66 files. [1.84s]
+
+exec
+/bin/bash -lc "python - <<'PY'
+p='docs/superpowers/plans/2026-11-02-lodge-server-store/task-2-report.md';s=open(p).read().replace('after formatting and this report | Exit 0; "'`941 pass`, `0 fail`, `2326 expect() calls`'"','after formatting and this report | Exit 0; "'`941 pass`, `0 fail`; expectation totals varied between 2326 and 2328 across full runs'"');open(p,'w').write(s)
+PY
+sh scripts/check-ts.sh" in /var/tmp/lodge-store-a
+ succeeded in 5256ms:
+$ biome check --error-on-warnings . && tsc --noEmit -p . && depcruise src tests scripts --config .dependency-cruiser.cjs && knip && bun test
+Checked 125 files in 34ms. No fixes applied.
+
+[32m✔[39m no dependency violations found (134 modules, 431 dependencies cruised)
+
+bun test v1.3.14 (0d9b296a)
+
+ 941 pass
+ 0 fail
+ 2328 expect() calls
+Ran 941 tests across 66 files. [1.88s]
+
+exec
+/bin/bash -lc 'git add ts/src/app/errors.ts ts/src/app/ports.ts ts/src/app/results.ts ts/src/app/time.ts ts/src/app/index.ts ts/tests/app/fakes.ts ts/tests/app/time.test.ts ts/tests/app/ports.test.ts ts/tests/app/errors.test.ts ts/package.json ts/knip.json ts/tests/parity.json docs/superpowers/plans/2026-11-02-lodge-server-store/task-2-report.md
+git -c "user.name=Svenja Kernig" -c user.email=20756868+Kiibou-chan@users.noreply.github.com commit -m "Add app ports, results, errors, and time helpers" -m "Co-Authored-By: Codex <noreply@openai.com>"
+git push origin server-store-a' in /var/tmp/lodge-store-a
+ succeeded in 1820ms:
+[server-store-a 5ebe9f5] Add app ports, results, errors, and time helpers
+ 13 files changed, 494 insertions(+), 4 deletions(-)
+ create mode 100644 docs/superpowers/plans/2026-11-02-lodge-server-store/task-2-report.md
+ create mode 100644 ts/src/app/errors.ts
+ create mode 100644 ts/src/app/index.ts
+ create mode 100644 ts/src/app/ports.ts
+ create mode 100644 ts/src/app/results.ts
+ create mode 100644 ts/src/app/time.ts
+ create mode 100644 ts/tests/app/errors.test.ts
+ create mode 100644 ts/tests/app/fakes.ts
+ create mode 100644 ts/tests/app/ports.test.ts
+ create mode 100644 ts/tests/app/time.test.ts
+remote: 
+remote: Create a pull request for 'server-store-a' on GitHub by visiting:        
+remote:      https://github.com/Kiibou-chan/lodge/pull/new/server-store-a        
+remote: 
+To github.com:Kiibou-chan/lodge.git
+ * [new branch]      server-store-a -> server-store-a
+
+codex
+DONE — implemented Task 2, committed as `5ebe9f5`, and pushed to `server-store-a`.
+
+Tests: `sh scripts/check-ts.sh` exited 0; 941 passed, 0 failed.
+
+Concerns: none. Report: [task-2-report.md](/var/tmp/lodge-store-a/docs/superpowers/plans/2026-11-02-lodge-server-store/task-2-report.md).
+tokens used
+39,860
+DONE — implemented Task 2, committed as `5ebe9f5`, and pushed to `server-store-a`.
+
+Tests: `sh scripts/check-ts.sh` exited 0; 941 passed, 0 failed.
+
+Concerns: none. Report: [task-2-report.md](/var/tmp/lodge-store-a/docs/superpowers/plans/2026-11-02-lodge-server-store/task-2-report.md).
