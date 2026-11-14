@@ -1,5 +1,4 @@
 {
   "entry": ["tests/**/*.test.ts", "scripts/*.ts"],
-  "project": ["src/**/*.ts", "tests/**/*.ts", "scripts/**/*.ts"],
-  "ignoreDependencies": ["@simplewebauthn/server"]
+  "project": ["src/**/*.ts", "tests/**/*.ts", "scripts/**/*.ts"]
 }
