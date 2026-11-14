@@ -9,8 +9,15 @@ import { add } from "./writes.ts";
 export async function held(w: Wiring): Promise<readonly Held[]> {
   return w.store.held();
 }
-async function authorised(w: Wiring, seq: number): Promise<Held> {
-  const found = (await w.store.held()).find((h) => h.seq === seq);
+async function authorised<K extends Held["kind"] = Held["kind"]>(
+  w: Wiring,
+  seq: number,
+  kind?: K,
+): Promise<Extract<Held, { kind: K }>> {
+  const found = (await w.store.held()).find(
+    (h): h is Extract<Held, { kind: K }> =>
+      h.seq === seq && (kind === undefined || h.kind === kind),
+  );
   if (!found) throw new NotFound(`nothing is held under number ${seq}`);
   if (w.actor.kind !== "person" || w.actor.name !== found.person)
     throw new Forbidden(`only ${found.person} approves this; nothing was written`);
@@ -32,11 +39,7 @@ export async function approve(w: Wiring, seq: number): Promise<Approved> {
       ),
     };
   }
-  const refresh = async (): Promise<HeldAdd> => {
-    const found = await authorised(w, seq);
-    if (found.kind === "message") throw new LodgeError(`hold ${seq} is not an add`);
-    return found;
-  };
+  const refresh = (): Promise<HeldAdd> => authorised(w, seq, "add");
   const found = await refresh();
   return {
     kind: "add",

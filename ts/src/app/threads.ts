@@ -1,5 +1,6 @@
 import {
   appended,
+  type CheckResult,
   checkChange,
   cleanText,
   level1,
@@ -78,6 +79,34 @@ export interface MessageOptions {
   readonly commit?: boolean;
   readonly close?: boolean;
 }
+async function holdMessage(
+  w: Wiring,
+  thread: Thread,
+  msg: Message,
+  raises: Raises | null,
+  close: boolean,
+  check: CheckResult,
+): Promise<Written> {
+  const held = await w.store.hold({
+    kind: "message",
+    person: msg.by,
+    by: actorText(w.actor),
+    operation: raises !== null ? "ask" : close ? "close" : "reply",
+    ref: raises !== null ? thread.about : thread.id,
+    raises,
+    text: close && !msg.text ? null : msg.text,
+    where: msg.where as string,
+    when: msg.when,
+  });
+  return written({
+    ids: [thread.id],
+    outcome: AddOutcome.HELD,
+    check,
+    about: thread.about,
+    awaits: msg.by,
+    held,
+  });
+}
 export async function writeMessage(
   w: Wiring,
   ref: string,
@@ -88,8 +117,6 @@ export async function writeMessage(
   approves: number | null = null,
 ): Promise<Written> {
   for (let i = 0; i < 3; i++) {
-    if (approves !== null && !(await w.store.held()).some((h) => h.seq === approves))
-      throw new NotFound(`nothing is held under number ${approves}`);
     const state = await readState(w.store),
       now = w.clock.now(),
       msg = message(now, state.snapshot.people, by, text, where, when, close),
@@ -144,27 +171,8 @@ export async function writeMessage(
         check,
         about: thread.about,
       });
-    if (s.people.has(by) && w.actor.kind === "agent") {
-      const held = await w.store.hold({
-        kind: "message",
-        person: by,
-        by: actorText(w.actor),
-        operation: raises !== null ? "ask" : close ? "close" : "reply",
-        ref: raises !== null ? thread.about : thread.id,
-        raises,
-        text: close && !msg.text ? null : msg.text,
-        where: msg.where as string,
-        when: msg.when,
-      });
-      return written({
-        ids: [thread.id],
-        outcome: AddOutcome.HELD,
-        check,
-        about: thread.about,
-        awaits: by,
-        held,
-      });
-    }
+    if (s.people.has(by) && w.actor.kind === "agent")
+      return holdMessage(w, thread, msg, raises, close, check);
     const commitMessage = `Thread ${thread.id}: ${description}`;
     const outcome = await w.store.publish(
       state.current,

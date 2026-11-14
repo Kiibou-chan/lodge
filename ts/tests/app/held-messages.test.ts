@@ -3,9 +3,11 @@ import { AddOutcome, Forbidden, LodgeError } from "#app";
 import { setup } from "./held-messages-support.ts";
 
 test("an_agent_relaying_a_persons_words_is_held", async () => {
-  const { store, lodge, relay } = await setup();
+  const { store, lodge, id, relay } = await setup();
   const result = await relay();
   expect(result).toMatchObject({
+    ids: [id],
+    about: "s-aaaaaa",
     outcome: AddOutcome.HELD,
     awaits: "ada",
     held: expect.any(Number),
@@ -24,23 +26,28 @@ test("an_agent_relaying_a_persons_words_is_held", async () => {
     },
   ]);
 });
-for (const own of [false, true]) {
-  test(
-    own ? "a_persons_thread_still_waits_for_an_agent" : "the_thread_still_waits_for_the_person",
-    async () => {
-      const { lodge, ada, id, relay } = await setup(own);
-      const result = await relay();
-      const key = own ? "forAgent" : "forAuthor";
-      expect((await lodge.threadsWaiting())[key].map((t) => t.id)).toEqual([id]);
-      expect((await lodge.waitingAll())[1][key].map((t) => t.id)).toEqual([id]);
-      expect((await lodge.thread(id)).thread.messages.at(-1)?.text).toBe("Why?");
-      expect(await lodge.held()).toHaveLength(1);
-      await ada.approve(result.held as number);
-      expect((await lodge.threadsWaiting()).forAgent.map((t) => t.id)).toEqual([id]);
-      expect((await lodge.thread(id)).thread.messages.at(-1)?.text).toBe("Yes.");
-    },
-  );
-}
+test("the_thread_still_waits_for_the_person", async () => {
+  const { lodge, ada, id, relay } = await setup();
+  const result = await relay();
+  expect((await lodge.threadsWaiting()).forAuthor.map((t) => t.id)).toEqual([id]);
+  expect((await lodge.waitingAll())[1].forAuthor.map((t) => t.id)).toEqual([id]);
+  expect((await lodge.thread(id)).thread.messages.at(-1)?.text).toBe("Why?");
+  expect(await lodge.held()).toHaveLength(1);
+  await ada.approve(result.held);
+  expect((await lodge.threadsWaiting()).forAgent.map((t) => t.id)).toEqual([id]);
+  expect((await lodge.thread(id)).thread.messages.at(-1)?.text).toBe("Yes.");
+});
+test("a_persons_thread_still_waits_for_an_agent", async () => {
+  const { lodge, ada, id, relay } = await setup("ada");
+  const result = await relay();
+  expect((await lodge.threadsWaiting()).forAgent.map((t) => t.id)).toEqual([id]);
+  expect((await lodge.waitingAll())[1].forAgent.map((t) => t.id)).toEqual([id]);
+  expect((await lodge.thread(id)).thread.messages.at(-1)?.text).toBe("Why?");
+  expect(await lodge.held()).toHaveLength(1);
+  await ada.approve(result.held);
+  expect((await lodge.threadsWaiting()).forAgent.map((t) => t.id)).toEqual([id]);
+  expect((await lodge.thread(id)).thread.messages.at(-1)?.text).toBe("Yes.");
+});
 test("a_persons_own_message_is_published_at_once", async () => {
   const { ada, id } = await setup();
   expect(await ada.reply(id, "ada", "Yes.", { where: "chat" })).toMatchObject({
