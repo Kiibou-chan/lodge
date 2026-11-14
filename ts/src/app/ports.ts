@@ -1,4 +1,4 @@
-import type { Tree } from "#core";
+import type { Raises, Tree } from "#core";
 
 export interface Now {
   readonly epochMs: number;
@@ -60,7 +60,11 @@ export interface Store {
     base: Tree,
     writes: ReadonlyMap<string, string>,
     message: string,
+    approves?: number | null,
   ): Promise<PublishOutcome>;
+  hold(held: HeldDraft): Promise<number>;
+  held(): Promise<readonly Held[]>;
+  decline(seq: number, reason: string): Promise<void>;
 }
 export type Actor =
   | { readonly kind: "person"; readonly name: string }
@@ -86,3 +90,26 @@ export interface Projects {
   addMember(project: string, person: string, role: Role, by: Actor): Promise<void>;
   storeFor(project: string, actor: Actor): Store;
 }
+
+export type HeldDraft = HeldAdd | HeldMessage;
+export interface HeldAdd {
+  readonly kind: "add";
+  readonly person: string;
+  readonly by: string;
+  readonly drafts: readonly (readonly [string, string])[];
+  readonly attachments: readonly (readonly [string, string])[];
+  readonly importing: boolean;
+  readonly message: string;
+}
+export interface HeldMessage {
+  readonly kind: "message";
+  readonly person: string;
+  readonly by: string;
+  readonly operation: "ask" | "reply" | "close";
+  readonly ref: string;
+  readonly raises: Raises | null;
+  readonly text: string | null;
+  readonly where: string;
+  readonly when: string;
+}
+export type Held = HeldDraft & { readonly seq: number; readonly at: string };

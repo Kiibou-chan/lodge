@@ -66,6 +66,27 @@ async function applyEvent(
         .onConflict((c) => c.columns(["project", "path"]).doUpdateSet({ body: row.body, seq }))
         .execute();
       break;
+    case "held": {
+      const { person } = JSON.parse(decodeUtf8(row.body)) as { person: string };
+      await tx
+        .insertInto("held")
+        .values({ seq, project, person, at: row.at, body: row.body, state: "open" })
+        .execute();
+      break;
+    }
+    case "approved":
+    case "declined": {
+      const { held } = JSON.parse(decodeUtf8(row.body)) as { held: number };
+      const result = await tx
+        .updateTable("held")
+        .set({ state: row.kind })
+        .where("seq", "=", held)
+        .where("project", "=", project)
+        .where("state", "=", "open")
+        .executeTakeFirst();
+      if (result.numUpdatedRows !== 1n) throw new Error(`nothing is held under number ${held}`);
+      break;
+    }
     default:
       throw new Error(`unknown event kind: ${row.kind}`);
   }
@@ -74,6 +95,7 @@ async function applyEvent(
 }
 export async function rebuild(database: LodgeDatabase): Promise<void> {
   await database.db.transaction().execute(async (tx) => {
+    await tx.deleteFrom("held").execute();
     await tx.deleteFrom("heads").execute();
     await tx.deleteFrom("files").execute();
     await tx.deleteFrom("members").execute();

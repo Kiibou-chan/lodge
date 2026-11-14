@@ -5,7 +5,10 @@ import {
   committed,
   type Gate,
   gate,
+  type Held,
+  type HeldDraft,
   type IdSource,
+  NotFound,
   type Now,
   PublishOutcome,
   type Store,
@@ -30,6 +33,7 @@ export class MemoryStore implements Store {
   staged: boolean;
   people: ReadonlySet<string>;
   rev = 0;
+  private holds = new Map<number, Held>();
   commits: [readonly string[], string][] = [];
   commitResult: Committed = committed({ outcome: CommitOutcome.COMMITTED });
   stamp: string | null = "fetched 2026-10-29T08:00:00+00:00";
@@ -47,6 +51,18 @@ export class MemoryStore implements Store {
     this.files = filesOf(...items);
     this.published = new Map(this.files);
     this.staged = options.staged ?? false;
+  }
+  async hold(draft: HeldDraft): Promise<number> {
+    const seq = ++this.rev;
+    this.holds.set(seq, structuredClone({ ...draft, seq, at: "2026-10-29T09:30:00+01:00" }));
+    return seq;
+  }
+  async held(): Promise<readonly Held[]> {
+    return structuredClone([...this.holds.values()]);
+  }
+  async decline(seq: number, _reason: string): Promise<void> {
+    if (!this.holds.delete(seq)) throw new NotFound(`nothing is held under number ${seq}`);
+    this.rev += 1;
   }
   async commit(paths: readonly string[], message: string): Promise<Committed> {
     this.commits.push([[...paths], message]);
@@ -82,6 +98,7 @@ export class MemoryStore implements Store {
     base: Tree,
     writes: ReadonlyMap<string, string>,
     message: string,
+    approves: number | null = null,
   ): Promise<PublishOutcome> {
     this.attempts += 1;
     const rejection = this.rejections.shift();
@@ -90,8 +107,13 @@ export class MemoryStore implements Store {
       return PublishOutcome.REJECTED;
     }
     if (base.rev !== String(this.rev)) return PublishOutcome.REJECTED;
+    if (approves !== null && !this.holds.has(approves)) return PublishOutcome.REJECTED;
     this.publishes.push([new Map(writes), message]);
     this.land(writes);
+    if (approves !== null) {
+      this.holds.delete(approves);
+      this.rev += 1;
+    }
     return this.staged ? PublishOutcome.STAGED : PublishOutcome.PUBLISHED;
   }
   movesAfterRead(change: ReadonlyMap<string, string>): void {

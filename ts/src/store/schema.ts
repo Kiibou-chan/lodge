@@ -27,7 +27,16 @@ interface MembersTable {
   person: string;
   role: string;
 }
+interface HeldTable {
+  seq: number;
+  project: string;
+  person: string;
+  at: string;
+  body: Uint8Array;
+  state: string;
+}
 export interface Tables {
+  held: HeldTable;
   events: EventsTable;
   heads: HeadsTable;
   files: FilesTable;
@@ -54,6 +63,8 @@ create table files(project text not null, path text not null, body blob not null
 create table members(project text not null, person text not null, role text not null,
   primary key(project, person));
 `,
+  `create table held(seq integer primary key, project text not null, person text not null,
+    at text not null, body blob not null, state text not null);`,
 ];
 export async function openDatabase(path: string): Promise<LodgeDatabase> {
   const raw = new Database(path, { strict: true, create: true });

@@ -1,10 +1,19 @@
-import { AddOutcome, type Lodge, PublishOutcome, type Store } from "#app";
+import { AddOutcome, type HeldDraft, type Lodge, PublishOutcome, type Store } from "#app";
 import type { Tree } from "#core";
 
 class Forwarding implements Store {
   constructor(protected readonly inner: Store) {}
   commit(paths: readonly string[], message: string) {
     return this.inner.commit(paths, message);
+  }
+  hold(draft: HeldDraft) {
+    return this.inner.hold(draft);
+  }
+  held() {
+    return this.inner.held();
+  }
+  decline(seq: number, reason: string) {
+    return this.inner.decline(seq, reason);
   }
   trees() {
     return this.inner.trees();
@@ -18,8 +27,13 @@ class Forwarding implements Store {
   gate(current: Tree) {
     return this.inner.gate(current);
   }
-  publish(base: Tree, writes: ReadonlyMap<string, string>, message: string) {
-    return this.inner.publish(base, writes, message);
+  publish(
+    base: Tree,
+    writes: ReadonlyMap<string, string>,
+    message: string,
+    approves: number | null = null,
+  ) {
+    return this.inner.publish(base, writes, message, approves);
   }
 }
 export class Interleaved extends Forwarding {
@@ -41,8 +55,13 @@ export class Interleaved extends Forwarding {
     }
     return read;
   }
-  override async publish(base: Tree, writes: ReadonlyMap<string, string>, message: string) {
-    const outcome = await this.inner.publish(base, writes, message);
+  override async publish(
+    base: Tree,
+    writes: ReadonlyMap<string, string>,
+    message: string,
+    approves: number | null = null,
+  ) {
+    const outcome = await this.inner.publish(base, writes, message, approves);
     this.outcomes.push(outcome);
     return outcome;
   }
@@ -73,11 +92,16 @@ export class Interleaving extends Forwarding {
     if (move !== undefined) await this.land(move);
     return read;
   }
-  override async publish(base: Tree, writes: ReadonlyMap<string, string>, message: string) {
+  override async publish(
+    base: Tree,
+    writes: ReadonlyMap<string, string>,
+    message: string,
+    approves: number | null = null,
+  ) {
     this.attempts += 1;
     const change = this.rejections.shift();
     if (change !== undefined) await this.land(change);
-    const outcome = await this.inner.publish(base, writes, message);
+    const outcome = await this.inner.publish(base, writes, message, approves);
     if (outcome === PublishOutcome.PUBLISHED) this.publishes.push([new Map(writes), message]);
     return outcome;
   }
