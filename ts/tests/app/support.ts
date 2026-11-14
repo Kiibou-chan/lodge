@@ -1,3 +1,4 @@
+import { expect } from "bun:test";
 import { Lodge, type Store } from "#app";
 import { Action, coreSettings } from "#core";
 import { area, at, decision, entry } from "../core/builders.ts";
@@ -30,4 +31,13 @@ export function project({ staged = false } = {}) {
 
 export function wired(store: Store, clock = new FixedClock(), ids = new CountingIds()) {
   return new Lodge(store, clock, ids, coreSettings());
+}
+
+export async function raises(
+  promise: Promise<unknown>,
+  errorClass: new (message: string) => Error,
+  pattern: string | RegExp,
+): Promise<void> {
+  await expect(promise).rejects.toThrow(errorClass);
+  await expect(promise).rejects.toThrow(pattern);
 }

@@ -4,7 +4,7 @@ import { checkState, load, parseRecord, tree } from "#core";
 import { areaText, decisionText, specText } from "../core/applying.ts";
 import { at, decision, entry } from "../core/builders.ts";
 import { CountingIds, FixedClock, MemoryStore, START } from "./fakes.ts";
-import { AREA, FIRST, project, wired } from "./support.ts";
+import { AREA, FIRST, project, raises, wired } from "./support.ts";
 
 const NEW_DECISION = decisionText("changes:", "  - {entry: s-bbbbbb, action: create}");
 const NEW_ENTRY = specText("id: s-bbbbbb", "area: storage", { body: "Everything is kept." });
@@ -62,20 +62,21 @@ test("add_refuses_unreadable_or_unusable_drafts", async () => {
   const store = project();
   const lodge = wired(store);
   const broken = lodge.add([["broken.md", "---\ntitle: [unclosed\n---\n"]]);
-  await expect(broken).rejects.toThrow(LodgeError);
-  await expect(broken).rejects.toThrow(/broken\.md:2/u);
+  await raises(broken, LodgeError, /broken\.md:2/u);
   await expect(broken).rejects.toMatchObject({ exitCode: 2 });
-  await expect(lodge.add([["entry.md", specText("id: s-bbbbbb")]])).rejects.toThrow(
+  await raises(
+    lodge.add([["entry.md", specText("id: s-bbbbbb")]]),
+    LodgeError,
     /entry\.md.*needs an area/u,
   );
-  await expect(lodge.add([])).rejects.toThrow("no drafts");
+  await raises(lodge.add([]), LodgeError, "no drafts");
   expect(store.attempts).toBe(0);
 });
 test("add_imports_only_when_asked", async () => {
   const drafts = [
     ["d.md", decisionText("imported_from: {file: notes.md, heading: Storage}")],
   ] as const;
-  await expect(wired(project()).add(drafts)).rejects.toThrow("--import");
+  await raises(wired(project()).add(drafts), LodgeError, "--import");
   expect((await wired(project()).add(drafts, { importing: true })).outcome).toBe(
     AddOutcome.CHECK_FAILED,
   );
@@ -110,9 +111,11 @@ test("mint_skips_taken", async () => {
 });
 test("mint_gives_up_after_ten_draws", async () => {
   const ids = new CountingIds(1, 0);
-  await expect(
+  await raises(
     wired(new MemoryStore([decision({ id: "d-111111", date: at(5) })]), undefined, ids).mint("d"),
-  ).rejects.toThrow("ten");
+    LodgeError,
+    "ten",
+  );
   expect(ids.draws).toBe(10);
 });
 test("add_area_sharing_a_rank_gives_feedback", async () => {

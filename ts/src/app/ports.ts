@@ -53,7 +53,7 @@ export interface Store {
   attachmentTexts(): Promise<ReadonlyMap<string, string>>;
   // Freshness of shared branch data, or null for local data.
   freshness(): Promise<string | null>;
-  // Compare the returned current tree; throw LodgeError if there is no published state.
+  // What the gate compares for current, the tree trees() returned; a LodgeError when there is no published state.
   gate(current: Tree): Promise<Gate>;
   // Write on base; reject when a written path or the branch tip no longer matches base.
   publish(

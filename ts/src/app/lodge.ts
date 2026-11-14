@@ -1,5 +1,6 @@
 import type { CoreSettings } from "#core";
 import type { Clock, IdSource, Store } from "./ports.ts";
+import type { Added } from "./results.ts";
 import type { Wiring } from "./state.ts";
 import { type AddOptions, add, mint } from "./writes.ts";
 
@@ -11,7 +12,10 @@ export class Lodge {
   async mint(prefix: "d" | "s"): Promise<string> {
     return mint(this.wiring, prefix);
   }
-  async add(drafts: readonly (readonly [string, string])[], options: AddOptions = {}) {
+  async add(
+    drafts: readonly (readonly [string, string])[],
+    options: AddOptions = {},
+  ): Promise<Added> {
     return add(this.wiring, drafts, options);
   }
 }

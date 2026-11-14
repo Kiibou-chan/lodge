@@ -3,7 +3,7 @@ import { AddOutcome, LodgeError } from "#app";
 import { load, tree } from "#core";
 import { areaText, decisionText, specText } from "../core/applying.ts";
 import { MemoryStore } from "./fakes.ts";
-import { AREA, wired } from "./support.ts";
+import { AREA, raises, wired } from "./support.ts";
 
 const LOG = ["run.log", "line one\nline two\n"] as const;
 const PATH = "lodge/attachments/d-111111/run.log";
@@ -38,47 +38,54 @@ test("dry_run_writes_no_attachment", async () => {
 });
 test("attachment_needs_exactly_one_new_decision", async () => {
   const store = new MemoryStore([AREA]);
-  await expect(
+  await raises(
     wired(store).add([["a.md", areaText("name: storage")]], { attachments: [LOG] }),
-  ).rejects.toThrow("--attach needs the add to create one decision, not 0");
-  await expect(
+    LodgeError,
+    "--attach needs the add to create one decision, not 0",
+  );
+  await raises(
     wired(store).add([newDecision("attachments: [run.log]"), newDecision(), ["s.md", ENTRY]], {
       attachments: [LOG],
     }),
-  ).rejects.toThrow("--attach needs the add to create one decision, not 2");
+    LodgeError,
+    "--attach needs the add to create one decision, not 2",
+  );
   expect(store.attempts).toBe(0);
 });
 test("decision_must_list_exactly_the_attached_names", async () => {
   const store = new MemoryStore([AREA]);
-  await expect(
+  await raises(
     wired(store).add([newDecision(), ["s.md", ENTRY]], { attachments: [LOG] }),
-  ).rejects.toThrow("lists [] in attachments, but the attached files are [run.log]");
-  await expect(
+    LodgeError,
+    "lists [] in attachments, but the attached files are [run.log]",
+  );
+  await raises(
     wired(store).add([newDecision("attachments: [run.log, more.log]"), ["s.md", ENTRY]], {
       attachments: [LOG],
     }),
-  ).rejects.toThrow("lists [more.log, run.log] in attachments");
+    LodgeError,
+    "lists [more.log, run.log] in attachments",
+  );
   expect(store.attempts).toBe(0);
 });
 test.each(["", ".", "..", "a/b", "a\\b", ".git"].map((c) => [c]))(
   "attachment_names_are_plain_file_names",
   async (name) => {
-    await expect(
+    await raises(
       wired(new MemoryStore([AREA])).add([newDecision("attachments: [x]"), ["s.md", ENTRY]], {
         attachments: [[name, "x"]],
       }),
-    ).rejects.toThrow("not a plain file name");
+      LodgeError,
+      "not a plain file name",
+    );
   },
 );
 test("two_attachments_with_one_name_are_refused", async () => {
-  await expect(
+  await raises(
     wired(new MemoryStore([AREA])).add([newDecision("attachments: [run.log]"), ["s.md", ENTRY]], {
       attachments: [LOG, LOG],
     }),
-  ).rejects.toThrow(LodgeError);
-  await expect(
-    wired(new MemoryStore([AREA])).add([newDecision("attachments: [run.log]"), ["s.md", ENTRY]], {
-      attachments: [LOG, LOG],
-    }),
-  ).rejects.toThrow(/run\.log is attached twice/u);
+    LodgeError,
+    /run\.log is attached twice/u,
+  );
 });

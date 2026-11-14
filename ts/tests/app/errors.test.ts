@@ -37,9 +37,9 @@ test("settings_error_preserves_the_full_message_and_cause", () => {
     coreSettings(table);
   } catch (error) {
     if (!(error instanceof LodgeError)) throw error;
-    expect(error.message).toBe(`.lodge.toml: ${original?.message}`);
+    expect(error.message).toBe(`.lodge.toml: ${original.message}`);
     expect(error.cause).toBeInstanceOf(SettingsError);
-    expect((error.cause as SettingsError).message).toBe(original?.message);
+    expect((error.cause as SettingsError).message).toBe(original.message);
     return;
   }
   throw new Error("expected LodgeError");

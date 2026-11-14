@@ -83,7 +83,10 @@ async function attempt(
   const current = state.current;
   const files = new Map([...applied.files].filter(([p, t]) => current.files.get(p) !== t));
   const placed = new Map(
-    [...request.attached].map(([name, text]) => [attachmentPath(required(newIds[0]), name), text]),
+    [...request.attached].map(([name, text]) => [
+      attachmentPath(required(newIds[0], "minted ID"), name),
+      text,
+    ]),
   );
   const after = load(
     tree({
@@ -93,7 +96,10 @@ async function attempt(
     }),
   );
   if (request.attached.size)
-    requireListed(required(after.decisions.get(required(newIds[0]))), request.attached);
+    requireListed(
+      required(after.decisions.get(required(newIds[0], "minted ID")), "applied decision"),
+      request.attached,
+    );
   const check = checkChange(load(state.published), after, w.settings, stampOf(now), s);
   const notes = [
     ...feedback(written(s, after, applied.ids), after, derive(after), w.settings.length),
@@ -217,11 +223,13 @@ function written(before: Snapshot, after: Snapshot, ids: readonly string[]): Rec
 }
 function message(after: Snapshot, ids: readonly string[]): string {
   const records = new Map<string, Record>([...after.decisions, ...after.entries]);
-  const title = ids.length ? required(records.get(required(ids[0]))).title : "";
+  const title = ids.length
+    ? required(records.get(required(ids[0], "written ID")), "applied record").title
+    : "";
   return rstrip(`lodge: add ${ids.join(", ") || "areas"} ${title}`);
 }
 
-function required<T>(value: T | undefined): T {
-  if (value === undefined) throw new Error("missing applied record");
+function required<T>(value: T | undefined, what: string): T {
+  if (value === undefined) throw new Error(`missing ${what}`);
   return value;
 }
