@@ -1,5 +1,6 @@
 import type { Selectable, Transaction } from "kysely";
 import { decodeUtf8, encodeUtf8 } from "#core";
+import { applyAccountEvent } from "./account-events.ts";
 import type { LodgeDatabase, Tables } from "./schema.ts";
 
 interface NewEvent {
@@ -42,13 +43,20 @@ async function applyEvent(
 ): Promise<void> {
   const { project, seq } = row;
   switch (row.kind) {
-    case "project":
+    case "project": {
+      const body = JSON.parse(decodeUtf8(row.body)) as { settings?: unknown };
+      await tx
+        .insertInto("project_settings")
+        .values({ id: project, body: json(body.settings ?? {}), seq })
+        .onConflict((c) => c.column("id").doUpdateSet({ body: json(body.settings ?? {}), seq }))
+        .execute();
       await tx
         .insertInto("heads")
         .values({ project, rev: seq })
         .onConflict((c) => c.column("project").doUpdateSet({ rev: seq }))
         .execute();
       break;
+    }
     case "member": {
       const { person, role } = JSON.parse(decodeUtf8(row.body)) as { person: string; role: string };
       await tx
@@ -88,13 +96,22 @@ async function applyEvent(
       break;
     }
     default:
-      throw new Error(`unknown event kind: ${row.kind}`);
+      if (!(await applyAccountEvent(tx, row))) throw new Error(`unknown event kind: ${row.kind}`);
   }
   if (row.kind !== "project")
     await tx.updateTable("heads").set({ rev: seq }).where("project", "=", project).execute();
 }
 export async function rebuild(database: LodgeDatabase): Promise<void> {
   await database.db.transaction().execute(async (tx) => {
+    for (const table of [
+      "setup",
+      "setup_codes",
+      "passkeys",
+      "sessions",
+      "tokens",
+      "project_settings",
+    ] as const)
+      await tx.deleteFrom(table).execute();
     await tx.deleteFrom("held").execute();
     await tx.deleteFrom("heads").execute();
     await tx.deleteFrom("files").execute();

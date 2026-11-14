@@ -85,7 +85,13 @@ export function actorText(actor: Actor): string {
 export const Role = { OWNER: "owner", MEMBER: "member" } as const;
 export type Role = (typeof Role)[keyof typeof Role];
 export interface Projects {
-  create(project: string, owner: string): Promise<void>;
+  create(
+    project: string,
+    owner: string,
+    settings?: Readonly<Record<string, unknown>>,
+  ): Promise<void>;
+  settings(project: string): Promise<Readonly<Record<string, unknown>> | null>;
+  names(): Promise<readonly string[]>;
   members(project: string): Promise<ReadonlyMap<string, Role>>;
   addMember(project: string, person: string, role: Role, by: Actor): Promise<void>;
   storeFor(project: string, actor: Actor): Store;
