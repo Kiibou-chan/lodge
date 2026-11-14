@@ -57,14 +57,18 @@ export function added(
   return { freshness: null, minted: [], paths: [], awaits: null, held: null, ...value };
 }
 export interface Written {
+  readonly awaits: string | null;
+  readonly held: number | null;
   readonly ids: readonly string[];
   readonly outcome: AddOutcome;
   readonly check: CheckResult;
   readonly committed: Committed | null;
   readonly about: string | null;
 }
-export function written(value: Omit<Written, "committed" | "about"> & Partial<Written>): Written {
-  return { committed: null, about: null, ...value };
+export function written(
+  value: Omit<Written, "committed" | "about" | "awaits" | "held"> & Partial<Written>,
+): Written {
+  return { committed: null, about: null, awaits: null, held: null, ...value };
 }
 export interface ThreadList {
   readonly items: readonly Thread[];

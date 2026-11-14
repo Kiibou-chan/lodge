@@ -3,6 +3,7 @@ import { Forbidden, LodgeError, NotFound } from "./errors.ts";
 import type { Held, HeldAdd } from "./ports.ts";
 import type { Approved } from "./results.ts";
 import type { Wiring } from "./state.ts";
+import { writeMessage } from "./threads.ts";
 import { add } from "./writes.ts";
 
 export async function held(w: Wiring): Promise<readonly Held[]> {
@@ -16,10 +17,24 @@ async function authorised(w: Wiring, seq: number): Promise<Held> {
   return found;
 }
 export async function approve(w: Wiring, seq: number): Promise<Approved> {
+  const initial = await authorised(w, seq);
+  if (initial.kind === "message") {
+    return {
+      kind: "message",
+      written: await writeMessage(
+        w,
+        initial.ref,
+        initial.raises,
+        initial.person,
+        initial.text ?? "",
+        { where: initial.where, when: initial.when, close: initial.operation === "close" },
+        seq,
+      ),
+    };
+  }
   const refresh = async (): Promise<HeldAdd> => {
     const found = await authorised(w, seq);
-    if (found.kind === "message")
-      throw new LodgeError(`hold ${seq} is a thread message, which this build cannot approve yet`);
+    if (found.kind === "message") throw new LodgeError(`hold ${seq} is not an add`);
     return found;
   };
   const found = await refresh();

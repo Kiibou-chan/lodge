@@ -44,6 +44,8 @@ test("default_filling_functions_fill_python_defaults", () => {
     check,
     committed: null,
     about: null,
+    awaits: null,
+    held: null,
   });
 });
 
