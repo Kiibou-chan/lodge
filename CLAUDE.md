@@ -40,8 +40,10 @@ Agents in `.claude/agents/`: `builder` (Sonnet, one task from its brief), `revie
 Tasks run in order on one build branch in its own worktree; each task: brief, build, report, review (correctness, then practice, then design), fix round if needed, ledger line.
 Minors are parked in the ledger and taken by the next round touching those files.
 Final whole-branch review, fix wave, recheck.
-Model cost: every task subagent runs on Sonnet or cheaper, reviews and the final review included; pass `model` on every dispatch, since an agent definition's own model does not bind it, and use no Opus or Fable (author's ruling, 2026-11-14).
-Escalation: when a task seems to need a more expensive model (a fix loop at round 3, or two rechecks finding new kinds of problems), stop and ask the author or the build session with the findings, the handle, and the cost; the model is never raised on the agent's own judgment.
+Models: task subagents run Sonnet or cheaper, reviews and final review too; no Opus, no Fable
+(author, 2026-11-14). Every Agent dispatch passes `model`: `reviewer`'s own definition says Opus.
+Escalate, never self-raise: fix round 3, or two rechecks finding new kinds of problems, → ask the
+author or the build session, with findings, handle, and cost.
 A finding that conflicts with the plan is recorded with `lodge add` (scope `process`, `work_item` the plan), with a handle per argument and the cost if wrong in its reasoning.
 The ledger line gives the decision's ID; a ruling that changes what the spec says goes to the author.
 
