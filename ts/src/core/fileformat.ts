@@ -13,6 +13,7 @@ import { FormatError, readAreaName } from "./fields.ts";
 import { areaFrom, decisionFrom, specFrom } from "./headers.ts";
 import type { Area, Decision, Imported, Problem, Record, SpecEntry } from "./model.ts";
 import { READ_BACK_FIELDS } from "./read-back-fields.ts";
+import { encodeUtf8 } from "./text.ts";
 import { valueRepr } from "./value-repr.ts";
 import { LINE_BREAKS_AND_TABS, quoted } from "./yamlio.ts";
 
@@ -77,7 +78,7 @@ export function slug(title: string): string {
   return joined.slice(0, cut > 0 ? cut : SLUG_CHARS);
 }
 export function contentHash(text: string): string {
-  const bytes = new TextEncoder().encode(normaliseNewlines(text));
+  const bytes = encodeUtf8(normaliseNewlines(text));
   return bytesToHex(sha256(bytes)).slice(0, 12);
 }
 function folderOf(path: string): string {
