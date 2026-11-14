@@ -55,7 +55,7 @@ Scenario: with two projects in one database, project `a`'s tree would contain pr
 The held tests do create a second project (`tests/store/held.test.ts:147`), which is why the held filters are killed; no test does it for files, members, or attachments.
 Fix: one store test that creates `storage` and `other`, publishes a file, a decision, and an attachment to `other`, and asserts that `trees()`, `members("storage")`, and `attachmentTexts()` of `storage` show none of it.
 
-**I-4 · A user name and a machine path sit in tracked transcripts** (`docs/superpowers/plans/2026-11-02-lodge-server-store/task-12a-fix-1-codex.log:882`, and `<build-dir>/...` at `task-11-fix-1-codex.log:141,144`, `task-12a-fix-1-codex.log:141,144`, `task-12b-fix-1-codex.log:950,953`, `task-12c-fix-1-codex.log:811,814`)
+**I-4 · A user name and a machine path sit in tracked transcripts** (`docs/superpowers/plans/2026-11-02-lodge-server-store/task-12a-fix-1-codex.log:882`, and `pamac-build-user/...` at `task-11-fix-1-codex.log:141,144`, `task-12a-fix-1-codex.log:141,144`, `task-12b-fix-1-codex.log:950,953`, `task-12c-fix-1-codex.log:811,814`)
 
 CLAUDE.md's hard rule is "Public repository: no personal paths, machine names, secrets … in code, tests, or docs".
 `git grep <user>` finds exactly these lines, one of them a `/home/<user>/.bun/bin/bun` path.
