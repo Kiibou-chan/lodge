@@ -18,9 +18,10 @@
     "task": ["3"]
   },
   "tests/app/test_confirm.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 2,
-    "ts": ["ts/tests/app/confirm.test.ts"]
+    "ts": ["ts/tests/app/confirm.test.ts"],
+    "task": ["6"]
   },
   "tests/app/test_reads.py": {
     "status": "ported",
