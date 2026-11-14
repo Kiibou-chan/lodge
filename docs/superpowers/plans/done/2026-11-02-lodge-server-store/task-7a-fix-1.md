@@ -1,0 +1,7 @@
+# Fix round 1 for Task 7a of `docs/superpowers/plans/2026-11-02-lodge-server-store.md`
+
+Worktree `/var/tmp/lodge-store-b`, branch `server-store-b`. Read `CLAUDE.md`, then `docs/superpowers/plans/2026-11-02-lodge-server-store/task-7a-review.md` (the review) and `docs/superpowers/plans/2026-11-02-lodge-server-store/task-7a-brief.md`.
+Fix I-1 (a before-insert trigger in `MIGRATIONS[0]` refusing an insert whose `seq` already exists, with the message `events are append-only`; add a test that `insert or replace` and `replace into` are refused, seen failing first) and I-2 (the stale-row test from the review: `rebuild` over a derived table holding a stale row gives the table back row for row; seen failing against a mutation removing each delete, listed as a table).
+Also fix Minors m-1 to m-9 that are cheap and local; list any you skip with the reason. m-9 is a ledger note: the plan's Files list lacked the `contentHash` expectation edit in plan 1's test, which is justified (Python gives 01ce0241d2a0); say so in the report.
+Same rules as the brief: `sh scripts/check-ts.sh` last and green; never edit earlier briefs/reports/reviews; add `docs/superpowers/plans/2026-11-02-lodge-server-store/task-7a-fix-1-report.md`; commit with explicit paths (trailer `Co-Authored-By: Codex <noreply@openai.com>`); `git push origin server-store-b`.
+Final message: DONE, DONE_WITH_CONCERNS, or BLOCKED, one line, concerns.

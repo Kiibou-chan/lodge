@@ -1,0 +1,6 @@
+DONE — committed `0e20687` and pushed to `origin/server-store`.
+
+Tests: `sh scripts/check-ts.sh` exited 0; 1,234 passed, two existing todos.
+
+Concerns: none.
+Report: [task-11-report.md](docs/superpowers/plans/2026-11-02-lodge-server-store/task-11-report.md).

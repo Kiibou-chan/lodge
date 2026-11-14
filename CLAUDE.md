@@ -36,10 +36,13 @@ In `core` and `app`, take the time and randomness through the ports; never read 
 ## Build process (adapted from an existing project)
 
 Plan → plan review (two angles) → one fix round → rechecks until 0 Blocking, 0 Important → preflight scan in the ledger (each task's Produces against the next tasks' Consumes) → build.
-Agents in `.claude/agents/`: `builder` (Sonnet, one task from its brief), `reviewer` (Opus, first reviews), `rechecker` (fix diffs), `integrator` (merges, rulings), `planner` (plans, fix rounds).
+Agents in `.claude/agents/`: `builder` (Sonnet, one task from its brief), `reviewer` (Sonnet, first reviews), `rechecker` (fix diffs), `integrator` (merges, rulings), `planner` (plans, fix rounds).
 Tasks run in order on one build branch in its own worktree; each task: brief, build, report, review (correctness, then practice, then design), fix round if needed, ledger line.
 Minors are parked in the ledger and taken by the next round touching those files.
 Final whole-branch review, fix wave, recheck.
+Models: task subagents run Sonnet or cheaper, reviews and the final review too; no Opus, no Fable (author, 2026-11-14), except that the final check may run on Opus.
+Every Agent dispatch passes `model`: `reviewer`'s own definition says Opus.
+Escalate, never self-raise: fix round 3, or two rechecks finding new kinds of problems, → ask the author or the build session, with findings, handle, and cost.
 A finding that conflicts with the plan is recorded with `lodge add` (scope `process`, `work_item` the plan), with a handle per argument and the cost if wrong in its reasoning.
 The ledger line gives the decision's ID; a ruling that changes what the spec says goes to the author.
 

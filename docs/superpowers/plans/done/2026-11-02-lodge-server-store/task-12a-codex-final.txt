@@ -1,0 +1,5 @@
+DONE — implemented, reported, and pushed as `f103fc0` to `server-store`.
+
+Tests: `sh scripts/check-ts.sh` passed; 1,248 passed, two existing TODOs.
+
+Concerns: none.

@@ -1,0 +1,3336 @@
+Reading additional input from stdin...
+OpenAI Codex v0.167.0
+--------
+workdir: /var/tmp/lodge-server-store
+model: gpt-6.1-sol
+provider: openai
+approval: never
+sandbox: danger-full-access
+reasoning effort: none
+reasoning summaries: none
+session id: 01a1dc1e-15db-7613-8d77-cd79c97fed8a
+--------
+user
+Read docs/superpowers/plans/2026-11-02-lodge-server-store/task-14-minors.md first, then do it.
+codex
+I’ll read the task instructions first, then implement and verify the changes.
+exec
+/bin/bash -lc 'cat docs/superpowers/plans/2026-11-02-lodge-server-store/task-14-minors.md' in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+# Task 14, parked minors and closing edits
+
+Worktree `/var/tmp/lodge-server-store`, branch `server-store`; `ts/knip.json` is already back to the two entry patterns (uncommitted, knip passes: commit it).
+Each item below is a parked reviewer minor with its handle in the ledger `docs/superpowers/plans/2026-11-02-lodge-server-store-progress.md` and the named `task-N-review.md` in this folder; read the review for the item before touching it.
+Test-first where an item changes behaviour; every existing test passes; no behaviour change otherwise.
+Do not dispatch subagents.
+
+1. Task 9: `checked-writes.test.ts:41` failing-confirmation leg reaches the check (it throws `StaleList` before `add` today); the `changed`-row predicate written three times in `parity.test.ts` (lines 41, 46, 50) becomes one function; `seed.ts` reuses `setup()` of `store/support.ts`.
+2. Task 5: the repeated `required`, `Q`, `PATH`, and `opened` in test files and the shared `test.each` titles (`task-5-review.md`).
+3. Task 6: the dead all-capitals branch in `front-door.test.ts`; `?.` on `decisions.get` in `behindArea`.
+4. Task 11: a comment at `ts/tests/structure/calls.ts:172-178` naming the rule's limit (it is syntactic: aliased imports, `core["writeThread"](x)`, and `writeThread(x, undefined)` pass); single-pass filter instead of the `?? ""` sentinel at `ts/src/app/threads.ts:196-197`; the `new Forbidden("").exitCode` assertion in `ts/tests/app/people.test.ts:31` moves to an errors test or goes.
+5. Task 12c: one test asking with the code ref `ITEM-1`, asserting the held `ref` is `s-aaaaaa`.
+6. Skip: Task 5's whitespace-only author `where` (inherited from Python), Task 7a codec speed, Task 7b D-1, Task 12b M-6 and M-7 (plan 3).
+
+Hard rules: modules at most 300 lines, British English, no em-dashes, no new dependency, run `sh scripts/check-ts.sh`.
+Write `task-14-minors-report.md` in this folder, commit with explicit paths (trailer `Co-Authored-By: Codex <noreply@openai.com>`), and push `server-store`.
+
+exec
+/bin/bash -lc "rg --files -g AGENTS.md -g package.json -g '*lock*'" in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+uv.lock
+src/lodge/gitstore/lock.py
+ts/bun.lock
+docs/superpowers/plans/2026-11-02-lodge-server-store/probes/package.json
+ts/package.json
+lodge/decisions/d-0hg1mf-task-1-the-clock-ban-covers.md
+docs/superpowers/plans/done/2026-11-02-lodge-server-core/probes/package.json
+docs/superpowers/plans/done/2026-11-02-lodge-server-core/probes/fix2/knip/package.json
+
+exec
+/bin/bash -lc 'git status --short; cat docs/superpowers/plans/2026-11-02-lodge-server-store/task-{5,6,9,11,12c}-review.md' in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+?? docs/superpowers/plans/2026-11-02-lodge-server-store/task-14-minors-codex.log
+# Task 5 review
+
+Reviewed `57a93e0..26a57f9` in a scratch worktree at `26a57f9`, since removed.
+Read: the brief, the report, the plan's Task 5, `tests/app/test_thread_ops.py`, `tests/app/test_thread_fix_paths.py`, the three new test files, `ts/tests/app/support.ts`, `ts/tests/app/fakes.ts` (START and clock), `ts/src/app/threads.ts`, `src/lodge/app/threads.py` (lines 25 to 40), `ts/tests/parity.json` diff.
+Not read: `reads.ts`, `writes.ts`, and `state.ts` beyond the mutation targets; `ts/tests/core/applying.ts` beyond `present`.
+
+## Pass 1: correctness
+
+Every Python test is carried: 27 in `test_thread_ops.py` (15 in `thread-ops.test.ts`, 12 in `thread-ops-publish.test.ts`, counted against `grep -c "^def test_"`), plus `waiting_reads_one_snapshot` and the two `test.todo`s in `thread-fix-paths.test.ts`.
+The split lines match the plan (`ask_writes_a_thread_file` to `close_with_text`; `rejected_publish_starts_again` to `three_rejections_are_a_conflict`).
+Parametrised cases are all present (`where`/`when`, `Author`/`the author`/empty, `""`/whitespace, `where`/`when` unstorable, both `close_with_text` rows).
+No assertion is weakened.
+`raises` (`ts/tests/app/support.ts:40-47`) asserts class by `toThrow(errorClass)` and message by substring, which equals pytest `match` for every pattern used here (none contains a regex metacharacter).
+Line-by-line comparison found these only as differences of form: `thread.about == written.about == "s-aaaaaa"` became two assertions covering the same chain; `START.isoformat(timespec="seconds")` became the literal `2026-10-29T09:30:00+01:00`, which equals `START` in `ts/tests/app/fakes.ts:24`; tuples and sets became arrays and `Set`s.
+The deferrals are as the plan and d-rp74dr require: `thread-fix-paths.test.ts:5-6` holds the two `test.todo`s, and `ts/tests/parity.json` keeps the row `planned` with `plan: 3`.
+`tests/parity.json` flips `test_thread_ops.py` to `ported` with both files and `task: ["5"]`.
+No production file changed (`git diff --stat` lists tests, parity, report only).
+
+Verified by running:
+- `sh scripts/check-ts.sh` in the scratch worktree (node_modules symlinked from the build worktree): exit 0, `1153 pass`, `2 todo`, `0 fail`, `2847 expect() calls`, 84 files.
+- Mutation spot-check, 20 mutations each applied alone and reverted: the 10 sampled from the builder's table all FAIL (messages `by`, REJECTED `continue`, `commit &&` guard, `ref.toLowerCase()`, `i < 3`, `waitingIn(state)`, `paths: []`, OPEN filter, `cleanText`, `record named`), and 9 of my own all FAIL (author `when ??`, closed-thread guard, `!text && !close`, `strip(by)`, role-like-author check, `closed by` description, lower-cased commit message, `opened: stampOf`, `about` lookup limited to decisions).
+  One of my own mutations survived: finding 1.
+
+1. **Minor** · `ts/tests/app/thread-ops.test.ts:46-52` (`author_message_needs_where`).
+   Mutating `where === null || !strip(where)` to `where === null` at `ts/src/app/threads.ts:50` leaves all 21 tests in the file green, so a whitespace-only `where` from the author is untested.
+   The Python original has the same gap (`src/lodge/app/threads.py:33` has `not where.strip()`, `test_thread_ops.py:49-51` omits it), so this is inherited, not introduced.
+   Fix: parametrise `author_message_needs_where` over `undefined` and `"  "` (the plan allows a carried test to grow; run it red against that mutation).
+
+## Pass 2: practice
+
+2. **Minor** · `ts/tests/app/thread-ops.test.ts:150`, `thread-ops-publish.test.ts:125`, `thread-fix-paths.test.ts:21`.
+   The same `required<T>` helper is pasted three times, and `Q`, `PATH`, and `opened()` twice (`thread-ops.test.ts:6-15`, `thread-ops-publish.test.ts:6-14`); `ts/tests/core/applying.ts:78` already exports `present<T>(value: T | undefined)`.
+   Failure scenario: a later change to the helper (say, a clearer message) is made in one file and not the others.
+   Fix: put `required` (null-aware) and the `opened` fixture in `ts/tests/app/support.ts`, import them in all three; the Python file kept them once.
+3. **Minor** · `ts/tests/app/thread-ops.test.ts:55,65,75,91`.
+   `test.each` rows share one title (`"agent_message_may_not_carry_where"` twice, and so on), so a failing row reports the name without saying which parameter.
+   pytest's ids carry the parameter.
+   Fix: add a `%j` or `%s` specifier to the four titles (names still start with the Python name, so the parity trace holds).
+
+## Pass 3: design
+
+No finding.
+All three files are under 300 lines (153, 128, 24; `wc -l`), fixtures are the made-up storage project from `support.ts`, no personal paths or names (`grep` for `/home/`, `<user>`, `Svenja` in the three files is empty), and the tests import only through `#app` and `#core` plus test-local helpers.
+Test-first is evidenced as the plan allows (d-mfayy5), by mutation.
+
+## Report
+
+4. **Minor** · `task-5-report.md` (Commands section).
+   The mutation scripts (`/tmp/port5.py`, `/tmp/mutate5.py`, `/tmp/runmut5.py`) are not committed, so the 28-row table cannot be rerun from the repository; the report gives `2843 expect() calls` where the gate at the same commit prints `2847`; and "run again as the final validation command" gives no result line.
+   I reran the table's sample myself (above), so the evidence holds; the gap is traceability only.
+   Fix: next reports quote the final gate's last lines once, and keep the mutation list as a table of file, old text, new text (already done) rather than pointing at `/tmp`.
+   Untracked `task-5-codex.log` and `task-5-codex-final.txt` sit beside the report in the build worktree and should not be committed.
+
+Verdict: 0 Blocking, 0 Important, 4 Minor
+# Task 6 review
+
+Branch `server-store-a`, build commit fada0f3 on b5545e3.
+Reviewed in a scratch worktree of fada0f3 (removed), with `ts/node_modules` symlinked from the lane worktree.
+
+## Ran
+
+- `sh scripts/check-ts.sh` in the scratch worktree: exit 0, Biome, `tsc`, dependency-cruiser, knip, and `1176 pass`, `2 todo`, `0 fail`.
+- 24 mutations of `ts/src/app/confirm.ts` against `bun test tests/app/confirm.test.ts` (one at a time, reverted): 20 killed, 4 survived (findings 1 to 4).
+- Killed: no `cleanText`; no CRLF refusal; scope always process, always product; single-id `confirmableIds` test dropped; length check dropped; commit flag ignored; staged test ignored; commit message and paths changed; empty-words check dropped; `ValueError` not wrapped; area `notFound` dropped; entries not deduplicated; unknown entries kept; `StaleList` changed to `Conflict`; stale message shortened; the area not passed to `confirmationDraft`; area precedence removed; area order reversed.
+- Two mutations of `lodge.ts`: `behindArea` pinned to `"storage"` is killed; `commit = true` as the default survives (finding 3).
+- Front door: printed the 23 Python names and the 38 exports of `#app`; the test is not vacuous.
+- Probes (scratch tests, deleted): `confirm([])`, `confirm(["d-zzzzzz"])`, and duplicate ids over two decisions all throw `StaleList` with the right message; an unknown area throws `NotFound`.
+
+## Correctness
+
+Every one of the 19 Python test functions is ported, 21 cases with the two parametrised tests.
+Each assertion is kept: error class and message both asserted through `raises` (`ts/tests/app/support.ts:36`, which awaits `toThrow(Class)` and then `toThrow(pattern)`), `store.publishes` and `store.commits` emptiness kept, `quote?.text` and `reasoning` compared to the CRLF-normalised words, and the two ids' order in `confirms`.
+No test is weakened or deferred.
+`confirmDecisions` matches `confirm.py` line by line: clean, CRLF refusal, empty refusal, one read, expected ids, staleness, scope, draft with `ValueError` wrapped, `add` with defaults, commit only when `STAGED` and requested.
+`behindArea` matches, including the not-found rule and the entry dedup.
+The set-equality test of Python (`set(ids) != set(expected)`) becomes a length test plus a subset test; the two are equal while `coreBehindArea` returns distinct ids.
+
+## Findings
+
+1. Minor. `ts/src/app/confirm.ts:55`, survivor: dropping `!expected.length ||` passes every test.
+   Scenario: `confirm([], "Read.")` on a store with nothing confirmable would then reach `confirmationDraft([])` and fail with `LodgeError("your words hold a character lodge cannot store")` (confirmed by running it) instead of `StaleList`, a wrong class and message for the viewer's 409.
+   The Python tests have the same gap, so the port asserts no less.
+   Fix: one test, `confirm([], "Read.")` and `confirm(["d-zzzzzz"], "Read.")` rejecting with `StaleList` and the stale message, `publishes` empty.
+2. Minor. `ts/src/app/confirm.ts:55`, survivor: dropping `expected.some((id) => !given.has(id))` passes every test.
+   Scenario: `confirm([A, A], …, { area })` where the area is behind on A and B has two ids in the list, equal in length to the expected two, so it would confirm A and B from a list that named only A.
+   Fix: a test with two decisions behind the area and ids `[A, A]` (probed: current code answers `StaleList`).
+3. Minor. `ts/src/app/lodge.ts:101`, survivor: changing the default `commit = false` to `true` passes every test.
+   Scenario: `second_identical_confirmation_is_stale` and `second_area_confirmation_is_stale` use a staged store with the default and never assert `store.commits`, and `confirm_one_decision` uses an unstaged store, so a default that commits staged writes is invisible.
+   Fix: in `second_identical_confirmation_is_stale`, assert `store.commits` equals `[]` after the first confirmation.
+4. Minor. `ts/src/app/confirm.ts:16`, survivor: replacing the "no entry in the area" half of the not-found test with `true` passes.
+   Scenario: an area with entries but no area file would answer `NotFound` after a regression, and no test pins that `behindArea` accepts it.
+   Also `[[VIEWER, draft]]` (`confirm.ts:69`) is unpinned: a different source name for the draft passes every test.
+   Both gaps are Python's; park them for a round touching the file.
+5. Minor. `ts/tests/app/front-door.test.ts:25-31`: the `m[1] === m[1]?.toUpperCase()` branch never runs (no all-capitals name in `__all__`), and `name ?? ""` and the `?.` chains on `names` only satisfy the types.
+   Fix: write `snake.replace(...)` over a `string` obtained once, dropping the dead branch.
+   The `extras` set also names six later-task exports that nothing checks exist, as the brief allows.
+6. Minor. `ts/src/app/confirm.ts:11-17`: `behindIds` and `behindArea` read `s.decisions.get(id)?.changes` where Python indexes and would raise `KeyError`; an id from `coreBehindArea` is always a decision, so the `?.` hides a broken invariant as an empty entry list.
+   Fix: none needed now; note it.
+
+## Practice
+
+Modules are 73, 108, 209, and 62 lines, well under 300.
+Fixtures are the made-up `storage` area; no personal paths, no em-dashes, in the six files (grep run).
+The `confirmDecisions` rename is justified by the structure guard on the global `confirm` (`ts/tests/structure/calls.ts:37`) and kept off the public `Lodge.confirm`.
+The comment states the fact (callers serialise, retries and commit included).
+The report is accurate: 19 functions, 21 cases, mutation table for the two front-door tests, and test-first failure for the rest; the `index.ts` Modify of the brief was a no-op and the report says so.
+The commit carries the Codex trailer, the explicit paths, and the author identity the brief names.
+
+## Design
+
+`confirm.ts` imports only `#core` and siblings; `lodge.ts` takes it as `* as confirmations`, as `reads`, `threads`, and `writes` are taken.
+The parity row flips with `"task": ["6"]` and every `tests/app/` row is now `ported`, `changed`, or plan 3's.
+No plan rule goes unenforced here apart from the "callers serialise" rule, which no TypeScript test can enforce until plan 3's API holds the lock.
+
+Verdict: 0 Blocking, 0 Important, 6 Minor
+# Task 9 review
+
+Commit 16d2366 on 72ce4c6, reviewed in a scratch worktree at 16d2366 (removed afterwards; `ts/node_modules` was symlinked, never installed).
+`sh scripts/check-ts.sh` there: exit 0, `1218 pass`, `2 todo`, `0 fail`, 93 files.
+
+Files read: the brief, the report, the plan's Task 9 and Global Constraints, `ts/tests/store/seed.ts`, `ts/tests/app/reads-published.test.ts`, `ts/tests/app/writes-retry.test.ts`, `ts/tests/store/checked-writes.test.ts`, `ts/tests/parity.test.ts`, `ts/tests/parity.json`, `ts/tests/store/interleaving.ts`, `ts/tests/store/support.ts`, `ts/tests/app/support.ts`, `ts/knip.json`, `ts/src/app/writes.ts`, `ts/src/app/confirm.ts`, `ts/src/store/sqlite-store.ts`, `ts/src/store/read-tree.ts`, and the Python originals `tests/app/test_reads_published.py` and `tests/app/test_writes_retry.py`.
+Files not read: `ts/src/core/*` beyond a grep for the check 5 message, `ts/tests/store/concurrent.test.ts`, the Python viewer and gitstore tests, and the codex log files.
+
+## Correctness
+
+Eight Python titles and three parametrised cases of `test_writes_retry.py` and the six titles of `test_reads_published.py` are all present with their Python assertions, class and message both (`raises(..., Conflict, "it changed since the draft was made")` and the `three times` match, `exitCode` 1 and 2, `attempts`, `publishes`).
+Where Python had no message (area and entry conflicts, usage errors) none is added, so nothing is weakened.
+Fixtures match Python's (`project()` is `seeded(AREA, ENTRY, FIRST)`, `MemoryStore(AREA)` is `seeded(AREA)`, `MemoryStore()` is `seeded()`).
+The reads tests change by design (d-fv20kp, the plan's text): the edit goes through `add`, is refused with check `[5]`, no event is written, and the reads stay clean.
+I probed that the reads are not vacuous: `search("transcripts")` finds `s-aaaaaa` and `d-aaaaaa`, and the timeline holds `d-aaaaaa`, so `items[0]?.flags` is defined; bun's `not.toContain` on `undefined` would throw, not pass.
+
+Mutations I re-ran (each reverted; counts over the three suites, 20 tests):
+
+| Mutation | Result |
+| --- | --- |
+| `ATTEMPTS = 1` in `writes.ts` | 5 fail, including `every_write_is_checked_against_the_state_it_lands_on` |
+| compare-and-set predicate removed in `touchHead` | 7 fail |
+| compare-and-set result ignored in `SqliteStore.publish` | 7 fail |
+| every refusal classified `Conflict` | 4 fail, all three `unhashable` cases among them |
+| store `gate` returns an empty published tree | 2 fail |
+| `checkChange(after, after)` (published state ignored) | 8 fail |
+| mine: check skipped on a retry only (`first === s`) | 1 fail, the race test, so that test does prove the check runs on the state the write lands on |
+| mine: dry run falls through to publish | 1 fail, `a_refused_write_leaves_no_event` |
+
+No Blocking found.
+
+## Findings
+
+1. Minor, `ts/tests/store/checked-writes.test.ts:41`: the "failing confirmation" leg of `a_refused_write_leaves_no_event` is `confirm([FIRST.id], "Read.")`, and `FIRST` is decided by the author, so `confirmDecisions` throws `StaleList` at `ts/src/app/confirm.ts:57` before `add` runs.
+The leg therefore proves the stale-list guard writes nothing, not that a check failure on a confirmation does; no mutation of the write path can make it fail (the dry-run mutation fails the third leg, the skipped check the first).
+The plan's wording allows it, and a confirmation that reaches `add` and fails the check is hard to build on a valid server state.
+Fix: say so in a one-line test comment or in the ledger line, or build the leg through `Interleaved` so the confirmation lands on a retired entry.
+
+2. Minor, `ts/tests/parity.test.ts:41,46,50`: the changed-row predicate `r.status === "ported" || (r.status === "changed" && ...)` is written three times, with `[1, 2].includes(r.plan ?? 0)` in one and `r.plan === 2` in the others.
+Scenario: a later plan-3 changed row is added to one rule and not the others.
+No in-repo test covers the new selection (`a_ported_file_losing_a_name_fails` calls `rowMissing` directly; the builder's parity mutations were by hand), so reverting the predicate to `ported` only would pass the gate.
+Fix: one `held(r)` helper, and a planted-fixture test that a plan 2 `changed` row losing a name fails.
+
+3. Minor, `ts/tests/store/seed.ts:8-12`: the `opened` list, `afterEach` close, `FixedClock`, and `SqliteProjects.create` repeat `setup()` in `ts/tests/store/support.ts:5-17`, which differs only in the project and owner names (`storage`/`ada` against `storage-notes`/`author`).
+Fix: let `setup` take the names (defaults unchanged) and `seeded` call it, so one hook closes the databases.
+
+4. Minor, `ts/tests/app/reads-published.test.ts:12,18` against `ts/tests/store/support.ts:19`: the events are read with an unordered `selectFrom("events").selectAll().execute()` twice, while the shared `events(database)` helper orders by `seq`.
+Scenario: `toEqual(before)` over an unordered result relies on SQLite's rowid order.
+Fix: use `events` (move it out of `store/support.ts` or import it).
+
+5. Minor, `ts/tests/app/writes-retry.test.ts:76-142`: five tests repeat `try { await ...; throw new Error("expected conflict") } catch (e) { expect(e).toBeInstanceOf(...) }` where `raises` of `support.ts` exists.
+It fails correctly if nothing throws, but with the message `Expected instance of Conflict` rather than the real cause.
+The same tests assert `exitCode` in a way `raises` does not, so a small `caught(promise)` helper returning the error would serve all five.
+
+6. Minor, `ts/tests/app/writes-retry.test.ts:141`: the `test.each` gives the three cases one title, so a failure (the M6 mutation printed three identical `(fail) unhashable_names_are_usage_errors` lines) does not say which case broke.
+Python's ids (`area-name-list`, `entry-id-list`, `entry-id-mapping`) are lost.
+Fix: add the id as a second, unprinted column only if `parity-names.ts` still reads the title; otherwise leave, since the plan fixes the title.
+
+7. Minor, plan text `docs/superpowers/plans/2026-11-02-lodge-server-store.md:216,220` and the brief's "three changed files": the plan miscounts.
+Judgement on the builder's note: correct.
+`parity.json` holds exactly two `changed` rows with `plan` 2 (`test_reads_published.py`, `test_writes_retry.py`); `checked-writes.test.ts` has no Python original, and `every_python_test_file_is_in_the_table` forbids a row for a file that does not exist in `tests/`; `test_concurrent.py` is a `ported` row of Task 8.
+No code change; the ledger line should record two files, and the plan's "three" is a wording slip to fix when the plan is next touched.
+The plan's `ts/knip.json` step is likewise vacuous: the file holds no `tests/store/interleaving.ts` entry at 16d2366 or before, and knip passes, so nothing was left to remove.
+
+8. Minor, `ts/tests/store/checked-writes.test.ts:51`: `expect((await store.gate(current)).published).toBe(current)` holds for any store whose `gate` echoes its argument (`ts/src/store/sqlite-store.ts:41-43` does exactly that), so the identity check proves nothing about the database; the real proof is the `check(true)` equals `problems()` line above it.
+The plan words it this way, so it stays, but the report's claim that it tests the gate result is stronger than the assertion.
+
+## Practice and design
+
+All four new files and `parity.test.ts` are well under 300 lines (24, 62, 147, 68, 75).
+No personal path, name, or email appears in the new files (grepped); fixtures are the made-up `storage` area, the owner `author` as the plan's `seed.ts` text requires.
+No production file changed, and `ts/knip.json`, `package.json`, and Python are untouched.
+The report is dense and its mutation table is accurate in everything I re-ran; it does not list a mutation for the dry-run leg or the confirmation leg of `a_refused_write_leaves_no_event` (findings 1 and the dry-run result above).
+Boundaries hold: the tests import only `#app`, `#core`, `#store`, and sibling test helpers, and `Interleaving` and `Interleaved` are read, so knip is satisfied.
+
+Verdict: 0 Blocking, 0 Important, 8 Minor
+# Task 11 review (commit 0e20687)
+
+Angles in order: correctness, practice, design.
+Scratch worktree `/var/tmp/lodge-review-11` at 0e20687, `ts/node_modules` symlinked from the main worktree; removed afterwards.
+
+## Evidence run
+
+- `sh scripts/check-ts.sh` in the scratch worktree: exit 0, 1234 pass, 2 todo, 0 fail (Biome, tsc, dependency-cruiser, knip, bun test).
+- `grep -rn "writeThread\|isAuthor\|parseThread" ts/src` outside core: the only call is `ts/src/app/threads.ts:123`, `writeThread(thread, s.people)`; no call of `isAuthor` or `parseThread` exists outside core.
+- The new rule fails a real one-argument call: with `writeThread(thread)` at `ts/src/app/threads.ts:123`, `bun test tests/structure` fails `repository_has_no_violations` with `src/app/threads.ts:123: writeThread requires explicit people` (reverted).
+- Planted probes through `callViolations`: `writeThread(...args)`, `writeThread?.(x)`, `obj.isAuthor(d)` and `new Foo().isAuthor(x)` are reported; the cases in Minor 1 are not.
+- Mutations: deleting `people: current.people` from `ts/src/app/writes.ts:94` gives 2 failures in `tests/app` and `tests/store`; deleting it from `ts/src/app/threads.ts:132` gives 2 failures.
+- Probe over the SQLite store: `wired(store).confirm([...], "x")` throws `Forbidden: only an owner of the project confirms`, and `wired(store).ask(..., "author", ...)` throws `name a person of the project exactly, or use your own role` (see Important 1).
+
+## Correctness
+
+No Blocking findings.
+Every Task 11 requirement of the brief is in the code: `Forbidden` (exit code 2) at `errors.ts:10`, the fifth `Lodge` argument at `lodge.ts:22`, the owner query at `read-tree.ts:41-52`, the people-based words in `threads.ts:49-70`, the impersonation refusal at `threads.ts:95`, `waitingIn` at `threads.ts:196-197`, and `confirm` at `confirm.ts:53-54` and `:65`.
+Both after-states carry `people` and the two mutations above are seen by the suite.
+Dependencies, `parity.json`, and `knip.json` are untouched; files are at most 264 lines in the touched set (`ts/tests/structure/calls.ts` 250); no em-dash and British English in the new text.
+The three Task 6 survivors each have a test with a mutation in the report; Task 9's three minors concern files this commit does not touch (`checked-writes.test.ts`, `parity.test.ts`, `seed.ts`), so parking them again is justified.
+
+## Important
+
+1. `ts/tests/store/support.ts:14` creates the project with owner `ada`, while `ts/tests/app/support.ts:32` makes every `wired(store)` act as `person("author")`.
+   The plan's Task 11 text says every `Lodge` of the store tests "acts as `person("author")`, the owner of their project", which does not hold: over the SQLite store `author` is not among the people, so `confirm` is `Forbidden` and a message `by: "author"` is refused (both probed above).
+   No store test exercises either today, so the suite is green, but the first later task that confirms or relays a person's message through `wired(store)` over SQLite (Tasks 12 and after, plan 3's server tests) fails for a reason that is a test setup error, not a defect.
+   Fix: create the store tests' project with owner `author` and move the `ada` expectations of `ts/tests/store/people.test.ts` to a project made there, or give `setup()` a `lodge` acting as the owner; one of the two, so that the plan's sentence is true.
+
+## Minor
+
+1. `ts/tests/structure/calls.ts:172-178` is syntactic and misses `import { writeThread as wt } from "#core"; wt(x)`, `core["writeThread"](x)`, and `const f = writeThread; f(x)`; it also accepts `writeThread(x, undefined)`.
+   No call in `src` does any of these, and d-wz7fc2's cost clause accepts a narrow rule; fix if wanted: resolve the callee through `imported(expr)`-style alias tracking, or note the limit in a comment.
+2. `ts/src/app/threads.ts:95` throws `Forbidden` before the reference is resolved and before the closed-thread refusal (`:117`), so a person writing as another to an unknown or closed thread gets `Forbidden` rather than `NotFound` or `is closed`.
+   The brief says "after lodge 0.2's refusals", and Task 12c's mutation list (plan line 662) places the hold after the `where` and closed-thread refusals; place the check beside the closed-thread refusal so 12c replaces it in one spot.
+3. `ts/src/app/threads.ts:196-197` filters `openIn(state).items` twice with `?? ""` standing in for a message-less thread; a single pass with one `people.has(...)` per thread avoids the empty-string sentinel.
+4. `ts/tests/app/people.test.ts:31` asserts `new Forbidden("").exitCode` inside `an_agent_cannot_confirm`; it tests the class, not the operation, and belongs in an errors test or can go.
+5. `ts/src/app/confirm.ts:53` reads the whole state before the `agent` refusal, which needs no state; the agent check can sit with the words checks above it.
+
+Files read: the brief, the report, plan Task 11 and Global Constraints, d-wz7fc2 and d-vwsnz5, `git show 0e20687` in full for `ts/src`, `ts/tests/structure`, `ts/tests/app/{people,confirm,fakes,support}`, `ts/tests/store/{people,support}`, plus `ts/src/app/{state,threads}.ts` and `ts/tests/structure/calls.ts` whole.
+Not read: the other test files of `tests/app` and `tests/store` beyond greps, `ts/src/core` beyond signatures, Task 12 and later briefs.
+
+Verdict: 0 Blocking, 1 Important, 5 Minor
+# Task 12c review
+
+Commit 3134ce5 on `server-store`, reviewed in the scratch worktree `/var/tmp/lodge-review-12c` (removed after).
+Gate: `sh scripts/check-ts.sh` exits 0 there (1285 pass, 2 todo, 0 fail; biome, tsc, depcruise, knip clean).
+Mutations: 26 on `ts/src/app/threads.ts` and `ts/src/app/held.ts`, each run against `bun test tests/app tests/store` and reverted; three were equivalent (M18, M21) or constant-for-constant (where `"chat"`, which killed with `"mail"`).
+Probes: a relayed close approved over MemoryStore, and a relayed ask, a relayed close, and their approvals over SqliteStore, all gave the expected answers (thread closed, last message by the person with the held where and when).
+
+## Correctness
+
+Held and approved as specified, verified by reading and by mutation:
+- The hold sits after the `where` refusal, the ref resolution, the closed-thread refusal, the message build, and the check (`ts/src/app/threads.ts:147`, after the check at `:140` and beside the Task 11 `Forbidden` at `:122`); moving the hold or the refusals is killed by the three tests the report lists (reported; not re-run for the first two).
+- An agent writing under a role is not held (M20 killed), a person's own message is not held (M19 killed), another person's is `Forbidden`.
+- The approval publishes with `approves` = `seq` (M13 killed), a `REJECTED` answer rereads and a settled hold throws `NotFound` (M8, M23 killed), a closed thread leaves the hold open (test), a wrong approver is `Forbidden` before anything is read of the thread (`held.ts:12`).
+- Waiting functions are untouched; a held message changes no thread's waiting.
+- Task 12b's parked items are untouched: `held()` at `held.ts:9` and the add path (`writes.ts` is not in the diff).
+
+### Important
+
+**I-1. A relayed close is not tested at all** (`ts/src/app/threads.ts:152`, `ts/src/app/held.ts:29`-`:30`).
+Five mutations survive the whole app and store suites: `operation: raises !== null ? "ask" : close ? "close" : "reply"` to `"ask" : "reply"` (M1) or to always `"reply"` (M2), `text: close && !msg.text ? null : msg.text` to `msg.text` (M3), `close: initial.operation === "close"` to `close: false` (M14), and `initial.text ?? ""` to `?? "x"` (M25).
+Failure scenario: M1 or M14 lets an agent relay "ada closes this thread", ada approves, and the approved message is appended while the thread stays open and keeps waiting; no test fails.
+My probe shows the unmutated code is right (held `operation: "close"`, `text: null`; approval leaves `state` closed with an empty message by ada), so this is a missing test, not a bug.
+Fix: add `a_relayed_close_is_held_and_closes_the_thread_at_approval` in `tests/app/held-messages-approve.test.ts` (relay `close` by `ada` with where; `held()` lists `operation: "close"`; after `ada.approve` the thread's `state` is `closed`); a store twin in `tests/store/held-messages.test.ts` is optional.
+
+**I-2. The held answer's `ids` and `about` are asserted nowhere** (`ts/src/app/threads.ts:158`-`:164`).
+`ids: [thread.id]` to `ids: []` (M5) and `about: thread.about` to `null` (M6) both survive; the plan's Interfaces name `ids` as the thread's ID for a reply or close and the provisional ID for an ask, and plan 3 builds its HTTP answer from them.
+`a_relayed_question_mints_its_thread_at_approval` only asserts `approved.written.ids` differs from `result.ids`, which an empty array also satisfies.
+Fix: assert `result.ids` equals `[id]` for the relayed reply (`held-messages.test.ts`), that the held ask's `ids` has one `q-` ID, and that `about` is `s-aaaaaa`.
+
+## Practice
+
+### Minor
+
+**M-1. The top-of-loop settle check is redundant** (`ts/src/app/threads.ts:91`-`:92`).
+Removing it (M7) survives: `authorised` has just checked the hold, and a hold settling afterwards makes `publish` answer `REJECTED`, which the branch at `:176`-`:178` already turns into `NotFound`; it costs one `store.held()` read per attempt, and the only difference is that a hold settled in the window answers `NotFound` before a closed-thread or check refusal.
+The same `held().some(seq)` test is written twice (`:91`, `:176`).
+Fix: drop the first, or extract `isOpen(w, seq)` and keep one use, with a test for whichever behaviour is wanted.
+
+**M-2. The `refresh` branch in `approve` for a message is unreachable** (`ts/src/app/held.ts:37`).
+A hold's kind never changes, so `hold ${seq} is not an add` cannot fire; M26 (changing its text) survives.
+Fix: narrow without a throw, for example have `authorised` take the kind it expects, or keep the throw and accept it as a type guard with a comment-free `satisfies`; at least do not leave a message nobody can read.
+
+**M-3. `writeMessage` grew to about 140 lines with a seventh positional parameter** (`ts/src/app/threads.ts:81`-`:196`).
+`approves` defaults to `null`, so d-d96y91 holds, but the held branch (`:147`-`:165`) is a block that could be `holdMessage(w, ...)`, which also keeps the file well under 300 lines (234 now).
+
+**M-4. Test shape** (`tests/app/held-messages.test.ts:32`-`:45`, `held-messages-support.ts:8`).
+The two waiting tests are one loop with ternary names and a boolean `own` flag on `setup`; `result.held as number` is cast eleven times.
+Fix: two plain tests, and have `relay()` return `held` as a number.
+
+**M-5. Where is `"chat"` in every test**, so a held `where` of the constant `"chat"` is indistinguishable from the real one (M10, M17 survive as `"chat"`, die as `"mail"`); use a second value in the approval test.
+
+## Design
+
+No Blocking or Important.
+`held.ts → threads.ts` adds no cycle (depcruise green); the hold stores text, place, and minute rather than the file, so approval rereads the thread and checks it against the state it lands on, which is d-znagqe's rule for adds applied to messages.
+A held ask mints its ID again at approval, as the plan says.
+
+### Minor
+
+**M-6. The ask's `ref` is held as `thread.about`, the resolved ID** (`threads.ts:153`), so a ref given as a name resolves at hold time and again at approval; M24 (holding the raw ref) survives because the test uses the ID.
+Harmless today; a test with a title-style ref would pin it.
+
+**M-7. Not exercised.** An approval whose check fails (`CHECK_FAILED`, hold stays open) has no message test; the plan lists it.
+I could not construct a state where a check passes at hold and fails at approval without a new fixture, so I did not run it.
+
+## Files
+
+Read: the brief, report, plan Task 12c and Calls made, d-2v8vtk, d-znagqe, d-thvvzx, `git show 3134ce5`, `ts/src/app/{threads,held}.ts`, `ts/src/app/ports.ts` (held types), the five new or changed test files.
+Not read: `ts/src/store/*` internals, `memory` fake store, plan 1 and 3 documents beyond the cited lines, the Python tree.
+
+Verdict: 0 Blocking, 2 Important, 7 Minor
+
+exec
+/bin/bash -lc 'cat ts/tests/store/{checked-writes.test.ts,seed.ts,support.ts,interleaving.ts}; cat ts/tests/parity.test.ts; cat ts/tests/app/{support.ts,thread-ops.test.ts,thread-ops-publish.test.ts,thread-fix-paths.test.ts,front-door.test.ts}' in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+import { expect, test } from "bun:test";
+import { AddOutcome, PublishOutcome, StaleList } from "#app";
+import { filters } from "#core";
+import { AREA, ENTRY, FIRST, wired } from "../app/support.ts";
+import { decisionText, specText } from "../core/applying.ts";
+import { Interleaved } from "./interleaving.ts";
+import { seeded } from "./seed.ts";
+import { events } from "./support.ts";
+
+const RETIRE: readonly (readonly [string, string])[] = [
+  ["d.md", decisionText("changes:", "  - {entry: s-aaaaaa, action: retire}")],
+];
+const RESTS: readonly (readonly [string, string])[] = [
+  ["d.md", decisionText("changes:", "  - {entry: s-bbbbbb, action: create}")],
+  ["s.md", specText("id: s-bbbbbb", "area: storage", "rests_on: [s-aaaaaa]")],
+];
+test("every_write_is_checked_against_the_state_it_lands_on", async () => {
+  const { database, store } = await seeded(AREA, ENTRY, FIRST);
+  const a = wired(store);
+  const interleaved = new Interleaved(store, a, RETIRE);
+  const before = (await events(database)).length;
+  const result = await wired(interleaved).add(RESTS);
+  expect(result.outcome).toBe(AddOutcome.CHECK_FAILED);
+  expect(result.check.problems.map((p) => p.check)).toEqual([6]);
+  expect(interleaved.outcomes).toEqual([PublishOutcome.REJECTED]);
+  expect((await events(database)).length).toBe(before + 2);
+  expect((await a.search("s-bbbbbb", filters())).items).toEqual([]);
+});
+test("a_refused_write_leaves_no_event", async () => {
+  const { database, store } = await seeded(AREA, ENTRY, FIRST);
+  const lodge = wired(store),
+    before = await events(database);
+  const draft = (await lodge.draft(FIRST.id)).replace(FIRST.statement, "Changed.");
+  expect((await lodge.add([["d.md", draft]])).outcome).toBe(AddOutcome.CHECK_FAILED);
+  expect(await events(database)).toEqual(before);
+  await expect(lodge.confirm([FIRST.id], "Read.")).rejects.toThrow(StaleList);
+  expect(await events(database)).toEqual(before);
+  expect((await lodge.add(RETIRE, { dryRun: true })).outcome).toBe(AddOutcome.DRY_RUN);
+  expect(await events(database)).toEqual(before);
+});
+test("gate_on_the_server_is_the_current_state", async () => {
+  const { store } = await seeded(AREA, ENTRY, FIRST);
+  const lodge = wired(store);
+  for (let i = 0; i < 3; i++) {
+    expect((await lodge.add([["d.md", decisionText({ body: `Decision ${i}.` })]])).outcome).toBe(
+      AddOutcome.PUBLISHED,
+    );
+  }
+  expect(await lodge.check(true)).toEqual(await lodge.problems());
+  const [current] = await store.trees();
+  expect((await store.gate(current)).published).toBe(current);
+});
+test("a_refused_add_carries_its_feedback", async () => {
+  const { store } = await seeded(AREA, ENTRY, FIRST);
+  const lodge = wired(store);
+  const draft = decisionText("changes:", "  - {entry: s-bbbbbb, action: create}").replace(
+    "Keep transcripts",
+    "x".repeat(200),
+  );
+  const added = await lodge.add([
+    ["d.md", draft],
+    ["s.md", specText("id: s-bbbbbb", "area: storage", "rests_on: [s-cccccc]")],
+  ]);
+  expect(added.outcome).toBe(AddOutcome.CHECK_FAILED);
+  expect(
+    added.feedback.some((f) => f.message.includes("the title is 200 characters; guidance is")),
+  ).toBe(true);
+});
+import { afterEach } from "bun:test";
+import { PublishOutcome } from "#app";
+import type { Area, Decision, SpecEntry } from "#core";
+import { type LodgeDatabase, openDatabase, SqliteProjects, SqliteStore } from "#store";
+import { FixedClock } from "../app/fakes.ts";
+import { filesOf } from "../core/builders.ts";
+
+const opened: LodgeDatabase[] = [];
+afterEach(async () => {
+  for (const database of opened.splice(0)) await database.close();
+});
+export async function seeded(...items: (Area | Decision | SpecEntry)[]) {
+  const database = await openDatabase(":memory:");
+  opened.push(database);
+  const clock = new FixedClock();
+  await new SqliteProjects(database, clock).create("storage-notes", "author");
+  const store = new SqliteStore(database, "storage-notes", "author", clock);
+  if (
+    (await store.publish((await store.trees())[0], filesOf(...items), "seed")) !==
+    PublishOutcome.PUBLISHED
+  )
+    throw new Error("seed did not publish");
+  return { database, store };
+}
+import { afterEach } from "bun:test";
+import { type LodgeDatabase, openDatabase, SqliteProjects, SqliteStore } from "#store";
+import { FixedClock } from "../app/fakes.ts";
+
+const opened: LodgeDatabase[] = [];
+afterEach(async () => {
+  for (const db of opened.splice(0)) await db.close();
+});
+export async function setup() {
+  const database = await openDatabase(":memory:");
+  opened.push(database);
+  const clock = new FixedClock();
+  const projects = new SqliteProjects(database, clock);
+  await projects.create("storage", "author");
+  const store = new SqliteStore(database, "storage", "author", clock);
+  return { database, projects, store, clock };
+}
+export async function events(database: LodgeDatabase) {
+  return database.db.selectFrom("events").selectAll().orderBy("seq", "asc").execute();
+}
+import { AddOutcome, type HeldDraft, type Lodge, PublishOutcome, type Store } from "#app";
+import type { Tree } from "#core";
+
+class Forwarding implements Store {
+  constructor(protected readonly inner: Store) {}
+  commit(paths: readonly string[], message: string) {
+    return this.inner.commit(paths, message);
+  }
+  hold(draft: HeldDraft) {
+    return this.inner.hold(draft);
+  }
+  held() {
+    return this.inner.held();
+  }
+  decline(seq: number, reason: string) {
+    return this.inner.decline(seq, reason);
+  }
+  trees() {
+    return this.inner.trees();
+  }
+  attachmentTexts() {
+    return this.inner.attachmentTexts();
+  }
+  freshness() {
+    return this.inner.freshness();
+  }
+  gate(current: Tree) {
+    return this.inner.gate(current);
+  }
+  publish(
+    base: Tree,
+    writes: ReadonlyMap<string, string>,
+    message: string,
+    approves: number | null = null,
+  ) {
+    return this.inner.publish(base, writes, message, approves);
+  }
+}
+export class Interleaved extends Forwarding {
+  readonly outcomes: PublishOutcome[] = [];
+  private fired = false;
+  constructor(
+    inner: Store,
+    private readonly during: Lodge,
+    private readonly drafts: readonly (readonly [string, string])[],
+  ) {
+    super(inner);
+  }
+  override async trees(): Promise<readonly [Tree, Tree]> {
+    const read = await this.inner.trees();
+    if (!this.fired) {
+      this.fired = true;
+      if ((await this.during.add(this.drafts)).outcome !== AddOutcome.PUBLISHED)
+        throw new Error("the interleaved add did not publish");
+    }
+    return read;
+  }
+  override async publish(
+    base: Tree,
+    writes: ReadonlyMap<string, string>,
+    message: string,
+    approves: number | null = null,
+  ) {
+    const outcome = await this.inner.publish(base, writes, message, approves);
+    this.outcomes.push(outcome);
+    return outcome;
+  }
+}
+export class Interleaving extends Forwarding {
+  attempts = 0;
+  readonly publishes: (readonly [ReadonlyMap<string, string>, string])[] = [];
+  private readonly rejections: ReadonlyMap<string, string>[] = [];
+  private readonly moves: ReadonlyMap<string, string>[] = [];
+  rejectNext(...changes: ReadonlyMap<string, string>[]): void {
+    this.rejections.push(...changes);
+  }
+  movesAfterRead(change: ReadonlyMap<string, string>): void {
+    this.moves.push(change);
+  }
+  async files(): Promise<ReadonlyMap<string, string>> {
+    const [current] = await this.inner.trees();
+    return new Map([...current.files, ...(await this.inner.attachmentTexts())]);
+  }
+  private async land(change: ReadonlyMap<string, string>): Promise<void> {
+    const [base] = await this.inner.trees();
+    if ((await this.inner.publish(base, change, "interleaving")) !== PublishOutcome.PUBLISHED)
+      throw new Error("the interleaved change did not publish");
+  }
+  override async trees(): Promise<readonly [Tree, Tree]> {
+    const read = await this.inner.trees();
+    const move = this.moves.shift();
+    if (move !== undefined) await this.land(move);
+    return read;
+  }
+  override async publish(
+    base: Tree,
+    writes: ReadonlyMap<string, string>,
+    message: string,
+    approves: number | null = null,
+  ) {
+    this.attempts += 1;
+    const change = this.rejections.shift();
+    if (change !== undefined) await this.land(change);
+    const outcome = await this.inner.publish(base, writes, message, approves);
+    if (outcome === PublishOutcome.PUBLISHED) this.publishes.push([new Map(writes), message]);
+    return outcome;
+  }
+}
+import { expect, test } from "bun:test";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import parity from "./parity.json";
+import { pythonTestNames, rowMissing, todoTitles, typescriptTestTitles } from "./parity-names.ts";
+
+import { plant } from "./structure/plant.ts";
+
+const root = resolve(import.meta.dir, "../..");
+const rows = Object.entries(parity) as [
+  string,
+  { status: string; plan?: number; ts: string[]; why?: string },
+][];
+function files(dir: string): string[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
+    e.name === "__pycache__"
+      ? []
+      : e.isDirectory()
+        ? files(`${dir}/${e.name}`)
+        : [`${dir}/${e.name}`],
+  );
+}
+test("every_python_test_file_is_in_the_table", () => {
+  expect(rows.map(([p]) => p).sort()).toEqual(
+    files(`${root}/tests`)
+      .map((p) => p.slice(root.length + 1))
+      .sort(),
+  );
+});
+test("statuses_are_known", () => {
+  for (const [, r] of rows) expect(["planned", "ported", "changed", "later"]).toContain(r.status);
+});
+test("changed_and_later_give_a_why", () => {
+  for (const [, r] of rows) if (["changed", "later"].includes(r.status)) expect(r.why).toBeTruthy();
+});
+test("planned_rows_name_a_plan", () => {
+  for (const [, r] of rows) if (r.status === "planned") expect([1, 2, 3, 4]).toContain(r.plan ?? 0);
+});
+test("ported_files_exist", () => {
+  for (const [, r] of rows)
+    if (r.status === "ported" || (r.status === "changed" && [1, 2].includes(r.plan ?? 0)))
+      for (const p of r.ts) expect(existsSync(`${root}/${p}`)).toBe(true);
+});
+test("ported_files_keep_every_python_test_name", () => {
+  for (const [p, r] of rows)
+    if (r.status === "ported" || (r.status === "changed" && r.plan === 2))
+      expect(rowMissing(root, p, r)).toEqual([]);
+});
+test("ported_files_hold_no_todo", () => {
+  for (const [, r] of rows)
+    if (r.status === "ported" || (r.status === "changed" && r.plan === 2))
+      for (const p of r.ts) expect(todoTitles(readFileSync(`${root}/${p}`, "utf8"))).toEqual([]);
+});
+test("a_ported_file_losing_a_name_fails", () => {
+  const fixture = plant({
+    "tests/sample.py": "def test_a(): pass\ndef test_b(): pass",
+    "tests/sample.test.ts": 'test("a", () => {})',
+  });
+  expect(rowMissing(fixture, "tests/sample.py", { ts: ["tests/sample.test.ts"] })).toEqual(["b"]);
+});
+test("parity_names_read_both_languages", () => {
+  expect(
+    pythonTestNames("def test_a(): pass\nasync def test_b(): pass\n# def test_no(): pass"),
+  ).toEqual(["a", "b"]);
+  const text = `test(\n"a", () => {}); it('b', () => {}); test.each([[1]])("c %p", x => {}); test.todo("d"); // test("no")`;
+  expect(typescriptTestTitles(text)).toEqual(["a", "b", "c %p", "d"]);
+  expect(todoTitles(text)).toEqual(["d"]);
+});
+test("parity_names_ignore_non_test_calls", () => {
+  expect(
+    typescriptTestTitles(
+      'test.each("not a title")("real %p", () => {}); test.helper("not a test");',
+    ),
+  ).toEqual(["real %p"]);
+});
+import { expect } from "bun:test";
+import { Lodge, person, type Store } from "#app";
+import { Action, coreSettings } from "#core";
+import { area, at, decision, entry } from "../core/builders.ts";
+import { CountingIds, FixedClock, MemoryStore } from "./fakes.ts";
+
+export const AREA = area({
+  name: "storage",
+  title: "Storage",
+  intro: "How it keeps data.",
+  order: ["s-aaaaaa"],
+});
+export const ENTRY = entry({
+  id: "s-aaaaaa",
+  area: "storage",
+  title: "Transcripts are kept",
+  statement: "Held.",
+});
+export const FIRST = decision({
+  id: "d-aaaaaa",
+  title: "Keep whole transcripts",
+  code: "ITEM-1",
+  decidedBy: "author",
+  reasoning: "Because they are evidence.",
+  changes: [{ entry: "s-aaaaaa", action: Action.CREATE }],
+  date: at(0),
+});
+export function project({ staged = false } = {}) {
+  return new MemoryStore([AREA, ENTRY, FIRST], { staged });
+}
+
+export function wired(
+  store: Store,
+  clock = new FixedClock(),
+  ids = new CountingIds(),
+  actor = person("author"),
+) {
+  return new Lodge(store, clock, ids, coreSettings(), actor);
+}
+
+export async function raises(
+  promise: Promise<unknown>,
+  errorClass: new (message: string) => Error,
+  pattern: string | RegExp,
+): Promise<void> {
+  await expect(promise).rejects.toThrow(errorClass);
+  await expect(promise).rejects.toThrow(pattern);
+}
+import { expect, test } from "bun:test";
+import { LodgeError, NotFound } from "#app";
+import { load, Raises, ThreadState, tree } from "#core";
+import { project, raises, wired } from "./support.ts";
+
+const Q = "q-111111";
+const PATH = `lodge/threads/${Q}.md`;
+async function opened(staged = false) {
+  const store = project({ staged }),
+    lodge = wired(store);
+  await lodge.ask("s-aaaaaa", Raises.DOUBT, "coordinator", "Why?");
+  return { store, lodge };
+}
+function stored(store: ReturnType<typeof project>) {
+  const thread = load(tree({ rev: null, files: store.files })).threads.get(Q);
+  if (!thread) throw new Error("missing thread");
+  return thread;
+}
+test("ask_writes_a_thread_file", async () => {
+  const store = project();
+  const written = await wired(store).ask("s-aaaaaa", Raises.DOUBT, "coordinator", "Why?");
+  expect([...required(store.publishes[0])[0].keys()]).toEqual([PATH]);
+  const thread = stored(store);
+  expect(written.about).toBe(thread.about);
+  expect(thread.about).toBe("s-aaaaaa");
+  expect(thread.raises).toBe(Raises.DOUBT);
+  expect(thread.state).toBe(ThreadState.OPEN);
+  expect(thread.messages).toHaveLength(1);
+  expect(required(thread.messages[0]).by).toBe("coordinator");
+  expect(required(thread.messages[0]).when).toBe("2026-10-29T09:30:00+01:00");
+  expect(written.ids).toEqual([Q]);
+  expect(written.check.ok).toBe(true);
+});
+
+test("ask_resolves_a_code", async () => {
+  const store = project();
+  await wired(store).ask("item-1", Raises.QUESTION, "reviewer", "Why?");
+  expect(stored(store).about).toBe("d-aaaaaa");
+  expect(required(store.publishes[0])[1]).toBe(`Thread ${Q}: question asked by reviewer`);
+});
+
+test("ask_on_an_unknown_ref_is_not_found", async () => {
+  await raises(
+    wired(project()).ask("missing", Raises.DOUBT, "agent", "Why?"),
+    NotFound,
+    "no record named missing",
+  );
+});
+
+test("author_message_needs_where", async () => {
+  await raises(
+    wired(project()).ask("s-aaaaaa", Raises.DOUBT, "author", "Why?"),
+    LodgeError,
+    "a message by author needs where",
+  );
+});
+
+test("author_when_defaults_to_the_minute", async () => {
+  const store = project();
+  await wired(store).ask("s-aaaaaa", Raises.DOUBT, "author", "Why?", { where: "a session" });
+  expect(required(stored(store).messages[0]).when).toBe("2026-10-29 09:30");
+});
+
+test.each([[{ where: "a session" }], [{ when: "yesterday" }]])(
+  "agent_message_may_not_carry_where",
+  async (value) => {
+    await raises(
+      wired(project()).ask("s-aaaaaa", Raises.DOUBT, "agent", "Why?", value),
+      LodgeError,
+      "where and when are for messages by author",
+    );
+  },
+);
+
+test.each([["Author"], ["the author"], [""]])("role_like_author_refused", async (value) => {
+  await raises(
+    wired(project()).ask("s-aaaaaa", Raises.DOUBT, value, "Why?"),
+    LodgeError,
+    value ? "write author exactly, or use your own role" : "by needs a non-empty role",
+  );
+});
+
+test.each([[""], [" \r\n "]])("empty_text_refused", async (value) => {
+  const { store, lodge } = await opened();
+  await raises(
+    lodge.ask("s-aaaaaa", Raises.DOUBT, "agent", value),
+    LodgeError,
+    "the message is empty",
+  );
+  await raises(lodge.reply(Q, "agent", value), LodgeError, "the message is empty");
+  expect(store.publishes).toHaveLength(1);
+});
+
+test("text_loses_cr_and_outer_whitespace_only", async () => {
+  const store = project();
+  await wired(store).ask("s-aaaaaa", Raises.DOUBT, "agent", " \r\nA  B\r\n C \r\n ");
+  expect(required(stored(store).messages[0]).text).toBe("A  B\n C");
+});
+
+test.each([["where"], ["when"]])("unstorable_where_refused", async (value) => {
+  const store = project();
+  const meta = { where: "a session", [value]: "a\x01" };
+  await raises(
+    wired(store).ask("s-aaaaaa", Raises.DOUBT, "author", "Why?", meta),
+    LodgeError,
+    value,
+  );
+  expect(store.publishes).toEqual([]);
+});
+
+test("reply_appends", async () => {
+  const { store, lodge } = await opened();
+  const written = await lodge.reply(Q.toUpperCase(), "author", "Here.", { where: "a session" });
+  expect(stored(store).messages.map((m) => m.text)).toEqual(["Why?", "Here."]);
+  expect(written.about).toBe("s-aaaaaa");
+  expect(required(store.publishes.at(-1))[1]).toBe(`Thread ${Q}: author reply`);
+});
+
+test("reply_to_closed_thread_refused", async () => {
+  const { lodge } = await opened();
+  await lodge.close(Q, "agent");
+  await raises(lodge.reply(Q, "agent", "Again"), LodgeError, `${Q} is closed`);
+  await raises(lodge.close(Q, "agent"), LodgeError, `${Q} is closed`);
+});
+
+test("close_appends_closed_by_the_closer", async () => {
+  const { store, lodge } = await opened();
+  await lodge.close(Q, "reviewer");
+  const thread = stored(store);
+  expect(thread.state).toBe(ThreadState.CLOSED);
+  expect(required(thread.messages.at(-1)).text).toBe("");
+  expect(required(thread.messages.at(-1)).by).toBe("reviewer");
+  expect(required(store.publishes.at(-1))[1]).toBe(`Thread ${Q}: closed by reviewer`);
+});
+
+test("close_without_text_passes_the_check", async () => {
+  const { lodge } = await opened();
+  expect((await lodge.close(Q, "agent")).check.ok).toBe(true);
+});
+
+test.each([
+  [" Answer.\r\n ", "Answer."],
+  [" \r\n ", ""],
+])("close_with_text", async (text, expected) => {
+  const { store, lodge } = await opened();
+  await lodge.close(Q, "agent", { text });
+  expect(required(stored(store).messages.at(-1)).text).toBe(expected);
+});
+
+function required<T>(value: T | undefined | null): T {
+  if (value === undefined || value === null) throw new Error("missing fixture value");
+  return value;
+}
+import { expect, test } from "bun:test";
+import { AddOutcome, Conflict, NotFound } from "#app";
+import { filters, Raises } from "#core";
+import { areaText } from "../core/applying.ts";
+import { CountingIds, FixedClock } from "./fakes.ts";
+import { project, raises, wired } from "./support.ts";
+
+const Q = "q-111111";
+const PATH = `lodge/threads/${Q}.md`;
+async function opened(staged = false) {
+  const store = project({ staged }),
+    lodge = wired(store);
+  await lodge.ask("s-aaaaaa", Raises.DOUBT, "coordinator", "Why?");
+  return { store, lodge };
+}
+test("rejected_publish_starts_again", async () => {
+  const store = project();
+  store.rejectNext(new Map());
+  const written = await wired(store).ask("s-aaaaaa", Raises.DOUBT, "agent", "Why?");
+  expect(written.outcome).toBe(AddOutcome.PUBLISHED);
+  expect(store.attempts).toBe(2);
+});
+
+test("commit_after_staged_when_asked", async () => {
+  const store = project({ staged: true });
+  const written = await wired(store).ask("s-aaaaaa", Raises.DOUBT, "author", "Why?", {
+    where: "a session",
+    commit: true,
+  });
+  expect(store.commits).toEqual([[[PATH], `Thread ${Q}: doubt raised by author`]]);
+  expect(written.committed).not.toBeNull();
+  expect(required(written.committed).detail).toBe("");
+});
+
+test("no_commit_unless_asked", async () => {
+  const { store, lodge } = await opened(true);
+  const written = await lodge.reply(Q, "agent", "Here.");
+  expect(store.commits).toEqual([]);
+  expect(written.committed).toBeNull();
+});
+
+test("no_commit_when_published", async () => {
+  const store = project();
+  const written = await wired(store).ask("s-aaaaaa", Raises.DOUBT, "agent", "Why?", {
+    commit: true,
+  });
+  expect(store.commits).toEqual([]);
+  expect(written.committed).toBeNull();
+});
+
+test("threads_lists_open_newest_last", async () => {
+  const store = project(),
+    lodge = wired(store, new FixedClock(undefined, 60000), new CountingIds(9, -1));
+  await lodge.ask("s-aaaaaa", Raises.DOUBT, "agent", "First");
+  await lodge.ask("s-aaaaaa", Raises.QUESTION, "agent", "Second");
+  const third = await lodge.ask("s-aaaaaa", Raises.DOUBT, "agent", "Third");
+  await lodge.close(required(third.ids[0]), "agent");
+  const listed = await lodge.threads();
+  expect(listed.items.map((t) => t.id)).toEqual(["q-999999", "q-888888"]);
+  expect(listed.titles.get("s-aaaaaa")).toBe("Transcripts are kept");
+  expect(listed.read.freshness).not.toBeNull();
+});
+
+test("thread_shows_one_thread", async () => {
+  const { lodge } = await opened();
+  const shown = await lodge.thread(Q.toUpperCase());
+  expect(shown.thread.id).toBe(Q);
+  expect(shown.about?.id).toBe("s-aaaaaa");
+  expect(shown.read.freshness).not.toBeNull();
+  await raises(lodge.thread("q-000000"), NotFound, "no thread named q-000000");
+});
+
+test("threads_waiting_groups", async () => {
+  const { lodge } = await opened();
+  await lodge.ask("s-aaaaaa", Raises.QUESTION, "author", "Second", { where: "a session" });
+  const waiting = await lodge.threadsWaiting();
+  expect(waiting.forAgent.map((t) => t.id)).toEqual(["q-222222"]);
+  expect(waiting.forAuthor.map((t) => t.id)).toEqual([Q]);
+  expect(waiting.titles).toEqual(new Map([["s-aaaaaa", "Transcripts are kept"]]));
+  expect(waiting.read.freshness).not.toBeNull();
+});
+
+test("show_carries_the_records_threads", async () => {
+  const { lodge } = await opened();
+  await lodge.close(Q, "agent");
+  expect((await lodge.show("s-aaaaaa")).threads.map((t) => t.id)).toEqual([Q]);
+  expect((await lodge.show("item-1")).threads).toEqual([]);
+});
+
+test("added_paths_lists_the_files_written", async () => {
+  const added = await wired(project()).add([["area.md", areaText("name: access")]]);
+  expect(added.paths).toEqual(["lodge/spec/access/_area.md"]);
+});
+
+test("search_and_timeline_leave_threads_out", async () => {
+  const { lodge } = await opened();
+  expect(new Set((await lodge.search("", filters())).items.map((i) => i.id))).toEqual(
+    new Set(["s-aaaaaa", "d-aaaaaa"]),
+  );
+  expect((await lodge.timeline()).items.map((i) => i.id)).toEqual(["d-aaaaaa"]);
+});
+
+test("thread_about_a_missing_record_reads", async () => {
+  const { store, lodge } = await opened();
+  store.files.set(PATH, required(store.files.get(PATH)).replace("s-aaaaaa", "s-zzzzzz"));
+  const shown = await lodge.thread(Q);
+  expect(shown.about).toBeNull();
+  expect(required(shown.thread.messages[0]).text).toBe("Why?");
+  expect(required((await lodge.threads()).items[0]).about).toBe("s-zzzzzz");
+  expect(required((await lodge.threadsWaiting()).forAuthor[0]).id).toBe(Q);
+});
+
+test("three_rejections_are_a_conflict", async () => {
+  const store = project();
+  store.rejectNext(new Map(), new Map(), new Map());
+  await raises(
+    wired(store).ask("s-aaaaaa", Raises.DOUBT, "agent", "Why?"),
+    Conflict,
+    "three times",
+  );
+  expect(store.attempts).toBe(3);
+  expect(store.publishes).toEqual([]);
+});
+
+function required<T>(value: T | undefined | null): T {
+  if (value === undefined || value === null) throw new Error("missing fixture value");
+  return value;
+}
+import { expect, test } from "bun:test";
+import { Raises } from "#core";
+import { project, wired } from "./support.ts";
+
+test.todo("orphaned_thread_outputs");
+test.todo("run_thread_outcomes");
+test("waiting_reads_one_snapshot", async () => {
+  const store = project(),
+    lodge = wired(store);
+  await lodge.ask("s-aaaaaa", Raises.DOUBT, "agent", "Why?");
+  const path = "lodge/threads/q-111111.md";
+  store.movesAfterRead(
+    new Map([[path, required(store.files.get(path)).replace("agent", "author")]]),
+  );
+  const [listed, waiting] = await lodge.waitingAll();
+  expect(listed.read).toBe(waiting.read);
+  expect(waiting.forAuthor.map((t) => t.id)).toEqual(["q-111111"]);
+  expect(waiting.forAgent).toEqual([]);
+});
+
+function required<T>(value: T | undefined | null): T {
+  if (value === undefined || value === null) throw new Error("missing fixture value");
+  return value;
+}
+import { expect, test } from "bun:test";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import ts from "typescript";
+
+const root = resolve(import.meta.dir, "../../..");
+const index = resolve(root, "ts/src/app/index.ts");
+const program = ts.createProgram([index], {
+  module: ts.ModuleKind.Preserve,
+  moduleResolution: ts.ModuleResolutionKind.Bundler,
+  allowImportingTsExtensions: true,
+  noEmit: true,
+});
+const checker = program.getTypeChecker();
+const source = program.getSourceFile(index);
+if (!source) throw new Error("app front door not found");
+const moduleSymbol = checker.getSymbolAtLocation(source);
+if (!moduleSymbol) throw new Error("app front door is not a module");
+const exports = checker.getExportsOfModule(moduleSymbol);
+const python = readFileSync(resolve(root, "src/lodge/app/__init__.py"), "utf8");
+const all = python.match(/__all__\s*=\s*\[([^\]]*)\]/u)?.[1];
+if (!all) throw new Error("Python __all__ not found");
+const names = [...all.matchAll(/"([A-Za-z_][A-Za-z_0-9]*)"/gu)].map((m) =>
+  m[1] === m[1]?.toUpperCase()
+    ? m[1]
+    : m[1]?.replace(/_([a-z])/gu, (_, c: string) => c.toUpperCase()),
+);
+const expected = new Set(names);
+const extras = new Set([
+  "committed",
+  "gate",
+  "read",
+  "listed",
+  "added",
+  "written",
+  "Now",
+  "Actor",
+  "person",
+  "agent",
+  "actorText",
+  "Role",
+  "Projects",
+  "stampOf",
+  "minuteOf",
+  "Forbidden",
+  "HeldDraft",
+  "HeldAdd",
+  "HeldMessage",
+  "Held",
+  "Approved",
+]);
+
+test("front_door_exports_every_python_name", () => {
+  const actual = new Set(exports.map((symbol) => symbol.name));
+  expect(names.filter((name) => !actual.has(name ?? ""))).toEqual([]);
+});
+
+test("front_door_exports_nothing_else", () => {
+  expect(
+    exports.filter((s) => !expected.has(s.name) && !extras.has(s.name)).map((s) => s.name),
+  ).toEqual([]);
+});
+
+exec
+/bin/bash -lc "cat ts/src/app/confirm.ts; cat ts/tests/app/held-messages{,-support,-approve}.test.ts; cat ts/knip.json; cat ts/tests/app/held-messages-support.ts; sed -n '160,185p' ts/tests/structure/calls.ts; tail -35 ts/src/app/threads.ts; cat ts/tests/app/people.test.ts; tail -65 docs/superpowers/plans/2026-11-02-lodge-server-store-progress.md" in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+import {
+  cleanText,
+  confirmableIds,
+  confirmationDraft,
+  behindArea as coreBehindArea,
+  level1,
+  Scope,
+  ValueError,
+  VIEWER,
+} from "#core";
+import { Forbidden, LodgeError, StaleList } from "./errors.ts";
+import { AddOutcome, type Behind, type Written, written } from "./results.ts";
+import { notFound, readState, type State, type Wiring } from "./state.ts";
+import { minuteOf } from "./time.ts";
+import { add } from "./writes.ts";
+
+function behindIds(state: State, name: string): readonly string[] {
+  const s = state.snapshot;
+  if (!s.areas.has(name) && [...s.entries.values()].every((e) => e.area !== name))
+    throw notFound(state, `area named ${name}`, name);
+  return coreBehindArea(s, state.derived, name);
+}
+export async function behindArea(w: Wiring, name: string): Promise<readonly Behind[]> {
+  const state = await readState(w.store);
+  const s = state.snapshot;
+  return behindIds(state, name).map((id) => ({
+    decision: level1(s, state.derived, id, state.failing),
+    entries: [...new Set(s.decisions.get(id)?.changes.map((c) => c.entry))].flatMap((id) => {
+      const e = s.entries.get(id);
+      return e ? [[id, e.area] as const] : [];
+    }),
+  }));
+}
+function expectedIds(state: State, ids: readonly string[], area: string | null): readonly string[] {
+  if (area !== null) return behindIds(state, area);
+  if (ids.length === 1 && confirmableIds(state.snapshot, state.derived).has(ids[0] ?? ""))
+    return ids;
+  return [];
+}
+// Callers serialise confirmations across this entire operation, including retries and commit.
+export async function confirmDecisions(
+  w: Wiring,
+  ids: readonly string[],
+  words: string,
+  area: string | null,
+  commit: boolean,
+): Promise<Written> {
+  words = cleanText(words);
+  if (words.includes("\r\n"))
+    throw new LodgeError("your words hold a character lodge cannot store");
+  if (!words) throw new LodgeError("your words are required; nothing was written");
+  if (w.actor.kind !== "person") throw new Forbidden("only a person confirms; nothing was written");
+  const state = await readState(w.store);
+  if (!state.snapshot.people.has(w.actor.name))
+    throw new Forbidden("only an owner of the project confirms; nothing was written");
+  const expected = expectedIds(state, ids, area);
+  const given = new Set(ids);
+  if (!expected.length || ids.length !== expected.length || expected.some((id) => !given.has(id)))
+    throw new StaleList("the list changed since the page was loaded; nothing was written");
+  const scope = expected.some((id) => state.snapshot.decisions.get(id)?.scope === Scope.PRODUCT)
+    ? Scope.PRODUCT
+    : Scope.PROCESS;
+  let draft: string;
+  try {
+    draft = confirmationDraft(expected, scope, words, minuteOf(w.clock.now()), area, w.actor.name);
+  } catch (error) {
+    if (!(error instanceof ValueError)) throw error;
+    throw new LodgeError("your words hold a character lodge cannot store", { cause: error });
+  }
+  const added = await add(w, [[VIEWER, draft]]);
+  const committed =
+    added.outcome === AddOutcome.STAGED && commit
+      ? await w.store.commit(added.paths, `Author confirmation from the viewer: ${added.ids[0]}`)
+      : null;
+  return written({ ids: added.ids, outcome: added.outcome, check: added.check, committed });
+}
+cat: ts/tests/app/held-messages-support.test.ts: No such file or directory
+import { expect, test } from "bun:test";
+import { AddOutcome, Forbidden, LodgeError } from "#app";
+import { setup } from "./held-messages-support.ts";
+
+test("an_agent_relaying_a_persons_words_is_held", async () => {
+  const { store, lodge, id, relay } = await setup();
+  const result = await relay();
+  expect(result).toMatchObject({
+    ids: [id],
+    about: "s-aaaaaa",
+    outcome: AddOutcome.HELD,
+    awaits: "ada",
+    held: expect.any(Number),
+  });
+  expect(store.publishes).toEqual([]);
+  expect(await lodge.held()).toMatchObject([
+    {
+      seq: result.held,
+      kind: "message",
+      person: "ada",
+      by: "agent coordinator",
+      operation: "reply",
+      text: "Yes.",
+      where: "chat",
+      when: "2026-10-29 09:00",
+    },
+  ]);
+});
+test("the_thread_still_waits_for_the_person", async () => {
+  const { lodge, ada, id, relay } = await setup();
+  const result = await relay();
+  expect((await lodge.threadsWaiting()).forAuthor.map((t) => t.id)).toEqual([id]);
+  expect((await lodge.waitingAll())[1].forAuthor.map((t) => t.id)).toEqual([id]);
+  expect((await lodge.thread(id)).thread.messages.at(-1)?.text).toBe("Why?");
+  expect(await lodge.held()).toHaveLength(1);
+  await ada.approve(result.held);
+  expect((await lodge.threadsWaiting()).forAgent.map((t) => t.id)).toEqual([id]);
+  expect((await lodge.thread(id)).thread.messages.at(-1)?.text).toBe("Yes.");
+});
+test("a_persons_thread_still_waits_for_an_agent", async () => {
+  const { lodge, ada, id, relay } = await setup("ada");
+  const result = await relay();
+  expect((await lodge.threadsWaiting()).forAgent.map((t) => t.id)).toEqual([id]);
+  expect((await lodge.waitingAll())[1].forAgent.map((t) => t.id)).toEqual([id]);
+  expect((await lodge.thread(id)).thread.messages.at(-1)?.text).toBe("Why?");
+  expect(await lodge.held()).toHaveLength(1);
+  await ada.approve(result.held);
+  expect((await lodge.threadsWaiting()).forAgent.map((t) => t.id)).toEqual([id]);
+  expect((await lodge.thread(id)).thread.messages.at(-1)?.text).toBe("Yes.");
+});
+test("a_persons_own_message_is_published_at_once", async () => {
+  const { ada, id } = await setup();
+  expect(await ada.reply(id, "ada", "Yes.", { where: "chat" })).toMatchObject({
+    outcome: AddOutcome.PUBLISHED,
+    held: null,
+    awaits: null,
+  });
+});
+test("one_person_cannot_write_as_another", async () => {
+  const { bo, lodge, store, id } = await setup();
+  await expect(bo.reply(id, "ada", "Yes.", { where: "chat" })).rejects.toThrow(Forbidden);
+  expect(await lodge.held()).toEqual([]);
+  expect(store.publishes).toEqual([]);
+});
+test("a_relay_without_where_is_refused_as_lodge_0_2_refuses_it", async () => {
+  const { lodge, id } = await setup();
+  await expect(lodge.reply(id, "ada", "Yes.")).rejects.toThrow(
+    new LodgeError("a message by ada needs where, the place of ada's words"),
+  );
+  expect(await lodge.held()).toEqual([]);
+});
+test("a_relay_to_a_closed_thread_is_refused", async () => {
+  const { lodge, id, relay } = await setup();
+  await lodge.close(id, "reviewer");
+  await expect(relay()).rejects.toThrow(`${id} is closed`);
+  expect(await lodge.held()).toEqual([]);
+});
+import { expect, test } from "bun:test";
+import { AddOutcome, Forbidden, NotFound, PublishOutcome } from "#app";
+import { Raises, ThreadState } from "#core";
+import { setup } from "./held-messages-support.ts";
+
+test("the_person_approves_and_the_message_is_published", async () => {
+  const { lodge, ada, id, relay } = await setup();
+  const result = await relay("mail");
+  expect(await ada.approve(result.held)).toMatchObject({
+    kind: "message",
+    written: { outcome: AddOutcome.PUBLISHED },
+  });
+  expect((await lodge.thread(id)).thread.messages.at(-1)).toMatchObject({
+    by: "ada",
+    text: "Yes.",
+    where: "mail",
+    when: "2026-10-29 09:00",
+  });
+  expect((await lodge.threadsWaiting()).forAgent.map((t) => t.id)).toEqual([id]);
+  expect(await lodge.held()).toEqual([]);
+});
+test("a_relayed_question_mints_its_thread_at_approval", async () => {
+  const { lodge, ada } = await setup();
+  const before = (await lodge.threads()).items.map((t) => t.id);
+  const result = await lodge.ask("s-aaaaaa", Raises.QUESTION, "ada", "Another?", { where: "chat" });
+  expect(result.outcome).toBe(AddOutcome.HELD);
+  expect(result.ids).toEqual([expect.stringMatching(/^q-[a-z0-9]{6}$/)]);
+  expect(result.about).toBe("s-aaaaaa");
+  expect(await lodge.held()).toMatchObject([{ ref: "s-aaaaaa" }]);
+  expect((await lodge.threads()).items.map((t) => t.id)).toEqual(before);
+  if (result.held === null) throw new Error("expected a held message");
+  const approved = await ada.approve(result.held);
+  expect(approved.kind).toBe("message");
+  if (approved.kind !== "message") throw new Error("message expected");
+  expect(approved.written.ids).not.toEqual(result.ids);
+  expect((await lodge.thread(approved.written.ids[0] as string)).thread.messages[0]?.by).toBe(
+    "ada",
+  );
+});
+test("decline_publishes_nothing", async () => {
+  const { store, lodge, ada, id, relay } = await setup();
+  const result = await relay();
+  await ada.decline(result.held, "No.");
+  expect(store.publishes).toEqual([]);
+  expect(await lodge.held()).toEqual([]);
+  expect((await lodge.threadsWaiting()).forAuthor.map((t) => t.id)).toEqual([id]);
+});
+test("another_person_or_an_agent_cannot_approve_a_message", async () => {
+  const { lodge, bo, relay } = await setup();
+  const result = await relay();
+  for (const actor of [bo, lodge])
+    await expect(actor.approve(result.held)).rejects.toThrow(Forbidden);
+});
+test("approval_after_the_thread_closed_leaves_it_held", async () => {
+  const { lodge, ada, id, relay } = await setup();
+  const result = await relay();
+  await lodge.close(id, "reviewer");
+  await expect(ada.approve(result.held)).rejects.toThrow(`${id} is closed`);
+  expect(await lodge.held()).toMatchObject([{ seq: result.held }]);
+});
+
+test("a_hold_settled_on_the_last_attempt_is_not_found", async () => {
+  const { store, ada, relay } = await setup();
+  const result = await relay();
+  let reads = 0;
+  const held = store.held.bind(store);
+  store.held = async () => {
+    reads++;
+    return held();
+  };
+  let attempts = 0;
+  store.publish = async () => {
+    if (++attempts === 3) await store.decline(result.held, "No.");
+    return PublishOutcome.REJECTED;
+  };
+  await expect(ada.approve(result.held)).rejects.toThrow(NotFound);
+  expect(attempts).toBe(3);
+  expect(reads).toBe(4);
+});
+
+test("a_relayed_close_is_held_and_closes_the_thread_at_approval", async () => {
+  const { lodge, ada, id } = await setup();
+  const result = await lodge.close(id, "ada", { where: "mail" });
+  expect(result).toMatchObject({ outcome: AddOutcome.HELD, ids: [id], about: "s-aaaaaa" });
+  expect(await lodge.held()).toMatchObject([{ operation: "close", text: null, where: "mail" }]);
+  expect((await lodge.thread(id)).thread.state).toBe(ThreadState.OPEN);
+  if (result.held === null) throw new Error("expected a held message");
+  await ada.approve(result.held);
+  const thread = (await lodge.thread(id)).thread;
+  expect(thread.state).toBe(ThreadState.CLOSED);
+  expect(thread.messages.at(-1)).toMatchObject({ by: "ada", text: "", where: "mail" });
+  expect((await lodge.threadsWaiting()).forAgent).toEqual([]);
+  expect((await lodge.threadsWaiting()).forAuthor).toEqual([]);
+  expect(await lodge.held()).toEqual([]);
+});
+{
+  "entry": ["tests/**/*.test.ts", "scripts/*.ts"],
+  "project": ["src/**/*.ts", "tests/**/*.ts", "scripts/**/*.ts"]
+}
+import { agent, person } from "#app";
+import { Raises } from "#core";
+import { CountingIds, FixedClock, MemoryStore } from "./fakes.ts";
+import { AREA, ENTRY, FIRST, wired } from "./support.ts";
+
+export async function setup(by = "reviewer") {
+  const store = new MemoryStore([AREA, ENTRY, FIRST], { people: new Set(["ada", "bo"]) });
+  const clock = new FixedClock();
+  const ids = new CountingIds();
+  const lodge = wired(store, clock, ids, agent("coordinator"));
+  const ada = wired(store, clock, ids, person("ada"));
+  const bo = wired(store, clock, ids, person("bo"));
+  const question = await (by === "ada" ? ada : lodge).ask(
+    "s-aaaaaa",
+    Raises.QUESTION,
+    by,
+    "Why?",
+    by === "ada" ? { where: "chat" } : {},
+  );
+  store.publishes.length = 0;
+  const id = question.ids[0] as string;
+  const relay = async (where = "chat") => {
+    const result = await lodge.reply(id, "ada", "  Yes.  ", { where, when: "2026-10-29 09:00" });
+    if (result.held === null) throw new Error("expected a held message");
+    return { ...result, held: result.held };
+  };
+  return { store, lodge, ada, bo, id, relay };
+}
+        if (pkg !== "git" && ["Bun.spawn", "Bun.spawnSync", "Bun.$"].includes(name))
+          report(node, "process spawning outside git");
+        if (pkg !== "git" && pkg !== "cli" && name === "Bun.file")
+          report(node, "file reading outside git and cli");
+        if (
+          pkg === "core" &&
+          ts.isCallExpression(node) &&
+          ts.isPropertyAccessExpression(expr) &&
+          ["sort", "toSorted"].includes(attr) &&
+          node.arguments.length === 0
+        )
+          report(node, "sort requires a code point comparator");
+        if (
+          pkg !== "core" &&
+          ts.isCallExpression(node) &&
+          ["isAuthor", "parseThread", "writeThread"].includes(attr) &&
+          node.arguments.length < 2
+        )
+          report(node, `${attr} requires explicit people`);
+        const fsName = imported(expr);
+        const flags = ts.isTaggedTemplateExpression(node) ? undefined : node.arguments?.[1];
+        const writingOpen =
+          ["open", "openSync"].includes(fsName ?? attr) &&
+          !!flags &&
+          (!ts.isStringLiteralLike(flags) || /[wa+]/u.test(flags.text));
+        const bunFileWrite =
+  const s = state.snapshot,
+    items = newestLast([...s.threads.values()].filter((t) => t.state === ThreadState.OPEN));
+  const records = new Map<string, { readonly title: string }>([...s.decisions, ...s.entries]);
+  const titles = new Map<string, string>();
+  for (const t of items) {
+    const r = records.get(t.about);
+    if (r) titles.set(t.about, r.title);
+  }
+  return { items, titles, read: state.read };
+}
+export async function show(w: Wiring, ref: string): Promise<ThreadShown> {
+  const state = await readChecked(w),
+    thread = find(state, ref),
+    s = state.snapshot;
+  return {
+    thread,
+    about:
+      s.decisions.has(thread.about) || s.entries.has(thread.about)
+        ? level1(s, state.derived, thread.about, state.failing)
+        : null,
+    read: state.read,
+  };
+}
+export async function waiting(w: Wiring): Promise<ThreadsWaiting> {
+  return waitingIn(await readChecked(w));
+}
+export function waitingIn(state: State): ThreadsWaiting {
+  const listed = openIn(state);
+  return {
+    forAgent: listed.items.filter((t) => state.snapshot.people.has(t.messages.at(-1)?.by ?? "")),
+    forAuthor: listed.items.filter((t) => !state.snapshot.people.has(t.messages.at(-1)?.by ?? "")),
+    titles: listed.titles,
+    read: listed.read,
+  };
+}
+import { expect, test } from "bun:test";
+import { agent, Forbidden, LodgeError, NotFound, person } from "#app";
+import { Action, derive, load, Raises } from "#core";
+import { decisionText } from "../core/applying.ts";
+import { area, decision, entry } from "../core/builders.ts";
+import { CountingIds, FixedClock, MemoryStore } from "./fakes.ts";
+import { wired } from "./support.ts";
+
+function setup(actor = person("ada")) {
+  const store = new MemoryStore(
+    [
+      area(),
+      entry({ id: "s-aaaaaa" }),
+      decision({ id: "d-aaaaaa", changes: [{ entry: "s-aaaaaa", action: Action.CREATE }] }),
+    ],
+    { people: new Set(["ada", "bo"]) },
+  );
+  return { store, lodge: wired(store, new FixedClock(), new CountingIds(), actor) };
+}
+test("confirm_writes_the_persons_decision", async () => {
+  const { store, lodge } = setup();
+  await lodge.confirm(["d-aaaaaa"], "Read.");
+  const made = load((await store.trees())[0]).decisions.get("d-111111");
+  expect(made?.decidedBy).toBe("ada");
+  expect(made?.statement).toContain("ada confirms d-aaaaaa");
+});
+test("an_agent_cannot_confirm", async () => {
+  const { store, lodge } = setup(agent());
+  await expect(lodge.confirm(["d-aaaaaa"], "Read.")).rejects.toThrow(
+    new Forbidden("only a person confirms; nothing was written"),
+  );
+  expect(new Forbidden("").exitCode).toBe(2);
+  expect(store.publishes).toEqual([]);
+});
+test("a_person_not_among_the_people_cannot_confirm", async () => {
+  const { store, lodge } = setup(person("cy"));
+  await expect(lodge.confirm(["d-aaaaaa"], "Read.")).rejects.toThrow(
+    new Forbidden("only an owner of the project confirms; nothing was written"),
+  );
+  expect(store.publishes).toEqual([]);
+});
+test("a_persons_message_needs_where", async () => {
+  const { store, lodge } = setup();
+  await expect(lodge.ask("d-aaaaaa", Raises.QUESTION, "ada", "Why?")).rejects.toThrow(
+    "a message by ada needs where, the place of ada's words",
+  );
+  expect(store.publishes).toEqual([]);
+});
+test("author_is_a_role_where_no_person_is_author", async () => {
+  const { lodge } = setup();
+  await expect(lodge.ask("d-aaaaaa", Raises.QUESTION, "author", "Why?")).rejects.toThrow(
+    new LodgeError("name a person of the project exactly, or use your own role"),
+  );
+});
+test("a_person_writes_only_as_themselves", async () => {
+  const { store, lodge } = setup(person("bo"));
+  const ada = wired(store, new FixedClock(), new CountingIds(), person("ada"));
+  const result = await ada.ask("d-aaaaaa", Raises.QUESTION, "ada", "Why?", { where: "chat" });
+  expect(store.publishes).toHaveLength(1);
+  const before = new Map(store.files);
+  for (const operation of [
+    () => lodge.ask("d-aaaaaa", Raises.QUESTION, "ada", "Why?", { where: "chat" }),
+    () => lodge.reply(result.ids[0] as string, "ada", "Yes.", { where: "chat" }),
+    () => lodge.close(result.ids[0] as string, "ada", { where: "chat" }),
+  ]) {
+    await expect(operation()).rejects.toThrow(
+      new Forbidden("only ada writes as ada; nothing was written"),
+    );
+  }
+  expect(store.files).toEqual(before);
+  expect(store.publishes).toHaveLength(1);
+});
+test("a_persons_question_waits_for_an_agent", async () => {
+  const { lodge } = setup();
+  const a = await lodge.ask("d-aaaaaa", Raises.QUESTION, "ada", "Why?", { where: "chat" });
+  const b = await lodge.ask("d-aaaaaa", Raises.QUESTION, "reviewer", "Why?");
+  const waiting = await lodge.threadsWaiting();
+  expect(waiting.forAgent.map((t) => t.id)).toEqual([...a.ids]);
+  expect(waiting.forAuthor.map((t) => t.id)).toEqual([...b.ids]);
+});
+test("an_agent_edit_of_a_persons_entry_waits", async () => {
+  const store = new MemoryStore(
+    [
+      area(),
+      entry({ id: "s-aaaaaa" }),
+      decision({
+        id: "d-aaaaaa",
+        decidedBy: "ada",
+        changes: [{ entry: "s-aaaaaa", action: Action.CREATE }],
+      }),
+    ],
+    { people: new Set(["ada", "bo"]) },
+  );
+  const lodge = wired(store, new FixedClock(), new CountingIds(), agent());
+  const result = await lodge.add([
+    ["d.md", decisionText("changes:", "  - {entry: s-aaaaaa, action: edit}")],
+  ]);
+  expect(result.feedback.some((f) => f.message.startsWith("this decision will wait for"))).toBe(
+    true,
+  );
+  expect(derive(load((await store.trees())[0])).awaitingAuthor.has(result.ids[0] as string)).toBe(
+    true,
+  );
+});
+
+test("unknown_reference_is_refused_before_impersonation", async () => {
+  const { store, lodge } = setup(person("bo"));
+  await expect(
+    lodge.ask("d-ffffff", Raises.QUESTION, "ada", "Why?", { where: "chat" }),
+  ).rejects.toThrow(NotFound);
+  await expect(lodge.reply("q-ffffff", "ada", "Yes.", { where: "chat" })).rejects.toThrow(NotFound);
+  expect(store.publishes).toEqual([]);
+});
+test("closed_thread_is_refused_before_impersonation", async () => {
+  const { store, lodge } = setup();
+  const question = await lodge.ask("d-aaaaaa", Raises.QUESTION, "ada", "Why?", { where: "chat" });
+  const id = question.ids[0] as string;
+  await lodge.close(id, "ada", { where: "chat" });
+  const before = new Map(store.files);
+  const bo = wired(store, new FixedClock(), new CountingIds(), person("bo"));
+  await expect(bo.reply(id, "ada", "Yes.", { where: "chat" })).rejects.toThrow(`${id} is closed`);
+  expect(store.files).toEqual(before);
+  expect(store.publishes).toHaveLength(2);
+});
+test("an_agent_is_refused_before_reading_state", async () => {
+  const { store, lodge } = setup(agent());
+  let reads = 0;
+  store.trees = async () => {
+    reads += 1;
+    throw new Error("state must not be read");
+  };
+  await expect(lodge.confirm(["d-aaaaaa"], "Read.")).rejects.toThrow(
+    new Forbidden("only a person confirms; nothing was written"),
+  );
+  expect(reads).toBe(0);
+});
+# Progress: docs/superpowers/plans/2026-11-02-lodge-server-store.md
+
+Branch `server-store`; authority for the build: the server design, approved by the author 2026-11-02 13:52 ("Approved").
+Briefs, reports, and reviews: `docs/superpowers/plans/2026-11-02-lodge-server-store/`; probes in `probes.md` there, their sources in `probes/`.
+
+Plan: written by the planner from `planner-brief.md`, 15 tasks (1 to 14, Task 7 split into 7a and 7b) in three lanes (A: Tasks 2 to 6; B: 7a, 7b, and 8; C: 10 and 13); probes 1 to 8 in `probes.md`.
+Ruling: the ports are asynchronous, and the clock gives milliseconds with an offset (d-59q4jc).
+Ruling: the `Store` port keeps lodge 0.2's methods, and the SQLite store gives one state (d-ae1vn5).
+Ruling: events hold file bytes in a `blob`, decoded as `surrogateescape` (d-0q54zn now this plan's), and a write is a compare-and-set on the project's newest event (d-wje1cn).
+Ruling: a defaulted Python parameter becomes a field of one trailing options object (d-vd3175).
+Ruling: three lanes, and `Lodge` ported a method at a time (d-t7er56).
+Ruling: two tests of `test_thread_fix_paths.py` wait for plan 3, whose row it becomes (d-rp74dr).
+Ruling: a person's decision drafted by another is held whole until that person approves or declines it (d-znagqe, SRV-2).
+Ruling: a review flag waits for each person whose decision raised it (d-4spcem).
+Ruling: every write is already checked against the state it lands on, proved over the events store (d-fv20kp).
+Ruling: projects and members are events behind a `Projects` port (d-wx7d0f).
+Alignment: plan 3 read at f2dcc72 (`origin/server-api`), plan 4 at 34c12f1 (`origin/server-import`); `Store.attachmentTexts` added for plan 4's export.
+The author answered STORE-1 in `questions.md` with C (d-2v8vtk, an author decision).
+Plan: reviews correctness 0B/9I/10M and practice 0B/7I/9M (`plan-review-correctness.md`, `plan-review-practice.md`). Fix round 1 by the planner.
+Fix round 1 (`plan-fix-1.md`): all 35 findings answered, 19 of correctness and 16 of practice.
+Ruling: the store refuses what lodge 0.2's stores refuse, a path holding a surrogate, and a decision file's new text, a re-rendered decision with unchanged fields included; the import is checked by its own state check (d-j28rp0, replacing d-pmaw3a and so d-pprhpz, whose cost the correctness review showed false, and narrowing d-fv20kp).
+Ruling: a person is an owner of the project, carried in `Tree.people` and as a defaulted parameter, lodge 0.2's words kept for `author`, and a name the records use as a role cannot join (d-vwsnz5, replacing d-kj59bz).
+Author decision: an agent may relay a person's words into a thread under that person's name, with where and when, held until that person approves it; a person's own message is not held, and one person writing under another's name is refused (d-2v8vtk, her answer C to STORE-1).
+Ruling: a lane's tests call only what its waits provide, a new parameter of a function another lane calls has a default, and Task 12 splits into 12a and 12b (d-d96y91, narrowing d-t7er56).
+Ruling: the rule `store-imports` holds `store` to Kysely and `bun:sqlite` (d-nf7wvx, probe 9).
+Ruling: a store transaction that reads before it writes opens with a write, and a hold is approved or declined once (d-thvvzx).
+Lanes: Task 9 waits for 6 and 8; Task 11 for 9 and 10; Task 12 is 12a (after 11) and 12b (after 12a); lanes A, B, and C keep their tasks.
+Alignment for plan 3 (`origin/server-api` 3e4c29c): an agent token writing `by: <person>` with where and when in a thread is held for that person (d-2v8vtk, Task 12c), so the carried command tests writing `--by author` that way (`author_words_are_recorded_exactly`, `waiting_groups_threads`) approve the held message through the person's session before they assert; `publish` refuses a changed decision file (d-j28rp0), so `handEdit` of an existing decision (`broken-agent-decision-warns-above-show`) is refused; `Tree.people` are the owners and `confirm` refuses a non-owner (d-vwsnz5); `applyEvent` updates `heads` for every kind but `project`, never upserting, so account events of the empty project add no row; `approval_runs_the_check_again` is in Task 12b.
+Alignment for plan 4 (`origin/server-import` 6c6322c): plan 2's Task 12 is 12a (the `Store` methods its export wrapper passes on) and 12b (the operations); `parseThread` and `writeThread` keep their names with `people` defaulted; `publish` refuses a path holding a surrogate, so the import of a lodge 0.2 store with a non-UTF-8 file name fails at `publish` unless plan 4's check refuses it first.
+Fix round 2 (`plan-fix-2.md`): the recheck's five findings answered; `awaits.ts` cuts the cycle between `held.ts` and `writes.ts` in Task 12b; d-j28rp0 replaces d-pmaw3a; lanes unchanged.
+Fix round 3 (`plan-fix-3.md`): d-2v8vtk applied as Task 12c on the hold machinery of Tasks 12a and 12b (`HeldDraft` becomes `HeldAdd | HeldMessage`, `approve` answers `Approved`, `Written` gains `awaits` and `held`); the preflight scan's mismatches fixed (`preflight.md`); lanes: Task 12c waits for 12b.
+Fix round 4 (`plan-fix-4.md`): the recheck's five findings answered; by the coordinator's ruling on R3-1, a held message changes no thread's waiting, which follows the last published message only; the import's check is d-n9nm8h's (narrowing d-j28rp0); lanes unchanged.
+Fix round 5 (`plan-fix-5.md`): the plan re-pinned to plan 1 at `origin/server-core` 4f5d5fb (`apply-state.ts`, `isStale`'s marker, `checkResult`, the rules in `core`, and `ts/bunfig.toml`, under which Kysely 0.29.7 resolves); lanes unchanged.
+Task 1: complete. Kysely 0.29.7 pinned exactly in `ts/package.json`, `ts/knip.json` ignores it until Task 7a; `sh scripts/check.sh` green.
+Task 2: complete. Codex build 5ebe9f5; review 0B/0I/7M (`task-2-review.md`); minors parked for Task 3's round: P1 default-filling test asserts only defaults (add a passed-value call per function), P2 error test checks only the prefix, P3 LodgeError drops the cause, P4 `ATTACHMENTS` of `#core` in fakes.ts:51, P5 padding written three ways in time.ts, P6 Store docstrings not carried, P7 `CountingIds` parameter `next` for `first`.
+Task 3: complete. Codex build 817f49b, review 0B/1I/4M (`task-3-review.md`), fix round 1 a79cb49 (C1 class assertions via `raises` helper, PR1 to PR3), recheck 0B/0I (`task-3-recheck-1.md`); Task 2 minors P1 to P7 fixed. Parked: D1, no test holds that `app` builds check results through `checkResult` (the `ok` rule covers `core` only), taken by Task 4 (add an app rule or test to `ts/tests/structure/`); minor PR-rest/other minors in the review file.
+Task 7a: complete. Codex build f194667, review 0B/2I/9M (`task-7a-review.md`), fix round 1 fc7dd28 (I-1 before-insert trigger `events_no_replace`, I-2 `rebuild_removes_stale_rows`), recheck 0B/0I (`task-7a-recheck-1.md`). Ruling on the `contentHash` expectation Codex corrected in plan 1's test: justified, Python gives 01ce0241d2a0 for "a\udcffb" (plan Files list lacked it). Parked: m-2 (WAL pragma failing silently when another process holds the new file at first open, a two-line fix) taken by Task 8, m-4 (codec speed) deferred to Task 14 if a measurement shows a cost.
+Task 10: complete. Codex build 2a1eeb6, review 0B/1I/3M (`task-10-review.md`), fix round 1 024ec5c (C-I1 ten reversion sites each caught by a test, C-M1 quoted `decided_by`, C-M2), recheck 0B/0I (`task-10-recheck-1.md`). Parked: D-M1, a structure check that every call passes `people`, taken by Task 11 (recorded as a decision first: a structure change); recheck minor, `PLAIN` regex copied inline at `confirmation.ts:62` instead of shared from `fileformat.ts:71`, taken by Task 13.
+Task 4: complete. Codex build 9f47e33, review 0B/2I/7M (`task-4-review.md`), fix round 1 d3ba49c (C1 full-pattern assertion, C2 `strip` for `by` and `where`, C3, P1 to P4, D1), recheck 0B/0I (`task-4-recheck-1.md`); the app-side `ok`-key rule (D1 of Task 3) lives in `ts/tests/structure/`. P5 (mutation table names each mutation, not the line): later reports carry a `file:line` column.
+Task 7b: complete. Codex build 7809f42, review 0B/2I/8M (`task-7b-review.md`), fix round 1 8c75e13 (C-1 `events.message` a blob through `encodeUtf8`, ruled d-gxbbnf; C-2 `names_are_checked` guards the owner check; C-3, C-4, P-1 to P-4, D-2), recheck 0B/0I (`task-7b-recheck-1.md`). Ruling d-gxbbnf narrows d-wje1cn: a commit message with an escaped byte was stored corrupted, permanently. Not fixed: D-1 (`publish` trusts the caller's base, as lodge 0.2 does), m-2 taken by Task 8.
+Task 5: complete. Codex build 26a57f9, review 0B/0I/4M (`task-5-review.md`), no fix round; all 27 Python tests carried plus `waiting_reads_one_snapshot` and the two plan-3 todos. Parked minors (taken by Task 6 where it touches those files): a whitespace-only author `where` survives `threads.ts:50` (inherited from the Python original), `required`, `Q`, `PATH`, and `opened` repeated across three test files, `test.each` rows sharing one title.
+Task 13: complete. Codex build 288e95d, review 1B/0I/6M (`task-13-review.md`), fix round 1 6a2f47a (finding 1: `reviewFlags` passes the one person and the full set of people separately, so a person's own decision is not flagged for another; tests for the three surviving mutations; shared Oxford list; `PLAIN` regex shared, Task 10's recheck minor), recheck 0B/0I/0M (`task-13-recheck-1.md`).
+Task 8: complete. Codex build 11806a5 (includes Task 7a's parked m-2: `contended_first_open_enters_wal`), review 0B/1I/4M (`task-8-review.md`), fix round 1 5d15e60 (finding 1 `MemoryStore.attachmentTexts` filter at `fakes.ts:60` corrected and `Interleaving.files()` attachments guarded by a `SqliteStore` probe; findings 2 to 4), recheck 0B/0I/1M (`task-8-recheck-1.md`). Parked minor: `openDatabase` refuses any non-`:memory:` path that does not report `wal`, which the plan does not require and a test now pins; taken by Task 9 or 14 if it hinders.
+Task 6: complete. Codex build fada0f3, review 0B/0I/6M (`task-6-review.md`), no fix round; all 19 Python confirm tests carried as 21 cases, 24 reviewer mutations on `confirm.ts` of which 4 survive (as the Python tests leave the same gaps). Parked minors, taken by Task 9's round or Task 14: dropping `!expected.length` at `confirm.ts:55` is undetected (`confirm([])`), the `expected.some(!given.has)` subset check is undetected, `commit = false` flipped to `true` at `lodge.ts:101` is undetected (one small test each); dead all-capitals branch in `front-door.test.ts`; `?.` on `decisions.get` in `behindArea` hides a broken invariant.
+Task 9: complete. Codex build 16d2366, review 0B/0I/8M (`task-9-review.md`), no fix round; the builder's note that the brief named three changed parity files is right: the plan's lines 216 and 220 miscount (two `changed` rows, and `checked-writes.test.ts` has no Python original). Parked minors, taken by Task 14 unless Task 11 touches the files: the "failing confirmation" leg of `a_refused_write_leaves_no_event` (`checked-writes.test.ts:41`) throws `StaleList` before `add` and never reaches the check; the `changed`-row predicate written three times in `parity.test.ts` (lines 41, 46, 50) with no in-repo test; `seed.ts` duplicates `setup()` of `store/support.ts`.
+Task 11: complete. Codex build 0e20687 (rule d-wz7fc2: `ts/tests/structure/calls.ts` fails a people-aware core call with fewer than two arguments, seen failing on a planted one-argument `writeThread`; Task 6's three survivors each tested), review 0B/1I/5M (`task-11-review.md`), fix round 1 2e22a53 (store tests' project owned by `author` so `wired(store)` can confirm and relay; `Forbidden` after the not-found and closed-thread refusals; `agent` refusal before the state read), recheck 0B/0I/0M (`task-11-recheck-1.md`). Parked minors, taken by Task 14: the people-call rule is syntactic and misses aliased imports, `core["writeThread"](x)`, and `writeThread(x, undefined)` (`calls.ts:172-178`; d-wz7fc2 accepts a narrow rule, so note the limit in a comment); a single-pass filter instead of the `?? ""` sentinel at `threads.ts:196-197`; `new Forbidden("").exitCode` assertion in `ts/tests/app/people.test.ts:31` tests the class, not the operation.
+Task 12a: complete. Codex build f103fc0 (held drafts, `hold`/`held`/`decline`, and `publish`'s `approves` in `SqliteStore` and `MemoryStore`, `MIGRATIONS[1]`), review 0B/4I/3M (`task-12a-review.md`; the four Importants were tests letting 6 of 20 reviewer mutations survive: `NotFound` class unasserted, `rebuild`'s own `held` delete untested, no two-project scoping test, no write-first test for `decline` and an approving `publish`), fix round 1 b709aa8 (all four plus the three Minors: shared `openHold`, `MemoryStore` stamp from `START`, `declined` recorded on the fake), recheck 0B/0I/0M (`task-12a-recheck-1.md`).
+Task 12b: complete. Codex build 4395942 (a person's decision drafted by another is held and approved or declined by that person; `Approved`, `AddOutcome.HELD`), review 0B/1I/7M (`task-12b-review.md`; Important: a hold's `attachments`, `importing`, and `message` asserted by no test), fix round 1 d34be5b (the Important and Minors 1 to 5), recheck 0B/0I/0M (`task-12b-recheck-1.md`). Parked for plan 3, not fixed: `Lodge.held()` lists every person's holds to any actor (M-6, plan 3 picks the actor's filter); a retried add holds twice, so one person can approve two identical decisions (M-7, not in d-znagqe).
+Task 12c: complete. Codex build 3134ce5 (a person's words relayed into a thread are held as a `HeldMessage` and appended when that person approves), review 0B/2I/7M (`task-12c-review.md`; Importants: a relayed close and the held answer's `ids` and `about` untested, 7 of 26 reviewer mutations surviving), fix round 1 b43f63b (both, Minors 1 to 5), recheck 0B/0I/1M (`task-12c-recheck-1.md`). Parked: an ask with a code ref (`ITEM-1`) would pin resolve-at-hold; a check failing at approval of a message has no fixture and, as the report argues, no dependency to fail on (a title ref is unsupported: `core/search.ts:31-42` resolves an ID or a code only).
+
+exec
+/bin/bash -lc "cat ts/src/app/confirm.ts; cat ts/tests/app/front-door.test.ts; cat ts/tests/app/held-messages-support.ts; cat ts/tests/app/held-messages-approve.test.ts; cat ts/tests/app/held-messages.test.ts; tail -28 ts/src/app/threads.ts; cat ts/knip.json; cat ts/tests/app/thread-fix-paths.test.ts; sed -n '165,182p' ts/tests/structure/calls.ts" in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+import {
+  cleanText,
+  confirmableIds,
+  confirmationDraft,
+  behindArea as coreBehindArea,
+  level1,
+  Scope,
+  ValueError,
+  VIEWER,
+} from "#core";
+import { Forbidden, LodgeError, StaleList } from "./errors.ts";
+import { AddOutcome, type Behind, type Written, written } from "./results.ts";
+import { notFound, readState, type State, type Wiring } from "./state.ts";
+import { minuteOf } from "./time.ts";
+import { add } from "./writes.ts";
+
+function behindIds(state: State, name: string): readonly string[] {
+  const s = state.snapshot;
+  if (!s.areas.has(name) && [...s.entries.values()].every((e) => e.area !== name))
+    throw notFound(state, `area named ${name}`, name);
+  return coreBehindArea(s, state.derived, name);
+}
+export async function behindArea(w: Wiring, name: string): Promise<readonly Behind[]> {
+  const state = await readState(w.store);
+  const s = state.snapshot;
+  return behindIds(state, name).map((id) => ({
+    decision: level1(s, state.derived, id, state.failing),
+    entries: [...new Set(s.decisions.get(id)?.changes.map((c) => c.entry))].flatMap((id) => {
+      const e = s.entries.get(id);
+      return e ? [[id, e.area] as const] : [];
+    }),
+  }));
+}
+function expectedIds(state: State, ids: readonly string[], area: string | null): readonly string[] {
+  if (area !== null) return behindIds(state, area);
+  if (ids.length === 1 && confirmableIds(state.snapshot, state.derived).has(ids[0] ?? ""))
+    return ids;
+  return [];
+}
+// Callers serialise confirmations across this entire operation, including retries and commit.
+export async function confirmDecisions(
+  w: Wiring,
+  ids: readonly string[],
+  words: string,
+  area: string | null,
+  commit: boolean,
+): Promise<Written> {
+  words = cleanText(words);
+  if (words.includes("\r\n"))
+    throw new LodgeError("your words hold a character lodge cannot store");
+  if (!words) throw new LodgeError("your words are required; nothing was written");
+  if (w.actor.kind !== "person") throw new Forbidden("only a person confirms; nothing was written");
+  const state = await readState(w.store);
+  if (!state.snapshot.people.has(w.actor.name))
+    throw new Forbidden("only an owner of the project confirms; nothing was written");
+  const expected = expectedIds(state, ids, area);
+  const given = new Set(ids);
+  if (!expected.length || ids.length !== expected.length || expected.some((id) => !given.has(id)))
+    throw new StaleList("the list changed since the page was loaded; nothing was written");
+  const scope = expected.some((id) => state.snapshot.decisions.get(id)?.scope === Scope.PRODUCT)
+    ? Scope.PRODUCT
+    : Scope.PROCESS;
+  let draft: string;
+  try {
+    draft = confirmationDraft(expected, scope, words, minuteOf(w.clock.now()), area, w.actor.name);
+  } catch (error) {
+    if (!(error instanceof ValueError)) throw error;
+    throw new LodgeError("your words hold a character lodge cannot store", { cause: error });
+  }
+  const added = await add(w, [[VIEWER, draft]]);
+  const committed =
+    added.outcome === AddOutcome.STAGED && commit
+      ? await w.store.commit(added.paths, `Author confirmation from the viewer: ${added.ids[0]}`)
+      : null;
+  return written({ ids: added.ids, outcome: added.outcome, check: added.check, committed });
+}
+import { expect, test } from "bun:test";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import ts from "typescript";
+
+const root = resolve(import.meta.dir, "../../..");
+const index = resolve(root, "ts/src/app/index.ts");
+const program = ts.createProgram([index], {
+  module: ts.ModuleKind.Preserve,
+  moduleResolution: ts.ModuleResolutionKind.Bundler,
+  allowImportingTsExtensions: true,
+  noEmit: true,
+});
+const checker = program.getTypeChecker();
+const source = program.getSourceFile(index);
+if (!source) throw new Error("app front door not found");
+const moduleSymbol = checker.getSymbolAtLocation(source);
+if (!moduleSymbol) throw new Error("app front door is not a module");
+const exports = checker.getExportsOfModule(moduleSymbol);
+const python = readFileSync(resolve(root, "src/lodge/app/__init__.py"), "utf8");
+const all = python.match(/__all__\s*=\s*\[([^\]]*)\]/u)?.[1];
+if (!all) throw new Error("Python __all__ not found");
+const names = [...all.matchAll(/"([A-Za-z_][A-Za-z_0-9]*)"/gu)].map((m) =>
+  m[1] === m[1]?.toUpperCase()
+    ? m[1]
+    : m[1]?.replace(/_([a-z])/gu, (_, c: string) => c.toUpperCase()),
+);
+const expected = new Set(names);
+const extras = new Set([
+  "committed",
+  "gate",
+  "read",
+  "listed",
+  "added",
+  "written",
+  "Now",
+  "Actor",
+  "person",
+  "agent",
+  "actorText",
+  "Role",
+  "Projects",
+  "stampOf",
+  "minuteOf",
+  "Forbidden",
+  "HeldDraft",
+  "HeldAdd",
+  "HeldMessage",
+  "Held",
+  "Approved",
+]);
+
+test("front_door_exports_every_python_name", () => {
+  const actual = new Set(exports.map((symbol) => symbol.name));
+  expect(names.filter((name) => !actual.has(name ?? ""))).toEqual([]);
+});
+
+test("front_door_exports_nothing_else", () => {
+  expect(
+    exports.filter((s) => !expected.has(s.name) && !extras.has(s.name)).map((s) => s.name),
+  ).toEqual([]);
+});
+import { agent, person } from "#app";
+import { Raises } from "#core";
+import { CountingIds, FixedClock, MemoryStore } from "./fakes.ts";
+import { AREA, ENTRY, FIRST, wired } from "./support.ts";
+
+export async function setup(by = "reviewer") {
+  const store = new MemoryStore([AREA, ENTRY, FIRST], { people: new Set(["ada", "bo"]) });
+  const clock = new FixedClock();
+  const ids = new CountingIds();
+  const lodge = wired(store, clock, ids, agent("coordinator"));
+  const ada = wired(store, clock, ids, person("ada"));
+  const bo = wired(store, clock, ids, person("bo"));
+  const question = await (by === "ada" ? ada : lodge).ask(
+    "s-aaaaaa",
+    Raises.QUESTION,
+    by,
+    "Why?",
+    by === "ada" ? { where: "chat" } : {},
+  );
+  store.publishes.length = 0;
+  const id = question.ids[0] as string;
+  const relay = async (where = "chat") => {
+    const result = await lodge.reply(id, "ada", "  Yes.  ", { where, when: "2026-10-29 09:00" });
+    if (result.held === null) throw new Error("expected a held message");
+    return { ...result, held: result.held };
+  };
+  return { store, lodge, ada, bo, id, relay };
+}
+import { expect, test } from "bun:test";
+import { AddOutcome, Forbidden, NotFound, PublishOutcome } from "#app";
+import { Raises, ThreadState } from "#core";
+import { setup } from "./held-messages-support.ts";
+
+test("the_person_approves_and_the_message_is_published", async () => {
+  const { lodge, ada, id, relay } = await setup();
+  const result = await relay("mail");
+  expect(await ada.approve(result.held)).toMatchObject({
+    kind: "message",
+    written: { outcome: AddOutcome.PUBLISHED },
+  });
+  expect((await lodge.thread(id)).thread.messages.at(-1)).toMatchObject({
+    by: "ada",
+    text: "Yes.",
+    where: "mail",
+    when: "2026-10-29 09:00",
+  });
+  expect((await lodge.threadsWaiting()).forAgent.map((t) => t.id)).toEqual([id]);
+  expect(await lodge.held()).toEqual([]);
+});
+test("a_relayed_question_mints_its_thread_at_approval", async () => {
+  const { lodge, ada } = await setup();
+  const before = (await lodge.threads()).items.map((t) => t.id);
+  const result = await lodge.ask("s-aaaaaa", Raises.QUESTION, "ada", "Another?", { where: "chat" });
+  expect(result.outcome).toBe(AddOutcome.HELD);
+  expect(result.ids).toEqual([expect.stringMatching(/^q-[a-z0-9]{6}$/)]);
+  expect(result.about).toBe("s-aaaaaa");
+  expect(await lodge.held()).toMatchObject([{ ref: "s-aaaaaa" }]);
+  expect((await lodge.threads()).items.map((t) => t.id)).toEqual(before);
+  if (result.held === null) throw new Error("expected a held message");
+  const approved = await ada.approve(result.held);
+  expect(approved.kind).toBe("message");
+  if (approved.kind !== "message") throw new Error("message expected");
+  expect(approved.written.ids).not.toEqual(result.ids);
+  expect((await lodge.thread(approved.written.ids[0] as string)).thread.messages[0]?.by).toBe(
+    "ada",
+  );
+});
+test("decline_publishes_nothing", async () => {
+  const { store, lodge, ada, id, relay } = await setup();
+  const result = await relay();
+  await ada.decline(result.held, "No.");
+  expect(store.publishes).toEqual([]);
+  expect(await lodge.held()).toEqual([]);
+  expect((await lodge.threadsWaiting()).forAuthor.map((t) => t.id)).toEqual([id]);
+});
+test("another_person_or_an_agent_cannot_approve_a_message", async () => {
+  const { lodge, bo, relay } = await setup();
+  const result = await relay();
+  for (const actor of [bo, lodge])
+    await expect(actor.approve(result.held)).rejects.toThrow(Forbidden);
+});
+test("approval_after_the_thread_closed_leaves_it_held", async () => {
+  const { lodge, ada, id, relay } = await setup();
+  const result = await relay();
+  await lodge.close(id, "reviewer");
+  await expect(ada.approve(result.held)).rejects.toThrow(`${id} is closed`);
+  expect(await lodge.held()).toMatchObject([{ seq: result.held }]);
+});
+
+test("a_hold_settled_on_the_last_attempt_is_not_found", async () => {
+  const { store, ada, relay } = await setup();
+  const result = await relay();
+  let reads = 0;
+  const held = store.held.bind(store);
+  store.held = async () => {
+    reads++;
+    return held();
+  };
+  let attempts = 0;
+  store.publish = async () => {
+    if (++attempts === 3) await store.decline(result.held, "No.");
+    return PublishOutcome.REJECTED;
+  };
+  await expect(ada.approve(result.held)).rejects.toThrow(NotFound);
+  expect(attempts).toBe(3);
+  expect(reads).toBe(4);
+});
+
+test("a_relayed_close_is_held_and_closes_the_thread_at_approval", async () => {
+  const { lodge, ada, id } = await setup();
+  const result = await lodge.close(id, "ada", { where: "mail" });
+  expect(result).toMatchObject({ outcome: AddOutcome.HELD, ids: [id], about: "s-aaaaaa" });
+  expect(await lodge.held()).toMatchObject([{ operation: "close", text: null, where: "mail" }]);
+  expect((await lodge.thread(id)).thread.state).toBe(ThreadState.OPEN);
+  if (result.held === null) throw new Error("expected a held message");
+  await ada.approve(result.held);
+  const thread = (await lodge.thread(id)).thread;
+  expect(thread.state).toBe(ThreadState.CLOSED);
+  expect(thread.messages.at(-1)).toMatchObject({ by: "ada", text: "", where: "mail" });
+  expect((await lodge.threadsWaiting()).forAgent).toEqual([]);
+  expect((await lodge.threadsWaiting()).forAuthor).toEqual([]);
+  expect(await lodge.held()).toEqual([]);
+});
+import { expect, test } from "bun:test";
+import { AddOutcome, Forbidden, LodgeError } from "#app";
+import { setup } from "./held-messages-support.ts";
+
+test("an_agent_relaying_a_persons_words_is_held", async () => {
+  const { store, lodge, id, relay } = await setup();
+  const result = await relay();
+  expect(result).toMatchObject({
+    ids: [id],
+    about: "s-aaaaaa",
+    outcome: AddOutcome.HELD,
+    awaits: "ada",
+    held: expect.any(Number),
+  });
+  expect(store.publishes).toEqual([]);
+  expect(await lodge.held()).toMatchObject([
+    {
+      seq: result.held,
+      kind: "message",
+      person: "ada",
+      by: "agent coordinator",
+      operation: "reply",
+      text: "Yes.",
+      where: "chat",
+      when: "2026-10-29 09:00",
+    },
+  ]);
+});
+test("the_thread_still_waits_for_the_person", async () => {
+  const { lodge, ada, id, relay } = await setup();
+  const result = await relay();
+  expect((await lodge.threadsWaiting()).forAuthor.map((t) => t.id)).toEqual([id]);
+  expect((await lodge.waitingAll())[1].forAuthor.map((t) => t.id)).toEqual([id]);
+  expect((await lodge.thread(id)).thread.messages.at(-1)?.text).toBe("Why?");
+  expect(await lodge.held()).toHaveLength(1);
+  await ada.approve(result.held);
+  expect((await lodge.threadsWaiting()).forAgent.map((t) => t.id)).toEqual([id]);
+  expect((await lodge.thread(id)).thread.messages.at(-1)?.text).toBe("Yes.");
+});
+test("a_persons_thread_still_waits_for_an_agent", async () => {
+  const { lodge, ada, id, relay } = await setup("ada");
+  const result = await relay();
+  expect((await lodge.threadsWaiting()).forAgent.map((t) => t.id)).toEqual([id]);
+  expect((await lodge.waitingAll())[1].forAgent.map((t) => t.id)).toEqual([id]);
+  expect((await lodge.thread(id)).thread.messages.at(-1)?.text).toBe("Why?");
+  expect(await lodge.held()).toHaveLength(1);
+  await ada.approve(result.held);
+  expect((await lodge.threadsWaiting()).forAgent.map((t) => t.id)).toEqual([id]);
+  expect((await lodge.thread(id)).thread.messages.at(-1)?.text).toBe("Yes.");
+});
+test("a_persons_own_message_is_published_at_once", async () => {
+  const { ada, id } = await setup();
+  expect(await ada.reply(id, "ada", "Yes.", { where: "chat" })).toMatchObject({
+    outcome: AddOutcome.PUBLISHED,
+    held: null,
+    awaits: null,
+  });
+});
+test("one_person_cannot_write_as_another", async () => {
+  const { bo, lodge, store, id } = await setup();
+  await expect(bo.reply(id, "ada", "Yes.", { where: "chat" })).rejects.toThrow(Forbidden);
+  expect(await lodge.held()).toEqual([]);
+  expect(store.publishes).toEqual([]);
+});
+test("a_relay_without_where_is_refused_as_lodge_0_2_refuses_it", async () => {
+  const { lodge, id } = await setup();
+  await expect(lodge.reply(id, "ada", "Yes.")).rejects.toThrow(
+    new LodgeError("a message by ada needs where, the place of ada's words"),
+  );
+  expect(await lodge.held()).toEqual([]);
+});
+test("a_relay_to_a_closed_thread_is_refused", async () => {
+  const { lodge, id, relay } = await setup();
+  await lodge.close(id, "reviewer");
+  await expect(relay()).rejects.toThrow(`${id} is closed`);
+  expect(await lodge.held()).toEqual([]);
+});
+  }
+  return { items, titles, read: state.read };
+}
+export async function show(w: Wiring, ref: string): Promise<ThreadShown> {
+  const state = await readChecked(w),
+    thread = find(state, ref),
+    s = state.snapshot;
+  return {
+    thread,
+    about:
+      s.decisions.has(thread.about) || s.entries.has(thread.about)
+        ? level1(s, state.derived, thread.about, state.failing)
+        : null,
+    read: state.read,
+  };
+}
+export async function waiting(w: Wiring): Promise<ThreadsWaiting> {
+  return waitingIn(await readChecked(w));
+}
+export function waitingIn(state: State): ThreadsWaiting {
+  const listed = openIn(state);
+  return {
+    forAgent: listed.items.filter((t) => state.snapshot.people.has(t.messages.at(-1)?.by ?? "")),
+    forAuthor: listed.items.filter((t) => !state.snapshot.people.has(t.messages.at(-1)?.by ?? "")),
+    titles: listed.titles,
+    read: listed.read,
+  };
+}
+{
+  "entry": ["tests/**/*.test.ts", "scripts/*.ts"],
+  "project": ["src/**/*.ts", "tests/**/*.ts", "scripts/**/*.ts"]
+}
+import { expect, test } from "bun:test";
+import { Raises } from "#core";
+import { project, wired } from "./support.ts";
+
+test.todo("orphaned_thread_outputs");
+test.todo("run_thread_outcomes");
+test("waiting_reads_one_snapshot", async () => {
+  const store = project(),
+    lodge = wired(store);
+  await lodge.ask("s-aaaaaa", Raises.DOUBT, "agent", "Why?");
+  const path = "lodge/threads/q-111111.md";
+  store.movesAfterRead(
+    new Map([[path, required(store.files.get(path)).replace("agent", "author")]]),
+  );
+  const [listed, waiting] = await lodge.waitingAll();
+  expect(listed.read).toBe(waiting.read);
+  expect(waiting.forAuthor.map((t) => t.id)).toEqual(["q-111111"]);
+  expect(waiting.forAgent).toEqual([]);
+});
+
+function required<T>(value: T | undefined | null): T {
+  if (value === undefined || value === null) throw new Error("missing fixture value");
+  return value;
+}
+          pkg === "core" &&
+          ts.isCallExpression(node) &&
+          ts.isPropertyAccessExpression(expr) &&
+          ["sort", "toSorted"].includes(attr) &&
+          node.arguments.length === 0
+        )
+          report(node, "sort requires a code point comparator");
+        if (
+          pkg !== "core" &&
+          ts.isCallExpression(node) &&
+          ["isAuthor", "parseThread", "writeThread"].includes(attr) &&
+          node.arguments.length < 2
+        )
+          report(node, `${attr} requires explicit people`);
+        const fsName = imported(expr);
+        const flags = ts.isTaggedTemplateExpression(node) ? undefined : node.arguments?.[1];
+        const writingOpen =
+          ["open", "openSync"].includes(fsName ?? attr) &&
+
+codex
+I’ve read the reviews. The knip configuration already has the requested two entry patterns and is committed. I’ll make the remaining edits, with tests that prove the confirmation reaches the write check and that a code reference resolves before it is held.
+exec
+/bin/bash -lc "rg -n 'code|function entry' ts/tests/core/builders.ts; cat ts/src/app/state.ts | head -65; cat ts/tests/core/applying.ts | head -65; rg -n 'confirm|CHECK_FAILED' ts/tests/app/confirm.test.ts; cat scripts/check-ts.sh; head -20 ts/src/app/threads.ts" in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+52:export function entry(kw: Partial<SpecEntry> = {}): SpecEntry {
+import {
+  AmbiguousRef,
+  byCodePoint,
+  type CheckResult,
+  type CoreSettings,
+  checkChange,
+  checkResult,
+  checkState,
+  type Derived,
+  derive,
+  failingIds,
+  load,
+  resolve,
+  type Snapshot,
+  strip,
+  type Tree,
+  unrecordedProblems,
+} from "#core";
+import { LodgeError, NotFound } from "./errors.ts";
+import type { Actor, Clock, IdSource, Store } from "./ports.ts";
+import { type Read, read } from "./results.ts";
+import { stampOf } from "./time.ts";
+
+export interface Wiring {
+  readonly actor: Actor;
+  readonly store: Store;
+  readonly clock: Clock;
+  readonly ids: IdSource;
+  readonly settings: CoreSettings;
+}
+export interface State {
+  readonly current: Tree;
+  readonly published: Tree;
+  readonly snapshot: Snapshot;
+  readonly derived: Derived;
+  readonly result: CheckResult;
+  readonly failing: ReadonlySet<string>;
+  readonly read: Read;
+}
+// The current state read once, with its one-state checks.
+export async function readState(store: Store): Promise<State> {
+  const [current, published] = await store.trees();
+  const snapshot = load(current),
+    result = checkState(snapshot),
+    derived = derive(snapshot);
+  return {
+    current,
+    published,
+    snapshot,
+    derived,
+    result,
+    failing: failingIds(snapshot, result),
+    read: read({
+      freshness: await store.freshness(),
+      unrecorded: unrecordedProblems(snapshot, result),
+      statuses: derived.status,
+    }),
+  };
+}
+// Fold the checks against the published tree into the failing records.
+export async function readChecked(w: Wiring): Promise<State> {
+  const state = await readState(w.store);
+  const change = checkChange(
+    load(state.published),
+    state.snapshot,
+import assert from "node:assert/strict";
+import {
+  type Applied,
+  type Area,
+  applyDrafts,
+  type Decision,
+  type Draft,
+  load,
+  type Problem,
+  parseDraft,
+  type Snapshot,
+  type SpecEntry,
+  type StaleBase,
+  type Tree,
+} from "#core";
+import { treeOf } from "./builders.ts";
+import { document } from "./samples.ts";
+
+export const NOW = "2026-10-29T09:30:00+01:00";
+function drafted(...texts: string[]): Draft[] {
+  const drafts = texts.map((text, i) => parseDraft(`draft${i}.md`, text));
+  assert(drafts.every((d) => d.kind !== "problem"));
+  return drafts;
+}
+type Body = { body: string };
+function parts(args: (string | Body)[], fallback: string): [string[], string] {
+  return [
+    args.filter((a): a is string => typeof a === "string"),
+    args.find((a): a is Body => typeof a !== "string")?.body ?? fallback,
+  ];
+}
+export function decisionText(...args: (string | Body)[]): string {
+  const [extra, body] = parts(args, "It is kept.");
+  return document(
+    [
+      "kind: decision",
+      'title: "Keep transcripts"',
+      "scope: process",
+      "decided_by: coordinator",
+      ...extra,
+    ],
+    body,
+  );
+}
+export function specText(...args: (string | Body)[]): string {
+  const [header, body] = parts(args, "They are kept.");
+  return document(["kind: spec", 'title: "Transcripts"', ...header], body);
+}
+export function areaText(...args: (string | Body)[]): string {
+  const [header, body] = parts(args, "Intro.");
+  return document(["kind: area", 'title: "Storage"', ...header], body);
+}
+export function state(...items: (Decision | SpecEntry | Area)[]): [Snapshot, Tree] {
+  const tree = treeOf(...items);
+  return [load(tree), tree];
+}
+type Options = { ids?: readonly string[]; importing?: boolean };
+export function apply(s: Snapshot, tree: Tree, ...args: (string | Options)[]) {
+  const texts = args.filter((a): a is string => typeof a === "string");
+  const options = args.find((a): a is Options => typeof a !== "string") ?? {};
+  return applyDrafts(
+    s,
+    tree,
+    drafted(...texts),
+    options.ids ?? [],
+30:test("confirm_one_decision", async () => {
+32:  const result = await wired(store).confirm([AGENT.id], "Read.");
+35:  expect(made(store).confirms).toEqual([AGENT.id]);
+39:test("confirm_writes_only_a_new_decision_file", async () => {
+42:  await wired(store).confirm([AGENT.id], "Read.");
+47:test("confirmed_decision_keeps_decided_by_and_clears_its_flag", async () => {
+53:  await lodge.confirm([agent.id], "Read.");
+67:  await wired(store).confirm([AGENT.id, OTHER.id], "Read.", { area: "storage" });
+72:  await wired(store).confirm([AGENT.id], "Read.");
+75:test("area_confirms_exactly_the_listed", async () => {
+77:  await wired(store).confirm([OTHER.id, AGENT.id], "Read.", { area: "storage" });
+78:  expect(made(store).confirms).toEqual([AGENT.id, OTHER.id]);
+82:  await wired(store).confirm([OTHER.id], "Read.");
+85:    wired(store).confirm([AGENT.id, OTHER.id], "Read.", { area: "storage" }),
+91:test("second_identical_confirmation_is_stale", async () => {
+94:  await lodge.confirm([AGENT.id], "Read.");
+95:  await expect(lodge.confirm([AGENT.id], "Read.")).rejects.toThrow(StaleList);
+101:    wired(store).confirm([AGENT.id], words),
+111:  await wired(store).confirm([AGENT.id], ` \n${words} \n`);
+119:    wired(store).confirm([AGENT.id], "\x00"),
+127:  const result = await wired(store).confirm([AGENT.id], "Read.", { commit: true });
+129:  expect(store.commits).toEqual([[[path], "Author confirmation from the viewer: d-111111"]]);
+158:test("show_marks_confirmable", async () => {
+161:  expect((await lodge.show(AGENT.id)).confirmable).toBe(true);
+162:  expect((await lodge.show("s-aaaaaa")).confirmable).toBe(false);
+163:  await lodge.confirm([AGENT.id], "Read.");
+164:  expect((await lodge.show(AGENT.id)).confirmable).toBe(false);
+165:  expect((await lodge.show("d-111111")).confirmable).toBe(false);
+170:])("confirmation_does_not_commit_unless_staged_and_requested %j %j", async (staged, commit) => {
+172:  const result = await wired(store).confirm([AGENT.id], "Read.", { commit });
+177:test("confirmation_failed_check_writes_and_commits_nothing", async () => {
+181:  const result = await wired(store).confirm([AGENT.id], "Read.", { commit: true });
+182:  expect(result.outcome).toBe(AddOutcome.CHECK_FAILED);
+190:    wired(store).confirm([AGENT.id], "a\r\r\nb"),
+196:test("second_area_confirmation_is_stale", async () => {
+199:  await lodge.confirm([AGENT.id], "Read.", { area: "storage" });
+200:  await expect(lodge.confirm([AGENT.id], "Read.", { area: "storage" })).rejects.toThrow(StaleList);
+203:test("duplicate_confirmation_ids_are_stale", async () => {
+206:    wired(store).confirm([AGENT.id, AGENT.id], "Read.", { area: "storage" }),
+210:test("empty_confirmation_ids_are_stale", async () => {
+212:  await expect(wired(store).confirm([], "Read.")).rejects.toThrow(StaleList);
+218:    wired(store).confirm([AGENT.id, "d-cccccc"], "Read.", { area: "storage" }),
+222:test("confirmation_defaults_to_no_commit", async () => {
+224:  const result = await wired(store).confirm([AGENT.id], "Read.");
+set -eu
+cd "$(dirname "$0")/../ts"
+command -v bun >/dev/null 2>&1 || { echo "bun is not installed" >&2; exit 2; }
+[ -d node_modules ] || { echo "ts/node_modules is missing; run bun install --frozen-lockfile in ts/" >&2; exit 2; }
+bun --bun run check
+import {
+  appended,
+  type CheckResult,
+  checkChange,
+  cleanText,
+  level1,
+  load,
+  type Message,
+  newestLast,
+  Raises,
+  strip,
+  type Thread,
+  ThreadState,
+  threadPath,
+  tree,
+  ValueError,
+  writeThread,
+} from "#core";
+import { Conflict, Forbidden, LodgeError, NotFound } from "./errors.ts";
+import { actorText, type Now, PublishOutcome } from "./ports.ts";
+
+exec
+/bin/bash -lc "sed -n '175,188p' ts/tests/app/confirm.test.ts; sed -n '50,70p' ts/tests/core/builders.ts; cat ts/src/core/search.ts | head -65; rg -n 'class CountingIds' ts/tests/app/fakes.ts" in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+  expect(store.commits).toEqual([]);
+});
+test("confirmation_failed_check_writes_and_commits_nothing", async () => {
+  const store = new MemoryStore([{ ...AGENT, date: "2026-10-29T09:31:00+01:00" }], {
+    staged: true,
+  });
+  const result = await wired(store).confirm([AGENT.id], "Read.", { commit: true });
+  expect(result.outcome).toBe(AddOutcome.CHECK_FAILED);
+  expect(result.check.ok).toBe(false);
+  expect(store.publishes).toEqual([]);
+  expect(store.commits).toEqual([]);
+});
+test("repeated_cr_before_lf_is_refused", async () => {
+  const store = storeFor();
+  });
+}
+export function entry(kw: Partial<SpecEntry> = {}): SpecEntry {
+  return specEntry({
+    id: nextId("s"),
+    area: "storage",
+    title: "An entry",
+    statement: "What holds now.",
+    ...kw,
+  });
+}
+export function area(kw: Partial<Area> = {}): Area {
+  return makeArea({ name: "storage", title: "Storage", intro: "", order: [], ...kw });
+}
+export function message(kw: Partial<Message> = {}): Message {
+  return makeMessage({ by: "coordinator", when: at(0), text: "A message.", ...kw });
+}
+export function thread(kw: Partial<Thread> = {}): Thread {
+  return {
+    kind: "thread",
+    id: nextId("q"),
+import type { Derived } from "./derive.ts";
+import { LookupError } from "./errors.ts";
+import type { Decision, Scope } from "./model.ts";
+import type { Snapshot } from "./snapshot.ts";
+import { orderInstant } from "./stamps.ts";
+import { byCodePoint, isDigit, strip } from "./text.ts";
+import { type Level1, level1 } from "./views.ts";
+import { words } from "./words.ts";
+
+const NEVER = orderInstant("0001-01-01T00:00:00+00:00");
+const TITLE_WEIGHT = 3,
+  STATEMENT_WEIGHT = 1;
+const RELATED_SCORE = 2,
+  RELATED_WORDS = 2,
+  COMMON_FROM = 5;
+const NONE: ReadonlySet<string> = new Set();
+
+export interface Filters {
+  readonly kind: "decision" | "spec" | null;
+  readonly scope: Scope | null;
+  readonly status: "current" | "replaced" | "retired" | "any";
+  readonly area: string | null;
+  readonly decidedBy: string | null;
+}
+export function filters(value: Partial<Filters> = {}): Filters {
+  return { kind: null, scope: null, status: "current", area: null, decidedBy: null, ...value };
+}
+export class AmbiguousRef extends LookupError {
+  override name = "AmbiguousRef";
+}
+export function resolve(s: Snapshot, ref: string): string | null {
+  const wanted = strip(ref).toLowerCase();
+  if (s.decisions.has(wanted) || s.entries.has(wanted)) return wanted;
+  const records = new Map<string, { readonly code: string | null }>([...s.decisions, ...s.entries]);
+  const coded = [...records]
+    .filter(([, r]) => r.code && r.code.toLowerCase() === wanted)
+    .map(([id]) => id)
+    .sort(byCodePoint);
+  if (coded.length > 1)
+    throw new AmbiguousRef(`the code ${ref} names more than one record: ${coded.join(", ")}`);
+  return coded[0] ?? null;
+}
+export function search(s: Snapshot, d: Derived, query: string, f: Filters, limit = 20): string[] {
+  return searchCounted(s, d, query, f, limit)[0];
+}
+export function searchCounted(
+  s: Snapshot,
+  d: Derived,
+  query: string,
+  f: Filters,
+  limit: number,
+): readonly [string[], number] {
+  const views = newestFirst(s, d, f);
+  if (!strip(query)) return [views.slice(0, limit).map((v) => v.id), views.length];
+  const exact = strip(query).toLowerCase();
+  const hits = views.filter((v) => exact === v.id || exact === (v.code ?? "").toLowerCase());
+  const queryWords = words(query);
+  const ranked = views
+    .filter((v) => !hits.includes(v))
+    .map((v) => ({ v, score: score(v, queryWords) }))
+    .filter((p) => p.score > 0)
+    .sort((a, b) => b.score - a.score);
+  const found = [...hits, ...ranked.map((p) => p.v)].map((v) => v.id);
+  return [found.slice(0, limit), found.length];
+}
+150:export class CountingIds implements IdSource {
+
+exec
+/bin/bash -lc "python - <<'PY'
+from pathlib import Path
+p=Path('ts/tests/store/checked-writes.test.ts')
+s=p.read_text().replace('PublishOutcome, StaleList','PublishOutcome')
+s=s.replace('const { database, store } = await seeded(AREA, ENTRY, FIRST);\\n  const lodge = wired(store),','const { database, store } = await seeded(AREA, ENTRY, {\\n    ...FIRST, decidedBy: \"reviewer\", date: \"2026-10-29T09:31:00+01:00\",\\n  });\\n  const lodge = wired(store),')
+s=s.replace('await expect(lodge.confirm([FIRST.id], \"Read.\")).rejects.toThrow(StaleList);','expect((await lodge.confirm([FIRST.id], \"Read.\")).outcome).toBe(AddOutcome.CHECK_FAILED);')
+p.write_text(s)
+p=Path('ts/tests/app/held-messages.test.ts');s=p.read_text().replace('import { setup }','import { Raises } from \"#core\";\\nimport { MemoryStore } from \"./fakes.ts\";\\nimport { AREA, ENTRY, wired } from \"./support.ts\";\\nimport { setup }');s+='''\\ntest(\"a_relayed_question_holds_the_resolved_code_reference\", async () => {
+  const store = new MemoryStore([AREA, { ...ENTRY, code: \"ITEM-1\" }], {
+    people: new Set([\"ada\"]),
+  });
+  const { agent } = await import(\"#app\");
+  const lodge = wired(store, undefined, undefined, agent());
+  await lodge.ask(\"ITEM-1\", Raises.QUESTION, \"ada\", \"Why?\", { where: \"mail\" });
+  expect(await lodge.held()).toMatchObject([{ ref: \"s-aaaaaa\" }]);
+});
+''';s=s.replace('AddOutcome, Forbidden, LodgeError','AddOutcome, agent, Forbidden, LodgeError').replace('  const { agent } = await import(\"#app\");\\n','');p.write_text(s)
+PY
+cd ts && bun test tests/store/checked-writes.test.ts tests/app/held-messages.test.ts" in /var/tmp/lodge-server-store
+ exited 1 in 171ms:
+bun test v1.3.14 (0d9b296a)
+
+tests/store/checked-writes.test.ts:
+35 |   const draft = (await lodge.draft(FIRST.id)).replace(FIRST.statement, "Changed.");
+36 |   expect((await lodge.add([["d.md", draft]])).outcome).toBe(AddOutcome.CHECK_FAILED);
+37 |   expect(await events(database)).toEqual(before);
+38 |   expect((await lodge.confirm([FIRST.id], "Read.")).outcome).toBe(AddOutcome.CHECK_FAILED);
+39 |   expect(await events(database)).toEqual(before);
+40 |   expect((await lodge.add(RETIRE, { dryRun: true })).outcome).toBe(AddOutcome.DRY_RUN);
+                                                                   ^
+error: expect(received).toBe(expected)
+
+Expected: "dry run"
+Received: "check failed"
+
+      at <anonymous> (/var/tmp/lodge-server-store/ts/tests/store/checked-writes.test.ts:40:63)
+(fail) a_refused_write_leaves_no_event [14.82ms]
+
+ 11 pass
+ 1 fail
+ 41 expect() calls
+Ran 12 tests across 2 files. [283.00ms]
+
+exec
+/bin/bash -lc "python - <<'PY'
+from pathlib import Path
+p=Path('ts/tests/store/checked-writes.test.ts');s=p.read_text().replace('const { database, store } = await seeded(AREA, ENTRY, {\\n    ...FIRST, decidedBy: \"reviewer\", date: \"2026-10-29T09:31:00+01:00\",\\n  });','const { database, store } = await seeded(AREA, ENTRY, FIRST);').replace('  expect((await lodge.confirm([FIRST.id], \"Read.\")).outcome).toBe(AddOutcome.CHECK_FAILED);\\n  expect(await events(database)).toEqual(before);\\n','');s+='''\\ntest(\"a_confirmation_refused_by_the_check_leaves_no_event\", async () => {
+  const { database, store } = await seeded(AREA, ENTRY, {
+    ...FIRST, decidedBy: \"reviewer\", date: \"2026-10-29T09:31:00+01:00\",
+  });
+  const before = await events(database);
+  const result = await wired(store).confirm([FIRST.id], \"Read.\");
+  expect(result.outcome).toBe(AddOutcome.CHECK_FAILED);
+  expect(result.check.problems.length).toBeGreaterThan(0);
+  expect(await events(database)).toEqual(before);
+});
+''';p.write_text(s)
+PY
+cd ts && bun test tests/store/checked-writes.test.ts tests/app/held-messages.test.ts" in /var/tmp/lodge-server-store
+ succeeded in 158ms:
+bun test v1.3.14 (0d9b296a)
+
+ 13 pass
+ 0 fail
+ 43 expect() calls
+Ran 13 tests across 2 files. [273.00ms]
+
+exec
+/bin/bash -lc "python - <<'PY'
+from pathlib import Path
+base=Path('ts/tests/app')
+p=base/'support.ts';s=p.read_text().replace('Action, coreSettings','Action, coreSettings, Raises');s+='''
+export const Q = \"q-111111\";
+export const PATH = "'`lodge/threads/${Q}.md`;
+export async function opened(staged = false) {
+  const store = project({ staged }), lodge = wired(store);
+  await lodge.ask("s-aaaaaa", Raises.DOUBT, "coordinator", "Why?");
+  return { store, lodge };
+}
+export function required<T>(value: T | undefined | null): T {
+  if (value === undefined || value === null) throw new Error("missing fixture value");
+  return value;
+}
+'"''';p.write_text(s)
+for name in ['thread-ops.test.ts','thread-ops-publish.test.ts','thread-fix-paths.test.ts']:
+ p=base/name;s=p.read_text();s=s[:s.index('\\nfunction required<T>')]+'\\n';s=s.replace('project, raises, wired','opened, PATH, project, Q, raises, required, wired').replace('project, wired','project, required, wired');
+ if 'const Q =' in s:
+  start=s.index('const Q =');end=s.index('\\n}',s.index('async function opened',start))+2;s=s[:start]+s[end:]
+ for title in ['agent_message_may_not_carry_where','role_like_author_refused','empty_text_refused','unstorable_where_refused','close_with_text']:
+  s=s.replace('\"'+title+'\"','\"'+title+' %j\"')
+ p.write_text(s)
+p=Path('ts/tests/store/support.ts');s=p.read_text().replace('async function setup()','async function setup(name = \"storage\", owner = \"author\")').replace('projects.create(\"storage\", \"author\")','projects.create(name, owner)').replace('new SqliteStore(database, \"storage\", \"author\", clock)','new SqliteStore(database, name, owner, clock)');p.write_text(s)
+p=Path('ts/tests/store/seed.ts');s=p.read_text();start=s.index('const opened:');end=s.index('  if (',start);s=s[:start]+'''export async function seeded(...items: (Area | Decision | SpecEntry)[]) {
+  const { database, store } = await setup(\"storage-notes\", \"author\");
+'''+s[end:];s=s.replace('import { afterEach } from \"bun:test\";\\n','');s='\\n'.join(l for l in s.split('\\n') if 'from \"#store\"' not in l and 'FixedClock' not in l);s=s.replace('import { filesOf }','import { setup } from \"./support.ts\";\\nimport { filesOf }');p.write_text(s)
+p=base/'front-door.test.ts';s=p.read_text();start=s.index('const names =');end=s.index('const expected',start);s=s[:start]+'''const names = [...all.matchAll(/\"([A-Za-z_][A-Za-z_0-9]*)\"/gu)].map((m) => {
+  const snake = m[1];
+  if (snake === undefined) throw new Error(\"Python export name not found\");
+  return snake.replace(/_([a-z])/gu, (_, c: string) => c.toUpperCase());
+});
+'''+s[end:];s=s.replace('actual.has(name ?? \"\")','actual.has(name)');p.write_text(s)
+p=Path('ts/src/app/confirm.ts');s=p.read_text().replace('s.decisions.get(id)?.changes','s.decisions.get(id)"'!.changes'"');p.write_text(s)
+p=Path('ts/tests/structure/calls.ts');s=p.read_text().replace('        if (\\n          pkg "'!== "core" &&'"\\n          ts.isCallExpression(node) &&\\n          [\"isAuthor\",', '''        // This rule is syntactic: aliased imports, core[\"writeThread\"](x),
+        // and writeThread(x, undefined) pass without proving explicit people.
+        if (
+          pkg "'!== "core" &&
+          ts.isCallExpression(node) &&
+          ["isAuthor",'"''');p.write_text(s)
+p=base/'people.test.ts';p.write_text(p.read_text().replace('  expect(new Forbidden(\"\").exitCode).toBe(2);\\n',''))
+p=Path('ts/src/app/threads.ts');s=p.read_text().replace('  return {\\n    forAgent: listed.items.filter((t) => state.snapshot.people.has(t.messages.at(-1)?.by ?? \"\")),\\n    forAuthor: listed.items.filter((t) => "'!state.snapshot.people.has(t.messages.at(-1)?.by ?? "")),'"','''  const forAgent: Thread[] = [], forAuthor: Thread[] = [];
+  for (const thread of listed.items) {
+    const last = thread.messages.at(-1);
+    (last && state.snapshot.people.has(last.by) ? forAgent : forAuthor).push(thread);
+  }
+  return {
+    forAgent,
+    forAuthor,''');p.write_text(s)
+p=Path('ts/tests/parity.test.ts');s=p.read_text();s=s.replace('function files(dir:', '''function held(row: { status: string; plan?: number }): boolean {
+  return row.status === \"ported\" || (row.status === \"changed\" && [1, 2].includes(row.plan ?? 0));
+}
+function files(dir:''');s=s.replace('r.status === \"ported\" || (r.status === \"changed\" && [1, 2].includes(r.plan ?? 0))','held(r)').replace('r.status === \"ported\" || (r.status === \"changed\" && r.plan === 2)','held(r)');s+='''
+test(\"a_changed_plan_2_file_losing_a_name_fails\", () => {
+  const fixture = plant({
+    \"tests/sample.py\": \"def test_a(): pass\\\\ndef test_b(): pass\",
+    \"tests/sample.test.ts\": 'test(\"a\", () => {})',
+  });
+  const row = { status: \"changed\", plan: 2, ts: [\"tests/sample.test.ts\"] };
+  expect(held(row) ? rowMissing(fixture, \"tests/sample.py\", row) : []).toEqual([\"b\"]);
+});
+''';p.write_text(s)
+PY
+sh scripts/check-ts.sh > /tmp/task14-check.log 2>&1; tail -45 /tmp/task14-check.log" in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+  
+    68 68 │   test("a_confirmation_refused_by_the_check_leaves_no_event", async () => {
+    69 69 │     const { database, store } = await seeded(AREA, ENTRY, {
+    70    │ - ····...FIRST,·decidedBy:·"reviewer",·date:·"2026-10-29T09:31:00+01:00",
+       70 │ + ····...FIRST,
+       71 │ + ····decidedBy:·"reviewer",
+       72 │ + ····date:·"2026-10-29T09:31:00+01:00",
+    71 73 │     });
+    72 74 │     const before = await events(database);
+  
+
+tests/store/seed.ts:1:1 assist/source/organizeImports  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Sort these imports.
+  
+  > 1 │ import { PublishOutcome } from "#app";
+      │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 2 │ import type { Area, Decision, SpecEntry } from "#core";
+  > 3 │ import { setup } from "./support.ts";
+  > 4 │ import { filesOf } from "../core/builders.ts";
+      │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    5 │ 
+    6 │ export async function seeded(...items: (Area | Decision | SpecEntry)[]) {
+  
+  i Safe fix: Organize imports and exports (Biome)
+  
+     1  1 │   import { PublishOutcome } from "#app";
+     2  2 │   import type { Area, Decision, SpecEntry } from "#core";
+     3    │ - import·{·setup·}·from·"./support.ts";
+     4    │ - import·{·filesOf·}·from·"../core/builders.ts";
+        3 │ + import·{·filesOf·}·from·"../core/builders.ts";
+        4 │ + import·{·setup·}·from·"./support.ts";
+     5  5 │   
+     6  6 │   export async function seeded(...items: (Area | Decision | SpecEntry)[]) {
+  
+
+Checked 186 files in 48ms. No fixes applied.
+Found 9 errors.
+Found 1 warning.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some warnings were emitted while running checks.
+  
+
+error: script "check" exited with code 1
+
+exec
+/bin/bash -lc 'head -65 /tmp/task14-check.log; cat ts/package.json | tail -25; git diff --stat' in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+$ biome check --error-on-warnings . && tsc --noEmit -p . && depcruise src tests scripts --config .dependency-cruiser.cjs && knip && bun test
+src/app/confirm.ts:28:26 lint/style/noNonNullAssertion  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+  
+    26 │   return behindIds(state, name).map((id) => ({
+    27 │     decision: level1(s, state.derived, id, state.failing),
+  > 28 │     entries: [...new Set(s.decisions.get(id)!.changes.map((c) => c.entry))].flatMap((id) => {
+       │                          ^^^^^^^^^^^^^^^^^^^^
+    29 │       const e = s.entries.get(id);
+    30 │       return e ? [[id, e.area] as const] : [];
+  
+  i Unsafe fix: Replace with optional chain operator ?. This operator includes runtime checks, so it is safer than the compile-only non-null assertion operator
+  
+    26 26 │     return behindIds(state, name).map((id) => ({
+    27 27 │       decision: level1(s, state.derived, id, state.failing),
+    28    │ - ····entries:·[...new·Set(s.decisions.get(id)!.changes.map((c)·=>·c.entry))].flatMap((id)·=>·{
+       28 │ + ····entries:·[...new·Set(s.decisions.get(id)?.changes.map((c)·=>·c.entry))].flatMap((id)·=>·{
+    29 29 │         const e = s.entries.get(id);
+    30 30 │         return e ? [[id, e.area] as const] : [];
+  
+
+src/app/threads.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    234 234 │   export function waitingIn(state: State): ThreadsWaiting {
+    235 235 │     const listed = openIn(state);
+    236     │ - ··const·forAgent:·Thread[]·=·[],·forAuthor:·Thread[]·=·[];
+        236 │ + ··const·forAgent:·Thread[]·=·[],
+        237 │ + ····forAuthor:·Thread[]·=·[];
+    237 238 │     for (const thread of listed.items) {
+    238 239 │       const last = thread.messages.at(-1);
+  
+
+tests/app/held-messages.test.ts:1:1 assist/source/organizeImports  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Sort these imports.
+  
+  > 1 │ import { expect, test } from "bun:test";
+      │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 2 │ import { AddOutcome, agent, Forbidden, LodgeError } from "#app";
+  > 3 │ import { Raises } from "#core";
+  > 4 │ import { MemoryStore } from "./fakes.ts";
+  > 5 │ import { AREA, ENTRY, wired } from "./support.ts";
+  > 6 │ import { setup } from "./held-messages-support.ts";
+      │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    7 │ 
+    8 │ test("an_agent_relaying_a_persons_words_is_held", async () => {
+  
+  i Safe fix: Organize imports and exports (Biome)
+  
+     3  3 │   import { Raises } from "#core";
+     4  4 │   import { MemoryStore } from "./fakes.ts";
+     5    │ - import·{·AREA,·ENTRY,·wired·}·from·"./support.ts";
+     6    │ - import·{·setup·}·from·"./held-messages-support.ts";
+        5 │ + import·{·setup·}·from·"./held-messages-support.ts";
+        6 │ + import·{·AREA,·ENTRY,·wired·}·from·"./support.ts";
+     7  7 │   
+     8  8 │   test("an_agent_relaying_a_persons_words_is_held", async () => {
+  
+
+tests/app/support.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  "name": "lodge",
+  "private": true,
+  "type": "module",
+  "packageManager": "bun@1.3.14",
+  "imports": {
+    "#core": "./src/core/index.ts",
+    "#app": "./src/app/index.ts",
+    "#store": "./src/store/index.ts"
+  },
+  "scripts": {
+    "check": "biome check --error-on-warnings . && tsc --noEmit -p . && depcruise src tests scripts --config .dependency-cruiser.cjs && knip && bun test"
+  },
+  "dependencies": {
+    "@noble/hashes": "2.4.0",
+    "kysely": "0.29.7",
+    "yaml": "2.9.1"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.15",
+    "@types/bun": "1.4.3",
+    "dependency-cruiser": "18.6.0",
+    "knip": "6.42.0",
+    "typescript": "6.0.3"
+  }
+}
+ ts/src/app/confirm.ts                   |  2 +-
+ ts/src/app/threads.ts                   |  9 +++++++--
+ ts/tests/app/front-door.test.ts         | 12 ++++++------
+ ts/tests/app/held-messages.test.ts      | 14 +++++++++++++-
+ ts/tests/app/people.test.ts             |  1 -
+ ts/tests/app/support.ts                 | 14 +++++++++++++-
+ ts/tests/app/thread-fix-paths.test.ts   |  6 +-----
+ ts/tests/app/thread-ops-publish.test.ts | 15 ++-------------
+ ts/tests/app/thread-ops.test.ts         | 27 ++++++++-------------------
+ ts/tests/parity.test.ts                 | 18 +++++++++++++++---
+ ts/tests/store/checked-writes.test.ts   | 15 ++++++++++++---
+ ts/tests/store/seed.ts                  | 14 ++------------
+ ts/tests/store/support.ts               |  6 +++---
+ ts/tests/structure/calls.ts             |  2 ++
+ 14 files changed, 85 insertions(+), 70 deletions(-)
+
+exec
+/bin/bash -lc "rg -n 'invariant|missing decision|throw new Error' ts/src/app | head; git log -1 --oneline -- ts/knip.json; git branch --show-current" in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+ts/src/app/reads.ts:139:    if (found === undefined) throw new Error(`missing path for ${id}`);
+ts/src/app/reads.ts:143:  if (raw === undefined) throw new Error(`missing file ${path}`);
+ts/src/app/reads.ts:151:    if (decision === undefined) throw new Error(`missing decision ${id}`);
+ts/src/app/writes.ts:252:  if (value === undefined) throw new Error(`missing ${what}`);
+8e501b5 Task 14: knip entry back to two patterns; parked-minors brief
+server-store
+
+exec
+/bin/bash -lc "python - <<'PY'
+from pathlib import Path
+p=Path('ts/src/app/confirm.ts');s=p.read_text().replace('return behindIds(state, name).map((id) => ({','return behindIds(state, name).map((id) => {\\n    const decision = s.decisions.get(id);\\n    if (decision === undefined) throw new Error("'`missing decision ${id}`);'"\\n    return {').replace('s.decisions.get(id)"'!.changes'"','decision.changes').replace('  }));','    };\\n  });',1);p.write_text(s)
+PY
+cd ts && bunx biome check --write src/app/confirm.ts src/app/threads.ts tests/app/front-door.test.ts tests/app/held-messages.test.ts tests/app/people.test.ts tests/app/support.ts tests/app/thread-fix-paths.test.ts tests/app/thread-ops-publish.test.ts tests/app/thread-ops.test.ts tests/parity.test.ts tests/store/checked-writes.test.ts tests/store/seed.ts tests/store/support.ts tests/structure/calls.ts
+" in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+Checked 14 files in 11ms. Fixed 10 files.
+
+exec
+/bin/bash -lc 'sh scripts/check-ts.sh > /tmp/task14-check.log 2>&1; tail -18 /tmp/task14-check.log' in /var/tmp/lodge-server-store
+codex
+The confirmation test now uses a decision dated one minute ahead of the fixed clock. It reaches the write check, returns `CHECK_FAILED`, and leaves the events unchanged. The new code-reference test passes too. I’m running the full gate and checking that targeted mutations make the new tests fail.
+exec
+/bin/bash -lc "rg -n 'check|CHECK_FAILED' ts/src/app/writes.ts; rg -n 'ref:' ts/src/app/threads.ts; wc -l ts/tests/parity.test.ts ts/src/app/threads.ts; git diff --check" in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+5:  checkChange,
+124:  const check = checkChange(load(state.published), after, w.settings, stampOf(now), s);
+129:  if (!check.ok)
+133:      check,
+134:      outcome: AddOutcome.CHECK_FAILED,
+143:      check,
+161:      check,
+169:    return added({ ids: applied.ids, feedback: notes, check, outcome: AddOutcome.UNCHANGED });
+180:    check,
+33:function find(state: State, ref: string): Thread {
+95:    ref: raises !== null ? thread.about : thread.id,
+112:  ref: string,
+218:export async function show(w: Wiring, ref: string): Promise<ThreadShown> {
+   84 ts/tests/parity.test.ts
+  248 ts/src/app/threads.ts
+  332 total
+
+ succeeded in 8647ms:
++   "dynamic_code",
++   "long_module",
++   "syntax_error_is_reported",
++   "real_tree_is_clean",
++ ]
+
+- Expected  - 1
++ Received  + 18
+
+      at <anonymous> (/var/tmp/lodge-server-store/ts/tests/parity.test.ts:47:74)
+(fail) ported_files_keep_every_python_test_name [85.43ms]
+
+ 1288 pass
+ 2 todo
+ 1 fail
+ 3353 expect() calls
+Ran 1291 tests across 104 files. [3.94s]
+error: script "check" exited with code 1
+
+exec
+/bin/bash -lc "rg -n -B3 -A12 '\"plan\": 1' ts/tests/parity.json; head -12 ts/tests/parity-names.ts; sed -n '75,105p' ts/src/app/threads.ts" in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+74-  },
+75-  "tests/core/applying.py": {
+76-    "status": "ported",
+77:    "plan": 1,
+78-    "task": ["11"],
+79-    "ts": ["ts/tests/core/applying.ts"]
+80-  },
+81-  "tests/core/builders.py": {
+82-    "status": "ported",
+83:    "plan": 1,
+84-    "task": ["6"],
+85-    "ts": ["ts/tests/core/builders.ts"]
+86-  },
+87-  "tests/core/checks.py": {
+88-    "status": "ported",
+89:    "plan": 1,
+90-    "task": ["8a", "8b"],
+91-    "ts": ["ts/tests/core/checks.ts"]
+92-  },
+93-  "tests/core/derivation.py": {
+94-    "status": "ported",
+95:    "plan": 1,
+96-    "task": ["7a"],
+97-    "ts": ["ts/tests/core/derivation.ts"]
+98-  },
+99-  "tests/core/samples.py": {
+100-    "status": "ported",
+101:    "plan": 1,
+102-    "task": ["5a"],
+103-    "ts": ["ts/tests/core/samples.ts"]
+104-  },
+105-  "tests/core/test_apply.py": {
+106-    "status": "ported",
+107:    "plan": 1,
+108-    "task": ["11"],
+109-    "ts": ["ts/tests/core/apply.test.ts", "ts/tests/core/apply-edits.test.ts"]
+110-  },
+111-  "tests/core/test_apply_refusals.py": {
+112-    "status": "ported",
+113:    "plan": 1,
+114-    "task": ["11"],
+115-    "ts": ["ts/tests/core/apply-refusals.test.ts", "ts/tests/core/apply-edges.test.ts"],
+116-    "why": "Additional TypeScript test pins the imported heading comparison, a gap shared with Python (11-D-3)."
+117-  },
+118-  "tests/core/test_area_feedback.py": {
+119-    "status": "ported",
+120:    "plan": 1,
+121-    "task": ["10"],
+122-    "ts": ["ts/tests/core/area-feedback.test.ts"]
+123-  },
+124-  "tests/core/test_check_change.py": {
+125-    "status": "ported",
+126:    "plan": 1,
+127-    "task": ["8b"],
+128-    "ts": ["ts/tests/core/check-change.test.ts", "ts/tests/core/check-change-edges.test.ts"],
+129-    "why": "Additional TypeScript tests pin published status, ordering, and duplicate changes, gaps shared with Python (8b-D-1)."
+130-  },
+131-  "tests/core/test_check_compare.py": {
+132-    "status": "ported",
+133:    "plan": 1,
+134-    "task": ["8c"],
+135-    "ts": ["ts/tests/core/check-compare.test.ts"]
+136-  },
+137-  "tests/core/test_check_current.py": {
+138-    "status": "ported",
+139:    "plan": 1,
+140-    "task": ["8b"],
+141-    "ts": ["ts/tests/core/check-current.test.ts"]
+142-  },
+143-  "tests/core/test_check_immutable.py": {
+144-    "status": "ported",
+145:    "plan": 1,
+146-    "task": ["8b"],
+147-    "ts": ["ts/tests/core/check-immutable.test.ts"]
+148-  },
+149-  "tests/core/test_check_links.py": {
+150-    "status": "ported",
+151:    "plan": 1,
+152-    "task": ["8c"],
+153-    "ts": ["ts/tests/core/check-links.test.ts"]
+154-  },
+155-  "tests/core/test_check_retired.py": {
+156-    "status": "ported",
+157:    "plan": 1,
+158-    "task": ["8b"],
+159-    "ts": ["ts/tests/core/check-retired.test.ts"]
+160-  },
+161-  "tests/core/test_check_state.py": {
+162-    "status": "ported",
+163:    "plan": 1,
+164-    "task": ["8a"],
+165-    "ts": ["ts/tests/core/check-state.test.ts", "ts/tests/core/check-state-order.test.ts"]
+166-  },
+167-  "tests/core/test_check_threads.py": {
+168-    "status": "ported",
+169:    "plan": 1,
+170-    "task": ["8c", "9a"],
+171-    "ts": ["ts/tests/core/check-threads.test.ts"]
+172-  },
+173-  "tests/core/test_confirmation.py": {
+174-    "status": "ported",
+175:    "plan": 1,
+176-    "task": ["7b"],
+177-    "ts": ["ts/tests/core/confirmation.test.ts"]
+178-  },
+179-  "tests/core/test_derive.py": {
+180-    "status": "ported",
+181:    "plan": 1,
+182-    "task": ["7a"],
+183-    "ts": ["ts/tests/core/derive.test.ts", "ts/tests/core/derive-imported.test.ts"]
+184-  },
+185-  "tests/core/test_derive_confirmed_retired.py": {
+186-    "status": "ported",
+187:    "plan": 1,
+188-    "task": ["7a"],
+189-    "ts": ["ts/tests/core/derive-confirmed-retired.test.ts"]
+190-  },
+191-  "tests/core/test_derive_links.py": {
+192-    "status": "ported",
+193:    "plan": 1,
+194-    "task": ["7a"],
+195-    "ts": ["ts/tests/core/derive-links.test.ts"]
+196-  },
+197-  "tests/core/test_doubts.py": {
+198-    "status": "ported",
+199:    "plan": 1,
+200-    "task": ["7a", "9a"],
+201-    "ts": ["ts/tests/core/doubts.test.ts"]
+202-  },
+203-  "tests/core/test_drafts.py": {
+204-    "status": "ported",
+205:    "plan": 1,
+206-    "task": ["5b"],
+207-    "ts": ["ts/tests/core/drafts.test.ts"]
+208-  },
+209-  "tests/core/test_feedback.py": {
+210-    "status": "ported",
+211:    "plan": 1,
+212-    "task": ["10"],
+213-    "ts": [
+214-      "ts/tests/core/feedback.test.ts",
+215-      "ts/tests/core/feedback-edit-back.test.ts",
+216-      "ts/tests/core/feedback-edges.test.ts"
+217-    ],
+218-    "why": "Additional TypeScript tests kill the 21 mutations that survive the Python suite (10-D-1)."
+219-  },
+220-  "tests/core/test_feedback_links.py": {
+221-    "status": "ported",
+222:    "plan": 1,
+223-    "task": ["10"],
+224-    "ts": ["ts/tests/core/feedback-links.test.ts"]
+225-  },
+226-  "tests/core/test_feedback_revival.py": {
+227-    "status": "ported",
+228:    "plan": 1,
+229-    "task": ["10"],
+230-    "ts": ["ts/tests/core/feedback-revival.test.ts"]
+231-  },
+232-  "tests/core/test_fileformat.py": {
+233-    "status": "ported",
+234:    "plan": 1,
+235-    "task": ["5a"],
+236-    "ts": ["ts/tests/core/fileformat.test.ts", "ts/tests/core/fileformat-write.test.ts"]
+237-  },
+238-  "tests/core/test_fileformat_links.py": {
+239-    "status": "ported",
+240:    "plan": 1,
+241-    "task": ["6"],
+242-    "ts": ["ts/tests/core/fileformat-links.test.ts"]
+243-  },
+244-  "tests/core/test_fileformat_problems.py": {
+245-    "status": "ported",
+246:    "plan": 1,
+247-    "task": ["5a"],
+248-    "ts": ["ts/tests/core/fileformat-problems.test.ts"]
+249-  },
+250-  "tests/core/test_fileformat_text.py": {
+251-    "status": "ported",
+252:    "plan": 1,
+253-    "task": ["5b"],
+254-    "ts": ["ts/tests/core/fileformat-text.test.ts"]
+255-  },
+256-  "tests/core/test_ids.py": {
+257-    "status": "ported",
+258:    "plan": 1,
+259-    "task": ["4"],
+260-    "ts": ["ts/tests/core/ids.test.ts"]
+261-  },
+262-  "tests/core/test_order.py": {
+263-    "status": "ported",
+264:    "plan": 1,
+265-    "task": ["7b"],
+266-    "ts": ["ts/tests/core/order.test.ts"]
+267-  },
+268-  "tests/core/test_render.py": {
+269-    "status": "ported",
+270:    "plan": 1,
+271-    "task": ["9b"],
+272-    "ts": ["ts/tests/core/render.test.ts"]
+273-  },
+274-  "tests/core/test_search.py": {
+275-    "status": "ported",
+276:    "plan": 1,
+277-    "task": ["9b"],
+278-    "ts": ["ts/tests/core/search.test.ts", "ts/tests/core/search-text.test.ts"],
+279-    "why": "Additional TypeScript tests pin undated ordering and underscore word splitting (9b-C-2)."
+280-  },
+281-  "tests/core/test_settings.py": {
+282-    "status": "ported",
+283:    "plan": 1,
+284-    "task": ["4"],
+285-    "ts": ["ts/tests/core/settings.test.ts"]
+286-  },
+287-  "tests/core/test_snapshot.py": {
+288-    "status": "ported",
+289:    "plan": 1,
+290-    "task": ["6", "9a"],
+291-    "ts": ["ts/tests/core/snapshot.test.ts"]
+292-  },
+293-  "tests/core/test_thread_files.py": {
+294-    "status": "ported",
+295:    "plan": 1,
+296-    "task": ["6", "10"],
+297-    "ts": ["ts/tests/core/thread-files.test.ts"]
+298-  },
+299-  "tests/core/test_views.py": {
+300-    "status": "ported",
+301:    "plan": 1,
+302-    "task": ["9a"],
+303-    "ts": ["ts/tests/core/views.test.ts"]
+304-  },
+305-  "tests/core/test_views_links.py": {
+306-    "status": "ported",
+307:    "plan": 1,
+308-    "task": ["9a"],
+309-    "ts": ["ts/tests/core/views-links.test.ts"]
+310-  },
+311-  "tests/core/test_views_trust.py": {
+312-    "status": "ported",
+313:    "plan": 1,
+314-    "task": ["9a"],
+315-    "ts": ["ts/tests/core/views-trust.test.ts", "ts/tests/core/views-edges.test.ts"],
+316-    "why": "Additional TypeScript tests pin agent quote trust and duplicate changes, gaps shared with Python (9a-D-1)."
+317-  },
+318-  "tests/core/test_yamlio.py": {
+319-    "status": "ported",
+320:    "plan": 1,
+321-    "task": ["4"],
+322-    "ts": ["ts/tests/core/yamlio.test.ts"]
+323-  },
+324-  "tests/e2e/__init__.py": {
+325-    "status": "changed",
+326-    "ts": [],
+327-    "why": "a package marker; TypeScript tests need none"
+328-  },
+329-  "tests/e2e/conftest.py": {
+330-    "status": "planned",
+331-    "plan": 3,
+332-    "ts": ["ts/tests/e2e/project.ts"]
+--
+597-  },
+598-  "tests/structure_calls.py": {
+599-    "status": "changed",
+600:    "plan": 1,
+601-    "task": ["3"],
+602-    "ts": ["ts/tests/structure/calls.ts"],
+603-    "why": "design line 58: the rules carry over as rules, enforced over the TypeScript import graph, not test by test"
+604-  },
+605-  "tests/structure_imports.py": {
+606-    "status": "changed",
+607:    "plan": 1,
+608-    "task": ["3"],
+609-    "ts": ["ts/.dependency-cruiser.cjs"],
+610-    "why": "design line 58: the rules carry over as rules, enforced over the TypeScript import graph, not test by test"
+611-  },
+612-  "tests/structure_rules.py": {
+613-    "status": "changed",
+614:    "plan": 1,
+615-    "task": ["3"],
+616-    "ts": ["ts/tests/structure/calls.ts", "ts/tests/structure/plant.ts"],
+617-    "why": "design line 58: the rules carry over as rules, enforced over the TypeScript import graph, not test by test"
+618-  },
+619-  "tests/structure_tables.py": {
+620-    "status": "changed",
+621:    "plan": 1,
+622-    "task": ["3"],
+623-    "ts": ["ts/tests/structure/table.ts"],
+624-    "why": "design line 58: the rules carry over as rules, enforced over the TypeScript import graph, not test by test"
+625-  },
+626-  "tests/structure_tree.py": {
+627-    "status": "changed",
+628:    "plan": 1,
+629-    "task": ["3"],
+630-    "ts": ["ts/tests/structure/plant.ts"],
+631-    "why": "design line 58: the rules carry over as rules, enforced over the TypeScript import graph, not test by test"
+632-  },
+633-  "tests/test_entry_point.py": {
+634-    "status": "planned",
+635-    "plan": 3,
+636-    "ts": ["ts/tests/e2e/binary.test.ts"],
+637-    "why": "design line 55: the command ships as a binary built with `bun build --compile`"
+638-  },
+639-  "tests/test_structure.py": {
+640-    "status": "changed",
+641:    "plan": 1,
+642-    "task": ["3"],
+643-    "ts": [
+644-      "ts/tests/structure/imports.test.ts",
+645-      "ts/tests/structure/layout.test.ts",
+646-      "ts/tests/structure/repository.test.ts"
+647-    ],
+648-    "why": "design line 58: the rules carry over as rules, enforced over the TypeScript import graph, not test by test"
+649-  },
+650-  "tests/test_structure_io.py": {
+651-    "status": "changed",
+652:    "plan": 1,
+653-    "task": ["3"],
+654-    "ts": ["ts/tests/structure/imports.test.ts", "ts/tests/structure/calls.test.ts"],
+655-    "why": "design line 58: the rules carry over as rules, enforced over the TypeScript import graph, not test by test"
+656-  },
+657-  "tests/test_wheel.py": {
+658-    "status": "changed",
+659-    "plan": 3,
+660-    "ts": ["ts/tests/e2e/binary.test.ts"],
+661-    "why": "design line 55: the command ships as a binary built with `bun build --compile`, not a wheel"
+662-  },
+663-  "tests/viewer/__init__.py": {
+664-    "status": "changed",
+import { readFileSync } from "node:fs";
+import ts from "typescript";
+export function pythonTestNames(text: string): string[] {
+  return [...text.matchAll(/^\s*(?:async\s+)?def test_(\w+)\s*\(/gmu)].map((m) => m[1] as string);
+}
+function titles(text: string, todoOnly: boolean): string[] {
+  const found: string[] = [];
+  const source = ts.createSourceFile("tests.ts", text, ts.ScriptTarget.Latest, true);
+  function visit(node: ts.Node): void {
+    if (ts.isCallExpression(node)) {
+      const expr = node.expression;
+      const base = ts.isCallExpression(expr) ? expr.expression : expr;
+}
+export interface MessageOptions {
+  readonly where?: string | null;
+  readonly when?: string | null;
+  readonly commit?: boolean;
+  readonly close?: boolean;
+}
+async function holdMessage(
+  w: Wiring,
+  thread: Thread,
+  msg: Message,
+  raises: Raises | null,
+  close: boolean,
+  check: CheckResult,
+): Promise<Written> {
+  const held = await w.store.hold({
+    kind: "message",
+    person: msg.by,
+    by: actorText(w.actor),
+    operation: raises !== null ? "ask" : close ? "close" : "reply",
+    ref: raises !== null ? thread.about : thread.id,
+    raises,
+    text: close && !msg.text ? null : msg.text,
+    where: msg.where as string,
+    when: msg.when,
+  });
+  return written({
+    ids: [thread.id],
+    outcome: AddOutcome.HELD,
+    check,
+    about: thread.about,
+
+exec
+/bin/bash -lc "python - <<'PY'
+from pathlib import Path
+p=Path('ts/tests/parity.test.ts');s=p.read_text().replace('function held(row: { status: string; plan?: number }): boolean {','function held(row: { status: string; plan?: number }, plans = [2]): boolean {').replace('[1, 2].includes(row.plan ?? 0)','plans.includes(row.plan ?? 0)').replace('if (held(r))\\n      for (const p of r.ts) expect(existsSync','if (held(r, [1, 2]))\\n      for (const p of r.ts) expect(existsSync');p.write_text(s)
+PY
+python - <<'PY'
+from pathlib import Path
+import subprocess
+mutations=[('ts/src/app/writes.ts','if ("'!check.ok)'"','if (false)','tests/store/checked-writes.test.ts'),('ts/src/app/threads.ts','ref: raises "'!== null ? thread.about : thread.id,'"','ref: raises "'!== null ? "ITEM-1" : thread.id,'"','tests/app/held-messages.test.ts'),('ts/tests/parity.test.ts','return row.status === \"ported\" || (row.status === \"changed\" && plans.includes(row.plan ?? 0));','return row.status === \"ported\";','tests/parity.test.ts')]
+for file,old,new,suite in mutations:
+ p=Path(file);original=p.read_text();assert old in original,file
+ try:
+  p.write_text(original.replace(old,new,1))
+  result=subprocess.run(['bun','test',suite],cwd='ts',capture_output=True,text=True)
+  print(file, 'exit',result.returncode)
+  print('\\n'.join(l for l in result.stderr.splitlines() if '(fail)' in l))
+ finally:p.write_text(original)
+PY
+sh scripts/check-ts.sh > /tmp/task14-check.log 2>&1; tail -10 /tmp/task14-check.log" in /var/tmp/lodge-server-store
+ succeeded in 9791ms:
+ts/src/app/writes.ts exit 1
+(fail) every_write_is_checked_against_the_state_it_lands_on [60.12ms]
+(fail) a_refused_write_leaves_no_event [11.65ms]
+(fail) a_refused_add_carries_its_feedback [7.18ms]
+(fail) a_confirmation_refused_by_the_check_leaves_no_event [8.04ms]
+ts/src/app/threads.ts exit 1
+(fail) a_relayed_question_holds_the_resolved_code_reference [1.81ms]
+ts/tests/parity.test.ts exit 1
+(fail) a_changed_plan_2_file_losing_a_name_fails [0.26ms]
+
+[32m✔[39m no dependency violations found (197 modules, 761 dependencies cruised)
+
+bun test v1.3.14 (0d9b296a)
+
+ 1289 pass
+ 2 todo
+ 0 fail
+ 3325 expect() calls
+Ran 1291 tests across 104 files. [4.04s]
+
+exec
+/bin/bash -lc 'git diff -- ts/tests/parity.test.ts ts/src/app/confirm.ts ts/tests/app/thread-ops-publish.test.ts; git diff --check' in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+diff --git a/ts/src/app/confirm.ts b/ts/src/app/confirm.ts
+index 78643ce..c548967 100644
+--- a/ts/src/app/confirm.ts
++++ b/ts/src/app/confirm.ts
+@@ -23,13 +23,17 @@ function behindIds(state: State, name: string): readonly string[] {
+ export async function behindArea(w: Wiring, name: string): Promise<readonly Behind[]> {
+   const state = await readState(w.store);
+   const s = state.snapshot;
+-  return behindIds(state, name).map((id) => ({
+-    decision: level1(s, state.derived, id, state.failing),
+-    entries: [...new Set(s.decisions.get(id)?.changes.map((c) => c.entry))].flatMap((id) => {
+-      const e = s.entries.get(id);
+-      return e ? [[id, e.area] as const] : [];
+-    }),
+-  }));
++  return behindIds(state, name).map((id) => {
++    const decision = s.decisions.get(id);
++    if (decision === undefined) throw new Error(`missing decision ${id}`);
++    return {
++      decision: level1(s, state.derived, id, state.failing),
++      entries: [...new Set(decision.changes.map((c) => c.entry))].flatMap((id) => {
++        const e = s.entries.get(id);
++        return e ? [[id, e.area] as const] : [];
++      }),
++    };
++  });
+ }
+ function expectedIds(state: State, ids: readonly string[], area: string | null): readonly string[] {
+   if (area !== null) return behindIds(state, area);
+diff --git a/ts/tests/app/thread-ops-publish.test.ts b/ts/tests/app/thread-ops-publish.test.ts
+index e6f4bf8..51fd79d 100644
+--- a/ts/tests/app/thread-ops-publish.test.ts
++++ b/ts/tests/app/thread-ops-publish.test.ts
+@@ -3,16 +3,8 @@ import { AddOutcome, Conflict, NotFound } from "#app";
+ import { filters, Raises } from "#core";
+ import { areaText } from "../core/applying.ts";
+ import { CountingIds, FixedClock } from "./fakes.ts";
+-import { project, raises, wired } from "./support.ts";
++import { opened, PATH, project, Q, raises, required, wired } from "./support.ts";
+ 
+-const Q = "q-111111";
+-const PATH = `lodge/threads/${Q}.md`;
+-async function opened(staged = false) {
+-  const store = project({ staged }),
+-    lodge = wired(store);
+-  await lodge.ask("s-aaaaaa", Raises.DOUBT, "coordinator", "Why?");
+-  return { store, lodge };
+-}
+ test("rejected_publish_starts_again", async () => {
+   const store = project();
+   store.rejectNext(new Map());
+@@ -121,8 +113,3 @@ test("three_rejections_are_a_conflict", async () => {
+   expect(store.attempts).toBe(3);
+   expect(store.publishes).toEqual([]);
+ });
+-
+-function required<T>(value: T | undefined | null): T {
+-  if (value === undefined || value === null) throw new Error("missing fixture value");
+-  return value;
+-}
+diff --git a/ts/tests/parity.test.ts b/ts/tests/parity.test.ts
+index 9e27da6..52a8b95 100644
+--- a/ts/tests/parity.test.ts
++++ b/ts/tests/parity.test.ts
+@@ -11,6 +11,9 @@ const rows = Object.entries(parity) as [
+   string,
+   { status: string; plan?: number; ts: string[]; why?: string },
+ ][];
++function held(row: { status: string; plan?: number }, plans = [2]): boolean {
++  return row.status === "ported" || (row.status === "changed" && plans.includes(row.plan ?? 0));
++}
+ function files(dir: string): string[] {
+   return readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
+     e.name === "__pycache__"
+@@ -38,17 +41,14 @@ test("planned_rows_name_a_plan", () => {
+ });
+ test("ported_files_exist", () => {
+   for (const [, r] of rows)
+-    if (r.status === "ported" || (r.status === "changed" && [1, 2].includes(r.plan ?? 0)))
+-      for (const p of r.ts) expect(existsSync(`${root}/${p}`)).toBe(true);
++    if (held(r)) for (const p of r.ts) expect(existsSync(`${root}/${p}`)).toBe(true);
+ });
+ test("ported_files_keep_every_python_test_name", () => {
+-  for (const [p, r] of rows)
+-    if (r.status === "ported" || (r.status === "changed" && r.plan === 2))
+-      expect(rowMissing(root, p, r)).toEqual([]);
++  for (const [p, r] of rows) if (held(r)) expect(rowMissing(root, p, r)).toEqual([]);
+ });
+ test("ported_files_hold_no_todo", () => {
+   for (const [, r] of rows)
+-    if (r.status === "ported" || (r.status === "changed" && r.plan === 2))
++    if (held(r))
+       for (const p of r.ts) expect(todoTitles(readFileSync(`${root}/${p}`, "utf8"))).toEqual([]);
+ });
+ test("a_ported_file_losing_a_name_fails", () => {
+@@ -73,3 +73,12 @@ test("parity_names_ignore_non_test_calls", () => {
+     ),
+   ).toEqual(["real %p"]);
+ });
++
++test("a_changed_plan_2_file_losing_a_name_fails", () => {
++  const fixture = plant({
++    "tests/sample.py": "def test_a(): pass\ndef test_b(): pass",
++    "tests/sample.test.ts": 'test("a", () => {})',
++  });
++  const row = { status: "changed", plan: 2, ts: ["tests/sample.test.ts"] };
++  expect(held(row) ? rowMissing(fixture, "tests/sample.py", row) : []).toEqual(["b"]);
++});
+
+exec
+/bin/bash -lc "python - <<'PY'
+from pathlib import Path
+p=Path('ts/tests/parity.test.ts');s=p.read_text().replace('if (held(r)) for (const p of r.ts) expect(existsSync','if (held(r, [1, 2])) for (const p of r.ts) expect(existsSync');p.write_text(s)
+PY
+sh scripts/check-ts.sh > /tmp/task14-check.log 2>&1; tail -10 /tmp/task14-check.log" in /var/tmp/lodge-server-store
+exec
+/bin/bash -lc "git diff --numstat; git status --short; rg --files ts/src ts/tests ts/scripts -g '*.ts' | xargs wc -l | sort -nr | head -5" in /var/tmp/lodge-server-store
+ succeeded in 0ms:
+11	7	ts/src/app/confirm.ts
+8	2	ts/src/app/threads.ts
+6	6	ts/tests/app/front-door.test.ts
+13	1	ts/tests/app/held-messages.test.ts
+0	1	ts/tests/app/people.test.ts
+14	1	ts/tests/app/support.ts
+1	6	ts/tests/app/thread-fix-paths.test.ts
+1	14	ts/tests/app/thread-ops-publish.test.ts
+6	19	ts/tests/app/thread-ops.test.ts
+15	6	ts/tests/parity.test.ts
+14	3	ts/tests/store/checked-writes.test.ts
+2	12	ts/tests/store/seed.ts
+3	3	ts/tests/store/support.ts
+2	0	ts/tests/structure/calls.ts
+ M ts/src/app/confirm.ts
+ M ts/src/app/threads.ts
+ M ts/tests/app/front-door.test.ts
+ M ts/tests/app/held-messages.test.ts
+ M ts/tests/app/people.test.ts
+ M ts/tests/app/support.ts
+ M ts/tests/app/thread-fix-paths.test.ts
+ M ts/tests/app/thread-ops-publish.test.ts
+ M ts/tests/app/thread-ops.test.ts
+ M ts/tests/parity.test.ts
+ M ts/tests/store/checked-writes.test.ts
+ M ts/tests/store/seed.ts
+ M ts/tests/store/support.ts
+ M ts/tests/structure/calls.ts
+?? docs/superpowers/plans/2026-11-02-lodge-server-store/task-14-minors-codex.log
+ 18305 total
+   300 ts/tests/core/fileformat.test.ts
+   289 ts/tests/core/views.test.ts
+   286 ts/tests/core/apply-refusals.test.ts
+   268 ts/tests/core/check-state.test.ts
+
+ succeeded in 8758ms:
+
+[32m✔[39m no dependency violations found (197 modules, 761 dependencies cruised)
+
+bun test v1.3.14 (0d9b296a)
+
+ 1289 pass
+ 2 todo
+ 0 fail
+ 3336 expect() calls
+Ran 1291 tests across 104 files. [4.05s]
+
+codex
+The full gate passes: 1,289 tests passed, 2 todos, 0 failures. All three targeted mutations made the intended tests fail. The shared parity predicate preserves plan 1’s file-existence checks and plan 2’s name and todo checks. I’ll record the results, commit the explicit paths, and push `server-store`.
+exec
+/bin/bash -lc "python - <<'PY'
+from pathlib import Path
+p=Path('docs/superpowers/plans/2026-11-02-lodge-server-store/task-14-minors-report.md')
+p.write_text('''# Task 14 minors report
+
+Completed the selected parked minors after reading the Task 5, 6, 9, 11 and 12c reviews and the progress ledger.
+
+- Task 9: replaced the stale-confirmation leg with a separate SQLite test whose future-dated agent decision reaches the write check, returns "'`CHECK_FAILED`, and leaves events unchanged. One `held` predicate selects parity rows; its plan list preserves plan 1 file-existence coverage without imposing test-name parity on rewritten structure rules. A planted plan 2 changed row proves missing names fail. `seeded` reuses `setup`, whose project and owner parameters retain their defaults.
+- Task 5: shared null-aware `required`, `Q`, `PATH` and `opened` in app test support; parametrised titles include the input, including `close_with_text`.
+- Task 6: removed the dead capitals branch and redundant optional/default handling in the front-door test. `behindArea` explicitly refuses a missing decision rather than hiding a broken invariant.
+- Task 11: documented the syntactic people-call rule'"'s limits; waiting threads are partitioned in one pass without an empty-string sentinel; removed the misplaced "'`Forbidden` class assertion.
+- Task 12c: added an ask using `ITEM-1` on an entry, asserting the held reference is `s-aaaaaa`. This fixture gives the entry the code without the existing decision'"'s conflicting code.
+
+"'`ts/knip.json` already has exactly the two requested entry patterns and was clean on arrival: commit `8e501b5` already committed that edit. No further knip change was needed.
+
+The brief'"'s skipped items remain deferred: whitespace-only author where, codec speed, Task 7b D-1, and Task 12b M-6/M-7. No dependencies added; every TypeScript module remains at most 300 lines.
+
+## Verification
+
+The new confirmation and code-reference tests were added before the refactors and pass against the existing implementation. No intended valid-state behaviour changed. Targeted mutations were applied individually and restored, running the named suites with "'`bun test` from `ts`:
+
+| File:line | Old text | New text | Result |
+| --- | --- | --- | --- |
+| `ts/src/app/writes.ts:129` | `if (!check.ok)` | `if (false)` | Store checked-writes suite fails, including the new confirmation test |
+| `ts/src/app/threads.ts:95` | `ref: raises !== null ? thread.about : thread.id,` | `ref: raises !== null ? "ITEM-1" : thread.id,` | New code-reference test fails |
+| `ts/tests/parity.test.ts:15` | `return row.status === "ported" '"\\\\|\\\\| (row.status === \"changed\" && plans.includes(row.plan ?? 0));"'` | `return row.status === "ported";` | New changed-row fixture test fails |
+
+Final `sh scripts/check-ts.sh`: exit 0. Biome, TypeScript, dependency-cruiser and knip pass. Final test output:
+
+```text
+1289 pass
+2 todo
+0 fail
+3336 expect() calls
+Ran 1291 tests across 104 files. [4.05s]
+```
+
+`git diff --check` passes. The session log is excluded from the commit.
+'"''')
+p=Path('docs/superpowers/plans/2026-11-02-lodge-server-store-progress.md');p.write_text(p.read_text()+'\\nTask 14 minors: complete. Selected Task 5, 6, 9, 11 and 12c parked minors resolved; details and three killed mutations in "'`task-14-minors-report.md`. Gate: 1289 pass, 2 todo, 0 fail. Knip two-pattern edit already committed at 8e501b5. Explicit skips remain deferred as the brief specifies.'"\\n')
+PY
+git diff --check
+git add ts/src/app/confirm.ts ts/src/app/threads.ts ts/tests/app/front-door.test.ts ts/tests/app/held-messages.test.ts ts/tests/app/people.test.ts ts/tests/app/support.ts ts/tests/app/thread-fix-paths.test.ts ts/tests/app/thread-ops-publish.test.ts ts/tests/app/thread-ops.test.ts ts/tests/parity.test.ts ts/tests/store/checked-writes.test.ts ts/tests/store/seed.ts ts/tests/store/support.ts ts/tests/structure/calls.ts docs/superpowers/plans/2026-11-02-lodge-server-store/task-14-minors-report.md docs/superpowers/plans/2026-11-02-lodge-server-store-progress.md
+git commit -m 'Resolve Task 14 parked reviewer minors' -m 'Co-Authored-By: Codex <noreply@openai.com>'
+git push origin server-store" in /var/tmp/lodge-server-store
+ succeeded in 1859ms:
+[server-store 8f01151] Resolve Task 14 parked reviewer minors
+ 16 files changed, 133 insertions(+), 81 deletions(-)
+ create mode 100644 docs/superpowers/plans/2026-11-02-lodge-server-store/task-14-minors-report.md
+To github.com:Kiibou-chan/lodge.git
+   8e501b5..8f01151  server-store -> server-store
+
+codex
+Completed and pushed as `8f01151` on `server-store`.
+
+- Full gate: 1,289 passed, 2 todos, 0 failures.
+- Three targeted mutations caught.
+- [Report](docs/superpowers/plans/2026-11-02-lodge-server-store/task-14-minors-report.md) written and progress ledger updated.
+- Knip’s requested configuration was already committed.
+tokens used
+55,315
+Completed and pushed as `8f01151` on `server-store`.
+
+- Full gate: 1,289 passed, 2 todos, 0 failures.
+- Three targeted mutations caught.
+- [Report](docs/superpowers/plans/2026-11-02-lodge-server-store/task-14-minors-report.md) written and progress ledger updated.
+- Knip’s requested configuration was already committed.

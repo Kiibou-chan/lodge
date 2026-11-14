@@ -10,3 +10,5 @@ export const PACKAGES: ReadonlyMap<string, readonly string[]> = new Map([
 ]);
 export const CORE_NPM: readonly string[] = ["yaml", "@noble/hashes"];
 export const MAX_LINES = 300;
+
+export const STORE_NPM: readonly string[] = ["kysely"];

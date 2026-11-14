@@ -52,7 +52,7 @@ test("split_words_like_python", () => expect(splitWords(" a\x1fb  c ")).toEqual(
 test("split_lines_like_python", () =>
   expect(splitLines("a\r\nb\x0bc\x1cd\u2028e\n")).toEqual(["a", "b", "c", "d", "e"]));
 test("is_digit_like_python", () => {
-  for (const s of ["12", "²", "①"]) expect(isDigit(s)).toBe(true);
+  for (const s of ["12", "²", "①", "٣", "𝟙"]) expect(isDigit(s)).toBe(true);
   for (const s of ["", "1a", "½"]) expect(isDigit(s)).toBe(false);
 });
 test("casefold_like_python", () => {

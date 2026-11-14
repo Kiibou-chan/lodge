@@ -82,13 +82,15 @@ test("sqlite_outside_store", async () => {
   expect(found.sort()).toEqual(["sqlite-confinement: src/cli/a.ts -> bun:sqlite"]);
 });
 test.each([
-  ["src/store/a.ts", "node:fs"],
-  ["src/api/a.ts", "fs/promises"],
-])("fs_outside_git_and_cli %p %p", async (path, name) => {
+  [
+    "src/store/a.ts",
+    "node:fs",
+    ["file-confinement: src/store/a.ts -> fs", "store-imports: src/store/a.ts -> fs"],
+  ],
+  ["src/api/a.ts", "fs/promises", ["file-confinement: src/api/a.ts -> fs/promises"]],
+] as const)("fs_outside_git_and_cli %p %p", async (path, name, expected) => {
   const found = await cruise(plant({ [path]: `import "${name}";` }));
-  expect(found.sort()).toEqual(
-    [`file-confinement: ${path} -> ${name.replace("node:", "")}`].sort(),
-  );
+  expect(found.sort()).toEqual([...expected].sort());
 });
 test("http_outside_api", async () => {
   const found = await cruise(plant({ "src/cli/a.ts": 'import "node:http";' }));
@@ -144,4 +146,26 @@ test("source_cannot_escape_to_tests", async () => {
       plant({ "src/core/a.ts": 'import "../../tests/helper.ts";', "tests/helper.ts": "" }),
     ),
   ).toEqual(["front-door: src/core/a.ts -> tests/helper.ts"]);
+});
+
+test("store_importing_another_package", async () => {
+  expect(await cruise(plant({ "src/store/a.ts": 'import "yaml";' }))).toEqual([
+    "store-imports: src/store/a.ts -> node_modules/yaml/dist/index.js",
+  ]);
+});
+test("store_importing_node_builtin", async () => {
+  expect((await cruise(plant({ "src/store/a.ts": 'import "node:fs";' }))).sort()).toEqual([
+    "file-confinement: src/store/a.ts -> fs",
+    "store-imports: src/store/a.ts -> fs",
+  ]);
+});
+test("store_imports_its_own", async () => {
+  expect(
+    await cruise(
+      plant({
+        "src/store/a.ts": 'import "kysely"; import "bun:sqlite"; import "#app"; import "#core";',
+        "src/app/index.ts": "",
+      }),
+    ),
+  ).toEqual([]);
 });

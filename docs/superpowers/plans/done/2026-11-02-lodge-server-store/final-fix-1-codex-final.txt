@@ -1,0 +1,5 @@
+Implemented and pushed as `456071c` on `server-store`.
+
+- All 14 targeted mutations detected.
+- `sh scripts/check-ts.sh` passes: 1299 tests passed, 2 existing todos.
+- [Fix report](docs/superpowers/plans/2026-11-02-lodge-server-store/final-fix-1-report.md) written and committed.

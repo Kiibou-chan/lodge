@@ -1,0 +1,5 @@
+Implemented and pushed as `b43f63b` on `server-store`.
+
+Required mutations fail the new assertions. `sh scripts/check-ts.sh` passes: 1,286 passed, 2 todo.
+
+[Report](docs/superpowers/plans/2026-11-02-lodge-server-store/task-12c-fix-1-report.md) documents the changes and conditional gaps: title refs are unsupported; M-7 lacked an existing suitable fixture.

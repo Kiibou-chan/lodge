@@ -1,0 +1,7 @@
+DONE
+
+TypeScript gate: 851 tests passed; differential run: 0 differences.
+
+Report: [task-12-report.md](docs/superpowers/plans/2026-11-02-lodge-server-core/task-12-report.md).
+
+Concerns: TOML float distinction and absent thread fixtures are documented.

@@ -1,0 +1,8 @@
+# Fix round 1 for Task 10 of `docs/superpowers/plans/2026-11-02-lodge-server-store.md`
+
+Worktree `/var/tmp/lodge-store-c`, branch `server-store-c`. Read `CLAUDE.md`, then `docs/superpowers/plans/2026-11-02-lodge-server-store/task-10-review.md` (the review) and `docs/superpowers/plans/2026-11-02-lodge-server-store/task-10-brief.md`.
+Fix C-I1 (Important): the reviewer's nine probe tests over `{ada}` are in `docs/superpowers/plans/2026-11-02-lodge-server-store/task-10-probe-people.test.ts.txt` (a scratch copy, not a source file; delete nothing, adapt them into `ts/tests/core/people.test.ts` or a second file if it would pass 300 lines, as proper tests with plan-style titles). Each of the ten sites the review lists (`derive.ts`, `confirmation.ts`, `feedback.ts`, `threads.ts`) must be caught by a test: confirm by reverting each to author-only one at a time and seeing a test fail; list as a table in the report, then restore.
+Fix C-M1 (`confirmation.ts` writes `decided_by` unquoted: quote it as the record writer does, with a test) and C-M2 (assert the specific message at `people.test.ts:91-96`).
+Skip D-M1 (the coordinator records it for Task 11).
+Rules as in the brief, incl. core's catch guards, no `ok` literal, `u` regexes, comparators. `sh scripts/check-ts.sh` last and green; never edit earlier briefs/reports/reviews; add `docs/superpowers/plans/2026-11-02-lodge-server-store/task-10-fix-1-report.md`; commit with explicit paths (trailer `Co-Authored-By: Codex <noreply@openai.com>`; do not commit the .txt probe copy); `git push origin server-store-c`.
+Final message: DONE, DONE_WITH_CONCERNS, or BLOCKED, one line, concerns.

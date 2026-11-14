@@ -1,0 +1,7 @@
+DONE_WITH_CONCERNS
+
+`sh scripts/check-ts.sh` passed: 527 pass, 4 TODOs, 0 failures.
+
+Implemented Task 7a and wrote [the report](docs/superpowers/plans/2026-11-02-lodge-server-core/task-7a-report.md).
+Concern: the initial derivation test run contained a syntax error; corrected tests subsequently failed against explicit mutations.
+`task-6-review.md` was untouched.

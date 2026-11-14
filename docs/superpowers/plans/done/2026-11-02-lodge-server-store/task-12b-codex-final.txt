@@ -1,0 +1,5 @@
+DONE — implemented, committed as `4395942`, and pushed to `server-store`.
+
+Tests: `sh scripts/check-ts.sh` passed; 1,266 passed, two existing todos.
+
+Concerns: none. Thread-message approval remains Task 12c, as specified.

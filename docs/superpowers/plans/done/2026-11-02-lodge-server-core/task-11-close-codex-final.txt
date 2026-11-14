@@ -1,0 +1,6 @@
+DONE_WITH_CONCERNS
+
+Final gate passed: 851 tests, 0 failures.
+Knip reports only two unmatched script-pattern hints.
+
+[Report](docs/superpowers/plans/2026-11-02-lodge-server-core/task-11-close-report.md). Review files untouched.

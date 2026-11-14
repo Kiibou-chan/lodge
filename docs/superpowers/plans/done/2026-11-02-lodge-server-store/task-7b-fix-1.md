@@ -1,0 +1,9 @@
+# Fix round 1 for Task 7b of `docs/superpowers/plans/2026-11-02-lodge-server-store.md`
+
+Worktree `/var/tmp/lodge-store-b`, branch `server-store-b`. Read `CLAUDE.md`, then `docs/superpowers/plans/2026-11-02-lodge-server-store/task-7b-review.md` (the review) and `docs/superpowers/plans/2026-11-02-lodge-server-store/task-7b-brief.md` (the task).
+Fix C-1 (Important) as the coordinator ruled it, d-gxbbnf (read it in the main worktree: `cd /var/tmp/lodge-server-store && uv run --frozen --quiet lodge show d-gxbbnf --reasoning`): `events.message` becomes a `blob` written through `encodeUtf8` and read through `decodeUtf8`, `MIGRATIONS[0]` changed in place, the `Store` port keeping `message: string`; the test publishes with message `"t\uDC80 tail"` and reads the event's message back equal (also `"﻿lead"`), seen failing first.
+Fix C-2 (Important): the person cases of `names_are_checked` use a project name that does not exist, and each asserts its message with the plan's pattern; confirm by deleting `checkName(owner)` in `create` that a test fails, then revert.
+Also fix the Minors C-3 (one loop per phase, or a `checkWrites` mirroring `plumbing.py`), C-4 (assert the encoding refusal's message; mutation M5), P-1, P-2, P-3, P-4, and D-2 (tests enforcing d-thvvzx's write-first rule in `create` and `addMember`; mutation M6 must then fail a test).
+Not D-1 (lodge 0.2's trust in the caller's base stands) and not m-2: m-2 is Task 8's.
+Same rules as the brief: test-first, `sh scripts/check-ts.sh` last and green, modules ≤ 300 lines, never edit earlier briefs/reports/reviews (add `docs/superpowers/plans/2026-11-02-lodge-server-store/task-7b-fix-1-report.md`, listing each mutation run as a table), commit with explicit paths as the brief says (trailer `Co-Authored-By: Codex <noreply@openai.com>`), `git push origin server-store-b`.
+Final message: DONE, DONE_WITH_CONCERNS, or BLOCKED, one line, concerns.

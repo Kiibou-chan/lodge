@@ -1,0 +1,5 @@
+Implemented and pushed as `2e22a53` on `server-store`.
+
+Regression tests failed first, then passed. Full `sh scripts/check-ts.sh`: 1,238 passed, 2 todo, 0 failed.
+
+[Report](/var/tmp/lodge-server-store/docs/superpowers/plans/2026-11-02-lodge-server-store/task-11-fix-1-report.md). Pre-existing untracked log left untouched.

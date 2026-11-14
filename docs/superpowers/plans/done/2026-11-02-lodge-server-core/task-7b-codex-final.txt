@@ -1,0 +1,7 @@
+DONE
+
+`sh scripts/check-ts.sh` exits 0: 550 pass, 4 existing TODOs, 0 failures.
+No unresolved concerns.
+
+Report: [task-7b-report.md](docs/superpowers/plans/2026-11-02-lodge-server-core/task-7b-report.md).
+No commits or pushes.

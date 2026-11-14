@@ -1,0 +1,5 @@
+DONE — committed `26a57f9` and pushed to `server-store-a`.
+
+Tests: final TypeScript gate passed; 1,153 passed, two planned todos. All 28 mutation checks detected faults.
+
+Concerns: none. The two command tests remain deferred to plan 3 as required.
