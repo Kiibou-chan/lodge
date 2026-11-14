@@ -559,8 +559,9 @@
     "why": "design line 72: records live in the server's events, not in files in git"
   },
   "tests/gitstore/test_concurrent.py": {
-    "status": "changed",
+    "status": "ported",
     "plan": 2,
+    "task": ["8"],
     "ts": ["ts/tests/store/concurrent.test.ts"],
     "why": "design line 72: records live in the server's events, not in files in git; two writers at once against the events store"
   },
