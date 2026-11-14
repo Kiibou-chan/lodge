@@ -93,7 +93,7 @@ export function callViolations(root: string): string[] {
       if (pkg === "core" && ts.isCatchClause(node) && !guardedCatch(node))
         report(node, "catch must rethrow other errors");
       if (
-        pkg === "core" &&
+        pure &&
         ts.isObjectLiteralExpression(node) &&
         path !== "src/core/check-state.ts" &&
         node.properties.some((p) => {

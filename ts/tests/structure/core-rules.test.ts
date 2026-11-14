@@ -59,3 +59,13 @@ test("new_target_is_not_import_meta", () => {
     [],
   );
 });
+
+test.each([
+  ["const r = { ok: true }", true],
+  ["const r = { 'ok': true }", true],
+  ["const r = { ['ok']: true }", true],
+  ["const ok = true; const r = { ok }", true],
+  ["const r = checkResult(problems, notes)", false],
+])("app_builds_results_through_constructor %p", (code, refused) => {
+  expect(callViolations(plant({ "src/app/reads.ts": code })).length > 0).toBe(refused);
+});
