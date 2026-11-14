@@ -233,9 +233,15 @@ export async function waiting(w: Wiring): Promise<ThreadsWaiting> {
 }
 export function waitingIn(state: State): ThreadsWaiting {
   const listed = openIn(state);
+  const forAgent: Thread[] = [],
+    forAuthor: Thread[] = [];
+  for (const thread of listed.items) {
+    const last = thread.messages.at(-1);
+    (last && state.snapshot.people.has(last.by) ? forAgent : forAuthor).push(thread);
+  }
   return {
-    forAgent: listed.items.filter((t) => state.snapshot.people.has(t.messages.at(-1)?.by ?? "")),
-    forAuthor: listed.items.filter((t) => !state.snapshot.people.has(t.messages.at(-1)?.by ?? "")),
+    forAgent,
+    forAuthor,
     titles: listed.titles,
     read: listed.read,
   };

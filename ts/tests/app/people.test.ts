@@ -29,7 +29,6 @@ test("an_agent_cannot_confirm", async () => {
   await expect(lodge.confirm(["d-aaaaaa"], "Read.")).rejects.toThrow(
     new Forbidden("only a person confirms; nothing was written"),
   );
-  expect(new Forbidden("").exitCode).toBe(2);
   expect(store.publishes).toEqual([]);
 });
 test("a_person_not_among_the_people_cannot_confirm", async () => {

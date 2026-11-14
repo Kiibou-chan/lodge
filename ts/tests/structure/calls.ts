@@ -169,6 +169,8 @@ export function callViolations(root: string): string[] {
           node.arguments.length === 0
         )
           report(node, "sort requires a code point comparator");
+        // This rule is syntactic: aliased imports, core["writeThread"](x),
+        // and writeThread(x, undefined) pass without proving explicit people.
         if (
           pkg !== "core" &&
           ts.isCallExpression(node) &&

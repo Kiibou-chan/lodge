@@ -20,11 +20,11 @@ const exports = checker.getExportsOfModule(moduleSymbol);
 const python = readFileSync(resolve(root, "src/lodge/app/__init__.py"), "utf8");
 const all = python.match(/__all__\s*=\s*\[([^\]]*)\]/u)?.[1];
 if (!all) throw new Error("Python __all__ not found");
-const names = [...all.matchAll(/"([A-Za-z_][A-Za-z_0-9]*)"/gu)].map((m) =>
-  m[1] === m[1]?.toUpperCase()
-    ? m[1]
-    : m[1]?.replace(/_([a-z])/gu, (_, c: string) => c.toUpperCase()),
-);
+const names = [...all.matchAll(/"([A-Za-z_][A-Za-z_0-9]*)"/gu)].map((m) => {
+  const snake = m[1];
+  if (snake === undefined) throw new Error("Python export name not found");
+  return snake.replace(/_([a-z])/gu, (_, c: string) => c.toUpperCase());
+});
 const expected = new Set(names);
 const extras = new Set([
   "committed",
@@ -52,7 +52,7 @@ const extras = new Set([
 
 test("front_door_exports_every_python_name", () => {
   const actual = new Set(exports.map((symbol) => symbol.name));
-  expect(names.filter((name) => !actual.has(name ?? ""))).toEqual([]);
+  expect(names.filter((name) => !actual.has(name))).toEqual([]);
 });
 
 test("front_door_exports_nothing_else", () => {

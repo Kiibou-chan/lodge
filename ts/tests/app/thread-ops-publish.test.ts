@@ -3,16 +3,8 @@ import { AddOutcome, Conflict, NotFound } from "#app";
 import { filters, Raises } from "#core";
 import { areaText } from "../core/applying.ts";
 import { CountingIds, FixedClock } from "./fakes.ts";
-import { project, raises, wired } from "./support.ts";
+import { opened, PATH, project, Q, raises, required, wired } from "./support.ts";
 
-const Q = "q-111111";
-const PATH = `lodge/threads/${Q}.md`;
-async function opened(staged = false) {
-  const store = project({ staged }),
-    lodge = wired(store);
-  await lodge.ask("s-aaaaaa", Raises.DOUBT, "coordinator", "Why?");
-  return { store, lodge };
-}
 test("rejected_publish_starts_again", async () => {
   const store = project();
   store.rejectNext(new Map());
@@ -121,8 +113,3 @@ test("three_rejections_are_a_conflict", async () => {
   expect(store.attempts).toBe(3);
   expect(store.publishes).toEqual([]);
 });
-
-function required<T>(value: T | undefined | null): T {
-  if (value === undefined || value === null) throw new Error("missing fixture value");
-  return value;
-}

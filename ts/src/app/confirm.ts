@@ -23,13 +23,17 @@ function behindIds(state: State, name: string): readonly string[] {
 export async function behindArea(w: Wiring, name: string): Promise<readonly Behind[]> {
   const state = await readState(w.store);
   const s = state.snapshot;
-  return behindIds(state, name).map((id) => ({
-    decision: level1(s, state.derived, id, state.failing),
-    entries: [...new Set(s.decisions.get(id)?.changes.map((c) => c.entry))].flatMap((id) => {
-      const e = s.entries.get(id);
-      return e ? [[id, e.area] as const] : [];
-    }),
-  }));
+  return behindIds(state, name).map((id) => {
+    const decision = s.decisions.get(id);
+    if (decision === undefined) throw new Error(`missing decision ${id}`);
+    return {
+      decision: level1(s, state.derived, id, state.failing),
+      entries: [...new Set(decision.changes.map((c) => c.entry))].flatMap((id) => {
+        const e = s.entries.get(id);
+        return e ? [[id, e.area] as const] : [];
+      }),
+    };
+  });
 }
 function expectedIds(state: State, ids: readonly string[], area: string | null): readonly string[] {
   if (area !== null) return behindIds(state, area);

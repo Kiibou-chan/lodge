@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { AddOutcome, PublishOutcome, StaleList } from "#app";
+import { AddOutcome, PublishOutcome } from "#app";
 import { filters } from "#core";
 import { AREA, ENTRY, FIRST, wired } from "../app/support.ts";
 import { decisionText, specText } from "../core/applying.ts";
@@ -33,8 +33,6 @@ test("a_refused_write_leaves_no_event", async () => {
   const draft = (await lodge.draft(FIRST.id)).replace(FIRST.statement, "Changed.");
   expect((await lodge.add([["d.md", draft]])).outcome).toBe(AddOutcome.CHECK_FAILED);
   expect(await events(database)).toEqual(before);
-  await expect(lodge.confirm([FIRST.id], "Read.")).rejects.toThrow(StaleList);
-  expect(await events(database)).toEqual(before);
   expect((await lodge.add(RETIRE, { dryRun: true })).outcome).toBe(AddOutcome.DRY_RUN);
   expect(await events(database)).toEqual(before);
 });
@@ -65,4 +63,17 @@ test("a_refused_add_carries_its_feedback", async () => {
   expect(
     added.feedback.some((f) => f.message.includes("the title is 200 characters; guidance is")),
   ).toBe(true);
+});
+
+test("a_confirmation_refused_by_the_check_leaves_no_event", async () => {
+  const { database, store } = await seeded(AREA, ENTRY, {
+    ...FIRST,
+    decidedBy: "reviewer",
+    date: "2026-10-29T09:31:00+01:00",
+  });
+  const before = await events(database);
+  const result = await wired(store).confirm([FIRST.id], "Read.");
+  expect(result.outcome).toBe(AddOutcome.CHECK_FAILED);
+  expect(result.check.problems.length).toBeGreaterThan(0);
+  expect(await events(database)).toEqual(before);
 });

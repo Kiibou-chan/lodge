@@ -1,6 +1,9 @@
 import { expect, test } from "bun:test";
-import { AddOutcome, Forbidden, LodgeError } from "#app";
+import { AddOutcome, agent, Forbidden, LodgeError } from "#app";
+import { Raises } from "#core";
+import { MemoryStore } from "./fakes.ts";
 import { setup } from "./held-messages-support.ts";
+import { AREA, ENTRY, wired } from "./support.ts";
 
 test("an_agent_relaying_a_persons_words_is_held", async () => {
   const { store, lodge, id, relay } = await setup();
@@ -74,4 +77,13 @@ test("a_relay_to_a_closed_thread_is_refused", async () => {
   await lodge.close(id, "reviewer");
   await expect(relay()).rejects.toThrow(`${id} is closed`);
   expect(await lodge.held()).toEqual([]);
+});
+
+test("a_relayed_question_holds_the_resolved_code_reference", async () => {
+  const store = new MemoryStore([AREA, { ...ENTRY, code: "ITEM-1" }], {
+    people: new Set(["ada"]),
+  });
+  const lodge = wired(store, undefined, undefined, agent());
+  await lodge.ask("ITEM-1", Raises.QUESTION, "ada", "Why?", { where: "mail" });
+  expect(await lodge.held()).toMatchObject([{ ref: "s-aaaaaa" }]);
 });

@@ -1,16 +1,8 @@
 import { expect, test } from "bun:test";
 import { LodgeError, NotFound } from "#app";
 import { load, Raises, ThreadState, tree } from "#core";
-import { project, raises, wired } from "./support.ts";
+import { opened, PATH, project, Q, raises, required, wired } from "./support.ts";
 
-const Q = "q-111111";
-const PATH = `lodge/threads/${Q}.md`;
-async function opened(staged = false) {
-  const store = project({ staged }),
-    lodge = wired(store);
-  await lodge.ask("s-aaaaaa", Raises.DOUBT, "coordinator", "Why?");
-  return { store, lodge };
-}
 function stored(store: ReturnType<typeof project>) {
   const thread = load(tree({ rev: null, files: store.files })).threads.get(Q);
   if (!thread) throw new Error("missing thread");
@@ -62,7 +54,7 @@ test("author_when_defaults_to_the_minute", async () => {
 });
 
 test.each([[{ where: "a session" }], [{ when: "yesterday" }]])(
-  "agent_message_may_not_carry_where",
+  "agent_message_may_not_carry_where %j",
   async (value) => {
     await raises(
       wired(project()).ask("s-aaaaaa", Raises.DOUBT, "agent", "Why?", value),
@@ -72,7 +64,7 @@ test.each([[{ where: "a session" }], [{ when: "yesterday" }]])(
   },
 );
 
-test.each([["Author"], ["the author"], [""]])("role_like_author_refused", async (value) => {
+test.each([["Author"], ["the author"], [""]])("role_like_author_refused %j", async (value) => {
   await raises(
     wired(project()).ask("s-aaaaaa", Raises.DOUBT, value, "Why?"),
     LodgeError,
@@ -80,7 +72,7 @@ test.each([["Author"], ["the author"], [""]])("role_like_author_refused", async 
   );
 });
 
-test.each([[""], [" \r\n "]])("empty_text_refused", async (value) => {
+test.each([[""], [" \r\n "]])("empty_text_refused %j", async (value) => {
   const { store, lodge } = await opened();
   await raises(
     lodge.ask("s-aaaaaa", Raises.DOUBT, "agent", value),
@@ -97,7 +89,7 @@ test("text_loses_cr_and_outer_whitespace_only", async () => {
   expect(required(stored(store).messages[0]).text).toBe("A  B\n C");
 });
 
-test.each([["where"], ["when"]])("unstorable_where_refused", async (value) => {
+test.each([["where"], ["when"]])("unstorable_where_refused %j", async (value) => {
   const store = project();
   const meta = { where: "a session", [value]: "a\x01" };
   await raises(
@@ -141,13 +133,8 @@ test("close_without_text_passes_the_check", async () => {
 test.each([
   [" Answer.\r\n ", "Answer."],
   [" \r\n ", ""],
-])("close_with_text", async (text, expected) => {
+])("close_with_text %j", async (text, expected) => {
   const { store, lodge } = await opened();
   await lodge.close(Q, "agent", { text });
   expect(required(stored(store).messages.at(-1)).text).toBe(expected);
 });
-
-function required<T>(value: T | undefined | null): T {
-  if (value === undefined || value === null) throw new Error("missing fixture value");
-  return value;
-}
