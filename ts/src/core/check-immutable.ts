@@ -2,6 +2,7 @@ import { problemAt } from "./check-state.ts";
 import { isAuthor } from "./derive.ts";
 import { equal } from "./equal.ts";
 import { type Decision, type Problem, ThreadState } from "./model.ts";
+import { reasoningWords } from "./people.ts";
 import type { Snapshot } from "./snapshot.ts";
 import { byCodePoint } from "./text.ts";
 
@@ -33,12 +34,12 @@ export function checkImmutable(published: Snapshot, after: Snapshot): Problem[] 
     .sort(byCodePoint)) {
     const before = published.decisions.get(id) as Decision;
     const now = after.decisions.get(id) as Decision;
-    const who = isAuthor(before) ? "author" : "agent";
+    const who = reasoningWords(isAuthor(before, published.people) ? before.decidedBy : null);
     for (const [key, name] of FIELDS) {
       if (equal(before[key], now[key])) continue;
       const message =
         name === "reasoning"
-          ? `reasoning of a published ${who} decision was changed${REASONING_REMEDY}`
+          ? `reasoning of a published ${who} was changed${REASONING_REMEDY}`
           : `${name} of a published decision was changed${REMEDY}`;
       problems.push(problemAt(after, id, 5, message));
     }

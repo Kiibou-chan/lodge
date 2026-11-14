@@ -89,11 +89,11 @@ function* decisionMessages(
     yield "this decision will wait for the author: it takes effect at once, and a later author decision that confirms or replaces it clears the flag";
 }
 function* editBackMessage(decision: Decision, after: Snapshot, d: Derived): Generator<string> {
-  if (!isAuthor(decision)) return;
+  if (!isAuthor(decision, after.people)) return;
   const own = new Set(decision.changes.map((c) => c.entry));
   for (const target of decision.replaces) {
     const replaced = after.decisions.get(target);
-    if (!replaced || isAuthor(replaced)) continue;
+    if (!replaced || isAuthor(replaced, after.people)) continue;
     const edited = new Set(
       replaced.changes.filter((c) => c.action === Action.EDIT).map((c) => c.entry),
     );
