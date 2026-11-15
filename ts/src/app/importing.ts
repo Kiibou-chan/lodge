@@ -72,6 +72,7 @@ function mapThreadAuthor(
     },
     people,
   );
+  // At least one author message was mapped, so the first message supplies its by line.
   const by = authors.split("\n").find((line) => line.startsWith("by: ")) as string;
   // The source writer check guarantees these are message metadata, not body text.
   return source.replace(

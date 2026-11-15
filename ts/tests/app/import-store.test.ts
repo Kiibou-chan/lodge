@@ -9,14 +9,10 @@ import {
   Role,
 } from "#app";
 import { instant, tree } from "#core";
-import { ZERO_TWO_STORE } from "../core/zero-two-store.ts";
 import { FixedClock, MemoryStore, START } from "./fakes.ts";
+import { zeroTwoCopy } from "./zero-two-copy.ts";
 
-const copy = {
-  rev: "synthetic-revision",
-  files: new Map([...ZERO_TWO_STORE].filter(([path]) => path.startsWith("lodge/"))),
-  settings: Bun.TOML.parse(ZERO_TWO_STORE.get(".lodge.toml") as string) as Record<string, unknown>,
-};
+const copy = zeroTwoCopy();
 const settings = coreSettings(copy.settings);
 function world(members: ReadonlyMap<string, Role> = new Map([["ana", Role.OWNER]])) {
   const store = new MemoryStore([], { people: new Set(["ana"]) });

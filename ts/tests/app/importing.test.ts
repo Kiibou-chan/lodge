@@ -1,17 +1,13 @@
 import { expect, test } from "bun:test";
 import { coreSettings, prepareImport, stampOf, type ZeroTwoCopy } from "#app";
 import { checkChange, load, parseRecord, tree, writeThread } from "#core";
-import { ZERO_TWO_STORE } from "../core/zero-two-store.ts";
 import { START } from "./fakes.ts";
+import { zeroTwoCopy } from "./zero-two-copy.ts";
 
 const now = "2026-11-03T00:00:00+00:00";
 const people = new Set(["ana"]);
-const original = new Map([...ZERO_TWO_STORE].filter(([path]) => path.startsWith("lodge/")));
-const copy: ZeroTwoCopy = {
-  rev: "synthetic-revision",
-  files: original,
-  settings: Bun.TOML.parse(ZERO_TWO_STORE.get(".lodge.toml") as string) as Record<string, unknown>,
-};
+const copy = zeroTwoCopy();
+const original = copy.files;
 const settings = coreSettings(copy.settings);
 const authorIds = ["d-40q44p", "d-qqrf9k", "d-t46j05"];
 const paths = [
@@ -119,6 +115,29 @@ test("mapped_thread_failure_is_at_the_server_stage", () => {
       message: expect.stringContaining("where"),
     }),
   );
+});
+
+test("mapped_writer_failure_is_at_the_server_stage", () => {
+  const result = prepareImport(copy, "a\nb", new Set(["a\nb"]), settings, now);
+  refused(result, "server");
+  expect(result.problems).toEqual([
+    ...authorIds.map((id) => ({
+      kind: "problem" as const,
+      path: pathOf(id),
+      check: 1,
+      line: null,
+      message:
+        "the server cannot write this file with the owner as its author: decided_by: U+000A cannot be written in a header",
+    })),
+    {
+      kind: "problem" as const,
+      path: pathOf("q-j2dsgk"),
+      check: 1,
+      line: null,
+      message:
+        "the server cannot write this file with the owner as its author: by: U+000A cannot be written in a header",
+    },
+  ]);
 });
 
 test("ids_dates_codes_and_imported_from_are_kept", () => {
