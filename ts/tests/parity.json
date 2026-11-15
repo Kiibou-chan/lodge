@@ -647,7 +647,7 @@
     "why": "design line 58: the rules carry over as rules, enforced over the TypeScript import graph, not test by test"
   },
   "tests/test_entry_point.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 3,
     "ts": ["ts/tests/e2e/binary.test.ts"],
     "why": "design line 55: the command ships as a binary built with `bun build --compile`"
@@ -671,10 +671,11 @@
     "why": "design line 58: the rules carry over as rules, enforced over the TypeScript import graph, not test by test"
   },
   "tests/test_wheel.py": {
-    "status": "planned",
+    "status": "changed",
     "plan": 3,
     "ts": ["ts/tests/e2e/binary.test.ts"],
-    "why": "design line 55: the command ships as a binary built with `bun build --compile`, not a wheel"
+    "why": "design line 55: the command ships as a binary built with `bun build --compile`, not a wheel",
+    "dropped": ["installed_wheel_runs"]
   },
   "tests/viewer/__init__.py": {
     "status": "changed",

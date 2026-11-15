@@ -1,6 +1,7 @@
 export { type Applied, applyDrafts, type StaleBase } from "./apply.ts";
 export { checkChange } from "./check-change.ts";
 export { type CheckResult, checkResult, checkState } from "./check-state.ts";
+/** @public */
 export {
   behindArea,
   confirmableIds,
@@ -23,6 +24,7 @@ export {
   writeRecord,
 } from "./fileformat.ts";
 export * from "./ids.ts";
+/** @public */
 export {
   Action,
   type Area,
@@ -45,6 +47,7 @@ export {
   type Thread,
   ThreadState,
 } from "./model.ts";
+/** @public */
 export {
   areaNames,
   type Branch,
@@ -53,6 +56,7 @@ export {
   restsOnTree,
   writtenOrder,
 } from "./order.ts";
+/** @public */
 export { type Placed, renderSpec, type SpecArea, specView } from "./render.ts";
 export {
   AmbiguousRef,
@@ -68,6 +72,7 @@ export * from "./snapshot.ts";
 export * from "./stamps.ts";
 export * from "./text.ts";
 export * from "./threads.ts";
+/** @public */
 export {
   failingIds,
   formatLevel1,

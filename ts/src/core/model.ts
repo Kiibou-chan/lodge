@@ -4,6 +4,7 @@ export const Scope = { PRODUCT: "product", PROCESS: "process" } as const;
 export type Scope = (typeof Scope)[keyof typeof Scope];
 export const Action = { CREATE: "create", EDIT: "edit", RETIRE: "retire", LINK: "link" } as const;
 export type Action = (typeof Action)[keyof typeof Action];
+/** @public */
 export interface Quote {
   readonly text: string;
   readonly where: string;
@@ -22,10 +23,12 @@ export function uniqueChanges(changes: readonly Change[]): readonly Change[] {
     return true;
   });
 }
+/** @public */
 export interface NumberHandle {
   readonly value: string;
   readonly handle: string;
 }
+/** @public */
 export interface Imported {
   readonly file: string;
   readonly heading: string;
