@@ -22,6 +22,7 @@ const api = {
 };
 async function result(pending) {
   const response = await pending;
+  if (response.status === 401) signedOut();
   const body = await response.json();
   if (!response.ok || body.error) throw new Error(body.error?.message ?? "The request failed.");
   return body.result;
@@ -178,6 +179,14 @@ async function tokens() {
     }
   }
 }
+function signedOut() {
+  byId("secret").textContent = "";
+  byId("person").textContent = "";
+  byId("tokens").replaceChildren();
+  byId("held").replaceChildren();
+  byId("signed-in").hidden = true;
+  byId("signing-in").hidden = false;
+}
 async function refresh() {
   byId("secret").textContent = "";
   const me = await result(api.me());
@@ -185,7 +194,7 @@ async function refresh() {
   byId("signed-in").hidden = !me.signedIn;
   byId("tokens").replaceChildren();
   byId("held").replaceChildren();
-  if (!me.signedIn) return;
+  if (!me.signedIn) return signedOut();
   byId("person").textContent = `Signed in as ${me.person}`;
   await tokens();
   for (const project of await result(api.projects())) {

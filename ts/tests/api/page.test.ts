@@ -91,3 +91,27 @@ test("every_operation_the_script_names_exists", async () => {
     await w.database.close();
   }
 });
+
+for (const [path, status, message] of [
+  ["/missing", 404, "nothing here"],
+  ["/api/v1/me", 400, "use POST"],
+  ["internal", 500, "the server failed; see its log"],
+] as const) {
+  test(`json_${status}_carries_the_asset_policies`, async () => {
+    const w = await world();
+    try {
+      w.options.accounts.setup = async () => {
+        throw new Error("synthetic failure");
+      };
+      const request =
+        path === "internal" ? w.request("me", {}, null) : new Request(`https://lodge.test${path}`);
+      const response = await w.fetch(request);
+      expect(response.status).toBe(status);
+      expect(await response.json()).toMatchObject({ error: { message } });
+      expect(response.headers.get("Referrer-Policy")).toBe("no-referrer");
+      expect(response.headers.get("Content-Security-Policy")).toBe(policy);
+    } finally {
+      await w.database.close();
+    }
+  });
+}
