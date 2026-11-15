@@ -108,7 +108,8 @@ export async function testServer(): Promise<TestServer> {
       return (await s.trees())[0].files.get(path) ?? null;
     },
     async paths(project) {
-      return [...(await store(project).trees())[0].files.keys()].sort();
+      const s = store(project);
+      return [...(await s.trees())[0].files.keys(), ...(await s.attachmentTexts()).keys()].sort();
     },
   };
 }
