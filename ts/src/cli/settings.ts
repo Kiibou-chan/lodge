@@ -85,7 +85,7 @@ export function readSettings(root: string): ProjectSettings {
 }
 function loadSettings(root: string): ProjectSettings {
   const path = join(root, ".lodge.toml");
-  let parsed: Record<string, unknown> = {};
+  let parsed: Readonly<Record<string, unknown>> = {};
   if (existsSync(path)) {
     let text: string;
     try {
@@ -94,13 +94,7 @@ function loadSettings(root: string): ProjectSettings {
       if (!(error instanceof CliError)) throw error;
       throw new CliError(error.message.replace(`${path}:`, ".lodge.toml:"));
     }
-    try {
-      parsed = parse(text, { integersAsBigInt: true });
-    } catch (error) {
-      throw new CliError(
-        `.lodge.toml: ${String(error instanceof Error ? error.message : error).split(/[\r\n]/u)[0]}`,
-      );
-    }
+    parsed = tomlTable(text);
   }
   const core: Record<string, unknown> = {};
   for (const [name, value] of Object.entries(parsed)) {
@@ -108,7 +102,7 @@ function loadSettings(root: string): ProjectSettings {
       throw new CliError(
         `.lodge.toml: ${table(value) ? `unknown section [${name}]` : `unknown key ${name}`}`,
       );
-    if (name === "length" || name === "import") core[name] = convert(value);
+    if (name === "length" || name === "import") core[name] = value;
   }
   const server = Object.hasOwn(parsed, "server") ? serverPlace(parsed["server"]) : null;
   try {
@@ -124,4 +118,17 @@ export function serverOf(settings: ProjectSettings): ServerPlace {
 }
 export function tokenOf(env: Readonly<Record<string, string | undefined>>): string | null {
   return env["LODGE_TOKEN"] || null;
+}
+
+export function tomlTable(text: string): Readonly<Record<string, unknown>> {
+  try {
+    const parsed = parse(text, { integersAsBigInt: true });
+    return Object.fromEntries(
+      Object.entries(parsed).map(([name, value]) => [name, convert(value)]),
+    );
+  } catch (error) {
+    throw new CliError(
+      `.lodge.toml: ${String(error instanceof Error ? error.message : error).split(/[\r\n]/u)[0]}`,
+    );
+  }
 }
