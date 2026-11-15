@@ -32,7 +32,7 @@ test.each([
     404,
     "no operation named missing",
   ],
-  ["other_paths_are_not_found", "/", "GET", null, null, 404, "nothing here"],
+  ["other_paths_are_not_found", "/missing", "GET", null, null, 404, "nothing here"],
 ] as const)("%s", async (_name, path, method, contentType, body, status, message) => {
   const w = await world();
   const response = await w.fetch(
