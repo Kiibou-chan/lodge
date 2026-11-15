@@ -1,4 +1,4 @@
-// The made-up lodge 0.2 store of docs/superpowers/plans/2026-11-02-lodge-server-import/probes/zero-two-store/, written by lodge 0.2 (probe 6).
+// The made-up lodge 0.2 store of docs/superpowers/plans/done/2026-11-02-lodge-server-import/probes/zero-two-store/, written by lodge 0.2 (probe 6).
 export const ZERO_TWO_STORE: ReadonlyMap<string, string> = new Map([
   [".lodge.toml", '[import]\nsources = ["docs/choices.md"]\n'],
   ["lodge/attachments/d-q59cdf/sizes.csv", "size,count\nsmall,3\n"],
