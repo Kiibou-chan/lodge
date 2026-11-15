@@ -39,7 +39,11 @@ process.exitCode =
             const { exporters, projects } = serving;
             void exporters
               .start(await projects.names())
-              .catch((error: unknown) => err(exportFailedLine("startup", error)));
+              .catch((error: unknown) =>
+                err(
+                  `lodge: starting exports failed: ${error instanceof Error ? error.message : String(error)}\n`,
+                ),
+              );
           }
           await listen(fetch, host, port);
         },

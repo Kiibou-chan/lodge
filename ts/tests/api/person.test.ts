@@ -3,6 +3,7 @@ import { hashSecret } from "#api";
 import { agent } from "#app";
 import { draft } from "./person-fixtures.ts";
 import { signed } from "./signed.ts";
+import { SESSION_COOKIE, world } from "./world.ts";
 
 test("token_issue_shows_the_secret_once", async () => {
   const w = await signed();
@@ -38,6 +39,8 @@ test.each(["issued_token_works_for_its_project", "revoked_token_stops_working"])
   },
 );
 test.each([
+  "import",
+  "export-target",
   "token-issue",
   "token-revoke",
   "tokens",
@@ -144,3 +147,25 @@ test("global_person_operations_refuse_tokens_without_a_project", async () => {
   }
   await w.database.close();
 });
+
+test.each(["import", "export-target"])(
+  "moving_operations_require_a_session_and_origin %s",
+  async (operation) => {
+    const w = await world();
+    const response = await w.fetch(w.request(operation, { project: "work" }, null));
+    expect(response.status).toBe(401);
+    expect(await response.json()).toEqual({
+      error: { kind: "unauthorised", message: "sign in, or send an agent token" },
+    });
+    await w.asPerson("projects");
+    const request = w.request(operation, { project: "work" }, null);
+    request.headers.set("Cookie", SESSION_COOKIE);
+    request.headers.set("Origin", "https://other.test");
+    const wrongOrigin = await w.fetch(request);
+    expect(wrongOrigin.status).toBe(403);
+    expect(await wrongOrigin.json()).toEqual({
+      error: { kind: "forbidden", message: "the request does not come from this server's page" },
+    });
+    await w.database.close();
+  },
+);

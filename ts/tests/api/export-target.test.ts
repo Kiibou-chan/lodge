@@ -38,7 +38,12 @@ test("agent_token_is_forbidden", async () => {
 });
 test("bad_target_is_usage", async () => {
   const w = await ready();
+  const notified: string[] = [];
+  w.exporters.written = async (project) => {
+    notified.push(project);
+  };
   const r = await w.asPerson("export-target", { ...w.body, target: { ...w.target, branch: "-x" } });
+  expect(notified).toEqual([]);
   expect(r.status).toBe(400);
   expect(await r.text().then(JSON.parse)).toEqual({
     error: {

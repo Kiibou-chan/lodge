@@ -27,10 +27,11 @@ export async function importOperation(
 ): Promise<{ readonly checkFailed: boolean; readonly result: unknown }> {
   const moving = movingOf(options);
   const args = new Args("import", body);
-  args.known(["project", "repository", "rev", "settingsRev"]);
   const project = args.string("project");
   const settings = await projectSettings(options, project);
   const repository = args.string("repository");
+  if (!repository.startsWith("/"))
+    throw new ApiError("usage", "import: repository must be an absolute path");
   const rev = args.string("rev");
   const copy = await moving.read(repository, rev, args.string("settingsRev", rev));
   const result = await importStore(
@@ -53,7 +54,6 @@ export async function exportTargetOperation(
 }> {
   const moving = movingOf(options);
   const args = new Args("export-target", body);
-  args.known(["project", "target"]);
   const project = args.string("project");
   await projectSettings(options, project);
   const value = body["target"];

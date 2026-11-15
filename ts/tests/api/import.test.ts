@@ -3,7 +3,7 @@ import { handler } from "#api";
 import { isolateGit } from "../git/isolated.ts";
 import { commit } from "../git/repos.ts";
 import { zeroTwoRepository } from "../git/zero-two.ts";
-import { world } from "./world.ts";
+import { SESSION_COOKIE, world } from "./world.ts";
 
 isolateGit();
 const settings = { import: { sources: ["docs/choices.md"] } };
@@ -146,12 +146,51 @@ test.each(["import", "export-target"])("server_without_moving_refuses %s", async
     operation === "import" ? w.body : { project: "moved", target: null },
     null,
   );
-  request.headers.set("Cookie", "lodge_session=synthetic-session");
+  request.headers.set("Cookie", SESSION_COOKIE);
   request.headers.set("Origin", "https://lodge.test");
   const response = await handler(options)(request);
   expect(response.status).toBe(400);
   expect(await response.text().then(JSON.parse)).toEqual({
     error: { kind: "usage", message: "this server was started without import and export" },
+  });
+  await w.database.close();
+});
+
+test("omitted_settings_revision_uses_the_older_store_revision", async () => {
+  const w = await ready("checkout");
+  commit(w.source.repository, ".lodge.toml", "[import]\nsources = []\n", "Empty sources at HEAD");
+  const { settingsRev, ...body } = w.body;
+  expect(settingsRev).toBe(w.source.rev);
+  const response = await w.asPerson("import", body);
+  expect(response.status).toBe(200);
+  expect((await response.text().then(JSON.parse)).result.kind).toBe("imported");
+  await w.exporters.settled();
+  await w.database.close();
+});
+
+test.each(["", "relative/dir"])("repository_must_be_absolute %p", async (repository) => {
+  const w = await ready();
+  let reads = 0;
+  const moving = w.options.moving;
+  if (!moving) throw new Error("missing moving ports");
+  const fetch = handler({
+    ...w.options,
+    moving: {
+      ...moving,
+      read: async () => {
+        reads++;
+        throw new Error("repository must be refused before reading");
+      },
+    },
+  });
+  const request = w.request("import", { ...w.body, repository }, null);
+  request.headers.set("Cookie", SESSION_COOKIE);
+  request.headers.set("Origin", "https://lodge.test");
+  const response = await fetch(request);
+  expect(reads).toBe(0);
+  expect(response.status).toBe(400);
+  expect(await response.json()).toEqual({
+    error: { kind: "usage", message: "import: repository must be an absolute path" },
   });
   await w.database.close();
 });

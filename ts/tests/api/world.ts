@@ -5,6 +5,9 @@ import { exportStore, readStore } from "#git";
 import { openDatabase, SqliteAccounts, SqliteExportTargets, SqliteProjects } from "#store";
 import { CountingIds, FixedClock } from "../app/fakes.ts";
 
+const SESSION_SECRET = "synthetic-session";
+export const SESSION_COOKIE = `lodge_session=${SESSION_SECRET}`;
+
 export async function world(setUp = true) {
   const database = await openDatabase(":memory:");
   const clock = new FixedClock();
@@ -70,7 +73,7 @@ export async function world(setUp = true) {
   const fetch = handler(options);
   let session = false;
   async function asPerson(operation: string, body: Readonly<Record<string, unknown>> = {}) {
-    const secret = "synthetic-session";
+    const secret = SESSION_SECRET;
     if (!session) {
       await accounts.startSession(
         hashSecret(secret),
@@ -79,7 +82,7 @@ export async function world(setUp = true) {
       session = true;
     }
     const req = request(operation, body, null);
-    req.headers.set("Cookie", `lodge_session=${secret}`);
+    req.headers.set("Cookie", SESSION_COOKIE);
     req.headers.set("Origin", "https://lodge.test");
     return fetch(req);
   }
