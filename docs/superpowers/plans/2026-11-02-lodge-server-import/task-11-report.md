@@ -554,3 +554,146 @@ The preparatory reads cover CLAUDE.md, the required plan sections, the complete 
 The full gate includes the unchanged structure tests, strict typing, unused-code checks, Python tests, TypeScript tests, and the differential comparison.
 No package installation is required, and bun add is never run.
 The final record and report commit uses explicit paths, the requested identity, and the Codex co-author trailer, and is pushed to origin/server-import-records.
+
+## Task 11b fix round 1
+
+The correction removes the misplaced Talking claim, separates independently looked-up claims, fixes the build-step wording and number evidence, and preserves stable IDs for the first claims.
+All records are written through lodge add after a successful dry run, with drafts and acceptance scripts under .drafts/task-11b/.
+There are 12 edited entries, 10 new entries, two area-order edits, and two new coordinator decisions.
+No published decision is edited, and no author decision is narrowed or replaced.
+
+### Decisions and changed entries
+
+| file:line | Decision | Finding answered |
+|---|---|---|
+| lodge/decisions/d-tx7e0m-correct-goal-scope-and-separate-independently.md:1 | d-tx7e0m | Narrows d-6x8fd9, d-ktz4rj, d-11yx0r, and d-pfdqpp for I1, I2, I3, and the wording corrections; retains their other claims and safeguards |
+| lodge/decisions/d-p94znc-keep-the-workflow-cardinality-handle-precise.md:1 | d-p94znc | Narrows d-tx7e0m only for an extraneous number citation introduced during this round; the workflow statement is unchanged |
+| lodge/spec/purpose/s-c8hrye-threads-wait-for-an-agent-session.md:1 | d-tx7e0m | I1: edit s-c8hrye, Threads wait for an agent session |
+| lodge/spec/purpose/s-fpxzb9-open-session-questions-share-a-waiting.md:1 | d-tx7e0m | I2: edit s-fpxzb9, Open session questions share a waiting list |
+| lodge/spec/purpose/s-t4tbrj-the-waiting-list-is-answerable-from.md:1 | d-tx7e0m | I2: create s-t4tbrj, The waiting list is answerable from a phone |
+| lodge/spec/purpose/s-6r0exg-people-use-lodge-alone-or-together.md:1 | d-tx7e0m | M1: edit s-6r0exg, Other people use lodge alone or together |
+| lodge/spec/purpose/s-chycjf-a-desktop-shell-must-earn-its.md:1 | d-tx7e0m | I2: edit s-chycjf, A desktop application is outside the present scope |
+| lodge/spec/purpose/s-wrksm5-the-browser-app-installs-on-phones.md:1 | d-tx7e0m | I2: create s-wrksm5, The browser app installs on phones and computers |
+| lodge/spec/purpose/s-q6g68q-a-desktop-shell-must-also-run.md:1 | d-tx7e0m | I2: create s-q6g68q, A desktop shell must also run the local server |
+| lodge/spec/purpose/s-nhx8zw-pull-request-and-ci-integration-starts.md:1 | d-tx7e0m | I2 weaker: edit s-nhx8zw, Pull request and CI integration starts with GitHub |
+| lodge/spec/purpose/s-mnfeyz-git-level-features-work-on-any.md:1 | d-tx7e0m | I2 weaker: create s-mnfeyz, Git-level features work on any host |
+| lodge/spec/purpose/s-d56aky-a-gitlab-connector-follows-project-need.md:1 | d-tx7e0m | I2 weaker: create s-d56aky, A GitLab connector follows project need |
+| lodge/spec/purpose/s-xy6qte-merging-to-main-requires-a-person.md:1 | d-tx7e0m | M2: edit s-xy6qte, Merging to main requires a person's go |
+| lodge/spec/work/s-c0k9hx-workflow-documents-are-versioned-per-task.md:1 | d-tx7e0m, d-p94znc | I2: edit s-c0k9hx, A project has a workflow per task kind |
+| lodge/spec/work/s-dxmhjg-workflow-changes-retain-who-changed-what.md:1 | d-tx7e0m | I2: create s-dxmhjg, Workflow changes retain who changed what and when |
+| lodge/spec/work/s-pttahq-review-findings-determine-progression-thresholds.md:1 | d-tx7e0m | I2, M6: edit s-pttahq, Reviews report findings with severity |
+| lodge/spec/work/s-pw47pk-progression-thresholds-read-review-findings.md:1 | d-tx7e0m | I2, M6: create s-pw47pk, Progression thresholds read review findings |
+| lodge/spec/work/s-d0tvr8-session-driven-review-moves-remain-reported.md:1 | d-tx7e0m | I2, M6: create s-d0tvr8, Session-driven review moves remain reported |
+| lodge/spec/work/s-73ee5k-session-to-do-reports-sit-under.md:1 | d-tx7e0m | I2 weaker: edit s-73ee5k, Lodge tracks the workflow step of each task |
+| lodge/spec/work/s-r2cc8d-session-to-do-reports-sit-under.md:1 | d-tx7e0m | I2 weaker: create s-r2cc8d, Session to-do reports sit under the workflow step |
+| lodge/spec/work/s-1hecad-session-to-do-items-may-name.md:1 | d-tx7e0m | I2 weaker: create s-1hecad, Session to-do items may name produced code references |
+| lodge/spec/work/s-0tn1e8-the-default-plan-workflow-runs-from.md:1 | d-tx7e0m | M4: edit s-0tn1e8, The default plan workflow runs from mock to authorised merge |
+| lodge/spec/work/s-hke5m9-the-default-child-task-workflow-builds.md:1 | d-tx7e0m | M4: edit s-hke5m9, The default child task workflow builds reviews and rechecks |
+| lodge/spec/work/s-h1e6jc-a-task-page-shows-its-state.md:1 | d-tx7e0m | M5: edit s-h1e6jc, A task page shows its state and related work |
+| lodge/spec/purpose/_area.md:1 | d-tx7e0m | Place the split claims immediately after their retained first claims |
+| lodge/spec/work/_area.md:1 | d-tx7e0m | M3: place s-3ysqhz after s-xqza9k and s-mrnqdh after s-hmj4mc, and place split claims beside their first claims |
+
+I1 removes only the final sentence of s-c8hrye, which assigned Talking with a session to build step 4.
+Its lodge 0.2 scope, session instructions, and later thread-format sentence remain.
+The server goal remains once in s-ts73yt, using the Goals section's own claim at design line 22.
+The coordinator selected that interpretation through coord.ask_coordinator, rather than duplicating the goal in s-c8hrye.
+The earlier q-2 answer allowing the Talking sentence is withdrawn by this brief.
+Task 11c records Talking in sessions from design lines 184 to 190, without assigning a step the Build order does not give.
+
+I2 separates s-pttahq into findings with severity, threshold evaluation (s-pw47pk), and reported progression (s-d0tvr8), each explicitly from build step 5.
+All retain s-tprwhs and s-cf0qph, and all gain rests_on s-jqh7hf for M6.
+The workflow-kind and change-history claims at design line 98 remain separately named [my call] choices, in s-c0k9hx and s-dxmhjg respectively, from build step 5.
+The waiting list stays in s-fpxzb9 from build step 2, and phone access moves to s-t4tbrj from build step 3, both retaining s-nfgv2t.
+Desktop scope stays in s-chycjf, installability moves to s-wrksm5 from build step 3, and the shell condition moves to s-q6g68q without an inferred step.
+The weaker s-73ee5k case splits cleanly into workflow-step tracking, session to-do reports (s-r2cc8d), and produced code references (s-1hecad), each from build step 5 and retaining s-azfcx4 and s-8v6ek2.
+The weaker s-nhx8zw case also splits cleanly: GitHub integration retains the original ID and build step 6, while host-independent git (s-mnfeyz) and a GitLab connector following project need (s-d56aky) receive no invented steps.
+No pre-existing rests_on link is removed by these splits.
+
+I3 is answered by d-tx7e0m's 0.2 handle, pyproject.toml:3, project.version = "0.2.0".
+The incorrect design-line handle in immutable d-6x8fd9 stays historical.
+The correction initially also cited design line 109 as a waiting-list handle alongside the correct workflow cardinality at line 98.
+Line 109 describes review findings, so d-p94znc narrows that extraneous citation and carries only line 98 for one workflow per kind, with line 300 for build step 5.
+This extra correction is the deviation from the planned single corrective add; both adds have successful dry runs and red acceptance probes.
+
+M1 changes s-6r0exg to say other people use lodge from build step 7, avoiding a claim that solitary use starts then.
+M2 replaces the curly apostrophe in s-xy6qte's title with a plain apostrophe; its safeguard statement is unchanged.
+M4 names mock, plan, plan-review, plan-fix, build, review, fix, and merge in s-0tn1e8, includes next for plan-fix, and uses continues to for forward then edges in both default workflows.
+Failure back-edges still return.
+M5 removes code from the step-3 task-page sentence in s-h1e6jc and adds a separate sentence assigning code presentation to build step 6.
+
+### Acceptance first
+
+The existing ignored acceptance script is extended with manage.ts verify-fix-round1, which delegates to fix-round1.ts.
+The 22 entry probes compare full statements, titles, and all required current dependencies; separate probes check field order and corrective version evidence.
+Before the add, all fail against the current store: 0 passed; 24 failed; 24 fix acceptance checks.
+After the add, the same expectations pass: 24 passed; 0 failed; 24 fix acceptance checks.
+
+| file:line | First failing output |
+|---|---|
+| .drafts/task-11b/fix-round1.ts:47 | FAIL I1: s-c8hrye |
+| .drafts/task-11b/fix-round1.ts:47 | FAIL I2: s-fpxzb9 |
+| .drafts/task-11b/fix-round1.ts:47 | FAIL I2: s-t4tbrj |
+| .drafts/task-11b/fix-round1.ts:47 | FAIL M1: s-6r0exg |
+| .drafts/task-11b/fix-round1.ts:47 | FAIL I2: s-chycjf |
+| .drafts/task-11b/fix-round1.ts:47 | FAIL I2: s-wrksm5 |
+| .drafts/task-11b/fix-round1.ts:47 | FAIL I2: s-q6g68q |
+| .drafts/task-11b/fix-round1.ts:47 | FAIL I2 weaker: s-nhx8zw |
+| .drafts/task-11b/fix-round1.ts:47 | FAIL I2 weaker: s-mnfeyz |
+| .drafts/task-11b/fix-round1.ts:47 | FAIL I2 weaker: s-d56aky |
+| .drafts/task-11b/fix-round1.ts:47 | FAIL M2: s-xy6qte |
+| .drafts/task-11b/fix-round1.ts:47 | FAIL I2: s-c0k9hx |
+| .drafts/task-11b/fix-round1.ts:47 | FAIL I2: s-dxmhjg |
+| .drafts/task-11b/fix-round1.ts:47 | FAIL I2, M6: s-pttahq |
+| .drafts/task-11b/fix-round1.ts:47 | FAIL I2, M6: s-pw47pk |
+| .drafts/task-11b/fix-round1.ts:47 | FAIL I2, M6: s-d0tvr8 |
+| .drafts/task-11b/fix-round1.ts:47 | FAIL I2 weaker: s-73ee5k |
+| .drafts/task-11b/fix-round1.ts:47 | FAIL I2 weaker: s-r2cc8d |
+| .drafts/task-11b/fix-round1.ts:47 | FAIL I2 weaker: s-1hecad |
+| .drafts/task-11b/fix-round1.ts:47 | FAIL M4: s-0tn1e8 |
+| .drafts/task-11b/fix-round1.ts:47 | FAIL M4: s-hke5m9 |
+| .drafts/task-11b/fix-round1.ts:47 | FAIL M5: s-h1e6jc |
+| .drafts/task-11b/fix-round1.ts:48 | FAIL M3: field entries precede Tasks |
+| .drafts/task-11b/fix-round1.ts:49 | FAIL I3: current corrective decision has the version handle |
+| .drafts/task-11b/fix-round1/number-handle.ts:4 | FAIL precise workflow cardinality handle without unrelated line 109 |
+
+The additional number-handle probe fails before d-p94znc and passes afterwards.
+The existing acceptance manifest and scoped-edit expectation are refreshed to the corrected statements; manage.ts verify passes all 39 carried checks.
+No implementation or permanent test is changed.
+All child processes in the draft scripts use Bun.spawnSync.
+
+### Parked and intentionally unchanged
+
+s-7ah5n7 remains parked as allowed by I2.
+It combines historical lodge 0.2 exclusions, the independent thread semantic, the evaluation-and-pilot condition, and server scope by build step.
+Separating it cleanly requires reviewing the older decisions and redistributing their scope and dependencies; this round preserves those historical boundaries rather than making that wider change.
+Its phone scope consequently remains alongside the more specific phone claims.
+
+The immutable reasoning beginning "The coordinator approves ..." in d-6x8fd9, d-pfdqpp, and d-vsspgk remains unchanged, as directed.
+No new decision repeats that unsupported approval wording.
+The display side effect of d-vsspgk narrowing d-11yx0r remains unchanged, as directed: unchanged entries from that decision can show its narrowing.
+The new narrowings can likewise appear on other entries of their section decisions; the entry table above identifies what actually changes.
+
+Task 11c creates the build-order entry and adds the build-order rests_on links to all numbered claims here, including the 10 new entries where numbered, as well as the previous 11a and 11b lists.
+It also links s-cg69z0 to its claimed-and-checked entry.
+For Code and git and Interface, 11c should link the existing GitHub integration in s-nhx8zw, the installability in s-wrksm5, and phone access in s-t4tbrj rather than repeat them.
+Desktop scope, shell eligibility, host-independent git, and the deferred GitLab connector have no step assigned by the design and remain unnumbered.
+The Talking claim remains explicitly deferred to sessions in 11c.
+
+### Commands and results
+
+| Command | Result |
+|---|---|
+| bun .drafts/task-11b/fix-round1.ts verify, before adds | Exit 1; 0 passed; 24 failed |
+| bun .drafts/task-11b/fix-round1.ts dry-run; add | Exit 0 each; staged d-tx7e0m and its entries and areas |
+| bun .drafts/task-11b/fix-round1/number-handle.ts verify, before correction | Exit 1; precise-cardinality probe fails |
+| bun .drafts/task-11b/fix-round1/number-handle.ts | Both dry run and add exit 0; staged d-p94znc and unchanged s-c0k9hx |
+| bun .drafts/task-11b/fix-round1/number-handle.ts verify, after correction | Exit 0; precise-cardinality probe passes |
+| bun .drafts/task-11b/manage.ts verify | Exit 0; 39 passed; 0 failed; 39 acceptance checks |
+| bun .drafts/task-11b/manage.ts verify-fix-round1 | Exit 0; 24 passed; 0 failed; 24 fix acceptance checks |
+| uv run --frozen --quiet lodge check | Exit 0; ok |
+| uv run --frozen --quiet lodge spec, filtered for changed since | Two matches, both explanatory sentences: s-7wbv0e and s-kba448; neither is edited or a new freshness warning |
+| sh scripts/check.sh | Exit 0; Python 1399 passed; TypeScript 2137 pass, 0 fail; differential 1 pass, 0 fail |
+| sh scripts/check-ts.sh, last gate | Exit 0; 2137 pass, 0 fail; type, lint, unused-code, and structure checks pass |
+
+The changed-since accounting retains the two matches already named by 11a and the original 11b report.
+The report extension and lodge paths are committed explicitly with the required Codex trailer and pushed to server-import-records.
