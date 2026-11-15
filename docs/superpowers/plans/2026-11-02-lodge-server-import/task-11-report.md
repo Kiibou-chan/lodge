@@ -238,3 +238,98 @@ Those matches are explanatory prose in s-7wbv0e and s-kba448, not freshness warn
 The final full gate reads 451 records across 10 areas with 0 problems and 0 differential differences.
 The final TypeScript gate includes the structure checks and passes with no warnings failing the gate.
 No other uncertainty remains for Task 11a.
+
+## Fix round 1
+
+Four new coordinator decisions narrow only the corresponding coordinator decisions published in 3601469.
+All four adds have a successful dry run before publication, and every entry correction appears with `edit` in the same add as its decision.
+No published decision is edited, and no author decision is narrowed or replaced.
+The old decisions d-7s8k61, d-sk1r7r, d-tnpe08, and d-jtbrh6 retain their original eleven number handles unchanged; immutability requires leaving that historical excess in place.
+The new decisions carry only the numbers used by their own statements and the entries they change.
+
+### Decisions and entries
+
+| Decision | Narrows | Entries and findings answered |
+|---|---|---|
+| d-v92j1d | d-7s8k61 | I1: edit s-165qfh to give Python and TypeScript their own explicit structure-rule sentence, retaining the Python allowed-imports table, cycles, front doors, 300-line limit, clock and randomness restrictions, and confinement of `os`, `subprocess`, and `open` I/O calls. M9: edit s-a4jfp1 to cite d-b1yjpp for TypeScript. M1: handles only for 0.2, 4, and 300. |
+| d-t57k7f | d-sk1r7r | M5 and M9: edit s-07ar34 to drop the viewer non-sequitur and cite d-8kasej and d-14vk9b. M7 and M8: edit s-d1dd20 to retain task identity and nesting, create s-azfcx4 for workflow position, s-h4x7bx for planner-created children and the waiting parent, and s-1csktg for task code links. Reaffirm s-8v6ek2 and s-cf0qph unchanged because they still refer to the same task identity. M1: handles only for 0.2, build steps 1, 2, 4, and 5, and one nesting level. |
+| d-9z5y74 | d-tnpe08 | M2: edit s-20dnpp to state separately the lodge-only branch, local work-tree refusal, remote export without a work-tree check, temporary index, and push without force. Remove its duplicated unchanged-tree claim. M1: reaffirm s-b4dtqk unchanged with handles for one commit a minute and the retry minute, both tied to `ts/src/app/exporters.ts:21`, `EXPORT_INTERVAL_SECONDS = 60`. |
+| d-sw1dwn | d-jtbrh6 | M3: edit s-yaz279 so only a decision or thread it would map must round-trip through its writer, and remove the export sentence already in s-b6jxhr and its unnecessary dependency on that entry. M4: edit s-3cagcv so the attachment exception clearly applies to advised files. M7: edit s-5sgcxx to retain source and mapped checks and their publication refusal, create s-yv40f3 for non-UTF-8 path refusal, and create s-2wqxmw for attachment-byte preservation. M1: its only numeric handle is 0.2. |
+
+The model and storage area orders gain the three and two new entries respectively.
+No other record file changes.
+The five new entries preserve the design coverage previously held by s-d1dd20 (design lines 87 to 89) and s-5sgcxx (line 289, with d-sdpcyb and d-ryss91 for the detailed validation and byte rules).
+Their dependencies retain the task, workflow, and import prerequisites without breaking existing `rests_on` references.
+The two task dependants and the batching entry have unchanged text, so their files have no diff although the new decisions list them with `edit`.
+
+The I1 history probe uses `git show server-import:lodge/spec/structure/s-165qfh-a-structure-test-enforces-the-import.md`, followed by `lodge show d-jxwj8m --reasoning --provenance`.
+The old entry explicitly includes allowed imports, cycles, front doors, the size limit, and forbidden calls; the earlier report's claim that it was described only through Python ast is incorrect.
+The restored wording follows `tests/structure_rules.py`, `tests/structure_calls.py`, and the Python and TypeScript `MAX_LINES` constants, rather than attributing the combined rules to TypeScript alone.
+The local-only export check is at `ts/src/git/export.ts:92`, and the import's skip before the writer comparison is at `ts/src/app/importing.ts:103` and `ts/src/app/importing.ts:108`.
+
+### Dropped sentences and parked work
+
+M6: s-j8tp0n dropped "A project's knowledge lives in the repository of the project it is about, and lodge is its own repository."
+The universal repository claim no longer describes a server project's event source of truth, so the replacement scopes git to lodge 0.2 and events to the server.
+The self-hosting clause is omitted from this store-authority entry because it adds no rule about which active store is authoritative; this is an omission, not a reversal of self-hosting.
+No entry change is needed for this report-only accounting.
+
+M6: s-z1zvb4 dropped "the header for programs, the body for people".
+This describes the Markdown file presentation, which still holds for lodge 0.2; its explanatory slogan was omitted while the entry retained Markdown files with YAML headers and added event storage.
+It was not made false by the server, and the omission should have been named in the original report.
+No new decision is needed because this fix documents the cut rather than changing the entry.
+
+M8: the earlier claim that every step assignment comes from the Build order is too broad.
+Tasks are explicitly item 2, and workflow as data is item 5; these step numbers remain in s-d1dd20 and s-azfcx4.
+The Build order gives no step specifically to "the planner session creates the child tasks through the API from the plan; the parent waits at its build step until every child is done" or to "a task has code links".
+Those claims now live in s-h4x7bx and s-1csktg without an invented step.
+Item 4 names the runner and item 6 names code views, but neither directly assigns the corresponding task claim a step.
+This is the explicit exception to the general future-step convention permitted by the fix brief.
+Task 11c should add the build-order dependencies to s-azfcx4 as well as the earlier report's list; the two unnumbered claims require no guessed step dependency.
+
+M7: the further split of s-g8m3qv is parked.
+The task and workflow definitions already rest on that project entry, and the entry brings together the project's workflow, repository links, and members across future steps.
+Splitting it responsibly requires reconsidering those prerequisite links alongside the work and later model entries in Tasks 11b and 11c; that is broader than moving independent lookup sentences with no dependency consequences.
+The identity and one-level nesting in s-d1dd20 stay together, and source settings, mapped checks, and refusal in s-5sgcxx stay together as one import-validation contract.
+The review's additional s-5fd1qs title and test-first split suggestion is parked for the next Constraints pass; this brief's M7 scope names the other three entries.
+No supported claim is lost in either completed split.
+
+### Acceptance and checks
+
+The existing ignored acceptance script now accepts `--fix1`, which runs ten finding probes from `.drafts/task-11a/fix1/verify.ts`.
+Before any fix add, it exits 1 with `0 passed; 10 failed; 10 fix-round checks`.
+I1, M2 to M5, M8, and M9 compare complete expected entry text; M1 reads correction-decision provenance, M7 checks the new lookup entries and the parking report, and M6 checks the report's two exact cut quotations.
+Report-only findings necessarily inspect the report as well as the store.
+The original 34 content expectations are extended to include the five new entries and the revised text, and the four original dependency checks remain intact.
+
+| file:line | First failing output before publication |
+|---|---|
+| .drafts/task-11a/fix1/verify.ts:9 | FAIL I1 Python and TypeScript structure rules |
+| .drafts/task-11a/fix1/verify.ts:10 | FAIL M1 minimal new number handles and minute evidence |
+| .drafts/task-11a/fix1/verify.ts:11 | FAIL M2 local and remote branch checks |
+| .drafts/task-11a/fix1/verify.ts:12 | FAIL M3 only mapped decisions and threads have writer checks |
+| .drafts/task-11a/fix1/verify.ts:13 | FAIL M4 attachment exception reads clearly |
+| .drafts/task-11a/fix1/verify.ts:14 | FAIL M5 remove unrelated viewer sentence |
+| .drafts/task-11a/fix1/verify.ts:15 | FAIL M6 report accounts for both dropped sentences |
+| .drafts/task-11a/fix1/verify.ts:16 | FAIL M7 split task and import lookups and account for parked project |
+| .drafts/task-11a/fix1/verify.ts:17 | FAIL M8 task claims have no invented steps |
+| .drafts/task-11a/fix1/verify.ts:18 | FAIL M9 use settling decision handles |
+
+After each add, `lodge spec | grep 'changed since'` still prints just the two explanatory sentences in s-7wbv0e and s-kba448.
+There is no dependency freshness warning to resolve.
+
+| Command | Result |
+|---|---|
+| `lodge add --dry-run .drafts/task-11a/fix1/SECTION/*.md`, followed by the matching add, for constraints, model, export, and import | Four successful dry runs, then the four decisions listed above; no record hand edits. |
+| `bun .drafts/task-11a/verify-records.ts --fix1` | `10 passed; 0 failed; 10 fix-round checks`. |
+| `bun .drafts/task-11a/verify-records.ts` | `39 passed; 0 failed; 39 acceptance checks`. |
+| `bun .drafts/task-11a/verify-links.ts` | `4 passed; 0 failed; 4 dependency checks`. |
+| `uv run --frozen --quiet lodge check` | `ok`. |
+| `uv run --frozen --quiet lodge spec` filtered for `changed since` after every add | Two explanatory sentences, accounted for above. |
+| `sh scripts/check.sh` | Exit 0; 1,399 Python tests and 2,137 TypeScript tests pass; 460 records, 10 areas, 0 problems, and 0 differential differences; round-trip test passes. |
+| `git diff --cached --check` and `git diff --check` | Exit 0, no output. |
+
+Drafts and acceptance scripts remain ignored under `.drafts/task-11a/`.
+No implementation, dependency, permanent test, frozen document, earlier brief, or review changes.
+The parked project split and the additional Constraints suggestion are the only remaining review concerns.
+The final verification command, `sh scripts/check-ts.sh`, exits 0 with `2137 pass`, `0 fail`, and `Ran 2137 tests across 191 files. [11.62s]`, including the structure checks.
