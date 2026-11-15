@@ -53,6 +53,9 @@ const extras = new Set([
   "HeldMessage",
   "Held",
   "Approved",
+  "importStore",
+  "prepareImport",
+  "ZeroTwoCopy",
 ]);
 
 test("front_door_exports_every_python_name", () => {
