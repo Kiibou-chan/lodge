@@ -532,7 +532,7 @@
     "why": "a package marker; TypeScript tests need none"
   },
   "tests/gitstore/conftest.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 4,
     "ts": ["ts/tests/git/isolated.ts"],
     "why": "isolated git for the importer's and the export's tests"
@@ -543,10 +543,10 @@
     "why": "design line 72: records live in the server's events, not in files in git"
   },
   "tests/gitstore/repos.py": {
-    "status": "planned",
+    "status": "changed",
     "plan": 4,
     "ts": ["ts/tests/git/repos.ts"],
-    "why": "repositories in a temporary folder for the importer and the export"
+    "why": "design line 72: records live in the server's events, not in files in git; the helpers of lodge 0.2's git store (`initialised`, `publish_one`, `checkout_project`, `Ticker`) have no counterpart, and the repository helpers are carried"
   },
   "tests/gitstore/test_branch.py": {
     "status": "changed",
