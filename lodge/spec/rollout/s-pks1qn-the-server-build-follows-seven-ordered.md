@@ -12,4 +12,3 @@ The server build proceeds in this order:
 5. Workflow as data, claimed and checked, usage, and stuck work.
 6. Code views and GitHub connector.
 7. Sign-in for several people, invitations, roles, and artefact sharing.
-Until step 7, one person signs in; passkeys arrive in step 1.

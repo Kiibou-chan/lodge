@@ -1157,6 +1157,88 @@ Historical scope and carried-test rules also have no invented build step.
 | Ignored Bun and Python drafting/report helpers | Drafts prepared outside lodge; report appended without changing historical sections; freeze edits made in the required internal order |
 | Explicit-path commit with the requested identity and Codex trailer; git push origin server-import-records | Commit and push performed after both gates pass |
 
+### Task 11c fix round 1
+
+d-z8h78d corrects the review findings as the main new coordinator/product decision with 13 supporting reaffirmation decisions, narrowing the 18 listed Task 11c coordinator decisions only.
+The coordinator confirmed the overlap choices, the correction of immutable reasoning and metadata, and the placement of the sign-in claim.
+All published decisions remain byte-for-byte unchanged, and no author decision is narrowed or replaced.
+The earlier file table records the original import; this section records its corrections.
+
+| Finding | Change and evidence |
+|---|---|
+| I1 | Retire s-bnnw4m and s-5wysdb because s-bxws89 and s-h1e6jc already include their content, including step-6 code; retire s-5cs27z and put GitHub reads in s-nhx8zw |
+| I1 lesser overlaps | Keep s-9sjp9z's task merge capability linked to s-xy6qte's main-branch permission constraint; keep s-8ysrep's step-3 browser view linked to s-paf12c's step-2 list content |
+| M1 | Deduplicate the retired s-5wysdb prerequisite list |
+| M2 | The new decisions supply a concrete prerequisite and its still-current entry for each reaffirmed claim of d-tan3tb, d-z5yvk7, and d-m5mwcm, including the source, mapped, and atomic-refusal import rules; the old reasoning stays immutable |
+| M3 | s-pks1qn keeps the ordered build list; s-c0bd0b alone carries the one-person period and passkeys in step 1, including the reason that the first Funnel reaches beyond one machine |
+| M4 | s-anc255 keeps talking inside lodge; s-5246t5 holds lifting the viewer exclusion; s-d9v0m2 holds security; s-t7wqxn keeps local tokens; s-7vpsy0 holds shared cloud tokens |
+| M5 | The corrective decisions give exact design lines for build steps, lodge 0.2, real quantities of one, and the third fix round; incidental words such as someone's own claim receive no quantity handle |
+| M6 | The correction cites d-zzfmj2 and d-jtxwg3, whose reasoning describes the temporary approval page and expressly leaves the full interaction open; d-s5fa8n in the brief/review is a typo for s-s5fa8n |
+| M7 | The correction supplies the plan work item for d-k7z7ns, d-78efj7, and d-2zsf4a; those published decisions stay immutable |
+| M8 | s-fe4kyr names mailbox layout in its title and retains one API for interface, command, and MCP server; the new decision states what remains open and why the design delegates it |
+| M9 | Left as requested: the author's agreement to session features first remains decision history in d-98fmhx's reasoning; the build-order claims remain mapped at lines 294 to 302 |
+
+133 current entries are created, corrected, or reaffirmed in the same add, with the full dependant closure and concrete entry-specific prerequisites.
+The dry run accepted the combined correction, with only related-decision feedback answered in the reasoning.
+The original combined draft exceeded the reasoning-length guidance, so its concrete reaffirmations were divided into 13 supporting decisions, each below 1,000 words.
+The main corrective decision narrows d-2zsf4a, d-4wrzdf, d-5ma843, d-78efj7, d-79gjg2, d-98fmhx, d-9cr8e6, d-d816nz, d-k65afn, d-k7z7ns, d-m5mwcm, d-nqxsax, d-pcxpyq, d-rgta90, d-shgdb0, d-tan3tb, d-vsd6q2, d-z5yvk7 for the named corrections, retaining their other section claims and reasons.
+
+| file:line | Change |
+|---|---|
+| lodge/decisions/d-4pk83g-correct-server-import-records-reaffirm-prerequisite.md:1 | New correction and concrete reaffirmations |
+| lodge/decisions/d-7pp6zm-correct-server-import-records-reaffirm-prerequisite.md:1 | New correction and concrete reaffirmations |
+| lodge/decisions/d-9jjvx1-correct-server-import-records-reaffirm-prerequisite.md:1 | New correction and concrete reaffirmations |
+| lodge/decisions/d-edj27k-correct-server-import-records-reaffirm-prerequisite.md:1 | New correction and concrete reaffirmations |
+| lodge/decisions/d-h0278t-correct-server-import-records-reaffirm-prerequisite.md:1 | New correction and concrete reaffirmations |
+| lodge/decisions/d-hn1wjb-correct-server-import-records-reaffirm-prerequisite.md:1 | New correction and concrete reaffirmations |
+| lodge/decisions/d-k32haa-correct-server-import-records-reaffirm-prerequisite.md:1 | New correction and concrete reaffirmations |
+| lodge/decisions/d-nrh0nv-correct-server-import-records-reaffirm-prerequisite.md:1 | New correction and concrete reaffirmations |
+| lodge/decisions/d-pz9pee-correct-server-import-records-reaffirm-prerequisite.md:1 | New correction and concrete reaffirmations |
+| lodge/decisions/d-qy70zj-correct-server-import-records-reaffirm-prerequisite.md:1 | New correction and concrete reaffirmations |
+| lodge/decisions/d-rvfvqy-correct-server-import-records-reaffirm-prerequisite.md:1 | New correction and concrete reaffirmations |
+| lodge/decisions/d-xka649-correct-server-import-records-reaffirm-prerequisite.md:1 | New correction and concrete reaffirmations |
+| lodge/decisions/d-xr47rm-correct-server-import-records-reaffirm-prerequisite.md:1 | New correction and concrete reaffirmations |
+| lodge/decisions/d-z8h78d-correct-server-import-records-after-task.md:1 | New correction and concrete reaffirmations |
+| lodge/spec/model/s-c0bd0b-a-person-signs-in-with-passkeys.md:1 | Correct or split the claims described above |
+| lodge/spec/purpose/s-nhx8zw-pull-request-and-ci-integration-starts.md:1 | Correct or split the claims described above |
+| lodge/spec/reading/_area.md:1 | Remove retired entries and order split claims |
+| lodge/spec/reading/s-5wysdb-the-browser-presents-task-context-and.md:1 | Correct or split the claims described above |
+| lodge/spec/rollout/s-fe4kyr-builder-choices-include-workflow-syntax-and.md:1 | Correct or split the claims described above |
+| lodge/spec/rollout/s-pks1qn-the-server-build-follows-seven-ordered.md:1 | Correct or split the claims described above |
+| lodge/spec/sessions/_area.md:1 | Remove retired entries and order split claims |
+| lodge/spec/sessions/s-5246t5-the-server-lifts-the-viewer-exclusion.md:1 | Correct or split the claims described above |
+| lodge/spec/sessions/s-anc255-sessions-lodge-starts-are-talked-to.md:1 | Correct or split the claims described above |
+| lodge/spec/sessions/s-d9v0m2-talking-to-sessions-relies-on-sign.md:1 | Correct or split the claims described above |
+| lodge/spec/storage/_area.md:1 | Remove retired entries and order split claims |
+| lodge/spec/storage/s-7vpsy0-cloud-sessions-share-their-environment-project.md:1 | Correct or split the claims described above |
+| lodge/spec/storage/s-t7wqxn-local-session-tokens-end-with-the.md:1 | Correct or split the claims described above |
+| lodge/spec/work/_area.md:1 | Remove retired entries and order split claims |
+
+Acceptance extends the existing ignored script with `bun .drafts/task-11c/manage.ts verify fix-round1`.
+
+| Probe | First failure against the current store | file:line |
+|---|---|---|
+| I1, including line map | Three withdrawals, canonical GitHub reads, and lines 272 and 273 fail | .drafts/task-11c/fix-round1/acceptance.ts:8 |
+| M1 | Duplicate prerequisite fails | .drafts/task-11c/fix-round1/acceptance.ts:10 |
+| M2 | Each of the three concrete-reason corrections fails | .drafts/task-11c/fix-round1/acceptance.ts:14 |
+| M3 and M4 | Single sign-in claim and both split assertions fail | .drafts/task-11c/fix-round1/acceptance.ts:18 |
+| M5 to M8 | Precise numbers, approval provenance, work-item corrections, mailbox title, shared API, and substantive decision fail | .drafts/task-11c/fix-round1/acceptance.ts:21 |
+
+The final baseline run reports 20 failed assertions before the adds; no store mutation was used for the red run.
+After the dry-run and add, all 20 assertions pass.
+Drafts, source snapshots, scripts, and logs remain ignored under .drafts/task-11c/.
+
+`uv run --frozen --quiet lodge check` prints `ok`.
+`sh scripts/check.sh` exits 0: 1,399 Python tests, 2,137 TypeScript tests, the structure gate, lodge gate, and the differential check pass; the differential summary is `0 differences`.
+The differential helper also passes its test with seven expectations.
+The acceptance command reports `0 failed` after its 20 baseline failures.
+A line-map audit confirms 310 rows, every mapping naming a current entry, with no gaps or duplicate lines.
+The audit also confirms the earlier report sections, frozen design, and published decisions are unchanged.
+`lodge waiting` shows nothing for agent or author, and no current-entry heading has a changed-since mark; s-7wbv0e and s-kba448 retain their explanatory mentions only.
+`git diff --check` and `git diff --cached --check` pass.
+`sh scripts/check-ts.sh` is run last before the explicit-path commit and push to server-import-records.
+M9 is the only finding deliberately left as is, for the decision-history reason above.
+
 ### Complete design-line map
 
 Every original design line from 8 through 317 is accounted for below.
@@ -1359,7 +1441,7 @@ Unnumbered means Build order does not explicitly assign that claim a step.
 | 198 | s-25m983 | Design claim retained; no step explicitly assigned |
 | 199 | s-vg9y38 | Design claim retained; no step explicitly assigned |
 | 200 | s-68vtrb | Design claim retained; no step explicitly assigned |
-| 201 | s-anc255 | Design claim retained; no step explicitly assigned |
+| 201 | s-anc255, s-5246t5, s-d9v0m2 | Talking, lifted viewer exclusion, and security held separately |
 | 202 | Omitted | Blank separator; no independent claim |
 | 203 | Omitted | Section heading; no independent claim |
 | 204 | Omitted | Blank separator; no independent claim |
@@ -1413,14 +1495,14 @@ Unnumbered means Build order does not explicitly assign that claim a step.
 | 252 | s-dv5e12 | Design claim retained; no step explicitly assigned |
 | 253 | s-40yykh | Design claim retained in the named entry or entries |
 | 254 | s-42kzcz | Design claim retained in the named entry or entries |
-| 255 | s-5cs27z | Design claim retained in the named entry or entries |
-| 256 | s-1k9wbc, s-18jj1r, s-p02emc, s-9sjp9z | Design claim retained in the named entry or entries |
+| 255 | s-nhx8zw, s-9sjp9z, s-xy6qte | GitHub reads, task merge capability, and permission constraint linked without repeating claims |
+| 256 | s-1k9wbc, s-18jj1r, s-p02emc, s-9sjp9z | Task branch and diff, sessions, comments, and authorised merge capability |
 | 257 | Omitted | Blank separator; no independent claim |
 | 258 | Omitted | Section heading; no independent claim |
 | 259 | Omitted | Blank separator; no independent claim |
 | 260 | s-c0bd0b, s-sezq1z | Design claim retained in the named entry or entries |
 | 261 | s-x7sw4r, s-pjnxhg | Design claim retained in the named entry or entries |
-| 262 | s-t7wqxn | Design claim retained; no step explicitly assigned |
+| 262 | s-t7wqxn, s-7vpsy0 | Local session tokens and shared cloud project tokens held separately |
 | 263 | s-bk3f8p | Design claim retained; no step explicitly assigned |
 | 264 | Omitted | Blank separator; no independent claim |
 | 265 | Omitted | Section heading; no independent claim |
@@ -1429,9 +1511,9 @@ Unnumbered means Build order does not explicitly assign that claim a step.
 | 268 | s-w46592 | Design claim retained in the named entry or entries |
 | 269 | s-ksg593 | Design claim retained in the named entry or entries |
 | 270 | Omitted | Blank separator; no independent claim |
-| 271 | s-8ysrep | Design claim retained in the named entry or entries |
-| 272 | s-bnnw4m | Design claim retained in the named entry or entries |
-| 273 | s-5wysdb | Design claim retained in the named entry or entries |
+| 271 | s-8ysrep | Browser waiting-list view at step 3, linked to step-2 content in s-paf12c |
+| 272 | s-bxws89 | Canonical board claim; s-bnnw4m withdrawn |
+| 273 | s-h1e6jc | Canonical task page including step-6 code; s-5wysdb withdrawn |
 | 274 | s-7pfk9d | Design claim retained in the named entry or entries |
 | 275 | s-y019g9 | Design claim retained in the named entry or entries |
 | 276 | s-fns8m3 | Design claim retained; no step explicitly assigned |
@@ -1462,7 +1544,7 @@ Unnumbered means Build order does not explicitly assign that claim a step.
 | 301 | s-pks1qn | Design claim retained in the named entry or entries |
 | 302 | s-pks1qn | Design claim retained in the named entry or entries |
 | 303 | Omitted | Blank separator; no independent claim |
-| 304 | s-c0bd0b | Design claim retained in the named entry or entries |
+| 304 | s-c0bd0b | One-person period and passkeys step 1, with the first-Funnel reason |
 | 305 | Omitted | Blank separator; no independent claim |
 | 306 | Omitted | Section heading; no independent claim |
 | 307 | Omitted | Blank separator; no independent claim |
@@ -1472,7 +1554,7 @@ Unnumbered means Build order does not explicitly assign that claim a step.
 | 311 | Omitted | Section heading; no independent claim |
 | 312 | Omitted | Blank separator; no independent claim |
 | 313 | s-fe4kyr | Design claim retained; no step explicitly assigned |
-| 314 | s-fe4kyr | Design claim retained; no step explicitly assigned |
+| 314 | s-fe4kyr | JSON HTTP within one API for interface, command, and MCP server |
 | 315 | s-fe4kyr | Design claim retained; no step explicitly assigned |
-| 316 | s-fe4kyr | Design claim retained; no step explicitly assigned |
+| 316 | s-fe4kyr | Mailbox file layout remains open and is named in the entry title |
 | 317 | s-fe4kyr | Design claim retained; no step explicitly assigned |

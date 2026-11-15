@@ -2,7 +2,7 @@
 id: s-5wysdb
 kind: spec
 title: "The browser presents task context and code"
-rests_on: [s-h1e6jc, s-ksg593, s-pks1qn, s-pks1qn]
+rests_on: [s-h1e6jc, s-ksg593, s-pks1qn]
 ---
 
 From build step 3, the browser presents a task's steps, sessions, threads, artefacts, and decisions.
