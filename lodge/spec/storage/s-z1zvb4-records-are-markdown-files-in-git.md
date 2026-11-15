@@ -1,8 +1,9 @@
 ---
 id: s-z1zvb4
 kind: spec
-title: "Records are Markdown files in git behind one interface"
+title: "Records live in git files or server events"
 ---
 
-Records are files in git, one record per file, behind one storage interface so that a server can replace it later.
-A record file is Markdown with a YAML header: the header for programs, the body for people.
+lodge 0.2 keeps records as Markdown files with YAML headers in git, one record per file, behind a storage interface.
+On the server, records live as events in one append-only SQLite table.
+Each event that writes a record holds its path and file bytes; other tables are derived from events and can be rebuilt.
