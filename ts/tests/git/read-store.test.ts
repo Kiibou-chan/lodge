@@ -32,7 +32,11 @@ test("branch_layout_without_a_settings_revision_has_no_settings", async () => {
 });
 test.each(["rev", "settingsRev"])("revision_that_is_no_commit_is_refused %s", async (which) => {
   const source = await zeroTwoRepository("checkout");
-  const result = readStore(source.repository, which === "rev" ? "nope" : source.rev, "nope");
+  const result = readStore(
+    source.repository,
+    which === "rev" ? "nope" : source.rev,
+    which === "rev" ? source.rev : "nope",
+  );
   await expect(result).rejects.toBeInstanceOf(LodgeError);
   await expect(result).rejects.toThrow(`nope is not a commit in ${source.repository}`);
 });

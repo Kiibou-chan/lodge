@@ -1,9 +1,12 @@
-import { realpathSync, statSync } from "node:fs";
+import { lstatSync, readlinkSync, statSync } from "node:fs";
 import { dirname, isAbsolute, parse } from "node:path";
 import { LodgeError } from "#app";
 import { attempt, run } from "./run.ts";
 
 export function resolvePath(path: string): string {
+  return resolveLinks(path, new Set());
+}
+function resolveLinks(path: string, links: Set<string>): string {
   const absolute = isAbsolute(path) ? path : `${process.cwd()}/${path}`;
   const root = parse(absolute).root;
   let resolved = root;
@@ -15,7 +18,13 @@ export function resolvePath(path: string): string {
     }
     const next = `${resolved === root ? root : `${resolved}/`}${part}`;
     try {
-      resolved = realpathSync(next);
+      if (lstatSync(next).isSymbolicLink()) {
+        if (links.has(next)) throw new Error(`Symbolic link loop at ${next}`);
+        links.add(next);
+        const target = readlinkSync(next);
+        resolved = resolveLinks(isAbsolute(target) ? target : `${resolved}/${target}`, links);
+        links.delete(next);
+      } else resolved = next;
     } catch (error) {
       if (
         !(error instanceof Error) ||

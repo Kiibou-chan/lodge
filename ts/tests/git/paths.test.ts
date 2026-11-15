@@ -37,3 +37,9 @@ test("is_folder_says_whether_a_folder_exists", () => {
   symlinkSync(root, join(root, "link"));
   expect(isFolder(join(root, "link"))).toBe(true);
 });
+
+test("resolve_follows_a_dangling_link_before_dot_dot", () => {
+  const root = temporaryFolder();
+  symlinkSync("missing/child", join(root, "linked"));
+  expect(resolvePath(`${root}/linked/../file.md`)).toBe(join(root, "missing/file.md"));
+});
