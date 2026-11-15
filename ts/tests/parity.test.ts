@@ -11,7 +11,7 @@ const rows = Object.entries(parity) as [
   string,
   { status: string; plan?: number; ts: string[]; why?: string },
 ][];
-function held(row: { status: string; plan?: number }, plans = [2]): boolean {
+function held(row: { status: string; plan?: number }, plans = [2, 3]): boolean {
   return row.status === "ported" || (row.status === "changed" && plans.includes(row.plan ?? 0));
 }
 function files(dir: string): string[] {
@@ -41,7 +41,7 @@ test("planned_rows_name_a_plan", () => {
 });
 test("ported_files_exist", () => {
   for (const [, r] of rows)
-    if (held(r, [1, 2])) for (const p of r.ts) expect(existsSync(`${root}/${p}`)).toBe(true);
+    if (held(r, [1, 2, 3])) for (const p of r.ts) expect(existsSync(`${root}/${p}`)).toBe(true);
 });
 test("ported_files_keep_every_python_test_name", () => {
   for (const [p, r] of rows) if (held(r)) expect(rowMissing(root, p, r)).toEqual([]);
@@ -81,4 +81,23 @@ test("a_changed_plan_2_file_losing_a_name_fails", () => {
   });
   const row = { status: "changed", plan: 2, ts: ["tests/sample.test.ts"] };
   expect(held(row) ? rowMissing(fixture, "tests/sample.py", row) : []).toEqual(["b"]);
+});
+
+test("dropped_names_are_python_tests_of_a_changed_row", () => {
+  for (const [path, row] of rows) {
+    const dropped = (row as { dropped?: string[] }).dropped;
+    if (!dropped) continue;
+    expect(row.status).toBe("changed");
+    const names = pythonTestNames(readFileSync(`${root}/${path}`, "utf8"));
+    for (const name of dropped) expect(names).toContain(name);
+  }
+});
+test("dropped_names_are_excluded_from_missing", () => {
+  const fixture = plant({
+    "tests/sample.py": "def test_a(): pass\ndef test_b(): pass",
+    "tests/sample.test.ts": 'test("a",()=>{})',
+  });
+  expect(
+    rowMissing(fixture, "tests/sample.py", { ts: ["tests/sample.test.ts"], dropped: ["b"] }),
+  ).toEqual([]);
 });

@@ -5,6 +5,7 @@ export {
   behindArea,
   confirmableIds,
   confirmationDraft,
+  /** @public */
   MINUTE_FORMAT,
   VIEWER,
 } from "./confirmation.ts";
@@ -30,12 +31,15 @@ export {
   type Change,
   type Decision,
   decision,
+  /** @public */
   type Imported,
   type Message,
   message,
+  /** @public */
   type NumberHandle,
   type Problem,
   problem,
+  /** @public */
   type Quote,
   Raises,
   type Record,
@@ -49,11 +53,18 @@ export {
   areaNames,
   type Branch,
   derivedOrder,
+  /** @public */
   type Placement,
   restsOnTree,
   writtenOrder,
 } from "./order.ts";
-export { type Placed, renderSpec, type SpecArea, specView } from "./render.ts";
+export {
+  /** @public */
+  type Placed,
+  renderSpec,
+  type SpecArea,
+  specView,
+} from "./render.ts";
 export {
   AmbiguousRef,
   type Filters,
@@ -72,6 +83,7 @@ export {
   failingIds,
   formatLevel1,
   formatLevel3,
+  /** @public */
   headParts,
   type Level1,
   type Level3,

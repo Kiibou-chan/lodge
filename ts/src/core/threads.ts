@@ -18,6 +18,7 @@ import { READ_BACK_FIELDS } from "./read-back-fields.ts";
 import { instant } from "./stamps.ts";
 import { byCodePoint, strip } from "./text.ts";
 import { quoted } from "./yamlio.ts";
+/** @public */
 export const THREADS = "lodge/threads/";
 const HEADING = /^## Message [0-9]+$/u;
 const ESCAPE = /(?<=^|\n)\\*## Message [0-9]+(?=\n|$)/gu;

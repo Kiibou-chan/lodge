@@ -45,10 +45,10 @@ function missingNames(python: string, typescript: string): string[] {
 export function rowMissing(
   root: string,
   pythonPath: string,
-  row: { ts: readonly string[] },
+  row: { ts: readonly string[]; dropped?: readonly string[] },
 ): string[] {
   return missingNames(
     readFileSync(`${root}/${pythonPath}`, "utf8"),
     row.ts.map((path) => readFileSync(`${root}/${path}`, "utf8")).join("\n"),
-  );
+  ).filter((name) => !row.dropped?.includes(name));
 }

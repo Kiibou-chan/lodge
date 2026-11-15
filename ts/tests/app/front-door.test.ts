@@ -27,6 +27,10 @@ const names = [...all.matchAll(/"([A-Za-z_][A-Za-z_0-9]*)"/gu)].map((m) => {
 });
 const expected = new Set(names);
 const extras = new Set([
+  "Accounts",
+  "AgentToken",
+  "Passkey",
+  "ServerSetup",
   "committed",
   "gate",
   "read",
@@ -40,6 +44,7 @@ const extras = new Set([
   "actorText",
   "Role",
   "Projects",
+  "PROJECT_NAME",
   "stampOf",
   "minuteOf",
   "Forbidden",

@@ -6,14 +6,19 @@
   "imports": {
     "#core": "./src/core/index.ts",
     "#app": "./src/app/index.ts",
-    "#store": "./src/store/index.ts"
+    "#store": "./src/store/index.ts",
+    "#cli": "./src/cli/index.ts",
+    "#api": "./src/api/index.ts"
   },
   "scripts": {
-    "check": "biome check --error-on-warnings . && tsc --noEmit -p . && depcruise src tests scripts --config .dependency-cruiser.cjs && knip && bun test"
+    "check": "biome check --error-on-warnings . && tsc --noEmit -p . && depcruise src tests scripts --config .dependency-cruiser.cjs && knip && bun test",
+    "build": "bun build --compile src/main.ts --outfile dist/lodge"
   },
   "dependencies": {
     "@noble/hashes": "2.4.0",
+    "@simplewebauthn/server": "14.0.3",
     "kysely": "0.29.7",
+    "smol-toml": "1.9.1",
     "yaml": "2.9.1"
   },
   "devDependencies": {
@@ -22,5 +27,6 @@
     "dependency-cruiser": "18.6.0",
     "knip": "6.42.0",
     "typescript": "6.0.3"
-  }
+  },
+  "version": "0.3.0"
 }

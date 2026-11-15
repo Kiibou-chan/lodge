@@ -1,4 +1,5 @@
 import type { Raises, Tree } from "#core";
+import { LodgeError } from "./errors.ts";
 
 export interface Now {
   readonly epochMs: number;
@@ -76,16 +77,22 @@ export function agent(role: string | null = null): Actor {
   return { kind: "agent", role };
 }
 export function actorText(actor: Actor): string {
-  return actor.kind === "person"
-    ? actor.name
-    : actor.role === null
-      ? "agent"
-      : `agent ${actor.role}`;
+  const text =
+    actor.kind === "person" ? actor.name : actor.role === null ? "agent" : `agent ${actor.role}`;
+  if (/[\p{Cc}\p{Zl}\p{Zp}]/u.test(text))
+    throw new LodgeError("actor text must not contain control characters or line breaks");
+  return text;
 }
 export const Role = { OWNER: "owner", MEMBER: "member" } as const;
 export type Role = (typeof Role)[keyof typeof Role];
 export interface Projects {
-  create(project: string, owner: string): Promise<void>;
+  create(
+    project: string,
+    owner: string,
+    settings?: Readonly<Record<string, unknown>>,
+  ): Promise<void>;
+  settings(project: string): Promise<Readonly<Record<string, unknown>> | null>;
+  names(): Promise<readonly string[]>;
   members(project: string): Promise<ReadonlyMap<string, Role>>;
   addMember(project: string, person: string, role: Role, by: Actor): Promise<void>;
   storeFor(project: string, actor: Actor): Store;
@@ -101,6 +108,7 @@ export interface HeldAdd {
   readonly importing: boolean;
   readonly message: string;
 }
+/** @public */
 export interface HeldMessage {
   readonly kind: "message";
   readonly person: string;

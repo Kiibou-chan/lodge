@@ -37,7 +37,7 @@
     "task": ["9"]
   },
   "tests/app/test_thread_fix_paths.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 3,
     "ts": ["ts/tests/app/thread-fix-paths.test.ts"]
   },
@@ -327,22 +327,24 @@
     "why": "a package marker; TypeScript tests need none"
   },
   "tests/e2e/conftest.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 3,
     "ts": ["ts/tests/e2e/project.ts"]
   },
   "tests/e2e/support.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 3,
     "ts": ["ts/tests/e2e/support.ts"]
   },
   "tests/e2e/test_add_attach.py": {
-    "status": "planned",
+    "status": "changed",
     "plan": 3,
-    "ts": ["ts/tests/e2e/add-attach.test.ts"]
+    "ts": ["ts/tests/e2e/add-attach.test.ts"],
+    "dropped": ["attachment_lands_on_the_branch_in_branch_mode"],
+    "why": "design line 72: no branch mode on the server; store for git in the other tests"
   },
   "tests/e2e/test_add_bad_yaml_exits_2_naming_file_and_line.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 3,
     "ts": ["ts/tests/e2e/add-bad-yaml-exits-2-naming-file-and-line.test.ts"]
   },
@@ -352,48 +354,51 @@
     "why": "design line 72: records live in the server's events, not in files in git"
   },
   "tests/e2e/test_add_dry_run.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 3,
     "ts": ["ts/tests/e2e/add-dry-run.test.ts"]
   },
   "tests/e2e/test_add_failing_check_exits_1.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 3,
     "ts": ["ts/tests/e2e/add-failing-check-exits-1.test.ts"]
   },
   "tests/e2e/test_add_import.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 3,
     "ts": ["ts/tests/e2e/add-import.test.ts"]
   },
   "tests/e2e/test_add_new_decision_entry_area.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 3,
     "ts": ["ts/tests/e2e/add-new-decision-entry-area.test.ts"]
   },
   "tests/e2e/test_add_non_string_scalar_exits_2.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 3,
     "ts": ["ts/tests/e2e/add-non-string-scalar-exits-2.test.ts"]
   },
   "tests/e2e/test_before_init_one_sentence_exit_2.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 3,
     "ts": ["ts/tests/e2e/before-init-one-sentence-exit-2.test.ts"]
   },
   "tests/e2e/test_broken_agent_decision_warns_above_show.py": {
-    "status": "planned",
+    "status": "changed",
     "plan": 3,
-    "ts": ["ts/tests/e2e/broken-agent-decision-warns-above-show.test.ts"]
+    "ts": ["ts/tests/e2e/broken-agent-decision-warns-above-show.test.ts"],
+    "why": "d-4qv0xb: the store refuses a rewritten decision (d-j28rp0), so one hand edit writes the broken agent decision as a new file and the entry's edited text, the state the Python test reaches",
+    "dropped": []
   },
   "tests/e2e/test_check_and_gate.py": {
     "status": "changed",
     "plan": 3,
     "ts": ["ts/tests/e2e/check-and-gate.test.ts"],
-    "why": "design line 79: the check runs on every write, and the published state becomes the server's current state"
+    "why": "design line 79: published state is current, so check 5 cannot fire; d-4qv0xb writes a new decision failing check 3 by hand, and the gate notes it as already published and passes; a gate after seed has no new records to note",
+    "dropped": ["gate_passes_with_notes_for_new_records"]
   },
   "tests/e2e/test_draft_then_add_edit.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 3,
     "ts": ["ts/tests/e2e/draft-then-add-edit.test.ts"]
   },
@@ -408,14 +413,18 @@
     "why": "design line 79: the check runs on every write, and the published state becomes the server's current state"
   },
   "tests/e2e/test_guide.py": {
-    "status": "planned",
+    "status": "changed",
     "plan": 3,
-    "ts": ["ts/tests/e2e/guide.test.ts"]
+    "ts": ["ts/tests/e2e/guide.test.ts"],
+    "why": "design line 72: guide lines about git, branch modes, the rewritten branch, and the machine clock describe the server instead; d-znagqe and d-2v8vtk explain approval",
+    "dropped": []
   },
   "tests/e2e/test_help_lists_every_command.py": {
-    "status": "planned",
+    "status": "changed",
     "plan": 3,
-    "ts": ["ts/tests/e2e/help-lists-every-command.test.ts"]
+    "ts": ["ts/tests/e2e/help-lists-every-command.test.ts"],
+    "why": "d-sry12f: view waits for step 3 and hook for plan 4; d-vfyex3: version_works_anywhere prints ts/package.json version",
+    "dropped": []
   },
   "tests/e2e/test_hook_feedback_after_hand_edits.py": {
     "status": "changed",
@@ -430,7 +439,7 @@
     "why": "design line 290: the hook's advice changes for a project that has moved"
   },
   "tests/e2e/test_id.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 3,
     "ts": ["ts/tests/e2e/id.test.ts"]
   },
@@ -438,7 +447,8 @@
     "status": "changed",
     "plan": 3,
     "ts": ["ts/tests/e2e/init.test.ts"],
-    "why": "design line 72: records live in the server's events, not in files in git; `init` names the server and the project"
+    "why": "design line 72: init creates a project on the server, writes no checkout file, and names the project and server; store replaces git in init",
+    "dropped": ["init_in_an_unwritable_checkout"]
   },
   "tests/e2e/test_init_branch_mode.py": {
     "status": "changed",
@@ -451,54 +461,60 @@
     "why": "design line 72: records live in the server's events, not in files in git; `add` runs no git"
   },
   "tests/e2e/test_malformed_settings_one_sentence_exit_2.py": {
-    "status": "planned",
+    "status": "changed",
     "plan": 3,
-    "ts": ["ts/tests/e2e/malformed-settings-one-sentence-exit-2.test.ts"]
+    "ts": ["ts/tests/e2e/malformed-settings-one-sentence-exit-2.test.ts"],
+    "why": "d-1zmfdr: store is an unknown section on the server; d-dfkqec: the fourth case refuses title_chars = 80.0",
+    "dropped": []
   },
   "tests/e2e/test_outside_repository_one_sentence_exit_2.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 3,
     "ts": ["ts/tests/e2e/outside-repository-one-sentence-exit-2.test.ts"]
   },
   "tests/e2e/test_same_second.py": {
-    "status": "planned",
+    "status": "changed",
     "plan": 3,
-    "ts": ["ts/tests/e2e/same-second.test.ts"]
+    "ts": ["ts/tests/e2e/same-second.test.ts"],
+    "dropped": ["agent_edit_in_the_same_second_publishes_in_branch_mode"],
+    "why": "design line 72: no branch mode on the server; the clock that stands still is the server's"
   },
   "tests/e2e/test_search.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 3,
     "ts": ["ts/tests/e2e/search.test.ts"]
   },
   "tests/e2e/test_search_limit.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 3,
     "ts": ["ts/tests/e2e/search-limit.test.ts"]
   },
   "tests/e2e/test_search_shows_unparsable_file.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 3,
     "ts": ["ts/tests/e2e/search-shows-unparsable-file.test.ts"]
   },
   "tests/e2e/test_show_ambiguous_code_one_line.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 3,
     "ts": ["ts/tests/e2e/show-ambiguous-code-one-line.test.ts"]
   },
   "tests/e2e/test_show_levels.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 3,
     "ts": ["ts/tests/e2e/show-levels.test.ts"]
   },
   "tests/e2e/test_spec.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 3,
     "ts": ["ts/tests/e2e/spec.test.ts"]
   },
   "tests/e2e/test_threads.py": {
-    "status": "planned",
+    "status": "changed",
     "plan": 3,
-    "ts": ["ts/tests/e2e/threads.test.ts"]
+    "ts": ["ts/tests/e2e/threads.test.ts"],
+    "dropped": ["thread_files_are_staged_not_committed"],
+    "why": "design line 72: a thread is written to the server store, with nothing staged or committed; store for git in the other tests; author_words_are_recorded_exactly is held and approved through the person session (d-bwb1tt, d-2v8vtk, d-4qv0xb)"
   },
   "tests/e2e/test_view.py": {
     "status": "later",
@@ -506,7 +522,7 @@
     "why": "later: step 3, the interface (design lines 275 and 298)"
   },
   "tests/e2e/test_waiting.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 3,
     "ts": ["ts/tests/e2e/waiting.test.ts"]
   },
@@ -631,7 +647,7 @@
     "why": "design line 58: the rules carry over as rules, enforced over the TypeScript import graph, not test by test"
   },
   "tests/test_entry_point.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 3,
     "ts": ["ts/tests/e2e/binary.test.ts"],
     "why": "design line 55: the command ships as a binary built with `bun build --compile`"
@@ -658,7 +674,8 @@
     "status": "changed",
     "plan": 3,
     "ts": ["ts/tests/e2e/binary.test.ts"],
-    "why": "design line 55: the command ships as a binary built with `bun build --compile`, not a wheel"
+    "why": "design line 55: the command ships as a binary built with `bun build --compile`, not a wheel",
+    "dropped": ["installed_wheel_runs"]
   },
   "tests/viewer/__init__.py": {
     "status": "changed",

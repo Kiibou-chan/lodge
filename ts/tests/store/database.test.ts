@@ -5,7 +5,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { sql } from "kysely";
 import { LodgeError } from "#app";
-import { type LodgeDatabase, openDatabase, rebuild } from "#store";
+import { type LodgeDatabase, openDatabase, rebuild, SqliteProjects } from "#store";
+import { FixedClock } from "../app/fakes.ts";
 
 const roots: string[] = [];
 const databases: LodgeDatabase[] = [];
@@ -43,7 +44,7 @@ test("schema_is_created_once", async () => {
   const second = await open(file);
   expect(
     (await sql<{ user_version: number }>`pragma user_version`.execute(second.db)).rows,
-  ).toEqual([{ user_version: 2 }]);
+  ).toEqual([{ user_version: 3 }]);
   expect(await second.db.selectFrom("events").selectAll().execute()).toHaveLength(1);
 });
 test("newer_schema_is_refused", async () => {
@@ -53,7 +54,7 @@ test("newer_schema_is_refused", async () => {
   raw.close();
   await expect(openDatabase(file)).rejects.toThrow(LodgeError);
   await expect(openDatabase(file)).rejects.toThrow(
-    `the database at ${file} has schema 9, newer than this lodge's 2`,
+    `the database at ${file} has schema 9, newer than this lodge's 3`,
   );
 });
 test.each(["insert or replace", "replace"])("events_refuse_%s", async (statement) => {
@@ -171,7 +172,7 @@ test("unknown_event_rolls_back_rebuild", async () => {
   ]).toEqual(before);
 });
 
-test("schema_1_is_migrated_to_2", async () => {
+async function checkMigration(version: number): Promise<void> {
   const file = path();
   const raw = new Database(file, { create: true });
   raw.exec(`
@@ -190,15 +191,29 @@ create table files(project text not null, path text not null, body blob not null
 create table members(project text not null, person text not null, role text not null,
   primary key(project, person));
 `);
-  raw.exec("pragma user_version=1");
+  if (version === 2)
+    raw.exec(
+      "create table held(seq integer primary key, project text not null, person text not null, at text not null, body blob not null, state text not null)",
+    );
+  raw.exec(`pragma user_version=${version}`);
   raw.exec(
     "insert into events(project, at, actor, kind, body) values ('storage', 'now', 'ada', 'project', x'7b7d')",
   );
+  raw.exec("insert into heads(project, rev) values ('storage', 1)");
   raw.close();
   const database = await open(file);
   expect(
     (await sql<{ user_version: number }>`pragma user_version`.execute(database.db)).rows,
-  ).toEqual([{ user_version: 2 }]);
+  ).toEqual([{ user_version: 3 }]);
   expect(await database.db.selectFrom("held").selectAll().execute()).toEqual([]);
+  for (const table of ["setup", "setup_codes", "passkeys", "sessions", "tokens"] as const)
+    expect(await database.db.selectFrom(table).selectAll().execute()).toEqual([]);
+  const projects = new SqliteProjects(database, new FixedClock());
+  expect(await projects.names()).toEqual(["storage"]);
+  expect(await projects.settings("storage")).toEqual({});
+  expect(await projects.settings("unknown")).toBeNull();
   expect(await database.db.selectFrom("events").selectAll().execute()).toHaveLength(1);
-});
+}
+
+test("schema_1_is_migrated_to_2", () => checkMigration(1));
+test("schema_2_is_migrated_to_3", () => checkMigration(2));

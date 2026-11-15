@@ -5,6 +5,7 @@ import {
   Conflict,
   LodgeError,
   NotFound,
+  PROJECT_NAME,
   type Projects,
   type Role,
   stampOf,
@@ -15,7 +16,6 @@ import { headOf, readTree, touchHead } from "./read-tree.ts";
 import type { LodgeDatabase } from "./schema.ts";
 import { SqliteStore } from "./sqlite-store.ts";
 
-const PROJECT_NAME = { pattern: /^[a-z0-9][a-z0-9-]{0,62}$/u, what: "a project name" };
 const PERSON_NAME = { pattern: /^[a-z][a-z0-9-]{0,31}$/u, what: "a person's name" };
 function checkName(name: string, rule: { pattern: RegExp; what: string }): void {
   if (!rule.pattern.test(name))
@@ -26,7 +26,11 @@ export class SqliteProjects implements Projects {
     private readonly database: LodgeDatabase,
     private readonly clock: Clock,
   ) {}
-  async create(project: string, owner: string): Promise<void> {
+  async create(
+    project: string,
+    owner: string,
+    settings: Readonly<Record<string, unknown>> = {},
+  ): Promise<void> {
     checkName(project, PROJECT_NAME);
     checkName(owner, PERSON_NAME);
     await this.database.db.transaction().execute(async (tx) => {
@@ -38,10 +42,22 @@ export class SqliteProjects implements Projects {
       if (result.numInsertedOrUpdatedRows === 0n)
         throw new Conflict(`a project named ${project} exists`);
       await appendEvents(tx, project, owner, stampOf(this.clock.now()), [
-        { kind: "project", path: null, body: json({ owner }), message: null },
+        { kind: "project", path: null, body: json({ owner, settings }), message: null },
         { kind: "member", path: null, body: json({ person: owner, role: "owner" }), message: null },
       ]);
     });
+  }
+  async settings(project: string): Promise<Readonly<Record<string, unknown>> | null> {
+    const row = await this.database.db
+      .selectFrom("project_settings")
+      .select("body")
+      .where("id", "=", project)
+      .executeTakeFirst();
+    return row ? JSON.parse(new TextDecoder().decode(row.body)) : null;
+  }
+  async names(): Promise<readonly string[]> {
+    const rows = await this.database.db.selectFrom("heads").select("project").execute();
+    return rows.map((row) => row.project).sort(byCodePoint);
   }
   async members(project: string): Promise<ReadonlyMap<string, Role>> {
     return this.database.db.transaction().execute(async (tx) => {

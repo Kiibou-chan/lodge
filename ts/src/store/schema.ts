@@ -35,7 +35,18 @@ interface HeldTable {
   body: Uint8Array;
   state: string;
 }
+interface AccountRow {
+  id: string;
+  body: Uint8Array;
+  seq: number;
+}
 export interface Tables {
+  setup: AccountRow;
+  setup_codes: AccountRow;
+  passkeys: AccountRow;
+  sessions: AccountRow;
+  tokens: AccountRow;
+  project_settings: AccountRow;
   held: HeldTable;
   events: EventsTable;
   heads: HeadsTable;
@@ -65,6 +76,14 @@ create table members(project text not null, person text not null, role text not 
 `,
   `create table held(seq integer primary key, project text not null, person text not null,
     at text not null, body blob not null, state text not null);`,
+  `create table setup(id text primary key, body blob not null, seq integer not null);
+create table setup_codes(id text primary key, body blob not null, seq integer not null);
+create table passkeys(id text primary key, body blob not null, seq integer not null);
+create table sessions(id text primary key, body blob not null, seq integer not null);
+create table tokens(id text primary key, body blob not null, seq integer not null);
+create table project_settings(id text primary key, body blob not null, seq integer not null);
+insert into project_settings(id, body, seq)
+  select project, cast('{}' as blob), max(seq) from events where kind = 'project' group by project;`,
 ];
 export async function openDatabase(path: string): Promise<LodgeDatabase> {
   const raw = new Database(path, { strict: true, create: true });

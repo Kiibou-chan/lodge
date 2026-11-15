@@ -49,7 +49,7 @@ test.each([
   if (first) text += `\n## Message 2\n\nby: coordinator\nwhen: ${at(1)}\n\nEnd.\n`;
   expect(parseThread(threadPath(t.id), text).kind).toBe("problem");
 });
-export const EXAMPLE = `---
+const EXAMPLE = `---
 id: q-4kq1zm
 kind: thread
 about: s-0abcde

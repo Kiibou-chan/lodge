@@ -10,6 +10,7 @@ import {
 import { AUTHOR_ONLY } from "./people.ts";
 import { byCodePoint } from "./text.ts";
 import { parseThread } from "./threads.ts";
+/** @public */
 export type Files = ReadonlyMap<string, string>;
 export interface Tree {
   // Revision read from git, or null for a tree not read from git.

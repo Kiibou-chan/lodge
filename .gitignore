@@ -8,3 +8,4 @@ dist/
 .pytest_cache/
 .drafts/
 ts/node_modules/
+ts/dist/
