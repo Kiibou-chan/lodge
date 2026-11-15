@@ -1,0 +1,11 @@
+Read `CLAUDE.md` in this worktree first.
+
+Outcome: finding I-1 and minor M-b of the final review (`/var/tmp/lodge-review-final.notes.md`) are fixed on `server-api`, test-first, each test seen to fail before its code.
+
+Scope: `ts/src/api/person.ts`, `ts/src/api/http.ts`, `ts/src/api/session.ts` if needed, and `ts/tests/api/`; no dependency, no structure check loosened, no `#api` export or signature change, modules 300 lines or fewer, no socket in any test.
+
+I-1 (ruling recorded as `d-b7328n`, read it with `uv run --frozen --quiet lodge show d-b7328n --reasoning`): `presentHeld` in `person.ts` must add to every draft it lists, typed or `problem`, the draft's own text as `text` (a `problem` draft already has it), and to a held add its attachments as `attachments: [{name, text}, ...]` (empty list when none), read from the held record the way `Lodge.held()` already exposes them (find where an attachment is held; if `Held` does not carry attachment text, ask before widening `#app`). The typed fields stay unchanged. Tests: an agent's held decision with `decided_by: <person>`, `replaces: [d-...]`, a `## Reasoning` section, and one attachment, listed through the person's `held`, shows the full text containing `replaces:` and the reasoning, and the attachment name and text; an entry and an area draft carry `text`; a held message is unchanged.
+
+M-b: the credential-presence check before reading the body (`http.ts`) must not pass on an empty `lodge_session=` cookie or an empty `Authorization` header: require a non-empty bearer value (`Bearer` plus a non-empty token) or a non-empty `lodge_session` cookie value. Keep the existing 401 and message. Tests: empty cookie value and `Authorization: Bearer ` with a throwing body reader answer 401 without reading the body; a real token and a real session still pass.
+
+Done when `sh scripts/check.sh` exits 0 (the whole gate, in the background, never `nohup`); write `docs/superpowers/plans/2026-11-02-lodge-server-api/final-fix-2-report.md` (per finding: what changed, failing output before, result after); commit with explicit paths as `git -c "user.name=Svenja Kernig" -c user.email=20756868+Kiibou-chan@users.noreply.github.com commit`, trailer `Co-Authored-By: Codex <noreply@openai.com>`, and push `server-api`. Unsettled design goes to the ask tool.
