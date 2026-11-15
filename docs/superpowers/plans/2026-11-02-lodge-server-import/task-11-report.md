@@ -333,3 +333,224 @@ Drafts and acceptance scripts remain ignored under `.drafts/task-11a/`.
 No implementation, dependency, permanent test, frozen document, earlier brief, or review changes.
 The parked project split and the additional Constraints suggestion are the only remaining review concerns.
 The final verification command, `sh scripts/check-ts.sh`, exits 0 with `2137 pass`, `0 fail`, and `Ran 2137 tests across 191 files. [11.62s]`, including the structure checks.
+
+## Task 11b
+
+Task 11b records Intent, Goals, Non-goals, Must nots, Workflow as data, and Tasks.
+It adds 37 entries, edits two existing purpose entries, adds the work area, and records six section decisions plus a coordinator-approved corrective split decision.
+The existing Task 11a report remains unchanged.
+All records are written through a successful dry run followed by `uv run --frozen --quiet lodge add`.
+No implementation, permanent test, dependency, frozen design, or earlier review file changes.
+
+### Files and design coverage
+
+Design handles refer to `docs/superpowers/specs/2026-11-02-lodge-server-design.md`.
+Each new entry is one paragraph of at most 150 words; each sentence occupies its own line.
+The file table describes the final entries after the corrective split.
+
+| file:line | Decision | Design lines | Change |
+|---|---|---|---|
+| lodge/decisions/d-dx6xt4-lodge-integrates-agent-development-workflows.md:1 | d-dx6xt4 | 8-17 | lodge integrates agent development workflows; coordinator, product scope, section reasons, and applicable number handles |
+| lodge/spec/purpose/s-fw6xhy-lodge-integrates-flexible-agent-development-workflows.md:1 | d-dx6xt4 | 10-17 | Create: lodge integrates flexible agent development workflows |
+| lodge/decisions/d-6x8fd9-server-goals-keep-task-work-and.md:1 | d-6x8fd9 | 19-30 | Server goals keep task work and context together; coordinator, product scope, section reasons, and applicable number handles |
+| lodge/spec/purpose/s-k570d9-task-state-is-actionable-in-one.md:1 | d-6x8fd9 | 21 | Create: Task state is actionable in one interface |
+| lodge/spec/purpose/s-ts73yt-tasks-and-questions-keep-their-own.md:1 | d-6x8fd9 | 22 | Create: Tasks and questions keep their own conversation context |
+| lodge/spec/purpose/s-wgkrmr-session-outputs-belong-to-the-task.md:1 | d-6x8fd9 | 23 | Create: Session outputs belong to the task and survive the session |
+| lodge/spec/purpose/s-gyamm5-new-sessions-start-from-the-task.md:1 | d-6x8fd9 | 24 | Create: New sessions start from the task context |
+| lodge/spec/purpose/s-fpxzb9-open-session-questions-share-a-waiting.md:1 | d-6x8fd9 | 25 | Create: Open session questions share a waiting list |
+| lodge/spec/purpose/s-81kf9s-project-workflows-are-adaptable-data.md:1 | d-6x8fd9 | 26 | Create: Project workflows are adaptable data |
+| lodge/spec/purpose/s-5tgnrn-lodge-starts-or-suggests-sessions-across.md:1 | d-6x8fd9 | 27 | Create: lodge starts or suggests sessions across execution locations |
+| lodge/spec/purpose/s-cg69z0-session-reports-are-shown-apart-from.md:1 | d-6x8fd9 | 28 | Create: Session reports are shown apart from checked facts |
+| lodge/spec/purpose/s-6r0exg-people-use-lodge-alone-or-together.md:1 | d-6x8fd9 | 30 | Create: People use lodge alone or together |
+| lodge/decisions/d-ktz4rj-server-scope-leaves-optional-product-extensions.md:1 | d-ktz4rj | 32-40 | Server scope leaves optional product extensions for later; coordinator, product scope, section reasons, and applicable number handles |
+| lodge/spec/purpose/s-6z04mq-a-code-editor-remains-outside-the.md:1 | d-ktz4rj | 34 | Create: A code editor remains outside the product scope |
+| lodge/spec/purpose/s-gdtksn-mock-and-built-screenshot-comparison-waits.md:1 | d-ktz4rj | 35 | Create: Mock and built screenshot comparison waits for app starting |
+| lodge/spec/purpose/s-chycjf-a-desktop-shell-must-earn-its.md:1 | d-ktz4rj | 36 | Create: A desktop shell must earn its place |
+| lodge/spec/purpose/s-tjq0rm-sqlite-serves-until-another-database-or.md:1 | d-ktz4rj | 37 | Create: SQLite serves until another database or process is needed |
+| lodge/spec/purpose/s-gyyt5k-managed-agents-remains-outside-the-scope.md:1 | d-ktz4rj | 38 | Create: Managed Agents remains outside the scope |
+| lodge/spec/purpose/s-4gjz9j-self-hosted-cloud-environments-remain-outside.md:1 | d-ktz4rj | 39 | Create: Self-hosted cloud environments remain outside the scope |
+| lodge/spec/purpose/s-nhx8zw-pull-request-and-ci-integration-starts.md:1 | d-ktz4rj | 40 | Create: Pull request and CI integration starts with GitHub |
+| lodge/decisions/d-jch6c9-server-safeguards-preserve-trust-and-human.md:1 | d-jch6c9 | 42-50 | Server safeguards preserve trust and human control; coordinator, product scope, section reasons, and applicable number handles |
+| lodge/spec/purpose/s-ydkmyq-lodge-never-handles-claude-sign-in.md:1 | d-jch6c9 | 47 | Create: lodge never handles Claude sign-in credentials |
+| lodge/spec/purpose/s-jqh7hf-a-session-claim-never-appears-as.md:1 | d-jch6c9 | 48 | Create: A session claim never appears as a checked fact |
+| lodge/spec/purpose/s-4w05xp-secrets-never-go-where-other-people.md:1 | d-jch6c9 | 49 | Create: Secrets never go where other people can read them |
+| lodge/spec/purpose/s-xy6qte-merging-to-main-requires-a-person.md:1 | d-jch6c9 | 50 | Create: Merging to main requires a person’s go |
+| lodge/decisions/d-11yx0r-workflow-documents-retain-process-history-and.md:1 | d-11yx0r | 96-170 | Workflow documents retain process history and explicit transitions; coordinator, product scope, section reasons, and applicable number handles |
+| lodge/spec/work/s-c0k9hx-workflow-documents-are-versioned-per-task.md:1 | d-11yx0r | 98 | Create: Workflow documents are versioned per task kind |
+| lodge/spec/work/s-xqza9k-workflow-steps-name-actors-and-progression.md:1 | d-11yx0r, d-vsspgk | 101 | Create, then split edit: Workflow steps name their actors |
+| lodge/spec/work/s-hmj4mc-workflow-steps-specify-session-starts-and.md:1 | d-11yx0r, d-vsspgk | 103 | Create, then split edit: Workflow steps specify how sessions start |
+| lodge/spec/work/s-krdpxq-workflow-steps-declare-artefact-inputs-and.md:1 | d-11yx0r | 105 | Create: Workflow steps declare artefact inputs and outputs |
+| lodge/spec/work/s-68mfam-workflow-failures-follow-named-back-edges.md:1 | d-11yx0r | 106 | Create: Workflow failures follow named back-edges |
+| lodge/spec/work/s-an745k-workflow-checklists-expose-omissions.md:1 | d-11yx0r | 107, 170 | Create: Workflow checklists expose omissions |
+| lodge/spec/work/s-pttahq-review-findings-determine-progression-thresholds.md:1 | d-11yx0r | 109-110 | Create: Review findings determine progression thresholds |
+| lodge/spec/work/s-h48a8n-a-fix-round-counts-entry-into.md:1 | d-11yx0r | 111 | Create: A fix round counts entry into a fix step |
+| lodge/spec/work/s-0tn1e8-the-default-plan-workflow-runs-from.md:1 | d-11yx0r | 112-145, 168 | Create: The default plan workflow runs from mock to authorised merge |
+| lodge/spec/work/s-hke5m9-the-default-child-task-workflow-builds.md:1 | d-11yx0r | 146-168 | Create: The default child task workflow builds reviews and rechecks |
+| lodge/spec/work/s-73ee5k-session-to-do-reports-sit-under.md:1 | d-11yx0r | 169 | Create: Session to-do reports sit under the workflow step |
+| lodge/spec/work/s-3ysqhz-workflow-steps-declare-progression-conditions.md:1 | d-vsspgk | 102 | Create: Workflow steps declare progression conditions |
+| lodge/spec/work/s-mrnqdh-workflow-steps-name-execution-locations.md:1 | d-vsspgk | 104 | Create: Workflow steps name execution locations |
+| lodge/decisions/d-pfdqpp-task-views-show-work-state-and.md:1 | d-pfdqpp | 172-176 | Task views show work state and permit reasoned movement; coordinator, product scope, section reasons, and applicable number handles |
+| lodge/spec/work/s-h1e6jc-a-task-page-shows-its-state.md:1 | d-pfdqpp | 174 | Create: A task page shows its state and related work |
+| lodge/spec/work/s-bxws89-project-boards-group-task-cards-by.md:1 | d-pfdqpp | 175 | Create: Project boards group task cards by step |
+| lodge/spec/work/s-pyr5rx-a-person-moves-a-task-on.md:1 | d-pfdqpp | 176 | Create: A person moves a task on or sends it back with a reason |
+| lodge/decisions/d-vsspgk-separate-independent-workflow-fields-for-lookup.md:1 | d-vsspgk | 101-104 | Separate actors, progression conditions, session starts, and execution locations |
+| lodge/spec/purpose/s-7ah5n7-kinds-of-knowledge-and-projects-outside.md:1 | d-6x8fd9 | 21, 23, 25, 30 | Scope previous exclusions to lodge 0.2 and add the server scope by build step |
+| lodge/spec/purpose/s-c8hrye-threads-wait-for-an-agent-session.md:1 | d-6x8fd9 | 22, 27 | Scope live-chat exclusion to lodge 0.2 and retain the server goal settled by d-wc9wt2 |
+| lodge/spec/purpose/_area.md:1 | Section adds | 8-50 | Order new purpose entries and place the server must-nots immediately after s-4ykcm0 |
+| lodge/spec/work/_area.md:1 | d-11yx0r, d-pfdqpp, d-vsspgk | 96-176 | Create Tasks and workflows at rank 11, with its intro and ordered entries |
+| docs/superpowers/plans/2026-11-02-lodge-server-import/task-11-report.md:1 | Report | Task 11b | Append this coverage, test evidence, commands, and accounting |
+
+Line 29 reuses s-31atpc for unchanged record meanings.
+Line 44 reuses s-q4s548, s-pncjp8, and s-4ykcm0 for the original must-nots.
+The model definitions s-tprwhs, s-d1dd20, s-azfcx4, s-h4x7bx, s-1csktg, s-8v6ek2, s-cf0qph, and s-nfgv2t are linked where required rather than restated as new definitions.
+Workflow syntax remains open, as line 168 requires; the default-flow entries hold the sample's content rather than fixing YAML syntax.
+
+### Changed sentences and narrowings
+
+In s-7ah5n7, the exclusion sentence gains the scope “For lodge 0.2”, and the evaluation-and-pilot sentence gains the same scope.
+The thread sentence retains that a thread holds no claim of its own and that its settlement enters lodge as a decision.
+The new server sentence is:
+
+> On the server, tasks, artefacts, and session reporting are in scope from build step 2, the phone interface from build step 3, and use by several people from build step 7.
+
+In s-c8hrye, the live-chat exclusion gains the scope “For lodge 0.2”.
+Its existing session-instructions and later-thread-format sentences remain.
+The new server sentence is:
+
+> From build step 4, a session lodge starts is talked to inside lodge, in the thread of its task or artefact, as settled by d-wc9wt2.
+
+The corrective split changes s-xqza9k to contain only the actor field and s-hmj4mc to contain only how sessions start, with matching titles.
+The removed progression-condition and execution-location sentences become s-3ysqhz and s-mrnqdh respectively; no claim is lost.
+
+| Narrowed decision | Reason and retained meaning |
+|---|---|
+| d-cg3nn3, by d-6x8fd9 | Universal phone and task-knowledge exclusions become lodge 0.2 exclusions; other boundaries and previous viewer narrowings remain |
+| d-3d4g9j, by d-6x8fd9 | Universal live-session exclusion becomes the lodge 0.2 viewer exclusion; attribution, confirmation, configured-address, and thread safeguards remain |
+| d-11yx0r, by d-vsspgk | Combined field groupings split for independent lookup; workflow semantics remain |
+
+No author decision is narrowed or replaced.
+In particular, d-dyrpc6 and d-wc9wt2 retain their full authority.
+Other looks-related feedback is answered no in the decisions' reasoning.
+
+### Test-first evidence
+
+The coordinator approves ignored acceptance scripts, following Task 11a's records-only practice.
+Every process those scripts start uses Bun.spawnSync.
+The initial script checks each entry's title, complete statement, and required current dependencies through lodge show, and checks the complete statements of the two scoped edits.
+Its first run precedes every section add and exits 1 with `0 passed; 37 failed; 37 acceptance checks`.
+After the section adds it exits 0 with `37 passed; 0 failed; 37 acceptance checks`.
+No carried implementation test is changed, and no implementation mutation is needed.
+
+| file:line | Acceptance check | First failing output |
+|---|---|---|
+| .drafts/task-11b/manage.ts:36 | s-fw6xhy: full expected statement and dependencies | FAIL s-fw6xhy: lodge integrates flexible agent development workflows (entry absent) |
+| .drafts/task-11b/manage.ts:36 | s-k570d9: full expected statement and dependencies | FAIL s-k570d9: Task state is actionable in one interface (entry absent) |
+| .drafts/task-11b/manage.ts:36 | s-ts73yt: full expected statement and dependencies | FAIL s-ts73yt: Tasks and questions keep their own conversation context (entry absent) |
+| .drafts/task-11b/manage.ts:36 | s-wgkrmr: full expected statement and dependencies | FAIL s-wgkrmr: Session outputs belong to the task and survive the session (entry absent) |
+| .drafts/task-11b/manage.ts:36 | s-gyamm5: full expected statement and dependencies | FAIL s-gyamm5: New sessions start from the task context (entry absent) |
+| .drafts/task-11b/manage.ts:36 | s-fpxzb9: full expected statement and dependencies | FAIL s-fpxzb9: Open session questions share a waiting list (entry absent) |
+| .drafts/task-11b/manage.ts:36 | s-81kf9s: full expected statement and dependencies | FAIL s-81kf9s: Project workflows are adaptable data (entry absent) |
+| .drafts/task-11b/manage.ts:36 | s-5tgnrn: full expected statement and dependencies | FAIL s-5tgnrn: lodge starts or suggests sessions across execution locations (entry absent) |
+| .drafts/task-11b/manage.ts:36 | s-cg69z0: full expected statement and dependencies | FAIL s-cg69z0: Session reports are shown apart from checked facts (entry absent) |
+| .drafts/task-11b/manage.ts:36 | s-6r0exg: full expected statement and dependencies | FAIL s-6r0exg: People use lodge alone or together (entry absent) |
+| .drafts/task-11b/manage.ts:36 | s-6z04mq: full expected statement and dependencies | FAIL s-6z04mq: A code editor remains outside the product scope (entry absent) |
+| .drafts/task-11b/manage.ts:36 | s-gdtksn: full expected statement and dependencies | FAIL s-gdtksn: Mock and built screenshot comparison waits for app starting (entry absent) |
+| .drafts/task-11b/manage.ts:36 | s-chycjf: full expected statement and dependencies | FAIL s-chycjf: A desktop shell must earn its place (entry absent) |
+| .drafts/task-11b/manage.ts:36 | s-tjq0rm: full expected statement and dependencies | FAIL s-tjq0rm: SQLite serves until another database or process is needed (entry absent) |
+| .drafts/task-11b/manage.ts:36 | s-gyyt5k: full expected statement and dependencies | FAIL s-gyyt5k: Managed Agents remains outside the scope (entry absent) |
+| .drafts/task-11b/manage.ts:36 | s-4gjz9j: full expected statement and dependencies | FAIL s-4gjz9j: Self-hosted cloud environments remain outside the scope (entry absent) |
+| .drafts/task-11b/manage.ts:36 | s-nhx8zw: full expected statement and dependencies | FAIL s-nhx8zw: Pull request and CI integration starts with GitHub (entry absent) |
+| .drafts/task-11b/manage.ts:36 | s-ydkmyq: full expected statement and dependencies | FAIL s-ydkmyq: lodge never handles Claude sign-in credentials (entry absent) |
+| .drafts/task-11b/manage.ts:36 | s-jqh7hf: full expected statement and dependencies | FAIL s-jqh7hf: A session claim never appears as a checked fact (entry absent) |
+| .drafts/task-11b/manage.ts:36 | s-4w05xp: full expected statement and dependencies | FAIL s-4w05xp: Secrets never go where other people can read them (entry absent) |
+| .drafts/task-11b/manage.ts:36 | s-xy6qte: full expected statement and dependencies | FAIL s-xy6qte: Merging to main requires a person’s go (entry absent) |
+| .drafts/task-11b/manage.ts:36 | s-c0k9hx: full expected statement and dependencies | FAIL s-c0k9hx: Workflow documents are versioned per task kind (entry absent) |
+| .drafts/task-11b/manage.ts:36 | s-xqza9k: full expected statement and dependencies | FAIL s-xqza9k: Workflow steps name actors and progression conditions (entry absent) |
+| .drafts/task-11b/manage.ts:36 | s-hmj4mc: full expected statement and dependencies | FAIL s-hmj4mc: Workflow steps specify session starts and locations (entry absent) |
+| .drafts/task-11b/manage.ts:36 | s-krdpxq: full expected statement and dependencies | FAIL s-krdpxq: Workflow steps declare artefact inputs and outputs (entry absent) |
+| .drafts/task-11b/manage.ts:36 | s-68mfam: full expected statement and dependencies | FAIL s-68mfam: Workflow failures follow named back-edges (entry absent) |
+| .drafts/task-11b/manage.ts:36 | s-an745k: full expected statement and dependencies | FAIL s-an745k: Workflow checklists expose omissions (entry absent) |
+| .drafts/task-11b/manage.ts:36 | s-pttahq: full expected statement and dependencies | FAIL s-pttahq: Review findings determine progression thresholds (entry absent) |
+| .drafts/task-11b/manage.ts:36 | s-h48a8n: full expected statement and dependencies | FAIL s-h48a8n: A fix round counts entry into a fix step (entry absent) |
+| .drafts/task-11b/manage.ts:36 | s-0tn1e8: full expected statement and dependencies | FAIL s-0tn1e8: The default plan workflow runs from mock to authorised merge (entry absent) |
+| .drafts/task-11b/manage.ts:36 | s-hke5m9: full expected statement and dependencies | FAIL s-hke5m9: The default child task workflow builds reviews and rechecks (entry absent) |
+| .drafts/task-11b/manage.ts:36 | s-73ee5k: full expected statement and dependencies | FAIL s-73ee5k: Session to-do reports sit under the workflow step (entry absent) |
+| .drafts/task-11b/manage.ts:36 | s-h1e6jc: full expected statement and dependencies | FAIL s-h1e6jc: A task page shows its state and related work (entry absent) |
+| .drafts/task-11b/manage.ts:36 | s-bxws89: full expected statement and dependencies | FAIL s-bxws89: Project boards group task cards by step (entry absent) |
+| .drafts/task-11b/manage.ts:36 | s-pyr5rx: full expected statement and dependencies | FAIL s-pyr5rx: A person moves a task on or sends it back with a reason (entry absent) |
+| .drafts/task-11b/manage.ts:44 | s-7ah5n7: full expected statement | FAIL s-7ah5n7: lodge 0.2 scope and server goal (old unscoped exclusion) |
+| .drafts/task-11b/manage.ts:44 | s-c8hrye: full expected statement | FAIL s-c8hrye: lodge 0.2 scope and server goal (old unscoped exclusion) |
+
+The corrective split gets four independent expectations before its add.
+Their first run exits 1 with `0 passed; 4 failed; 4 split checks`, against the combined entries and the absent new entries.
+Their green run exits 0 with `4 passed; 0 failed; 4 split checks`.
+
+| file:line | Acceptance check | First failing output |
+|---|---|---|
+| .drafts/task-11b/split.ts:36 | s-xqza9k: separate field, complete statement, and dependencies | FAIL s-xqza9k: Workflow steps name their actors (combined fields) |
+| .drafts/task-11b/split.ts:36 | s-hmj4mc: separate field, complete statement, and dependencies | FAIL s-hmj4mc: Workflow steps specify how sessions start (combined fields) |
+| .drafts/task-11b/split.ts:36 | s-3ysqhz: separate field, complete statement, and dependencies | FAIL s-3ysqhz: Workflow steps declare progression conditions (entry absent) |
+| .drafts/task-11b/split.ts:36 | s-mrnqdh: separate field, complete statement, and dependencies | FAIL s-mrnqdh: Workflow steps name execution locations (entry absent) |
+
+The combined script's final expectations include the split entries and exit 0 with `39 passed; 0 failed; 39 acceptance checks`.
+The permanent structure checks run in the whole TypeScript gate and remain unchanged.
+
+### Coordinator rulings, deviations, and uncertainty
+
+The coordinator approves scoping s-7ah5n7 and s-c8hrye to lodge 0.2, narrowing only coordinator decisions, and using ignored acceptance scripts.
+The coordinator approves the exact Build order mapping and leaving unassigned claims unnumbered.
+The coordinator also approves the corrective field split and its extra decision, d-vsspgk; this is the only additional decision beyond the six section decisions.
+The extra decision is needed because self-review finds that independent fields deserve separate lookup entries after the original workflow decision is already added and immutable.
+
+Build steps come only from Build order: tasks, artefacts, session reporting, briefs, and waiting use step 2; interface uses step 3; starting sessions uses step 4; workflow and claimed versus checked use step 5; GitHub uses step 6; several people use step 7.
+Intent, permanent must-nots, and non-goals have no invented build step.
+Design line 22's local task-and-question threads backed by sessions and line 176's go or return-with-reason claim have no specifically assigned step, so they stay unnumbered with the coordinator's approval.
+The first design's original must-nots and record meanings stay linked to their existing entries.
+The managed-service billing and environment-eligibility observations stay in the Non-goals reasoning as the design's reasons, rather than new service promises.
+
+No build-order entry exists when lodge search “build order” is read.
+As the brief requires, this task creates no build-order entry; Task 11c adds build-order rests_on links to the numbered entries in this report, as it does for 11a.
+The parked s-g8m3qv and s-5sgcxx splits remain for 11c.
+No sessions area is created because no Task 11b section belongs there.
+The work area is absent at the start, so its first section add creates it; later adds extend it.
+
+After each section add, lodge spec filtered for “changed since” shows only the same two inherited explanatory sentences.
+They are s-7wbv0e's description of link freshness and s-kba448's description of dependency warnings, rather than newly stale claims.
+They remain unchanged and named here, as the brief requires.
+There is no unresolved content question after the coordinator rulings.
+The initial Intent and Must nots adds emit advisory missing-number feedback for source-line labels in reasoning; number handles are restricted to numbers actually used by the statements, as the brief requires.
+Other related-record and area-order feedback is advisory; lodge check remains clean.
+
+### Commands and final results
+
+Commands below run from the lane checkout; outputs and helper scripts stay ignored under .drafts/task-11b.
+The preparatory reads cover CLAUDE.md, the required plan sections, the complete design, Task 11a's report, the current specification, all consumed IDs, the eight author decisions, and the relevant built export, import, and hook modules.
+
+| Command or command family | Result or last line |
+|---|---|
+| uv run --frozen --quiet lodge guide | Exit 0; guide ends with exit-code definitions |
+| uv run --frozen --quiet lodge waiting | Exit 0; nothing waiting for an agent or the author |
+| git branch --show-current; git status --short | server-import-records; initially clean |
+| lodge spec, spec --area purpose, and spec --area work | Current entries read; work initially absent |
+| lodge search 'build order'; lodge show ID --reasoning --provenance; lodge draft REF | Existing decisions, entries, prerequisites, and base handles read |
+| bun .drafts/task-11b/manage.ts prepare | Prepared entry drafts and acceptance expectations; lodge id s per new entry |
+| bun .drafts/task-11b/manage.ts verify, before adds | Exit 1; 0 passed; 37 failed; 37 acceptance checks |
+| bun .drafts/task-11b/manage.ts assemble SECTION | Six section draft groups assembled; current area bases and scoped edit bases used |
+| bun .drafts/task-11b/manage.ts dry-run SECTION | Exit 0 for each; dry run: nothing published |
+| bun .drafts/task-11b/manage.ts add SECTION | Exit 0 for each; staged each section decision and its entries |
+| uv run --frozen --quiet lodge spec filtered for 'changed since', after every section and correction | Only s-7wbv0e and s-kba448 explanatory sentences |
+| bun .drafts/task-11b/manage.ts verify, after sections | Exit 0; 37 passed; 0 failed; 37 acceptance checks |
+| bun .drafts/task-11b/split.ts prepare and verify | Four split expectations prepared; exit 1; 0 passed; 4 failed; 4 split checks |
+| bun .drafts/task-11b/split.ts dry-run | Exit 0; dry run: nothing published |
+| bun .drafts/task-11b/split.ts add | Exit 0; staged d-vsspgk s-xqza9k s-hmj4mc s-3ysqhz s-mrnqdh |
+| bun .drafts/task-11b/split.ts update and verify | Expectations updated; exit 0; 4 passed; 0 failed; 4 split checks |
+| bun .drafts/task-11b/manage.ts verify, final | Exit 0; 39 passed; 0 failed; 39 acceptance checks |
+| uv run --frozen --quiet lodge check | Exit 0; ok |
+| uv run --frozen --quiet lodge spec filtered and counted for 'changed since' | Exit 0; 2, both explanatory sentences named above |
+| git diff --cached --check | Exit 0; no output |
+| sh scripts/check.sh | Exit 0; 1399 Python tests passed, 2137 TypeScript tests passed, structure checks passed, and 0 differential differences; last line: Ran 1 test across 1 file. [191.00ms] |
+| sh scripts/check-ts.sh, last verification command | Exit 0; 2137 pass, 0 fail, and structure checks passed; last line: Ran 2137 tests across 191 files. [11.86s] |
+
+The full gate includes the unchanged structure tests, strict typing, unused-code checks, Python tests, TypeScript tests, and the differential comparison.
+No package installation is required, and bun add is never run.
+The final record and report commit uses explicit paths, the requested identity, and the Codex co-author trailer, and is pushed to origin/server-import-records.
