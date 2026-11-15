@@ -44,6 +44,25 @@ test("export_files_hold_the_store_and_kept", async () => {
   ).toEqual(new Map(KEPT.map((p) => [p, ""])));
 });
 
+test("export_files_include_attachments_stored_separately", () => {
+  const files = new Map(
+    [...ZERO_TWO_STORE].filter(
+      ([path]) =>
+        path.startsWith("lodge/") &&
+        !path.startsWith("lodge/attachments/") &&
+        !path.endsWith("/.gitkeep"),
+    ),
+  );
+  const attachmentTexts = new Map([
+    ["lodge/attachments/d-q59cdf/sizes.csv", "size,count\nsmall,3\n"],
+  ]);
+  const current = tree({ rev: null, files, attachments: new Set(attachmentTexts.keys()) });
+  expect(files.size).toBe(7);
+  expect(exportFiles(current, attachmentTexts)).toEqual(
+    new Map([...files, ...attachmentTexts, ...KEPT.map((path) => [path, ""] as const)]),
+  );
+});
+
 test("failed_line_names_the_project", () => {
   expect(exportFailedLine("storage", new Error("boom"))).toBe(
     "lodge: the export of storage failed: boom\n",
@@ -108,10 +127,12 @@ test("wrapped_store_tells_the_exporter_after_a_publish", async () => {
     message: "approve",
   } as const;
   const seq = await wrapped.hold(draft);
+  expect(await inner.held()).toHaveLength(1);
   expect(await wrapped.publish((await wrapped.trees())[0], new Map(), "approve", seq)).toBe(
     PublishOutcome.PUBLISHED,
   );
   expect(calls).toEqual(["storage", "storage"]);
+  expect(await inner.held()).toEqual([]);
   const staged = exportingProjects(projectsWith(new MemoryStore([], { staged: true })), (p) =>
     calls.push(p),
   ).storeFor("logs", person("ana"));
