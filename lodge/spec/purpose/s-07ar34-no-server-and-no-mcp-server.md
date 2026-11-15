@@ -1,9 +1,10 @@
 ---
 id: s-07ar34
 kind: spec
-title: "No server and no MCP server for now"
+title: "lodge 0.2 is serverless and the server exists"
 ---
 
-There is no server for now: lodge starts serverless.
-A shared server is the later ideal, so storage sits behind one interface that a server can replace, and Kotlin is a candidate language then.
-There is also no MCP server (d-14vk9b).
+lodge 0.2 has no server and no MCP server.
+The TypeScript server of the server design exists from build step 1, holding records and serving the API.
+Its storage stays behind a port.
+This does not undo the viewer's existing confirmation and thread writing.
