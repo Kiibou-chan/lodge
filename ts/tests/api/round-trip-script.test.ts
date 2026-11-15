@@ -1,7 +1,9 @@
 import { expect, test } from "bun:test";
+import { symlinkSync } from "node:fs";
 import { resolve } from "node:path";
-import { compareStores } from "../../scripts/round-trip.ts";
+import { compareStores, comparisonExitCode } from "../../scripts/round-trip.ts";
 import { isolateGit } from "../git/isolated.ts";
+import { commit, repository, temporaryFolder } from "../git/repos.ts";
 import { zeroTwoRepository } from "../git/zero-two.ts";
 
 isolateGit();
@@ -20,7 +22,7 @@ test.each([
     original.replace("author", "ana").replace("logs", "transcripts"),
     0,
     0,
-    [{ path: decision, line: 6 }],
+    [{ path: decision, detail: "source: Keep logs.\nexport: Keep transcripts." }],
   ],
   [
     "body_author_is_not_metadata",
@@ -29,7 +31,7 @@ test.each([
     `${original.replace("author", "ana")}decided_by: ana\n`,
     0,
     0,
-    [{ path: decision, line: 7 }],
+    [{ path: decision, detail: "source: decided_by: author\nexport: decided_by: ana" }],
   ],
   [
     "attachment_is_not_metadata",
@@ -38,11 +40,31 @@ test.each([
     "by: ana\n",
     0,
     0,
-    [{ path: "lodge/attachments/d-40q44p/raw.bin", line: 1 }],
+    [{ path: "lodge/attachments/d-40q44p/raw.bin", detail: "source: by: author\nexport: by: ana" }],
+  ],
+  [
+    "shorter_export",
+    thread,
+    "same\nremoved",
+    "same",
+    0,
+    0,
+    [{ path: thread, detail: "source: removed\nexport: (end of file)" }],
+  ],
+  [
+    "longer_export",
+    thread,
+    "same",
+    "same\nadded",
+    0,
+    0,
+    [{ path: thread, detail: "source: (end of file)\nexport: added" }],
   ],
   ["binary_bytes", "lodge/attachments/d-40q44p/raw.bin", "\uDCFF\uDCFE", "\uDCFF\uDCFE", 1, 0, []],
 ] as const)("comparison %s", (_name, path, before, after, equal, mapped, differences) => {
-  expect(compareStores(new Map([[path, before]]), new Map([[path, after]]), "ana")).toEqual({
+  const counts = compareStores(new Map([[path, before]]), new Map([[path, after]]), "ana");
+  expect(comparisonExitCode(counts)).toBe(differences.length ? 1 : 0);
+  expect(counts).toEqual({
     compared: 1,
     equal,
     mapped,
@@ -58,8 +80,8 @@ test("comparison_reports_missing_and_extra_paths", () => {
     equal: 0,
     mapped: 0,
     differences: [
-      { path: "lodge/extra", line: 1 },
-      { path: "lodge/missing", line: 1 },
+      { path: "lodge/extra", detail: "extra in the export" },
+      { path: "lodge/missing", detail: "missing from the export" },
     ],
   });
 });
@@ -84,4 +106,57 @@ test.each(["checkout", "branch"] as const)("script_round_trip %s", async (layout
   expect(new TextDecoder().decode(result.stdout)).toBe(
     "Files compared: 11\nFiles equal: 7\nFiles differing only in decided_by or a message's by: 4\nOther differences: 0\n",
   );
+});
+
+function script(...args: string[]) {
+  return Bun.spawnSync(
+    [process.execPath, resolve(import.meta.dir, "../../scripts/round-trip.ts"), ...args],
+    { env: { ...process.env }, stdout: "pipe", stderr: "pipe" },
+  );
+}
+
+test.each([[], ["repo"], ["repo", "HEAD", "HEAD", "extra"]])(
+  "script_rejects_wrong_argument_count %j",
+  (...args) => {
+    const result = script(...args);
+    expect(result.exitCode).toBe(1);
+    expect(new TextDecoder().decode(result.stderr)).toBe(
+      "Usage: round-trip.ts REPOSITORY REV [SETTINGS_REV]\n",
+    );
+    expect(new TextDecoder().decode(result.stdout)).toBe("");
+  },
+);
+
+test("script_exits_one_when_import_is_refused", async () => {
+  const source = await zeroTwoRepository(
+    "checkout",
+    new Map([["lodge/decisions/broken.md", "invalid record\n"]]),
+  );
+  const result = script(source.repository, source.rev);
+  expect(result.exitCode).toBe(1);
+  expect(JSON.parse(new TextDecoder().decode(result.stderr))).toMatchObject({
+    kind: "check-failed",
+    stage: "lodge 0.2",
+  });
+  expect(new TextDecoder().decode(result.stdout)).toBe("");
+});
+
+test("script_exits_one_without_a_lodge_folder", () => {
+  const repo = repository();
+  commit(repo, "README.md", "A made-up project\n", "Start");
+  const result = script(repo, "HEAD");
+  expect(result.exitCode).toBe(1);
+  expect(new TextDecoder().decode(result.stderr)).toContain("lodge/");
+  expect(new TextDecoder().decode(result.stdout)).toBe("");
+});
+
+test("shell_reports_missing_bun_before_cloning", () => {
+  const folder = temporaryFolder();
+  symlinkSync("/usr/bin/dirname", resolve(folder, "dirname"));
+  const result = Bun.spawnSync(
+    ["/bin/sh", resolve(import.meta.dir, "../../../scripts/round-trip.sh")],
+    { env: { ...process.env, PATH: folder }, stdout: "pipe", stderr: "pipe" },
+  );
+  expect(result.exitCode).toBe(2);
+  expect(new TextDecoder().decode(result.stderr)).toBe("bun is not installed\n");
 });

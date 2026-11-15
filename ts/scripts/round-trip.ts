@@ -36,12 +36,15 @@ export function compareStores(
   const paths = [...new Set([...original.keys(), ...exported.keys()])].sort();
   let equal = 0;
   let mapped = 0;
-  const differences: { path: string; line: number }[] = [];
+  const differences: { path: string; detail: string }[] = [];
   for (const path of paths) {
     const before = original.get(path);
     const after = exported.get(path);
     if (before === undefined || after === undefined) {
-      differences.push({ path, line: 1 });
+      differences.push({
+        path,
+        detail: before === undefined ? "extra in the export" : "missing from the export",
+      });
       continue;
     }
     if (before === after) {
@@ -57,9 +60,16 @@ export function compareStores(
     const right = after.split("\n");
     let line = 0;
     while (line < Math.max(left.length, right.length) && left[line] === right[line]) line++;
-    differences.push({ path, line: line + 1 });
+    differences.push({
+      path,
+      detail: `source: ${left[line] ?? "(end of file)"}\nexport: ${right[line] ?? "(end of file)"}`,
+    });
   }
   return { compared: paths.length, equal, mapped, differences };
+}
+
+export function comparisonExitCode(counts: ReturnType<typeof compareStores>): number {
+  return counts.differences.length ? 1 : 0;
 }
 
 async function roundTrip(repository: string, rev: string, settingsRev?: string): Promise<number> {
@@ -105,9 +115,8 @@ async function roundTrip(repository: string, rev: string, settingsRev?: string):
     console.log(`Files equal: ${counts.equal}`);
     console.log(`Files differing only in decided_by or a message's by: ${counts.mapped}`);
     console.log(`Other differences: ${counts.differences.length}`);
-    for (const { path, line } of counts.differences)
-      console.log(`${path}: first difference at line ${line}`);
-    return counts.differences.length ? 1 : 0;
+    for (const { path, detail } of counts.differences) console.log(`${path}: ${detail}`);
+    return comparisonExitCode(counts);
   } finally {
     await database.close();
     rmSync(folder, { recursive: true, force: true });
