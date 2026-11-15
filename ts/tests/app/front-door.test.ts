@@ -56,6 +56,18 @@ const extras = new Set([
   "importStore",
   "prepareImport",
   "ZeroTwoCopy",
+  "ExportTarget",
+  "ExportOutcome",
+  "ExportTargets",
+  "ExportPorts",
+  "EXPORT_INTERVAL_SECONDS",
+  "KEPT",
+  "exportTargetProblem",
+  "exportFiles",
+  "exportMessage",
+  "exportFailedLine",
+  "Exporters",
+  "exportingProjects",
 ]);
 
 test("front_door_exports_every_python_name", () => {
