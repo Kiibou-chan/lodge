@@ -19,12 +19,16 @@ test("show_levels", async () => {
   expect(prov.out).toContain("\n## Provenance\n");
   expect(prov.out).toContain(`changes (create): ${ids.entry} (current)`);
   const both = await p.run("show", ids.decision.toUpperCase(), "--provenance", "--reasoning");
+  expect(both.out).toContain("## Reasoning");
+  expect(both.out).toContain("## Provenance");
   expect(both.out.indexOf("## Reasoning")).toBeLessThan(both.out.indexOf("## Provenance"));
 });
 test("show_entry_reasoning_lists_its_decisions", async () => {
   const p = await project(),
     ids = await seed(p),
     out = (await p.run("show", ids.entry, "--reasoning")).out;
+  expect(out).toContain("## Reasoning");
+  expect(out).toContain(ids.decision);
   expect(out.indexOf("## Reasoning")).toBeLessThan(out.indexOf(ids.decision));
 });
 test("show_unknown_record", async () => {

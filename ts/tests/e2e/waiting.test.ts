@@ -40,10 +40,14 @@ test("waiting", async () => {
     .split(" ")
     .at(-1) as string;
   const out = (await p.run("waiting")).out;
+  expect(out).toContain("waiting for an agent");
+  expect(out).toContain("waiting for the author");
   expect(out.indexOf("waiting for an agent")).toBeLessThan(out.indexOf("waiting for the author"));
   const [first, second] = out.split("waiting for the author");
   expect(first).not.toContain(flagged);
   expect(first).not.toContain(thread);
+  expect(second).toContain(flagged);
+  expect(second).toContain(thread);
   expect(second?.indexOf(flagged)).toBeLessThan(second?.indexOf(thread) as number);
 });
 test("waiting_groups_threads", async () => {
@@ -81,6 +85,8 @@ test("waiting_groups_threads", async () => {
   );
   expect([author.code, agent.code]).toEqual([0, 0]);
   const out = (await p.run("waiting")).out;
+  expect(out).toContain("waiting for an agent");
+  expect(out).toContain("waiting for the author");
   expect(out.indexOf("waiting for an agent")).toBeLessThan(out.indexOf("waiting for the author"));
   const [first, second] = out.split("waiting for the author"),
     agentId = agent.out.trim().split(" ").at(-1) as string;

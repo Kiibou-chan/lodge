@@ -2,6 +2,9 @@ import { CliError } from "./errors.ts";
 import type { ServerPlace } from "./settings.ts";
 import { fromWire } from "./wire.ts";
 export type Call = (operation: string, body: Readonly<Record<string, unknown>>) => Promise<unknown>;
+function object(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
 export function client(
   place: ServerPlace,
   token: string | null,
@@ -34,23 +37,31 @@ export function client(
       throw new CliError(
         `the server at ${url} runs lodge ${theirs} and this command is lodge ${io.version}; use the same version`,
       );
-    let answer: { error?: { kind: string; message: string }; result?: unknown };
+    let answer: unknown;
     try {
-      answer = (await response.json()) as typeof answer;
+      answer = await response.json();
     } catch {
       throw new CliError(`${url} answered something other than JSON`);
     }
-    if (response.status === 200 || answer.error?.kind === "check-failed")
-      return fromWire(answer.result);
-    if (answer.error?.kind === "no-project")
+    const malformed = () => new CliError(`${url} answered something other than a lodge answer`);
+    if (!object(answer)) throw malformed();
+    if (response.status === 200) {
+      if (!Object.hasOwn(answer, "result")) throw malformed();
+      return fromWire(answer["result"]);
+    }
+    const error = answer["error"];
+    if (!object(error) || typeof error["kind"] !== "string" || typeof error["message"] !== "string")
+      throw malformed();
+    if (error["kind"] === "check-failed") {
+      if (!Object.hasOwn(answer, "result")) throw malformed();
+      return fromWire(answer["result"]);
+    }
+    if (error["kind"] === "no-project")
       throw new CliError("lodge has no data in this repository yet; run `lodge init`");
-    if (answer.error?.kind === "unauthorised")
+    if (error["kind"] === "unauthorised")
       throw new CliError(
-        `${answer.error?.message ?? "the server returned an error"}; an agent token goes in LODGE_TOKEN, or in a cloud environment's network secret for this server`,
+        `${error["message"]}; an agent token goes in LODGE_TOKEN, or in a cloud environment's network secret for this server`,
       );
-    throw new CliError(
-      answer.error?.message ?? "the server returned an error",
-      answer.error?.kind === "conflict" ? 1 : 2,
-    );
+    throw new CliError(error["message"], error["kind"] === "conflict" ? 1 : 2);
   };
 }

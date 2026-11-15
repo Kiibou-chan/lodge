@@ -4,8 +4,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { toWire } from "#api";
 import { AddOutcome, written } from "#app";
-import { type Call, fromWire, runThread } from "#cli";
+import { type Call, fromWire, run, runThread } from "#cli";
 import { checkResult, problem, Raises } from "#core";
+import { project as cliProject } from "../e2e/project.ts";
 import { project, required, wired } from "./support.ts";
 
 test("orphaned_thread_outputs", async () => {
@@ -27,6 +28,28 @@ test("orphaned_thread_outputs", async () => {
     ).toBe(0);
     expect(out.split("\n")).toContain("about s-zzzzzz, not found");
   }
+  const cli = await cliProject();
+  let out = "",
+    err = "";
+  expect(
+    await run(["waiting"], {
+      cwd: cli.root,
+      env: {},
+      version: "0.3.0",
+      fetch: async () =>
+        new Response(JSON.stringify({ result: toWire(await lodge.waitingAll()) }), {
+          headers: { "Lodge-Version": "0.3.0" },
+        }),
+      out: (text) => {
+        out += text;
+      },
+      err: (text) => {
+        err += text;
+      },
+    }),
+  ).toBe(0);
+  expect(err).toBe("");
+  expect(out).toContain("about s-zzzzzz, not found");
 });
 test.each([
   [AddOutcome.PUBLISHED, 0],
