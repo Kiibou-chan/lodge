@@ -11,7 +11,8 @@
     "#api": "./src/api/index.ts"
   },
   "scripts": {
-    "check": "biome check --error-on-warnings . && tsc --noEmit -p . && depcruise src tests scripts --config .dependency-cruiser.cjs && knip && bun test"
+    "check": "biome check --error-on-warnings . && tsc --noEmit -p . && depcruise src tests scripts --config .dependency-cruiser.cjs && knip && bun test",
+    "build": "bun build --compile src/main.ts --outfile dist/lodge"
   },
   "dependencies": {
     "@noble/hashes": "2.4.0",

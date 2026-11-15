@@ -107,6 +107,7 @@ export interface HeldAdd {
   readonly importing: boolean;
   readonly message: string;
 }
+/** @public */
 export interface HeldMessage {
   readonly kind: "message";
   readonly person: string;
