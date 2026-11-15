@@ -609,7 +609,7 @@
     "status": "changed",
     "plan": 4,
     "ts": ["ts/tests/hook/post-tool-use.test.ts"],
-    "why": "design line 290: the hook's advice changes for a project that has moved"
+    "why": "d-va3j7x adds the moved project's advice, in `moved-advice.test.ts`; d-bs5mm8 moves `parse_hook_settings` to `#app`"
   },
   "tests/structure_calls.py": {
     "status": "changed",
