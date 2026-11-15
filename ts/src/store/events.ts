@@ -66,6 +66,8 @@ async function applyEvent(
         .execute();
       break;
     }
+    case "export-target":
+      break;
     case "file":
       if (row.path === null) throw new Error("a file event needs a path");
       await tx
