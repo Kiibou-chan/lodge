@@ -3,6 +3,7 @@ import { type Command, parse } from "#cli";
 import { filters } from "#core";
 
 const cases: [string[], Command][] = [
+  [["hook", "post-tool-use"], { kind: "hook", event: "post-tool-use" }],
   [["init"], { kind: "init" }],
   [["id", "d"], { kind: "id", prefix: "d" }],
   [
@@ -132,3 +133,20 @@ test("draft_help_says_decisions_are_immutable", () =>
   expect(parse(["draft", "-h"], "test")).toMatchObject({
     out: expect.stringMatching(/a\s+decision is immutable/u),
   }));
+
+test.each([
+  [["hook"], ""],
+  [["hook", "--unknown", "extra"], "--unknown"],
+  [["hook", "--version"], "--version"],
+] as const)("hook_bypasses_other_parsing %p", (argv, event) => {
+  expect(parse(argv, "test")).toEqual({ kind: "hook", event });
+});
+test("hook_help_and_summary_match_argparse", () => {
+  expect(parse(["hook", "-h"], "test")).toMatchObject({
+    code: 0,
+    out: "usage: lodge hook [-h] EVENT\n\nanswer a Claude Code hook event: post-tool-use\n\npositional arguments:\n  EVENT\n\noptions:\n  -h, --help  show this help message and exit\n",
+  });
+  expect(parse(["--help"], "test")).toMatchObject({
+    out: expect.stringContaining("hook      answer a Claude Code hook event: post-tool-use"),
+  });
+});

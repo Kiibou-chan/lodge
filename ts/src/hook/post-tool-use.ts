@@ -56,8 +56,7 @@ function glob(pattern: string): RegExp {
     else if (ch === "?") out += "[^/]";
     else out += "^$\\.*+?()[]{}|/".includes(ch) ? `\\${ch}` : ch;
   }
-  // The final assertion also excludes the position before a trailing newline.
-  return new RegExp(`^(?:${out})$(?![\\s\\S])`, "u");
+  return new RegExp(`^(?:${out})$`, "u");
 }
 export function respond(
   payload: unknown,
@@ -71,7 +70,7 @@ export function respond(
   const path = resolve(edited);
   const moved = context.server !== null;
   const data = moved
-    ? join(root, "lodge")
+    ? resolve(join(root, "lodge"))
     : context.dataRoot === null
       ? null
       : resolve(context.dataRoot);

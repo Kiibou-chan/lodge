@@ -43,3 +43,21 @@ test("run_silences_output_and_resolution_failures", async () => {
   ).toBe(0);
   expect(output).toBe("");
 });
+test("glob_escape_set_and_question_mark_do_not_overreach", () => {
+  for (const [pattern, path] of [
+    ["docs/a.md", "docs/aXmd"],
+    ["docs/a|b.md", "docs/a"],
+    ["docs/a|b.md", "docs/b.md"],
+    ["docs/a\\b.md", "docs/ab.md"],
+    ["docs?x.md", "docs/x.md"],
+  ])
+    expect(respond(payload(path ?? ""), context(root, null, [pattern ?? ""]), resolve)).toBeNull();
+  const name = "docs/a\\b.md";
+  expect(text(respond(payload(name), context(root, null, [name]), resolve))).toContain(name);
+});
+test("record_path_outside_the_repository_is_shown_absolute", () => {
+  const path = "/synthetic/elsewhere/decisions/d-abc123-slug.md";
+  expect(text(respond(payload(path), context(root, "/synthetic/elsewhere"), resolve))).toContain(
+    path,
+  );
+});

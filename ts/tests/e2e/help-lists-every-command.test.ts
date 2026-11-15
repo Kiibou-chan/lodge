@@ -4,6 +4,7 @@ import { version } from "../../package.json";
 import { project } from "./project.ts";
 
 const COMMANDS = [
+  "hook",
   "init",
   "id",
   "search",

@@ -34,6 +34,7 @@ export interface Io {
   readonly out: (text: string) => void;
   readonly err: (text: string) => void;
   readonly version: string;
+  readonly hook?: () => Promise<number>;
 }
 export async function run(argv: readonly string[], io: Io): Promise<number> {
   let localNames: readonly string[] = [];
@@ -44,6 +45,8 @@ export async function run(argv: readonly string[], io: Io): Promise<number> {
       io.err(command.err);
       return command.code;
     }
+    if (command.kind === "hook")
+      return command.event === "post-tool-use" && io.hook ? await io.hook() : 0;
     if (command.kind === "guide") {
       io.out(guide);
       return 0;

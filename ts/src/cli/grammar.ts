@@ -3,6 +3,7 @@ import { argumentsOf, type Exit, exit, usageError } from "./args.ts";
 import { DECLARATIONS, TOP_HELP } from "./grammar-data.ts";
 
 export type Command =
+  | { readonly kind: "hook"; readonly event: string }
   | { readonly kind: "init" }
   | { readonly kind: "id"; readonly prefix: "d" | "s" }
   | {
@@ -63,6 +64,8 @@ export type ThreadCommand = Extract<
 export type { Exit } from "./args.ts";
 
 export function parse(argv: readonly string[], version: string): Command | Exit {
+  if (argv[0] === "hook" && !argv.includes("-h") && !argv.includes("--help"))
+    return { kind: "hook", event: argv[1] ?? "" };
   let index = 0;
   const extras: string[] = [];
   for (; index < argv.length; index++) {
@@ -101,6 +104,8 @@ export function parse(argv: readonly string[], version: string): Command | Exit 
   const nullable = (key: string) => (a[key] ?? null) as string | null;
   const ref = text("ref");
   switch (name) {
+    case "hook":
+      return { kind: name, event: text("event") };
     case "init":
     case "waiting":
     case "guide":
