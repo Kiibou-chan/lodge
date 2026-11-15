@@ -2,7 +2,6 @@ import { stampOf } from "#app";
 import { handler } from "./http.ts";
 import type { ApiOptions } from "./options.ts";
 import { hashSecret } from "./tokens.ts";
-/** @public */
 export interface ServerParts {
   readonly options: ApiOptions;
 }

@@ -11,7 +11,6 @@ class IndexError extends LookupError {
 }
 
 export const VIEWER = "lodge viewer";
-/** @public */
 export const MINUTE_FORMAT = "%Y-%m-%d %H:%M";
 
 export function confirmableIds(

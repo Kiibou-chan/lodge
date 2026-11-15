@@ -3,7 +3,6 @@ import type { SpecEntry } from "./model.ts";
 import type { Snapshot } from "./snapshot.ts";
 import { byCodePoint } from "./text.ts";
 
-/** @public */
 export interface Placement {
   readonly id: string;
   readonly depth: number;

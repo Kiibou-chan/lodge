@@ -12,7 +12,10 @@ export function listen(
   return new Promise((resolve, reject) => {
     let stopping = false;
     const stop = () => {
-      if (stopping) return;
+      if (stopping) {
+        void server.stop(true);
+        return;
+      }
       stopping = true;
       void server.stop().then(
         () => {

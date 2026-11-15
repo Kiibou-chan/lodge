@@ -1,11 +1,11 @@
 export { type Applied, applyDrafts, type StaleBase } from "./apply.ts";
 export { checkChange } from "./check-change.ts";
 export { type CheckResult, checkResult, checkState } from "./check-state.ts";
-/** @public */
 export {
   behindArea,
   confirmableIds,
   confirmationDraft,
+  /** @public */
   MINUTE_FORMAT,
   VIEWER,
 } from "./confirmation.ts";
@@ -24,7 +24,6 @@ export {
   writeRecord,
 } from "./fileformat.ts";
 export * from "./ids.ts";
-/** @public */
 export {
   Action,
   type Area,
@@ -32,12 +31,15 @@ export {
   type Change,
   type Decision,
   decision,
+  /** @public */
   type Imported,
   type Message,
   message,
+  /** @public */
   type NumberHandle,
   type Problem,
   problem,
+  /** @public */
   type Quote,
   Raises,
   type Record,
@@ -47,17 +49,22 @@ export {
   type Thread,
   ThreadState,
 } from "./model.ts";
-/** @public */
 export {
   areaNames,
   type Branch,
   derivedOrder,
+  /** @public */
   type Placement,
   restsOnTree,
   writtenOrder,
 } from "./order.ts";
-/** @public */
-export { type Placed, renderSpec, type SpecArea, specView } from "./render.ts";
+export {
+  /** @public */
+  type Placed,
+  renderSpec,
+  type SpecArea,
+  specView,
+} from "./render.ts";
 export {
   AmbiguousRef,
   type Filters,
@@ -72,11 +79,11 @@ export * from "./snapshot.ts";
 export * from "./stamps.ts";
 export * from "./text.ts";
 export * from "./threads.ts";
-/** @public */
 export {
   failingIds,
   formatLevel1,
   formatLevel3,
+  /** @public */
   headParts,
   type Level1,
   type Level3,

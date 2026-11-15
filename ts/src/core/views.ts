@@ -135,7 +135,6 @@ export function formatLevel3(v: Level3): string {
     lines.push(`${relation}: ${target} (${status})`);
   return lines.join("\n");
 }
-/** @public */
 export function headParts(
   v: Level1,
 ): readonly [string, string | null, string, string | null, string | null, string | null] {

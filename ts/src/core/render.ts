@@ -5,7 +5,6 @@ import { type Level1, level1 } from "./views.ts";
 
 const HEADING_LINE = /(?<=^|\n)( {0,3})(#|=+[ \t]*(?=\n|$)|-+[ \t]*(?=\n|$))/gu;
 
-/** @public */
 export interface Placed {
   readonly entry: Level1;
   readonly depth: number;
