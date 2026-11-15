@@ -1,0 +1,5 @@
+# Recheck brief: Task 5 fix round 1 of `docs/superpowers/plans/2026-11-02-lodge-server-import.md`
+
+Read-only recheck of commit range `b5a420e..2c84898` on `server-import-import` in `/var/tmp/lodge-import-import`; read `CLAUDE.md`, the fix brief `task-5-fix-1-brief.md`, the fix report `task-5-fix-1-report.md`, and the review `~/.cache/lodge-work/codex/plan4/run-task5-review/codex.log.final.md` in the plan's folder.
+Check only that the two findings are answered: (1) every message but the author's keeps its bytes under an owner-name or role collision, including the reviewer's probe and `where`-carrying, quoted/unquoted `when`, multi-line, and CRLF-free variants you can construct; (2) a server-writer failure carries stage `server` and its own sentence while a source-writer failure keeps `lodge 0.2`. Also report any new defect the fix introduced (Important or Minor, with file, line, probe).
+Mutate the fix to confirm each new test can fail. Edit nothing. Final message: findings, or "0 Important, 0 Minor".
