@@ -1,12 +1,12 @@
 # Planner brief: lodge server, build step 1, plan 4: the importer, the export, and the design's records
 
 Write plan 4 of build step 1 of the server design in `docs/superpowers/plans/2026-11-02-lodge-server-import.md`, with its ledger `docs/superpowers/plans/2026-11-02-lodge-server-import-progress.md` and this folder, in the worktree `/var/tmp/lodge-server-import` on branch `server-import`.
-Plan 1 (`docs/superpowers/plans/2026-11-02-lodge-server-core.md`) is being built now on branch `server-core`; this plan starts from plan 1's finished core, and its build begins after plan 1 merges into this branch.
+Plan 1 (`docs/superpowers/plans/done/2026-11-02-lodge-server-core.md`) is being built now on branch `server-core`; this plan starts from plan 1's finished core, and its build begins after plan 1 merges into this branch.
 
 ## Sources
 
 - The authority: `docs/superpowers/specs/2026-11-02-lodge-server-design.md`, approved by the author 2026-11-02 13:52 ("Approved"); her answers behind it are author decisions (`uv run --frozen --quiet lodge search --by author`).
-- Plan 1, which decides the layout, toolchain, gate, structure rules, parity table, and conventions this plan must follow: read its Global Constraints, "Calls made", "The rest of build step 1" (plan 4's paragraph is this plan's scope), "Settled for the later plans", and "Parity table" in full, and its ledger `docs/superpowers/plans/2026-11-02-lodge-server-core-progress.md` for the rulings made during its build so far.
+- Plan 1, which decides the layout, toolchain, gate, structure rules, parity table, and conventions this plan must follow: read its Global Constraints, "Calls made", "The rest of build step 1" (plan 4's paragraph is this plan's scope), "Settled for the later plans", and "Parity table" in full, and its ledger `docs/superpowers/plans/done/2026-11-02-lodge-server-core-progress.md` for the rulings made during its build so far.
 - What plan 1's core exports: `ts/src/core/index.ts` and the parity table `ts/tests/parity.json` at this branch's commit; the rest of the core is the port at parity of `src/lodge/core` (Tasks 7a to 11 of plan 1), with the Python names in camelCase, so plan against those names.
 - What records mean: `lodge spec`, read through lodge.
 - The behaviour to carry over: `src/lodge` and `tests/`; lodge 0.2's tests are its specification.
