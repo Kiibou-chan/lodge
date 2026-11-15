@@ -127,7 +127,7 @@ if (import.meta.main) {
   const [repository, rev, settingsRev, ...extra] = process.argv.slice(2);
   if (!repository || !rev || extra.length) {
     console.error("Usage: round-trip.ts REPOSITORY REV [SETTINGS_REV]");
-    process.exitCode = 1;
+    process.exitCode = 2;
   } else {
     try {
       process.exitCode = await roundTrip(repository, rev, settingsRev);

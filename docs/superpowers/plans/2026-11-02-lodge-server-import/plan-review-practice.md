@@ -150,7 +150,7 @@ Fix: add `ts/src/store/events.ts` to line 100's list.
 
 ## Verified, no finding
 
-- The public-repository rule: `probes/fixture.py` reads only the folder it is given and writes a comment naming the probe; the eleven files of `probes/zero-two-store/` are a made-up project (`storage`, transcripts, logs, `docs/choices.md`, `ITEM-1`, `sizes.csv`), lodge 0.2's own output (probe 6); `grep -rnE "/home/|kiibou|/var/tmp|svenja|gmx|\.cache"` over the plan, the ledger, and the folder finds only the worktree path in `planner-brief.md:3`, which is the coordinator's brief and not a plan file.
+- The public-repository rule: `probes/fixture.py` reads only the folder it is given and writes a comment naming the probe; the eleven files of `probes/zero-two-store/` are a made-up project (`storage`, transcripts, logs, `docs/choices.md`, `ITEM-1`, `sizes.csv`), lodge 0.2's own output (probe 6); a public-repository scan over the plan, the ledger, and the folder finds only the worktree path in `planner-brief.md:3`, which is the coordinator's brief and not a plan file.
 - The fixture is stable under the writers the importer leans on: lodge 0.2's `write_record(parse_record(...))` gives back each of the four decisions and the entry byte for byte, and `write_thread(parse_thread(...))` the thread (scratch run), so `file_the_writer_would_not_give_back_is_refused` is not set off by the fixture itself.
 - lodge 0.2's `lodge check` prints `ok` on the fixture committed in a scratch repository, as probe 6 says.
 - `input_reaches_git`'s hash: `printf 'a\n' | git hash-object --stdin` prints `78981922613b2afb6025042ff6bd878ac1994e85`.

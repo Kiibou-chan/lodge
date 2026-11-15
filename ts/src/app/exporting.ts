@@ -1,33 +1,12 @@
 import type { Tree } from "#core";
+import type { ExportTarget } from "./export-rules.ts";
 import { type Actor, type Projects, PublishOutcome, type Store } from "./ports.ts";
 
-export interface ExportTarget {
-  readonly repository: string;
-  readonly branch: string;
-  readonly remote: string | null;
-}
-export type ExportOutcome =
-  | { readonly kind: "committed"; readonly commit: string }
-  | { readonly kind: "unchanged" }
-  | { readonly kind: "moved" };
 export interface ExportTargets {
   target(project: string): Promise<ExportTarget | null>;
   setTarget(project: string, target: ExportTarget | null, by: Actor): Promise<void>;
 }
 export const KEPT: readonly string[] = ["lodge/decisions/.gitkeep", "lodge/spec/.gitkeep"];
-
-export function exportTargetProblem(target: ExportTarget): string | null {
-  if (!target.repository.startsWith("/"))
-    return "export-target: repository must be an absolute path";
-  if (
-    !/^[A-Za-z0-9]/.test(target.branch) ||
-    /[^A-Za-z0-9._/-]/.test(target.branch) ||
-    target.branch.includes("..")
-  )
-    return "export-target: branch must be a name of letters, digits, and . _ / -, not starting with a symbol";
-  if (target.remote?.startsWith("-")) return "export-target: remote must not start with -";
-  return null;
-}
 
 export function exportFiles(
   current: Tree,
@@ -75,13 +54,16 @@ export function exportingProjects(
                   if (outcome === PublishOutcome.PUBLISHED) written(project);
                   return outcome;
                 };
-              const value = Reflect.get(inner, member, inner);
-              return typeof value === "function" ? value.bind(inner) : value;
+              return boundMember(inner, member);
             },
           });
         };
-      const value = Reflect.get(target, key, target);
-      return typeof value === "function" ? value.bind(target) : value;
+      return boundMember(target, key);
     },
   });
+}
+
+function boundMember(target: object, key: PropertyKey): unknown {
+  const value = Reflect.get(target, key, target);
+  return typeof value === "function" ? value.bind(target) : value;
 }

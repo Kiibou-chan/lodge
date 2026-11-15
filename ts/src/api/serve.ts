@@ -1,4 +1,3 @@
-import { MAX_REQUEST_BODY_SIZE } from "./options.ts";
 export function withoutYamlLogging(env: Record<string, string | undefined>): void {
   delete env["LOG_TOKENS"];
   delete env["LOG_STREAM"];
@@ -13,7 +12,8 @@ export function listen(
     fetch,
     hostname: host,
     port,
-    maxRequestBodySize: MAX_REQUEST_BODY_SIZE,
+    // The handler enforces the cap so oversized requests receive a JSON error.
+    maxRequestBodySize: Infinity,
   });
   return new Promise((resolve, reject) => {
     let stopping = false;

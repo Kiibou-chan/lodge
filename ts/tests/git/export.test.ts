@@ -1,9 +1,19 @@
 import { expect, test } from "bun:test";
+import { chmodSync, readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 import { LodgeError } from "#app";
 import { encodeUtf8 } from "#core";
 import { exportStore, readStore, runBytes } from "#git";
 import { isolateGit } from "./isolated.ts";
-import { bareRemote, clone, git, riggedRemote, seeded, worktree } from "./repos.ts";
+import {
+  bareRemote,
+  clone,
+  git,
+  riggedRemote,
+  seeded,
+  temporaryFolder,
+  worktree,
+} from "./repos.ts";
 import { zeroTwoRepository } from "./zero-two.ts";
 
 isolateGit();
@@ -113,7 +123,43 @@ test("push_without_force", async () => {
   const remote = bareRemote();
   const repo = seeded(remote);
   const before = git(repo, "show-ref", "--heads");
-  const result = await exportStore(target(repo, remote), files, "Export");
+  const folder = temporaryFolder();
+  const log = join(folder, "arguments");
+  const realGit = Bun.which("git");
+  expect(realGit).not.toBeNull();
+  const shim = join(folder, "git");
+  writeFileSync(
+    shim,
+    `#!/bin/sh
+if [ "$3" = push ]; then (shift 2; printf '%s\\n' "$@" > "$PUSH_LOG"); fi
+exec "$REAL_GIT" "$@"
+`,
+  );
+  chmodSync(shim, 0o755);
+  const saved = {
+    PATH: process.env["PATH"],
+    PUSH_LOG: process.env["PUSH_LOG"],
+    REAL_GIT: process.env["REAL_GIT"],
+  };
+  let result: Awaited<ReturnType<typeof exportStore>>;
+  try {
+    process.env["PATH"] = `${folder}:${saved.PATH}`;
+    process.env["PUSH_LOG"] = log;
+    process.env["REAL_GIT"] = realGit as string;
+    result = await exportStore(target(repo, remote), files, "Export");
+  } finally {
+    for (const [key, value] of Object.entries(saved)) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+  }
+  const args = readFileSync(log, "utf8").trim().split("\n");
+  expect(args).toEqual([
+    "push",
+    "--porcelain",
+    remote,
+    `${result.kind === "committed" ? result.commit : ""}:refs/heads/lodge`,
+  ]);
   expect(result).toEqual({ kind: "committed", commit: git(remote, "rev-parse", "lodge") });
   expect(git(repo, "show-ref", "--heads")).toBe(before);
   expect((await readStore(clone(remote), "origin/lodge")).files).toEqual(files);

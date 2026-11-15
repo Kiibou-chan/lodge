@@ -2,7 +2,7 @@
 
 Rechecked: fix round ae2db4e..8d995b5 on `server-import`, against `plan-review-correctness.md`, `plan-review-practice.md`, `plan-fix-1.md`, `probes.md`, and `questions.md`.
 Names checked against plan 1 at `origin/server-core` 9e133ea, plan 2 at `origin/server-store` 5307e56, and plan 3 at `origin/server-api` 7dfdf40.
-Probes ran in a detached scratch worktree at 8d995b5 under `/var/tmp`, removed afterwards.
+Probes ran in a detached scratch worktree at 8d995b5 under `<worktree>`, removed afterwards.
 Status: done.
 
 Counts: Blocking 2 of 2 resolved; Important 15 of 15 resolved; Minors as claimed, with one claim (P4-I5's test) carrying a new Important.

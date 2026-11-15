@@ -197,3 +197,21 @@ test("library_log_escapes_line_breaks", async () => {
   expect(JSON.parse(w.logs[0] ?? "")).toContain(w.a.origin);
   await w.database.close();
 });
+
+test("sign_in_flood_does_not_evict_pending_registration", async () => {
+  const w = await ceremony();
+  try {
+    const challenge = await w.challenge("register-options", { setupCode: w.code });
+    for (let i = 0; i < 1001; i++) expect((await w.call("sign-in-options")).status).toBe(200);
+    expect(
+      (
+        await w.call("register", {
+          setupCode: w.code,
+          response: await w.a.create(challenge),
+        })
+      ).status,
+    ).toBe(200);
+  } finally {
+    await w.database.close();
+  }
+});

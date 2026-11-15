@@ -22,7 +22,7 @@ test.each(["SIGINT", "SIGTERM"] as const)(
         fetch,
         hostname: "127.0.0.1",
         port: 8787,
-        maxRequestBodySize: 8 * 1024 * 1024,
+        maxRequestBodySize: Infinity,
       });
       expect(process.listenerCount("SIGINT")).toBe(before[0] + 1);
       expect(process.listenerCount("SIGTERM")).toBe(before[1] + 1);

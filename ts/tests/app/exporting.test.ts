@@ -7,6 +7,7 @@ import {
   exportMessage,
   exportTargetProblem,
   KEPT,
+  lodgePathProblem,
   type Projects,
   PublishOutcome,
   person,
@@ -216,3 +217,27 @@ test("wrapped_projects_pass_every_method_with_its_arguments", () => {
     ["names", []],
   ]);
 });
+
+test("shared_path_rule_keeps_writes_inside_lodge", () => {
+  for (const path of [
+    "README.md",
+    "lodge",
+    "lodge//a",
+    "lodge/../a",
+    "lodge/.git/a",
+    "lodge/a\\b",
+    "lodge/a\0b",
+  ])
+    expect(lodgePathProblem(path)).toBe(`${path} is outside lodge/, which is all the store writes`);
+  expect(lodgePathProblem("lodge/spec/storage/a.md")).toBeNull();
+});
+
+test.each(["\0", "\n", "\r", "\t", "\x1f", "\x7f", "\x85"])(
+  "target_rejects_control_character %j",
+  (control) => {
+    for (const field of ["repository", "branch", "remote"] as const)
+      expect(exportTargetProblem({ ...target, [field]: `/synthetic/${control}name` })).toBe(
+        "export-target: repository, branch, and remote must not contain control characters",
+      );
+  },
+);

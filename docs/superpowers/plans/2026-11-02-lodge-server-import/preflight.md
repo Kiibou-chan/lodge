@@ -4,9 +4,9 @@ Plan `docs/superpowers/plans/2026-11-02-lodge-server-import.md` at 1946379 on `s
 Read-only scan, before the build; a table and not a verdict.
 
 Sources read, by handle:
-- Plan 1 code at `/var/tmp/lodge-server-core/ts/src` (branch `server-core`, 7d5ecbc), `ts/tests/structure/{calls,table}.ts`, `ts/.dependency-cruiser.cjs`, `ts/knip.json`, `ts/tests/parity.json`, `ts/tests/parity-names.ts`, `ts/tsconfig.json`.
-- Plan 2 text at `/var/tmp/lodge-server-store/docs/superpowers/plans/2026-11-02-lodge-server-store.md` (branch head 0244e79; the plan aligns to a035344, and I diffed the two: nothing plan 4 consumes changed).
-- Plan 3 text at `/var/tmp/lodge-server-api/docs/superpowers/plans/2026-11-02-lodge-server-api.md` (working tree at 9ac93ac; the plan aligns to 9988813, and I diffed the two: nothing plan 4 consumes changed, but `asPerson` left `TestServer` and `Project`, see M3).
+- Plan 1 code at `<worktree>/ts/src` (branch `server-core`, 7d5ecbc), `ts/tests/structure/{calls,table}.ts`, `ts/.dependency-cruiser.cjs`, `ts/knip.json`, `ts/tests/parity.json`, `ts/tests/parity-names.ts`, `ts/tsconfig.json`.
+- Plan 2 text at `<worktree>/docs/superpowers/plans/2026-11-02-lodge-server-store.md` (branch head 0244e79; the plan aligns to a035344, and I diffed the two: nothing plan 4 consumes changed).
+- Plan 3 text at `<worktree>/docs/superpowers/plans/2026-11-02-lodge-server-api.md` (working tree at 9ac93ac; the plan aligns to 9988813, and I diffed the two: nothing plan 4 consumes changed, but `asPerson` left `TestServer` and `Project`, see M3).
 - Plan 4's own text in full, the ledger, `probes.md`, `questions.md`, the made-up store `probes/zero-two-store/`, the Python sources the tasks cite (`tests/hook/`, `tests/e2e/test_hook_*`, `tests/gitstore/repos.py`, `conftest.py`, `test_push_race.py`, `src/lodge/hook/post_tool_use.py`, `src/lodge/main.py`, `src/lodge/gitstore/{trees,plumbing,settings,setup,branch}.py`, `src/lodge/cli/parser.py`, `commands.py`), and the design's section headings.
 
 Not read: plan 4's other review files (`plan-review-*.md`, `plan-recheck-*.md`, `plan-fix-*.md`, `planner-*.md`), plans 2 and 3's probes, plan 1's task reports, `src/lodge/app/*.py` beyond what the tasks cite.
@@ -71,7 +71,7 @@ Checked: tests against the code the Interfaces specify, files created against fi
 | B12 | 11b (534 to 535) | | `purpose` entries; the four added must-nots are design lines 47 to 50 (items 4 to 7), as 535 says | in order after 11a | match |
 | B13 | 11c (537 to 540) | step 2 runs the hook on the design (543) | edits the design, `.lodge.toml` `frozen` (line 8 there), `CLAUDE.md` | in order after 11b | match, with M14 (`CLAUDE.md` names the two frozen design documents on line 8 and again on line 33, 540 says "one line") |
 
-## 3a. Names consumed from plan 1 (code at `/var/tmp/lodge-server-core/ts/src`, 7d5ecbc)
+## 3a. Names consumed from plan 1 (code at `<worktree>/ts/src`, 7d5ecbc)
 
 Plan 4's table puts these in row 75 (line 75) and in the Interfaces of Tasks 1, 2, 3, 5, 6; the table's heading says "from plans 2 and 3", see M12.
 
