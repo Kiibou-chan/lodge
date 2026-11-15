@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 import { coreSettings, prepareImport, stampOf, type ZeroTwoCopy } from "#app";
-import { load, parseRecord, tree } from "#core";
+import { checkChange, load, parseRecord, tree, writeThread } from "#core";
 import { ZERO_TWO_STORE } from "../core/zero-two-store.ts";
 import { START } from "./fakes.ts";
 
@@ -73,6 +73,51 @@ test("author_message_names_the_owner", () => {
   const path = pathOf("q-j2dsgk");
   expect(prepare().files.get(path)).toBe(
     (original.get(path) as string).replace("by: author\n", "by: ana\n"),
+  );
+});
+
+function roleCollision(where: boolean): ZeroTwoCopy {
+  return changed("q-j2dsgk", (text) =>
+    text
+      .replace("by: coordinator", "by: ana")
+      .replace(
+        "when: 2026-11-02T18:56:30+01:00\n",
+        `when: 2026-11-02T18:56:30+01:00\n${where ? 'where: "chat"\n' : ""}`,
+      ),
+  );
+}
+function canonicalSource(value: ZeroTwoCopy): string {
+  const source = load(tree({ rev: null, files: value.files }));
+  expect(
+    checkChange(load(tree({ rev: null, files: new Map() })), source, settings, now).problems,
+  ).toEqual([]);
+  const thread = source.threads.get("q-j2dsgk");
+  if (!thread) throw new Error("expected thread fixture");
+  const text = value.files.get(pathOf(thread.id)) as string;
+  expect(writeThread(thread, source.people)).toBe(text);
+  return text;
+}
+
+test("role_collision_preserves_every_non_author_line", () => {
+  const value = roleCollision(true);
+  const source = canonicalSource(value);
+  const result = prepare(value);
+  expect(result.problems).toEqual([]);
+  expect(result.stage).toBeNull();
+  expect(result.files.get(pathOf("q-j2dsgk"))).toBe(source.replace("by: author\n", "by: ana\n"));
+});
+
+test("mapped_thread_failure_is_at_the_server_stage", () => {
+  const value = roleCollision(false);
+  canonicalSource(value);
+  const result = prepare(value);
+  refused(result, "server");
+  expect(result.problems).toContainEqual(
+    expect.objectContaining({
+      path: pathOf("q-j2dsgk"),
+      check: 1,
+      message: expect.stringContaining("where"),
+    }),
   );
 });
 

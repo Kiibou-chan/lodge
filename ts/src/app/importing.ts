@@ -5,6 +5,7 @@ import {
   load,
   type Problem,
   problem,
+  type Thread,
   tree,
   ValueError,
   writeRecord,
@@ -56,6 +57,28 @@ function snapshot(files: ReadonlyMap<string, string>, people?: ReadonlySet<strin
 function failed(stage: "lodge 0.2" | "server", problems: readonly Problem[]): PreparedImport {
   return { stage, problems, files: new Map(), mapped: [] };
 }
+function mapThreadAuthor(
+  record: Thread,
+  source: string,
+  owner: string,
+  people: ReadonlySet<string>,
+): string {
+  const authors = writeThread(
+    {
+      ...record,
+      messages: record.messages
+        .filter((message) => message.by === "author")
+        .map((message) => ({ ...message, by: owner })),
+    },
+    people,
+  );
+  const by = authors.split("\n").find((line) => line.startsWith("by: ")) as string;
+  // The source writer check guarantees these are message metadata, not body text.
+  return source.replace(
+    /^(## Message [0-9]+\n\n)by: author$/gmu,
+    (_, heading: string) => heading + by,
+  );
+}
 export function prepareImport(
   copy: ZeroTwoCopy,
   owner: string,
@@ -70,6 +93,7 @@ export function prepareImport(
   const files = new Map([...copy.files].filter(([path]) => !path.endsWith("/.gitkeep")));
   const mapped: string[] = [];
   const writerProblems: Problem[] = [];
+  const mappedProblems: Problem[] = [];
   for (const record of [...original.decisions.values(), ...original.threads.values()]) {
     const changes =
       record.kind === "decision"
@@ -84,27 +108,31 @@ export function prepareImport(
         writerProblems.push(problem({ path, check: 1, message: WRITER_REFUSAL }));
         continue;
       }
+    } catch (error) {
+      if (!(error instanceof ValueError)) throw error;
+      writerProblems.push(problem({ path, check: 1, message: WRITER_REFUSAL }));
+      continue;
+    }
+    try {
       const text =
         record.kind === "decision"
           ? writeRecord({ ...record, decidedBy: owner })
-          : writeThread(
-              {
-                ...record,
-                messages: record.messages.map((message) => ({
-                  ...message,
-                  by: message.by === "author" ? owner : message.by,
-                })),
-              },
-              people,
-            );
+          : mapThreadAuthor(record, copy.files.get(path) as string, owner, people);
       files.set(path, text);
       mapped.push(record.id);
     } catch (error) {
       if (!(error instanceof ValueError)) throw error;
-      writerProblems.push(problem({ path, check: 1, message: WRITER_REFUSAL }));
+      mappedProblems.push(
+        problem({
+          path,
+          check: 1,
+          message: `the server cannot write this file with the owner as its author: ${error.message}`,
+        }),
+      );
     }
   }
   if (writerProblems.length) return failed("lodge 0.2", writerProblems);
+  if (mappedProblems.length) return failed("server", mappedProblems);
   const pathProblems = [...files.keys()]
     .filter((path) => /[\uDC80-\uDCFF]/u.test(path))
     .map((path) =>
