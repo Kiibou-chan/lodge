@@ -2,7 +2,7 @@
 id: s-hke5m9
 kind: spec
 title: "The default child task workflow builds reviews and rechecks"
-rests_on: [s-tprwhs, s-d1dd20]
+rests_on: [s-tprwhs, s-d1dd20, s-pks1qn]
 ---
 
 From build step 5, child tasks run in order on the plan's branch.

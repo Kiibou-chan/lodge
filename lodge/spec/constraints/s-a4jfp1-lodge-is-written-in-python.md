@@ -2,6 +2,7 @@
 id: s-a4jfp1
 kind: spec
 title: "Python lodge and the TypeScript server"
+rests_on: [s-pks1qn]
 ---
 
 lodge 0.2 is written in Python.

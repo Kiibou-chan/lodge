@@ -315,3 +315,5 @@ Until step 7, one person signs in; passkeys come in step 1 **[my call]**, since 
 - Libraries for passkeys, the query builder (Drizzle or Kysely), and the dependency checker.
 - The mailbox branch's file layout.
 - How the board and the task page look, within the views above; a mock goes to the author before the interface is built, through the mocking step.
+
+Its content now lives in lodge (`lodge spec`, `lodge show`); this document is frozen.
