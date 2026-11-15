@@ -88,7 +88,7 @@ test.each([
   '{"tool_name":"Edit","tool_input":{"file_path":3}}',
   '{"tool_name":"Edit","tool_input":{"file_path":""}}',
   '{"tool_name":3,"tool_input":{"file_path":"x"}}',
-])("bad_payload_exit_0_silent: %s", async (raw) => {
+])("bad_payload_exit_0_silent %s", async (raw) => {
   expect(await drive(raw, async () => context(root, undefined, ["x"]))).toEqual([0, ""]);
 });
 test("unreadable_input_exit_0_silent", async () => {
@@ -141,7 +141,7 @@ test.each([
   [{ frozne: [] }, ".lodge.toml: unknown key hook.frozne"],
   [{ frozen: "a.md" }, ".lodge.toml: hook.frozen must be a list of strings"],
   [{ frozen: ["a.md", 3] }, ".lodge.toml: hook.frozen must be a list of strings"],
-])("bad_settings_are_one_sentence: %j", (table, message) => {
+])("bad_settings_are_one_sentence %j", (table, message) => {
   try {
     parseHookSettings(table);
     throw new Error("accepted invalid settings");
