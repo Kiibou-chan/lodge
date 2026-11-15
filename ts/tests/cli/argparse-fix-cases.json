@@ -1,0 +1,182 @@
+[
+  {
+    "argv": ["add", "a", "t", "--dry-run", "x"],
+    "expected": {
+      "kind": "exit",
+      "code": 2,
+      "out": "",
+      "err": "usage: lodge [-h] [--version] COMMAND ...\nlodge: error: unrecognized arguments: x\n"
+    }
+  },
+  {
+    "argv": ["add", "d-aaaaaa", "--s", "a", "builder"],
+    "expected": {
+      "kind": "exit",
+      "code": 2,
+      "out": "",
+      "err": "usage: lodge [-h] [--version] COMMAND ...\nlodge: error: unrecognized arguments: --s a builder\n"
+    }
+  },
+  {
+    "argv": ["add", "a", "--attach", "b", "c"],
+    "expected": {
+      "kind": "exit",
+      "code": 2,
+      "out": "",
+      "err": "usage: lodge [-h] [--version] COMMAND ...\nlodge: error: unrecognized arguments: c\n"
+    }
+  },
+  {
+    "argv": ["add", "--dry-run", "a", "b", "--import", "c"],
+    "expected": {
+      "kind": "exit",
+      "code": 2,
+      "out": "",
+      "err": "usage: lodge [-h] [--version] COMMAND ...\nlodge: error: unrecognized arguments: c\n"
+    }
+  },
+  {
+    "argv": ["id", "d", "--unknown", "x"],
+    "expected": {
+      "kind": "exit",
+      "code": 2,
+      "out": "",
+      "err": "usage: lodge [-h] [--version] COMMAND ...\nlodge: error: unrecognized arguments: --unknown x\n"
+    }
+  },
+  {
+    "argv": ["search", "a", "--limit", "2", "x"],
+    "expected": {
+      "kind": "exit",
+      "code": 2,
+      "out": "",
+      "err": "usage: lodge [-h] [--version] COMMAND ...\nlodge: error: unrecognized arguments: x\n"
+    }
+  },
+  {
+    "argv": ["show", "a", "--reasoning", "x"],
+    "expected": {
+      "kind": "exit",
+      "code": 2,
+      "out": "",
+      "err": "usage: lodge [-h] [--version] COMMAND ...\nlodge: error: unrecognized arguments: x\n"
+    }
+  },
+  {
+    "argv": ["draft", "a", "--unknown", "x"],
+    "expected": {
+      "kind": "exit",
+      "code": 2,
+      "out": "",
+      "err": "usage: lodge [-h] [--version] COMMAND ...\nlodge: error: unrecognized arguments: --unknown x\n"
+    }
+  },
+  {
+    "argv": ["thread", "a", "--unknown", "x"],
+    "expected": {
+      "kind": "exit",
+      "code": 2,
+      "out": "",
+      "err": "usage: lodge [-h] [--version] COMMAND ...\nlodge: error: unrecognized arguments: --unknown x\n"
+    }
+  },
+  {
+    "argv": ["ask", "a", "--kind", "question", "--by", "builder", "f", "x"],
+    "expected": {
+      "kind": "exit",
+      "code": 2,
+      "out": "",
+      "err": "usage: lodge [-h] [--version] COMMAND ...\nlodge: error: unrecognized arguments: x\n"
+    }
+  },
+  {
+    "argv": ["reply", "a", "--by", "builder", "f", "x"],
+    "expected": {
+      "kind": "exit",
+      "code": 2,
+      "out": "",
+      "err": "usage: lodge [-h] [--version] COMMAND ...\nlodge: error: unrecognized arguments: x\n"
+    }
+  },
+  {
+    "argv": ["close", "a", "--by", "builder", "f", "x"],
+    "expected": {
+      "kind": "exit",
+      "code": 2,
+      "out": "",
+      "err": "usage: lodge [-h] [--version] COMMAND ...\nlodge: error: unrecognized arguments: x\n"
+    }
+  },
+  {
+    "argv": ["show", "a", "w", "f", "--", "--gate"],
+    "expected": {
+      "kind": "exit",
+      "code": 2,
+      "out": "",
+      "err": "usage: lodge [-h] [--version] COMMAND ...\nlodge: error: unrecognized arguments: w f -- --gate\n"
+    }
+  },
+  {
+    "argv": ["add", "a", "--dry-run", "--", "x"],
+    "expected": {
+      "kind": "exit",
+      "code": 2,
+      "out": "",
+      "err": "usage: lodge [-h] [--version] COMMAND ...\nlodge: error: unrecognized arguments: -- x\n"
+    }
+  },
+  {
+    "argv": ["search", "a", "--", "x"],
+    "expected": {
+      "kind": "exit",
+      "code": 2,
+      "out": "",
+      "err": "usage: lodge [-h] [--version] COMMAND ...\nlodge: error: unrecognized arguments: x\n"
+    }
+  },
+  {
+    "argv": ["id", "x", "--help"],
+    "expected": {
+      "kind": "exit",
+      "code": 2,
+      "out": "",
+      "err": "usage: lodge id [-h] {d,s}\nlodge id: error: argument prefix: invalid choice: 'x' (choose from d, s)\n"
+    }
+  },
+  {
+    "argv": ["search", "--limit", "-.5"],
+    "expected": {
+      "kind": "exit",
+      "code": 2,
+      "out": "",
+      "err": "usage: lodge search [-h] [--kind {decision,spec}] [--scope {product,process}]\n                    [--status {current,replaced,retired,any}] [--area AREA]\n                    [--by BY] [--limit LIMIT]\n                    [query]\nlodge search: error: argument --limit: '-.5' is not a positive whole number\n"
+    }
+  },
+  {
+    "argv": ["--version=1"],
+    "expected": {
+      "kind": "exit",
+      "code": 2,
+      "out": "",
+      "err": "usage: lodge [-h] [--version] COMMAND ...\nlodge: error: argument --version: ignored explicit argument '1'\n"
+    }
+  },
+  {
+    "argv": ["--help=x"],
+    "expected": {
+      "kind": "exit",
+      "code": 2,
+      "out": "",
+      "err": "usage: lodge [-h] [--version] COMMAND ...\nlodge: error: argument -h/--help: ignored explicit argument 'x'\n"
+    }
+  },
+  {
+    "argv": ["--ver"],
+    "expected": {
+      "kind": "exit",
+      "code": 0,
+      "out": "lodge 0.2.0\n",
+      "err": ""
+    }
+  }
+]
