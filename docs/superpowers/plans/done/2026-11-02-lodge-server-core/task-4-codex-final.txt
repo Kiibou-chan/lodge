@@ -1,0 +1,7 @@
+DONE_WITH_CONCERNS
+
+`sh scripts/check-ts.sh` exited 0: 225 tests passed.
+
+Concerns: the brief’s accepted Unicode differences and YAML nesting bound are documented in [task-4-report.md](docs/superpowers/plans/2026-11-02-lodge-server-core/task-4-report.md).
+`task-3-review.md` was untouched.
+No commit or push.

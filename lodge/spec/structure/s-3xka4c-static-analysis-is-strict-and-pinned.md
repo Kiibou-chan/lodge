@@ -1,9 +1,10 @@
 ---
 id: s-3xka4c
 kind: spec
-title: "Static analysis is strict and pinned"
+title: "Static analysis is strict in both environments"
 ---
 
-No code goes unused: Ruff's unused-import and unused-variable rules apply, and Vulture runs over the package with a pinned allow-list.
-mypy runs in strict mode.
-Ruff is the linter and formatter, with its configuration pinned in `pyproject.toml`.
+Python uses Ruff for linting and formatting, mypy in strict mode, and Vulture with a pinned allow-list; unused imports and variables fail the gate.
+The TypeScript gate uses Biome for linting and formatting, `tsc` in strict mode, and knip for unused code.
+Warnings fail the gate.
+Configuration and dependencies are pinned in each environment.

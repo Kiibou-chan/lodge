@@ -1,0 +1,7 @@
+# Brief: recheck of Task 11c fix round 1
+
+Worktree `/var/tmp/lodge-import-records`, branch `server-import-records`; read-only (no `lodge add`, no edits; probe only in a disposable clone under `mktemp -d` outside the lane).
+Check the fix diff from `129d97a` to the branch tip against only the findings it answers (`~/.cache/lodge-work/codex/plan4/sonnet-task11c-review.md`: Important I1, Minors M1 to M8; M9 left as is) and `task-11c-fix-1-brief.md`; read records through `uv run --frozen --quiet lodge show ID [--reasoning]`.
+Confirm: s-bnnw4m, s-5wysdb, s-5cs27z are withdrawn and nothing else cites them as live; s-nhx8zw says the GitHub connector reads pull requests and CI; s-9sjp9z, s-xy6qte, s-8ysrep, s-paf12c each hold one distinct claim; the passkey and one-person-until-7 claim sits once (s-c0bd0b) with the Funnel reason; s-anc255 and s-t7wqxn are split; the line map still maps every design line 8 to 317 (including 255 to 256, 271 to 273, 294 to 302) to a live entry; number handles cite the carrying design line; `work_item` present on the section decisions; no author decision narrowed or replaced; `lodge check` prints ok; the "changed since" count is accounted for.
+Also check the fix introduced nothing new (British English, no em-dashes, Oxford comma, one sentence per line, entries within 150 words, no multi-claim entry among the new ones, no personal paths).
+Final message: `N Important, M Minor` and one line each for any finding with the record ID and the command that shows it.

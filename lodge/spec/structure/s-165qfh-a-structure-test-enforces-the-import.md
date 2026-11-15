@@ -1,9 +1,9 @@
 ---
 id: s-165qfh
 kind: spec
-title: "A structure test enforces the import and size rules"
+title: "Structure tests enforce Python and TypeScript boundaries"
 rests_on: [s-ctywm6, s-t9zd7a]
 ---
 
-A structure test, written with the standard library's `ast`, enforces the rules from the first commit.
-It checks the allowed-imports table, no import cycles between modules, imports across packages only through front doors, no module over about 300 lines, and no forbidden call in `core` (clock, randomness, `os`, `subprocess`, or `open`).
+For lodge 0.2 in Python, the structure test uses the standard library's `ast` to enforce the allowed-imports table, no module cycles, cross-package imports through front doors, and modules of at most 300 lines; it forbids clock and randomness calls in `core` and `app`, and confines `os`, `subprocess`, and `open` I/O calls to the permitted I/O modules.
+For the TypeScript server, the structure tests use dependency-cruiser over the import graph and TypeScript's parser over calls to enforce allowed imports, no module cycles, cross-package imports through front doors, and modules of at most 300 lines; `core` stays pure, with time and randomness entering through ports and clock, randomness, file, and network calls refused.

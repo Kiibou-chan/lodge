@@ -1,0 +1,1 @@
+{ "compilerOptions": { "strict": true, "target": "ES2024", "module": "Preserve", "moduleResolution": "bundler", "noEmit": true, "allowImportingTsExtensions": true, "types": ["bun"], "noUncheckedIndexedAccess": true, "exactOptionalPropertyTypes": true, "verbatimModuleSyntax": true }, "include": ["src", "tests"] }

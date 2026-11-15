@@ -1,0 +1,5 @@
+DONE — committed `288e95d` and pushed to `server-store-c`.
+
+Tests: `sh scripts/check-ts.sh` exited 0; 1,032 passed, 0 failed.
+
+Concerns: none. Whole-gate and differential checks remain the coordinator’s step.

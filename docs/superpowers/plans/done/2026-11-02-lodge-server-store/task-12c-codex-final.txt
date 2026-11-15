@@ -1,0 +1,5 @@
+DONE — implemented, reported, committed as `3134ce5`, and pushed to `server-store`.
+
+Tests: `sh scripts/check-ts.sh` passed; 1285 pass, 2 existing todo, 0 fail.
+
+Concerns: none new; parked Task 12b issues remain unchanged.

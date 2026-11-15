@@ -5,7 +5,7 @@ Authority: `lodge spec`; the plan argues from it, never over it.
 Run `uv run --frozen --quiet lodge waiting` at the start of a session and answer what waits for an agent first.
 Read decisions and her rulings with `lodge show` and `lodge search`; her own decisions have `decided_by: author` (`lodge search --by author`).
 The entries are agent text written from the design documents (the first approved by her, the viewer design by the advisor, d-7w5aq0), awaiting her confirmation through the viewer.
-Both design documents (`docs/superpowers/specs/2026-10-29-lodge-design.md` and `docs/superpowers/specs/2026-10-31-lodge-viewer-interaction-design.md`) are frozen history.
+Three design documents (`docs/superpowers/specs/2026-10-29-lodge-design.md`, `docs/superpowers/specs/2026-10-31-lodge-viewer-interaction-design.md`, and `docs/superpowers/specs/2026-11-02-lodge-server-design.md`) are frozen history.
 Read through lodge, never by opening record files; run `uv run --frozen --quiet lodge guide` for the writing rules.
 Drafts go under `.drafts/`, and `lodge add --dry-run` precedes every `lodge add`.
 Open plans in `docs/superpowers/plans/`, each with `-progress.md` (the ledger) and a folder of briefs, reports, and reviews.
@@ -30,16 +30,19 @@ In `core` and `app`, take the time and randomness through the ports; never read 
 - Public repository: no personal paths, machine names, secrets, or another project's records in code, tests, or docs; fixtures synthetic (a made-up project), never her words or another project's records.
 - Tests never touch a real repository: git only in `tmp_path` with `GIT_CONFIG_GLOBAL` empty, `GIT_CONFIG_NOSYSTEM=1`, `git init -b main`; no network.
 - Record files are written only through `lodge add`, never by hand, here too.
-- The hook in `.claude/settings.json` advises on a hand edit of a record file or of a file matching a `frozen` glob in `.lodge.toml` (both design documents and the done ledger of the first build); those files are not edited.
+- The hook in `.claude/settings.json` advises on a hand edit of a record file or of a file matching a `frozen` glob in `.lodge.toml` (the three design documents and the done ledger of the first build); those files are not edited.
 - User-facing text and Markdown: British English, no em-dashes, Oxford comma, one sentence per line.
 
 ## Build process (adapted from an existing project)
 
 Plan → plan review (two angles) → one fix round → rechecks until 0 Blocking, 0 Important → preflight scan in the ledger (each task's Produces against the next tasks' Consumes) → build.
-Agents in `.claude/agents/`: `builder` (Sonnet, one task from its brief), `reviewer` (Opus, first reviews), `rechecker` (fix diffs), `integrator` (merges, rulings), `planner` (plans, fix rounds).
+Agents in `.claude/agents/`: `builder` (Sonnet, one task from its brief), `reviewer` (Sonnet, first reviews), `rechecker` (fix diffs), `integrator` (merges, rulings), `planner` (plans, fix rounds).
 Tasks run in order on one build branch in its own worktree; each task: brief, build, report, review (correctness, then practice, then design), fix round if needed, ledger line.
 Minors are parked in the ledger and taken by the next round touching those files.
 Final whole-branch review, fix wave, recheck.
+Models: task subagents run Sonnet or cheaper, reviews and the final review too; no Opus, no Fable (author, 2026-11-14), except that the final check may run on Opus.
+Every Agent dispatch passes `model`: `reviewer`'s own definition says Opus.
+Escalate, never self-raise: fix round 3, or two rechecks finding new kinds of problems, → ask the author or the build session, with findings, handle, and cost.
 A finding that conflicts with the plan is recorded with `lodge add` (scope `process`, `work_item` the plan), with a handle per argument and the cost if wrong in its reasoning.
 The ledger line gives the decision's ID; a ruling that changes what the spec says goes to the author.
 

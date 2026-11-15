@@ -1,0 +1,7 @@
+DONE_WITH_CONCERNS
+
+`sh scripts/check-ts.sh` exits 0: 356 tests pass.
+
+Implemented Task 5a and wrote [the report](docs/superpowers/plans/2026-11-02-lodge-server-core/task-5a-report.md).
+Concerns: surrogate hash behaviour differs from Python, and very large ranks exceed TypeScript number precision.
+Reviewer files untouched; no commit or push.

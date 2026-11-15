@@ -1,0 +1,1 @@
+DONE_WITH_CONCERNS: Pushed `5d15e60` to `server-store-b`; TypeScript gate green, 1,129 tests pass. Existing refusal of non-WAL paths remains unchanged; the plan does not explicitly require that policy.

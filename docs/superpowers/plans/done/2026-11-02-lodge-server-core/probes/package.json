@@ -1,0 +1,22 @@
+{
+  "name": "probe",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@biomejs/biome": "2.5.15",
+    "@types/bun": "1.4.3",
+    "dependency-cruiser": "18.6.0",
+    "knip": "6.42.0",
+    "typescript": "6.0.3"
+  },
+  "dependencies": {
+    "@noble/hashes": "2.4.0",
+    "@simplewebauthn/server": "14.0.3",
+    "kysely": "0.29.7",
+    "yaml": "2.9.1"
+  },
+  "imports": {
+    "#core": "./src/core/index.ts",
+    "#app": "./src/app/index.ts"
+  }
+}

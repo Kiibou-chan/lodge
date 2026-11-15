@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>lodge</title>
+    <script src="/page.js" defer></script>
+  </head>
+  <body>
+    <h1>lodge</h1>
+    <p id="status" role="status"></p>
+    <section id="signing-in">
+      <h2>Signing in</h2>
+      <form id="register">
+        <label>Setup code <input id="setup-code" required autocomplete="off" /></label>
+        <button type="submit">Register a passkey</button>
+      </form>
+      <button id="sign-in" type="button">Sign in</button>
+    </section>
+    <section id="signed-in" hidden>
+      <h2 id="person">Signed in</h2>
+      <button id="sign-out" type="button">Sign out</button>
+      <button id="add-passkey" type="button">Add a passkey</button>
+      <h2>Agent tokens</h2>
+      <ul id="tokens"></ul>
+      <form id="issue-token">
+        <label>Project <input id="project" required /></label>
+        <label>Label <input id="label" required /></label>
+        <button type="submit">Issue token</button>
+      </form>
+      <p>Copy the secret now; it is shown once.</p>
+      <output id="secret"></output>
+      <h2>Held for approval</h2>
+      <div id="held"></div>
+    </section>
+  </body>
+</html>

@@ -1,0 +1,5 @@
+DONE_WITH_CONCERNS
+
+`sh scripts/check-ts.sh` exited 0: 379 tests passed.
+
+[Report](docs/superpowers/plans/2026-11-02-lodge-server-core/task-4-fix-1-report.md) records fixes, failing evidence, and known differences, including the future logging-variable safeguard. Reviewer’s file untouched. No commits or pushes.

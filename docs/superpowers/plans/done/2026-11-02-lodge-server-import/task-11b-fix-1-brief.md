@@ -1,0 +1,15 @@
+# Brief: fix round 1 for Task 11b of `docs/superpowers/plans/2026-11-02-lodge-server-import.md`
+
+Worktree `/var/tmp/lodge-import-records`, branch `server-import-records`; same rules as `task-11b-brief.md` and `task-11a-fix-1-brief.md` in this folder (records only through `lodge add`, dry run first, drafts under `.drafts/task-11b/`, coordinator decisions only, never an author decision narrowed or replaced; published decisions are immutable, so a correction is a new decision with `replaces:` or `narrows:` of your own 11b decision, editing the entries in the same add).
+The Sonnet review is `~/.cache/lodge-work/codex/plan4/sonnet-task11b-review.md`; read it for the probes.
+Acceptance first: extend your `.drafts` acceptance script so each finding below fails against the current store, then passes after the adds.
+
+1. Important I1: the step 4 sentence in `s-c8hrye` is the Sessions "Talking" claim (design lines 184 to 190), which is 11c's, and the design gives it no step. Take it out of `s-c8hrye` (the entry keeps its lodge 0.2 scope and the server goal's own wording from the Goals section); 11c records the talking claim in `sessions`. Say so in the report; my earlier answer to your q-2 allowing the sentence is withdrawn by this finding.
+2. Important I2: split the clearly multi-claim entries `s-pttahq` (3 claims), `s-c0k9hx` (2 separate [my call] claims), `s-fpxzb9` (2 build steps), and `s-chycjf` (3 claims), each claim its own entry with its own build step where it has one and `rests_on` kept; keep the stable ID for the first claim. `s-73ee5k`, `s-nhx8zw`, and `s-7ah5n7` are weaker cases: split them only if the split is clean, else park in the report with the reason.
+3. Important I3: `d-6x8fd9`'s `0.2` number handle cites design lines 6 and 71, which do not contain it. The corrective decision carries a correct handle or drops the number where its statement does not need one.
+4. Minor: `s-6r0exg` says "alone" from step 7 though one person uses it alone from step 1; `s-xy6qte`'s title has a curly apostrophe (the only one in `lodge/`): plain apostrophe; `work/_area.md` order puts `s-3ysqhz` and `s-mrnqdh` after the Tasks entries instead of beside the other field entries; default-workflow wording (`s-0tn1e8` omits step names, "returns to" is used for forward `then:` edges); `s-h1e6jc` shows "its code" at step 3 while the Build order gives code views to step 6; `s-pttahq` lacks `rests_on` `s-jqh7hf`.
+5. Left as is: "The coordinator approves ..." in immutable reasoning, and `d-vsspgk`'s display side effect (name both in the report).
+
+After the adds: `uv run --frozen --quiet lodge check` prints `ok`; `uv run --frozen --quiet lodge spec | grep 'changed since'` accounted for; `sh scripts/check.sh` green.
+Commit `lodge/` and the report with explicit paths, trailer `Co-Authored-By: Codex <noreply@openai.com>`, push the branch; extend `task-11-report.md` with a "Task 11b fix round 1" section (decision, entries changed, finding answered, parked).
+Final message: DONE, DONE_WITH_CONCERNS, or BLOCKED, one line on the checks.

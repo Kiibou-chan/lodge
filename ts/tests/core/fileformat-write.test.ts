@@ -1,0 +1,92 @@
+import { test } from "bun:test";
+import { decision, Scope, specEntry, ValueError, writeRecord } from "#core";
+
+import { refused } from "./refused.ts";
+
+test.each(["\u0001", "\u0085", "\n", "\u2028"].map((c) => [c] as const))(
+  "write_refuses_control_characters %p",
+  (char) => {
+    refused(
+      () => {
+        writeRecord(
+          decision({
+            id: "d-3m8qk2",
+            title: `a${char}b`,
+            scope: Scope.PRODUCT,
+            decidedBy: "x",
+            date: "2026-10-28T23:48:10+01:00",
+            statement: "S.",
+          }),
+        );
+      },
+      ValueError,
+      /title/u,
+    );
+  },
+);
+
+test("write_refuses_reasoning_heading_in_statement", () => {
+  const record = decision({
+    id: "d-3m8qk2",
+    title: "T",
+    scope: Scope.PRODUCT,
+    decidedBy: "x",
+    date: "2026-10-28T23:48:10+01:00",
+    statement: "A\n## Reasoning\nB",
+  });
+  refused(
+    () => {
+      writeRecord(record);
+    },
+    ValueError,
+    /Reasoning/u,
+  );
+  const longer = specEntry({
+    id: "s-4kq1zm",
+    area: "storage",
+    title: "T",
+    statement: "A\n## Reasoning\nB",
+  });
+  refused(
+    () => {
+      writeRecord(longer);
+    },
+    ValueError,
+    /Reasoning/u,
+  );
+});
+
+test("write_refuses_a_record_parse_would_not_read_back", () => {
+  const bad = decision({
+    id: "d-3m8qk2",
+    title: "T",
+    scope: Scope.PRODUCT,
+    decidedBy: "x",
+    date: "yesterday",
+    statement: "S.",
+  });
+  refused(
+    () => {
+      writeRecord(bad);
+    },
+    ValueError,
+    /date/u,
+  );
+  refused(
+    () => {
+      writeRecord(
+        decision({
+          id: "d-3m8qk2",
+          title: "T",
+          scope: Scope.PRODUCT,
+          decidedBy: "x",
+          date: "2026-10-28T23:48:10+01:00",
+          statement: "S.",
+          code: "a b",
+        }),
+      );
+    },
+    ValueError,
+    /code/u,
+  );
+});

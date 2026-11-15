@@ -1,0 +1,4 @@
+DONE — committed `2a1eeb6` and pushed `server-store-c`.
+
+Tests: `sh scripts/check-ts.sh` exited 0; 942 passed.
+Concerns: none. Report saved as `task-10-report.md`.

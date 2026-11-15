@@ -1,0 +1,29 @@
+# Brief: Task 8 of `docs/superpowers/plans/2026-11-02-lodge-server-import.md`
+
+You build Task 8 of the plan named above, in the worktree `/var/tmp/lodge-import-server`, on branch `server-import-server`.
+Read `CLAUDE.md` first, then the plan's header, "Global Constraints", "Calls made", "Names this plan consumes", "Review Focus", and the section "### Task 8" in full; those are your requirements, with the exact values to use verbatim.
+The plan was written for a sandbox: you have full access (d-94tynf) and network, but `Bun.spawnSync` stays the rule for spawning, and the "Coordinator" steps are not yours.
+Test-first: write each test, run it and see it fail, then write the code; all existing tests keep passing.
+Run `sh scripts/check-ts.sh` last; it must exit 0. The structure checks (`ts/tests/structure/`, run by `bun test`) gate the finished task, not intermediate commits.
+Never run `bun add`; a package the task needs and `ts/package.json` lacks stops the task with BLOCKED and its name. `bun install --frozen-lockfile` in `ts/` is allowed.
+Never edit earlier briefs, reports, or reviews in `docs/superpowers/plans/2026-11-02-lodge-server-import/` or in `docs/superpowers/plans/done/`: they are history.
+Line handles in the plan drift as tasks land; re-locate them by content.
+Biome runs with `--error-on-warnings`; `noTemplateCurlyInString` fires on strings holding a dollar sign and brace, so build those by concatenation. Modules stay at 300 lines or fewer; split before the structure test does.
+Public repository: no personal paths, machine names, or secrets in code, tests, docs, or the report; fixtures are synthetic.
+User-facing text and Markdown: British English, no em-dashes, the Oxford comma, one sentence per line; code comments state the fact.
+Front doors: `#core`, `#app`, `#git`, `#hook`, `#store`, `#api`, `#cli`, `#viewer` (as in CLAUDE.md); tests may import a package's non-front-door files only where the structure rules allow (see `ts/tests/structure/`).
+Commit when the gate is green, with explicit paths: `git -c "user.name=Svenja Kernig" -c user.email=20756868+Kiibou-chan@users.noreply.github.com commit`, message ending with the trailer `Co-Authored-By: Codex <noreply@openai.com>`; then `git push origin server-import-server`. Never touch `main`.
+Write your report to `docs/superpowers/plans/2026-11-02-lodge-server-import/task-8-report.md`: what you changed per file, each test added or carried with its first failing output (or the mutation it failed against, as a table with a `file:line` column), the commands you ran and their last lines, every deviation from the plan with the reason, anything you were unsure of. Commit the report too.
+Your final message: DONE, DONE_WITH_CONCERNS, or BLOCKED, one line on the tests, and your concerns.
+
+## Notes for this task
+
+Merged names (re-alignment against the code, no meaning difference; use these over the plan's wording):
+- `ApiOptions` and `lodgesOver(projects, clock, ids)` are in `ts/src/api/options.ts`; `ApiOptions` has `accounts, projects, lodgeFor, clock, random, version, log`; add `moving?: Moving` there.
+- `personOperation(options, operation, body, actor)` in `ts/src/api/person.ts` returns `PersonAnswer = {result, checkFailed}`, rejects a non-person actor with `ApiError("forbidden", "only the signed-in person may <operation>")` itself, and has a `fields` table (`isPersonOperation` reads it): add `import: ["project","repository","rev","settingsRev"]` and `"export-target": ["project","target"]` there, and dispatch to `moving.ts` (`signedIn` is `actor.name`; keep `person.ts` under 300 lines). `args.known`, `args.string`, `args.nullable`, `args.fail` are in `args.ts`; `ApiError` kinds in `errors.ts`.
+- `coreSettings(table)` is in `#app` (`errors.ts`), `person(name)` and `agent(role)` in `#app` (`ports.ts`); `Projects.create(project, owner, settings?)`, `settings`, `names`, `storeFor(project, actor)`.
+- `issueSetupCode(options)` and `hashSecret` through `#api`; `ServerIo`/`ServerParts` (`{options}`) in `ts/src/api/setup.ts`, `open` is the `open:` closure in `ts/src/main.ts` (the `ServerIo` literal), `listen` the `#api` one.
+- `tests/api/world.ts` `world(setUp)` returns `{database, accounts, projects, options, logs, issued, request, fetch}`: add `clock` (tests need `clock.sleep`), `exporters`, `targets`, `createProject`, `asPerson`. Plan 3's `person.test.ts` signs in through `signed()` in `tests/api/signed.ts` (`accounts.startSession(hashSecret(secret), expiry)` and a `lodge_session` cookie plus `Origin: https://lodge.test`), so `asPerson` does the same rather than registering a passkey; `world` itself must not import `signed.ts` (it imports `world`), so inline the startSession lines.
+- `ExportPorts` is `{clock, targets, storeFor(project), write(target, files, message), failed(project, error)}`; `Exporters.written(project)`, `start(projects)`, `settled()`; `exportStore` from `#git`; `ZeroTwoCopy`, `importStore`, `exportingProjects`, `exportTargetProblem`, `exportFailedLine`, `ExportTargets` from `#app`; `SqliteExportTargets(database, clock)` from `#store`.
+- `ts/src/cli/settings.ts`: `readSettings(root)` calls `loadSettings`, which parses with `parse(text, { integersAsBigInt: true })` and applies `convert`; factor the parse-and-convert into `tomlTable` as the plan says (convert every top-level value; `loadSettings` validation of names unchanged; `settings.test.ts` unchanged).
+Parked minors to take in this task: Task 6's `failed` throwing under `void exporters.written(...)` is an unhandled rejection (make `main.ts`'s and the operation's `void` calls `.catch` the error into `log(exportFailedLine(...))`-style handling, or wrap `failed`); check the `ExportTarget`/`ExportOutcome` shapes in `exporting.ts` match `git/export.ts`. Plan 3's parked M-a (sign-in-options flood sharing the challenge cap) and M-c (add over 8 MiB gets Bun's bare 413) go to the final fix wave unless this task touches their files.

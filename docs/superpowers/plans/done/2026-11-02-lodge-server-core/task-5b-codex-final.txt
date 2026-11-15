@@ -1,0 +1,7 @@
+DONE_WITH_CONCERNS
+
+`sh scripts/check-ts.sh` exited 0: 419 tests pass.
+
+Implemented the port and wrote [the report](docs/superpowers/plans/2026-11-02-lodge-server-core/task-5b-report.md).
+Concerns: broad mutation checks, documented JSON escaping differences, and non-fatal lint warnings.
+Both reviewer files remain untouched.
