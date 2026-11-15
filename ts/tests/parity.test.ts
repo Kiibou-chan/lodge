@@ -11,7 +11,7 @@ const rows = Object.entries(parity) as [
   string,
   { status: string; plan?: number; ts: string[]; why?: string },
 ][];
-function held(row: { status: string; plan?: number }, plans = [2, 3]): boolean {
+function held(row: { status: string; plan?: number }, plans = [2, 3, 4]): boolean {
   return row.status === "ported" || (row.status === "changed" && plans.includes(row.plan ?? 0));
 }
 function files(dir: string): string[] {
@@ -41,7 +41,7 @@ test("planned_rows_name_a_plan", () => {
 });
 test("ported_files_exist", () => {
   for (const [, r] of rows)
-    if (held(r, [1, 2, 3])) for (const p of r.ts) expect(existsSync(`${root}/${p}`)).toBe(true);
+    if (held(r, [1, 2, 3, 4])) for (const p of r.ts) expect(existsSync(`${root}/${p}`)).toBe(true);
 });
 test("ported_files_keep_every_python_test_name", () => {
   for (const [p, r] of rows) if (held(r)) expect(rowMissing(root, p, r)).toEqual([]);
@@ -100,4 +100,18 @@ test("dropped_names_are_excluded_from_missing", () => {
   expect(
     rowMissing(fixture, "tests/sample.py", { ts: ["tests/sample.test.ts"], dropped: ["b"] }),
   ).toEqual([]);
+});
+
+test("a_changed_plan_4_file_is_held", () => {
+  expect(held({ status: "changed", plan: 4 })).toBe(true);
+});
+test("plan_4_changed_rows_keep_every_python_test_name", () => {
+  for (const [path, row] of rows) {
+    if (row.status !== "changed" || row.plan !== 4) continue;
+    const ts =
+      path === "tests/hook/test_post_tool_use.py"
+        ? ["ts/tests/hook/post-tool-use.test.ts"]
+        : row.ts;
+    expect(rowMissing(root, path, { ...row, ts })).toEqual([]);
+  }
 });
