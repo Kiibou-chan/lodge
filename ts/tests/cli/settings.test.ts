@@ -137,12 +137,14 @@ test("server_table_and_keys_are_checked", () => {
   refusal("server=1", "server must be a table");
   refusal("[server]\nextra=1", "unknown key server.extra");
 });
-test("hook_is_left_alone", () => {
-  expect(settings("hook=42").core).toEqual({});
+test("hook_is_checked", () => {
+  refusal('[hook]\nfrozen="x"', "hook.frozen must be a list of strings");
+  expect(settings('[hook]\nfrozen=["docs/*.md"]').core).toEqual({});
 });
+test("hook_float_is_not_an_absent_table", () => refusal("hook=3.0", "hook must be a table"));
 test("core_table_holds_length_and_import_only", () => {
   expect(
-    settings('[length]\ntitle_chars=80\n[import]\nsources=["notes"]\n[hook]\nx=1').core,
+    settings('[length]\ntitle_chars=80\n[import]\nsources=["notes"]\n[hook]\nfrozen=[]').core,
   ).toEqual({ length: { title_chars: 80 }, import: { sources: ["notes"] } });
 });
 test("token_comes_from_the_environment", () => {

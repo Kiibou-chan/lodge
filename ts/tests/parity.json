@@ -423,20 +423,19 @@
     "status": "changed",
     "plan": 3,
     "ts": ["ts/tests/e2e/help-lists-every-command.test.ts"],
-    "why": "d-sry12f: view waits for step 3 and hook for plan 4; d-vfyex3: version_works_anywhere prints ts/package.json version",
+    "why": "d-sry12f: view waits for step 3; d-vfyex3: version_works_anywhere prints ts/package.json version",
     "dropped": []
   },
   "tests/e2e/test_hook_feedback_after_hand_edits.py": {
     "status": "changed",
     "plan": 4,
     "ts": ["ts/tests/hook/hand-edits.test.ts"],
-    "why": "design line 290: the hook's advice changes for a project that has moved"
+    "why": "d-bs5mm8: the store's folders are made by hand where lodge 0.2 ran `lodge init`, which on the server names the server instead"
   },
   "tests/e2e/test_hook_outside_repository_exit_0_silent.py": {
-    "status": "planned",
+    "status": "ported",
     "plan": 4,
-    "ts": ["ts/tests/hook/outside-repository.test.ts"],
-    "why": "design line 290: the hook's advice changes for a project that has moved"
+    "ts": ["ts/tests/hook/outside-repository.test.ts"]
   },
   "tests/e2e/test_id.py": {
     "status": "ported",

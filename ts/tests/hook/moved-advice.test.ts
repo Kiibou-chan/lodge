@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, symlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { respond } from "#hook";
 import { context, payload, resolve, reversal, text } from "./support.ts";
@@ -55,4 +55,17 @@ test("moved_advice_reverses_the_edit_without_git", () => {
     "docs/choices.md",
   ])
     reversal(text(advice(path)));
+});
+
+test("moved_project_ignores_a_different_data_root", () => {
+  const found = context(root, `${root}/elsewhere`, [], server);
+  expect(text(respond(payload("lodge/decisions/d-abc123-slug.md"), found, resolve))).toContain(
+    server,
+  );
+  expect(respond(payload("elsewhere/decisions/d-abc123-slug.md"), found, resolve)).toBeNull();
+});
+test("moved_project_resolves_the_lodge_symlink", () => {
+  mkdirSync(`${root}/elsewhere/decisions`, { recursive: true });
+  symlinkSync(`${root}/elsewhere`, `${root}/lodge`);
+  expect(text(advice("lodge/decisions/d-abc123-slug.md"))).toContain(server);
 });

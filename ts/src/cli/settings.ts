@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { parse, TomlDate } from "smol-toml";
+import { LodgeError, parseHookSettings } from "#app";
 import { type CoreSettings, parseCoreSettings, SettingsError } from "#core";
 import { CliError } from "./errors.ts";
 import { readExact } from "./files.ts";
@@ -25,7 +26,7 @@ export function repositoryRoot(cwd: string): string {
     current = parent;
   }
 }
-function table(value: unknown): value is Record<string, unknown> {
+export function table(value: unknown): value is Record<string, unknown> {
   return (
     value !== null && typeof value === "object" && !Array.isArray(value) && !(value instanceof Date)
   );
@@ -106,8 +107,10 @@ function loadSettings(root: string): ProjectSettings {
   }
   const server = Object.hasOwn(parsed, "server") ? serverPlace(parsed["server"]) : null;
   try {
+    parseHookSettings(Object.hasOwn(parsed, "hook") ? parsed["hook"] : {});
     return { server, core, coreSettings: parseCoreSettings(core) };
   } catch (error) {
+    if (error instanceof LodgeError) throw new CliError(error.message);
     if (!(error instanceof SettingsError)) throw error;
     throw new CliError(`.lodge.toml: ${error.message}`);
   }

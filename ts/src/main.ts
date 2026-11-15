@@ -8,8 +8,9 @@ import {
   LodgeError,
   type Projects,
 } from "#app";
-import { CliError, run, zeroTwoCoreTable } from "#cli";
-import { exportStore, readStore } from "#git";
+import { CliError, hookContextFor, run, zeroTwoCoreTable } from "#cli";
+import { exportStore, isFolder, readStore, repoRootOf, resolvePath } from "#git";
+import { run as runHook } from "#hook";
 import { openDatabase, SqliteAccounts, SqliteExportTargets, SqliteProjects } from "#store";
 import pkg from "../package.json" with { type: "json" };
 
@@ -95,10 +96,26 @@ process.exitCode =
         },
       })
     : await run(argv, {
-        cwd: process.cwd(),
+        cwd: argv[0] === "hook" ? (hookCwd() ?? "") : process.cwd(),
         env: process.env,
         fetch,
         out,
         err,
         version: pkg.version,
+        hook: () =>
+          runHook(
+            () => Bun.stdin.text(),
+            out,
+            (edited) => hookContextFor(edited, { repoRootOf, isFolder }),
+            resolvePath,
+            hookCwd(),
+          ),
       });
+
+function hookCwd(): string | null {
+  try {
+    return process.cwd();
+  } catch {
+    return null;
+  }
+}
