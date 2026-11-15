@@ -12,6 +12,7 @@ export {
   exportTargetProblem,
   KEPT,
 } from "./exporting.ts";
+export { parseHookSettings } from "./hook-settings.ts";
 export { importStore, prepareImport, type ZeroTwoCopy } from "./importing.ts";
 export { Lodge } from "./lodge.ts";
 export * from "./ports.ts";
