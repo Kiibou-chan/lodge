@@ -50,8 +50,12 @@ test.each([
   expect(relay.outcome).toBe("held for approval");
   const list = (await (await w.call("held", { project: "work" })).text().then(JSON.parse)).result;
   expect(list.map((h: { kind: string }) => h.kind)).toEqual(["add", "message"]);
-  expect(list[1]).toMatchObject({
+  expect(list[1]).toEqual({
     seq: relay.held,
+    at: expect.any(String),
+    by: "agent",
+    kind: "message",
+    raises: null,
     operation: "reply",
     ref: ask.ids[0],
     text: "Yes.",

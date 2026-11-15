@@ -35,13 +35,26 @@ test("held_shows_the_drafts_as_core_reads_them", async () => {
   expect(held[0].drafts).toEqual([
     {
       name: "decision.md",
+      text: seed[0]?.[1],
       kind: "decision",
       title: "Keep transcripts",
       statement: "Transcripts are kept.",
       quote: { text: "Keep them.", where: "chat", when: "2026-10-29 10:00" },
     },
-    { name: "entry.md", kind: "spec", title: "Transcripts are kept", statement: "Held." },
-    { name: "area.md", kind: "area", title: "Storage", intro: "How data is kept." },
+    {
+      name: "entry.md",
+      kind: "spec",
+      title: "Transcripts are kept",
+      statement: "Held.",
+      text: seed[1]?.[1],
+    },
+    {
+      name: "area.md",
+      kind: "area",
+      title: "Storage",
+      intro: "How data is kept.",
+      text: seed[2]?.[1],
+    },
   ]);
   expect((await w.call("approve", { project: "work", seq: add.held })).status).toBe(200);
   const edit = (
@@ -69,6 +82,7 @@ test("held_shows_the_drafts_as_core_reads_them", async () => {
   const list = (await (await w.call("held", { project: "work" })).text().then(JSON.parse)).result;
   expect(list[0].drafts[0]).toEqual({
     name: "edit.md",
+    text: edit,
     kind: "spec",
     title: "Transcripts are kept",
     statement: "Held.",

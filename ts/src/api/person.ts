@@ -33,15 +33,16 @@ function heldDraft(name: string, text: string, at: string): unknown {
     case "decision":
       return {
         name,
+        text,
         kind: record.kind,
         title: record.title,
         statement: record.statement,
         quote: record.quote,
       };
     case "spec":
-      return { name, kind: record.kind, title: record.title, statement: record.statement };
+      return { name, text, kind: record.kind, title: record.title, statement: record.statement };
     case "area":
-      return { name, kind: record.kind, title: record.title, intro: record.intro };
+      return { name, text, kind: record.kind, title: record.title, intro: record.intro };
   }
 }
 function presentHeld(h: Held): unknown {
@@ -56,7 +57,11 @@ function presentHeld(h: Held): unknown {
       where: h.where,
       when: h.when,
     };
-  return { ...common, drafts: h.drafts.map(([name, text]) => heldDraft(name, text, h.at)) };
+  return {
+    ...common,
+    drafts: h.drafts.map(([name, text]) => heldDraft(name, text, h.at)),
+    attachments: h.attachments.map(([name, text]) => ({ name, text })),
+  };
 }
 export interface PersonAnswer {
   readonly result: unknown;

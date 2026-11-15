@@ -49,8 +49,8 @@ export function handler(options: ApiOptions): (request: Request) => Promise<Resp
       const operation = path.slice("/api/v1/".length);
       if (
         !publicOperations.includes(operation) &&
-        !request.headers.has("Authorization") &&
-        sessionSecret(request) === null
+        !/^Bearer (\S+)$/u.test(request.headers.get("Authorization") ?? "") &&
+        !sessionSecret(request)
       )
         throw new ApiError("unauthorised", "sign in, or send an agent token");
       if (Number(request.headers.get("Content-Length")) > MAX_REQUEST_BODY_SIZE)

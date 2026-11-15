@@ -19,7 +19,7 @@ test("other_authorization_scheme_is_unauthorised", async () => {
   const response = await w.fetch(request);
   expect(response.status).toBe(401);
   expect(await response.json()).toEqual({
-    error: { kind: "unauthorised", message: "the agent token is not known or was revoked" },
+    error: { kind: "unauthorised", message: "sign in, or send an agent token" },
   });
   await w.database.close();
 });
