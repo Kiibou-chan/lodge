@@ -9,6 +9,8 @@ export {
   repositoryRoot,
   serverOf,
   tokenOf,
+  tomlTable,
 } from "./settings.ts";
 export { runThread } from "./threads.ts";
 export { fromWire } from "./wire.ts";
+export { zeroTwoCoreTable } from "./zero-two.ts";

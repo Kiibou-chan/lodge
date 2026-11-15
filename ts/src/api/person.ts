@@ -2,10 +2,13 @@ import { type Actor, AddOutcome, coreSettings, type Held } from "#app";
 import { parseDraft, recordFromDraft } from "#core";
 import { Args } from "./args.ts";
 import { ApiError } from "./errors.ts";
+import { exportTargetOperation, importOperation } from "./moving.ts";
 import type { ApiOptions } from "./options.ts";
 import { issueToken } from "./tokens.ts";
 
 const fields: Readonly<Record<string, readonly string[]>> = {
+  import: ["project", "repository", "rev", "settingsRev"],
+  "export-target": ["project", "target"],
   "token-issue": ["project", "label", "role"],
   "token-revoke": ["id"],
   tokens: [],
@@ -77,6 +80,8 @@ export async function personOperation(
     throw new ApiError("forbidden", `only the signed-in person may ${operation}`);
   const args = new Args(operation, body);
   args.known(fields[operation] ?? []);
+  if (operation === "import") return importOperation(options, actor.name, body);
+  if (operation === "export-target") return exportTargetOperation(options, actor.name, body);
   switch (operation) {
     case "token-issue":
       return {

@@ -1,6 +1,14 @@
+import type { Exporters, ExportTargets, ZeroTwoCopy } from "#app";
 import { type Accounts, type Actor, type Clock, type IdSource, Lodge, type Projects } from "#app";
 import type { CoreSettings } from "#core";
+export interface Moving {
+  readonly read: (repository: string, rev: string, settingsRev: string) => Promise<ZeroTwoCopy>;
+  readonly targets: ExportTargets;
+  readonly exporters: Exporters;
+}
+
 export interface ApiOptions {
+  readonly moving?: Moving;
   readonly accounts: Accounts;
   readonly projects: Projects;
   readonly lodgeFor: (project: string, settings: CoreSettings, actor: Actor) => Lodge;

@@ -1,5 +1,5 @@
 export { handler } from "./http.ts";
-export { type ApiOptions, lodgesOver } from "./options.ts";
+export { type ApiOptions, lodgesOver, type Moving } from "./options.ts";
 export { listen, withoutYamlLogging } from "./serve.ts";
 export {
   issueSetupCode,
