@@ -2,6 +2,7 @@
 id: s-c0bd0b
 kind: spec
 title: "A person signs in with passkeys"
+rests_on: [s-pks1qn]
 ---
 
 A person signs in with passkeys and belongs to projects.

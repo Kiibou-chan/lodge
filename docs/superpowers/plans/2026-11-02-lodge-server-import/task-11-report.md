@@ -697,3 +697,782 @@ The Talking claim remains explicitly deferred to sessions in 11c.
 
 The changed-since accounting retains the two matches already named by 11a and the original 11b report.
 The report extension and lodge paths are committed explicitly with the required Codex trailer and pushed to server-import-records.
+
+## Task 11c
+
+The remaining server design lives in lodge, with the build order, the parked dependency links, and the four parked splits.
+The design is frozen after its content is recorded.
+This task changes records and documentation only.
+The inherited Task 11a, Task 11b, and fix-round report sections remain unchanged.
+
+### Files and decisions
+
+| file:line | Change |
+|---|---|
+| lodge/decisions/d-2zsf4a-reaffirm-server-claims-after-adding-build.md:1 | New coordinator/product decision for refresh; section reasons, provenance, and applicable number handles |
+| lodge/decisions/d-4wrzdf-people-join-by-invitation-and-sessions.md:1 | New coordinator/product decision for people; section reasons, provenance, and applicable number handles |
+| lodge/decisions/d-5ma843-separate-project-properties-for-independent-lookup.md:1 | New coordinator/product decision for project-split; section reasons, provenance, and applicable number handles |
+| lodge/decisions/d-78efj7-reaffirm-server-claims-after-adding-build.md:1 | New coordinator/product decision reaffirming 30 unchanged claims after parked links |
+| lodge/decisions/d-79gjg2-a-cross-project-waiting-list-carries.md:1 | New coordinator/product decision for waiting; section reasons, provenance, and applicable number handles |
+| lodge/decisions/d-98fmhx-build-the-server-in-seven-ordered.md:1 | New coordinator/product decision for build; section reasons, provenance, and applicable number handles |
+| lodge/decisions/d-9cr8e6-draft-approval-interaction-remains-open.md:1 | New coordinator/product decision for open; section reasons, provenance, and applicable number handles |
+| lodge/decisions/d-d816nz-task-artefacts-persist-and-have-their.md:1 | New coordinator/product decision for artefacts; section reasons, provenance, and applicable number handles |
+| lodge/decisions/d-k65afn-session-claims-become-checked-only-through.md:1 | New coordinator/product decision for checked; section reasons, provenance, and applicable number handles |
+| lodge/decisions/d-k7z7ns-link-numbered-claims-to-the-server.md:1 | New coordinator/product decision for links; section reasons, provenance, and applicable number handles |
+| lodge/decisions/d-m5mwcm-separate-import-checks-from-refusal-to.md:1 | New coordinator/product decision for import-split; section reasons, provenance, and applicable number handles |
+| lodge/decisions/d-nqxsax-sessions-start-with-task-context-and.md:1 | New coordinator/product decision for sessions; section reasons, provenance, and applicable number handles |
+| lodge/decisions/d-pcxpyq-builder-choices-retain-their-settled-decisions.md:1 | New coordinator/product decision for builder; section reasons, provenance, and applicable number handles |
+| lodge/decisions/d-rgta90-the-browser-interface-shares-the-api.md:1 | New coordinator/product decision for interface; section reasons, provenance, and applicable number handles |
+| lodge/decisions/d-shgdb0-code-remains-in-git-with-task.md:1 | New coordinator/product decision for code; section reasons, provenance, and applicable number handles |
+| lodge/decisions/d-tan3tb-separate-test-first-development-from-carried.md:1 | New coordinator/product decision for test-split; section reasons, provenance, and applicable number handles |
+| lodge/decisions/d-vsd6q2-usage-totals-and-stuck-work-come.md:1 | New coordinator/product decision for usage; section reasons, provenance, and applicable number handles |
+| lodge/decisions/d-z5yvk7-separate-historical-scope-from-thread-meaning.md:1 | New coordinator/product decision for scope-split; section reasons, provenance, and applicable number handles |
+| lodge/spec/constraints/_area.md:1 | Order new claims in the existing area; sessions is created at rank 12 |
+| lodge/spec/constraints/s-51ab7j-cloud-identity-comes-from-a-checked.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/constraints/s-5af9zq-development-is-test-first.md:1 | Create: Development is test-first; d-tan3tb; design 59 |
+| lodge/spec/constraints/s-5fd1qs-carried-python-tests-specify-the-server.md:1 | Edit: Python tests specify the carried server behaviour; d-tan3tb; design 59 |
+| lodge/spec/constraints/s-7cseam-the-cloud-runner-supplies-a-pseudo.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/constraints/s-a4jfp1-lodge-is-written-in-python.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/constraints/s-gcwv38-the-full-interface-uses-preact-and.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/model/_area.md:1 | Order new claims in the existing area; sessions is created at rank 12 |
+| lodge/spec/model/s-3y79d0-a-project-holds-members-and-their.md:1 | Create: A project holds members and their roles; d-5ma843; design 85 |
+| lodge/spec/model/s-8v6ek2-a-session-reports-agent-work-on.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/model/s-ava922-a-decision-names-its-deciding-person.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/model/s-azfcx4-each-task-occupies-one-workflow-step.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/model/s-c0bd0b-a-person-signs-in-with-passkeys.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/model/s-cf0qph-artefact-uploads-are-versioned-task-attachments.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/model/s-d1dd20-tasks-group-work-and-allow-one.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/model/s-g8m3qv-a-project-groups-its-records-and.md:1 | Edit: A project groups records settings and its owner; d-5ma843; design 85 |
+| lodge/spec/model/s-mn4xj9-a-project-holds-its-export-target.md:1 | Create: A project holds its export target; d-5ma843; design 85 |
+| lodge/spec/model/s-nfgv2t-waiting-items-ask-a-person-for.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/model/s-sge25h-a-project-holds-its-workflow.md:1 | Create: A project holds its workflow; d-5ma843; design 85 |
+| lodge/spec/model/s-tprwhs-a-workflow-defines-a-project-task.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/model/s-ts16f0-project-code-views-link-its-repositories.md:1 | Create: Project code views link its repositories; d-5ma843; design 85 |
+| lodge/spec/model/s-yenn11-a-person-approves-decisions-drafted-in.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/purpose/_area.md:1 | Order new claims in the existing area; sessions is created at rank 12 |
+| lodge/spec/purpose/s-07ar34-no-server-and-no-mcp-server.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/purpose/s-0c65f3-a-thread-holds-no-claim-of.md:1 | Create: A thread holds no claim of its own; d-z5yvk7; design 29 |
+| lodge/spec/purpose/s-5tgnrn-lodge-starts-or-suggests-sessions-across.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/purpose/s-65pyqz-other-lodge-0-2-knowledge-requires.md:1 | Create: Other lodge 0.2 knowledge requires evaluation then a pilot; d-z5yvk7; design 21-30 |
+| lodge/spec/purpose/s-6r0exg-people-use-lodge-alone-or-together.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/purpose/s-7ah5n7-kinds-of-knowledge-and-projects-outside.md:1 | Edit: Kinds of knowledge and projects outside lodge 0.2 scope; d-z5yvk7; design 21-30 |
+| lodge/spec/purpose/s-81kf9s-project-workflows-are-adaptable-data.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/purpose/s-cg69z0-session-reports-are-shown-apart-from.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/purpose/s-fpxzb9-open-session-questions-share-a-waiting.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/purpose/s-gyamm5-new-sessions-start-from-the-task.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/purpose/s-k570d9-task-state-is-actionable-in-one.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/purpose/s-nhx8zw-pull-request-and-ci-integration-starts.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/purpose/s-t4tbrj-the-waiting-list-is-answerable-from.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/purpose/s-wgkrmr-session-outputs-belong-to-the-task.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/purpose/s-wrksm5-the-browser-app-installs-on-phones.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/reading/_area.md:1 | Order new claims in the existing area; sessions is created at rank 12 |
+| lodge/spec/reading/s-3xkj85-phone-use-supports-practical-work-except.md:1 | Create: Phone use supports practical work except long diff reading; d-rgta90; design 278 |
+| lodge/spec/reading/s-5wysdb-the-browser-presents-task-context-and.md:1 | Create: The browser presents task context and code; d-rgta90; design 273 |
+| lodge/spec/reading/s-7pfk9d-an-artefact-view-includes-versions-and.md:1 | Create: An artefact view includes versions and its thread; d-rgta90; design 274 |
+| lodge/spec/reading/s-8ysrep-the-browser-has-a-waiting-list.md:1 | Create: The browser has a waiting-list view; d-rgta90; design 271 |
+| lodge/spec/reading/s-bnnw4m-the-browser-presents-the-project-board.md:1 | Create: The browser presents the project board; d-rgta90; design 272 |
+| lodge/spec/reading/s-fns8m3-the-browser-provides-a-project-workflow.md:1 | Create: The browser provides a project workflow view; d-rgta90; design 276 |
+| lodge/spec/reading/s-ksg593-the-browser-app-uses-the-agents.md:1 | Create: The browser app uses the agents' API; d-rgta90; design 267 |
+| lodge/spec/reading/s-w46592-the-browser-receives-live-updates-through.md:1 | Create: The browser receives live updates through server-sent events; d-rgta90; design 268 |
+| lodge/spec/reading/s-y019g9-the-browser-carries-forward-the-viewer.md:1 | Create: The browser carries forward the viewer's record pages; d-rgta90; design 275 |
+| lodge/spec/rollout/_area.md:1 | Order new claims in the existing area; sessions is created at rank 12 |
+| lodge/spec/rollout/s-fe4kyr-builder-choices-include-workflow-syntax-and.md:1 | Create: Builder choices include workflow syntax and interface layout; d-pcxpyq; design 313-317 |
+| lodge/spec/rollout/s-pks1qn-the-server-build-follows-seven-ordered.md:1 | Create: The server build follows seven ordered steps; d-98fmhx; design 294-304 |
+| lodge/spec/rollout/s-s5fa8n-the-full-interface-interaction-for-draft.md:1 | Create: The full interface interaction for draft approval remains open; d-9cr8e6; design 308 |
+| lodge/spec/sessions/_area.md:1 | Order new claims in the existing area; sessions is created at rank 12 |
+| lodge/spec/sessions/s-25m983-local-session-messages-are-relayed-both.md:1 | Create: Local session messages are relayed both ways; d-nqxsax; design 198 |
+| lodge/spec/sessions/s-68vtrb-manually-started-claude-code-sessions-are.md:1 | Create: Manually started Claude Code sessions are talked to there; d-nqxsax; design 200 |
+| lodge/spec/sessions/s-7zx39z-runners-keep-an-outbound-websocket-open.md:1 | Create: Runners keep an outbound WebSocket open; d-nqxsax; design 184 |
+| lodge/spec/sessions/s-a2y9t3-unreadable-cloud-transcripts-leave-usage-unknown.md:1 | Create: Unreadable cloud transcripts leave usage unknown; d-nqxsax; design 208 |
+| lodge/spec/sessions/s-a62w0p-lodge-does-not-read-claude-code.md:1 | Create: Lodge does not read Claude Code session state; d-nqxsax; design 206 |
+| lodge/spec/sessions/s-anc255-sessions-lodge-starts-are-talked-to.md:1 | Create: Sessions lodge starts are talked to in their task or artefact thread; d-nqxsax; design 196-197; 201 |
+| lodge/spec/sessions/s-awkdkw-a-hand-over-brief-assembles-the.md:1 | Create: A hand-over brief assembles the task context; d-nqxsax; design 185-187 |
+| lodge/spec/sessions/s-bd0qv5-html-mocks-display-in-a-sandbox.md:1 | Create: HTML mocks display in a sandbox without lodge origin access; d-d816nz; design 221 |
+| lodge/spec/sessions/s-c0zke5-claude-code-hooks-report-heartbeat-status.md:1 | Create: Claude Code hooks report heartbeat status and usage; d-nqxsax; design 207 |
+| lodge/spec/sessions/s-dazqbj-starting-a-session-supplies-its-identity.md:1 | Create: Starting a session supplies its identity and agent; d-nqxsax; design 185-189 |
+| lodge/spec/sessions/s-er4t45-mocks-remain-after-their-task-finishes.md:1 | Create: Mocks remain after their task finishes; d-d816nz; design 223 |
+| lodge/spec/sessions/s-gwppsf-an-outside-opinion-link-reveals-only.md:1 | Create: An outside opinion link reveals only the artefact and thread; d-d816nz; design 225 |
+| lodge/spec/sessions/s-kagv3e-artefacts-live-on-their-task-through.md:1 | Create: Artefacts live on their task through API uploads; d-d816nz; design 220 |
+| lodge/spec/sessions/s-m7w8c0-images-and-pdfs-display-inline.md:1 | Create: Images and PDFs display inline; d-d816nz; design 221 |
+| lodge/spec/sessions/s-myvb3j-cloud-sessions-start-and-receive-follow.md:1 | Create: Cloud sessions start and receive follow-ups through claude; d-nqxsax; design 191 |
+| lodge/spec/sessions/s-n242p0-sessions-report-their-work-through-the.md:1 | Create: Sessions report their work through the API; d-nqxsax; design 205 |
+| lodge/spec/sessions/s-n4pdfq-mailbox-authority-is-push-access-and.md:1 | Create: Mailbox authority is push access and a known session ID; d-nqxsax; design 216 |
+| lodge/spec/sessions/s-nj99c5-runners-serve-only-their-registering-person.md:1 | Create: Runners serve only their registering person; d-nqxsax; design 182 |
+| lodge/spec/sessions/s-p6n0x6-mcp-exposes-the-same-operations-to.md:1 | Create: MCP exposes the same operations to local sessions only; d-nqxsax; design 213 |
+| lodge/spec/sessions/s-pammwd-a-repository-mailbox-carries-calls-without.md:1 | Create: A repository mailbox carries calls without network access; d-nqxsax; design 214-215 |
+| lodge/spec/sessions/s-r2k5t2-an-offline-assignee-runner-creates-a.md:1 | Create: An offline assignee runner creates a waiting item; d-nqxsax; design 183 |
+| lodge/spec/sessions/s-vg9y38-cloud-replies-appear-through-session-stop.md:1 | Create: Cloud replies appear through session stop reports; d-nqxsax; design 199 |
+| lodge/spec/sessions/s-xakcm0-each-artefact-has-its-own-thread.md:1 | Create: Each artefact has its own thread; d-d816nz; design 222 |
+| lodge/spec/sessions/s-xe5bmq-cloud-setup-remains-the-environment-owner.md:1 | Create: Cloud setup remains the environment owner's action; d-nqxsax; design 192 |
+| lodge/spec/sessions/s-z0zk7y-the-built-task-links-to-its.md:1 | Create: The built task links to its source mock; d-d816nz; design 224 |
+| lodge/spec/sessions/s-zjdzre-the-lodge-command-talks-to-the.md:1 | Create: The lodge command talks to the server; d-nqxsax; design 212 |
+| lodge/spec/storage/_area.md:1 | Order new claims in the existing area; sessions is created at rank 12 |
+| lodge/spec/storage/s-5sgcxx-import-checks-the-original-and-mapped.md:1 | Edit: Import checks the source state with source settings; d-m5mwcm; design 289 |
+| lodge/spec/storage/s-bk3f8p-registering-a-machine-issues-its-runner.md:1 | Create: Registering a machine issues its runner token; d-4wrzdf; design 263 |
+| lodge/spec/storage/s-chdc8y-import-checks-the-mapped-state-with.md:1 | Create: Import checks the mapped state with project settings; d-m5mwcm; design 289 |
+| lodge/spec/storage/s-cssfnb-a-failed-source-or-mapped-check.md:1 | Create: A failed source or mapped check publishes nothing; d-m5mwcm; design 289 |
+| lodge/spec/storage/s-pjnxhg-members-work-on-tasks-answer-questions.md:1 | Create: Members work on tasks answer questions and raise doubts; d-4wrzdf; design 261 |
+| lodge/spec/storage/s-sezq1z-people-join-projects-through-invitation-links.md:1 | Create: People join projects through invitation links; d-4wrzdf; design 260 |
+| lodge/spec/storage/s-t7wqxn-local-session-tokens-end-with-the.md:1 | Create: Local session tokens end with the session and cloud tokens are shared; d-4wrzdf; design 262 |
+| lodge/spec/storage/s-x7sw4r-owners-decide-confirm-authorise-merges-and.md:1 | Create: Owners decide confirm authorise merges and change workflows; d-4wrzdf; design 261 |
+| lodge/spec/work/_area.md:1 | Order new claims in the existing area; sessions is created at rank 12 |
+| lodge/spec/work/s-0tn1e8-the-default-plan-workflow-runs-from.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/work/s-18jj1r-a-task-can-start-a-session.md:1 | Create: A task can start a session on its branch; d-shgdb0; design 256 |
+| lodge/spec/work/s-1hecad-session-to-do-items-may-name.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/work/s-1k9wbc-a-task-exposes-its-branches-and.md:1 | Create: A task exposes its branches and diff; d-shgdb0; design 256 |
+| lodge/spec/work/s-3ysqhz-workflow-steps-declare-progression-conditions.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/work/s-40yykh-lodge-reads-code-from-a-clone.md:1 | Create: Lodge reads code from a clone on any host; d-shgdb0; design 253 |
+| lodge/spec/work/s-42kzcz-decision-ids-link-commits-and-decisions.md:1 | Create: Decision IDs link commits and decisions both ways; d-shgdb0; design 254 |
+| lodge/spec/work/s-47p36g-lodge-flags-a-task-in-its.md:1 | Create: Lodge flags a task in its third fix round; d-vsd6q2; design 248 |
+| lodge/spec/work/s-4na883-session-steps-start-as-reported-and.md:1 | Create: Session steps start as reported and need independent confirmation; d-k65afn; design 236-237 |
+| lodge/spec/work/s-4p2vsz-gate-confirmation-reruns-the-gate-on.md:1 | Create: Gate confirmation reruns the gate on the named commit; d-k65afn; design 241 |
+| lodge/spec/work/s-5cs27z-the-github-connector-reads-pull-requests.md:1 | Create: The GitHub connector reads pull requests and CI and merges on a go; d-shgdb0; design 255 |
+| lodge/spec/work/s-68mfam-workflow-failures-follow-named-back-edges.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/work/s-73ee5k-session-to-do-reports-sit-under.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/work/s-7aqvsh-the-interface-distinguishes-reported-and-checked.md:1 | Create: The interface distinguishes reported and checked states; d-k65afn; design 243 |
+| lodge/spec/work/s-9sjp9z-a-task-can-merge-its-branch.md:1 | Create: A task can merge its branch on a person's go; d-shgdb0; design 256 |
+| lodge/spec/work/s-an745k-workflow-checklists-expose-omissions.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/work/s-bxws89-project-boards-group-task-cards-by.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/work/s-c0k9hx-workflow-documents-are-versioned-per-task.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/work/s-d0tvr8-session-driven-review-moves-remain-reported.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/work/s-dv5e12-code-stays-in-git.md:1 | Create: Code stays in git; d-shgdb0; design 252 |
+| lodge/spec/work/s-dxmhjg-workflow-changes-retain-who-changed-what.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/work/s-ecj6se-lodge-checks-that-a-named-commit.md:1 | Create: Lodge checks that a named commit or branch exists; d-k65afn; design 239 |
+| lodge/spec/work/s-gnn2ha-workflow-progression-can-require-checked-evidence.md:1 | Create: Workflow progression can require checked evidence; d-k65afn; design 243 |
+| lodge/spec/work/s-h1e6jc-a-task-page-shows-its-state.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/work/s-h48a8n-a-fix-round-counts-entry-into.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/work/s-hke5m9-the-default-child-task-workflow-builds.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/work/s-hmj4mc-workflow-steps-specify-session-starts-and.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/work/s-j1bvy2-lodge-checks-whether-a-branch-is.md:1 | Create: Lodge checks whether a branch is merged; d-k65afn; design 240 |
+| lodge/spec/work/s-krdpxq-workflow-steps-declare-artefact-inputs-and.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/work/s-mrnqdh-workflow-steps-name-execution-locations.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/work/s-p02emc-a-comment-on-a-diff-line.md:1 | Create: A comment on a diff line becomes a thread; d-shgdb0; design 256 |
+| lodge/spec/work/s-paf12c-a-person-has-one-waiting-list.md:1 | Create: A person has one waiting list across their projects; d-79gjg2; design 229 |
+| lodge/spec/work/s-pekv90-a-project-sets-how-long-a.md:1 | Create: A project sets how long a session can go without reporting; d-vsd6q2; design 248 |
+| lodge/spec/work/s-pttahq-review-findings-determine-progression-thresholds.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/work/s-pw47pk-progression-thresholds-read-review-findings.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/work/s-r2cc8d-session-to-do-reports-sit-under.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| lodge/spec/work/s-raw3fj-waiting-items-show-enough-context-to.md:1 | Create: Waiting items show enough context to answer; d-79gjg2; design 230 |
+| lodge/spec/work/s-rx3eqg-waiting-answers-return-as-messages-to.md:1 | Create: Waiting answers return as messages to the asking session; d-79gjg2; design 231 |
+| lodge/spec/work/s-s981gy-new-waiting-items-can-raise-push.md:1 | Create: New waiting items can raise push notifications; d-79gjg2; design 232 |
+| lodge/spec/work/s-vvtd7f-reported-usage-is-totalled-per-task.md:1 | Create: Reported usage is totalled per task and step; d-vsd6q2; design 247 |
+| lodge/spec/work/s-w37qbc-the-waiting-list-is-the-phone.md:1 | Create: The waiting list is the phone's first screen; d-79gjg2; design 232 |
+| lodge/spec/work/s-xqza9k-workflow-steps-name-actors-and-progression.md:1 | Preserve the statement while linking parked prerequisites or reaffirming after a dependency split |
+| docs/superpowers/specs/2026-11-02-lodge-server-design.md:319 | Append only the required frozen sentence; all original design lines remain unchanged |
+| .lodge.toml:8 | Add the server design to the frozen globs after appending its sentence |
+| CLAUDE.md:8 | Name all three frozen design documents; update the hook rule at line 33 to three documents and the done ledger |
+| docs/superpowers/plans/2026-11-02-lodge-server-import/task-11-report.md:1 | Append this report and the complete design-line map |
+
+### Changed sentences and narrowings
+
+d-5ma843 narrows d-sk1r7r only for the following split, preserving all their other claims.
+s-g8m3qv now says: A project groups its records, settings, and owner.
+d-m5mwcm narrows d-sw1dwn, d-jtbrh6 only for the following split, preserving all their other claims.
+s-5sgcxx now says: The importer checks the store as a change from an empty state with its own `.lodge.toml`, read at a settings revision that defaults to the records revision.
+d-tan3tb narrows d-7s8k61 only for the following split, preserving all their other claims.
+s-5fd1qs now says: The Python tests specify the behaviour that carries over to the TypeScript server.
+d-z5yvk7 narrows d-6x8fd9, d-68b0j2, d-cg3nn3 only for the following split, preserving all their other claims.
+s-7ah5n7 now says: For lodge 0.2, out of scope for now are the phone, other kinds of project knowledge beyond decisions and specification entries, the author's personal to-do list, conversation logs as provenance, and porting a second project onto lodge.
+The project export target, workflow, repository links, and membership move to separate entries.
+The import source check stays at its original ID, while the mapped check and publication refusal gain separate entries.
+The carried-test authority stays at its original ID, and test-first development gains a separate entry.
+The historical scope stays at its original ID, while thread semantics and evaluation then pilot gain separate entries.
+The removed server-scope sentence of s-7ah5n7 is already held by s-d1dd20, s-cf0qph, s-8v6ek2, s-t4tbrj, and s-6r0exg; those claims are retained rather than duplicated.
+d-k7z7ns links all 46 numbered claims found in the starting specification, excluding s-7ah5n7 after its numbered server-scope sentence moves to the existing specific claims.
+The explicit Task 11a list, including s-azfcx4 and s-g8m3qv, is included.
+The new numbered claims each rest on s-pks1qn.
+The link decision also connects s-cg69z0 to s-4na883, s-tprwhs to the split project workflow, and s-6r0exg to the split project membership.
+No link changes a statement or its last-change freshness.
+No author decision is narrowed, replaced, or edited.
+
+| Entry | Added parked prerequisites |
+|---|---|
+| s-07ar34 | s-pks1qn |
+| s-k570d9 | s-pks1qn |
+| s-wgkrmr | s-pks1qn |
+| s-gyamm5 | s-pks1qn |
+| s-fpxzb9 | s-pks1qn |
+| s-t4tbrj | s-pks1qn |
+| s-81kf9s | s-pks1qn |
+| s-5tgnrn | s-pks1qn |
+| s-cg69z0 | s-pks1qn, s-4na883 |
+| s-6r0exg | s-pks1qn, s-3y79d0 |
+| s-wrksm5 | s-pks1qn |
+| s-nhx8zw | s-pks1qn |
+| s-a4jfp1 | s-pks1qn |
+| s-gcwv38 | s-pks1qn |
+| s-7cseam | s-pks1qn |
+| s-51ab7j | s-pks1qn |
+| s-ava922 | s-pks1qn |
+| s-yenn11 | s-pks1qn |
+| s-g8m3qv | s-pks1qn |
+| s-tprwhs | s-pks1qn, s-sge25h |
+| s-d1dd20 | s-pks1qn |
+| s-8v6ek2 | s-pks1qn |
+| s-cf0qph | s-pks1qn |
+| s-azfcx4 | s-pks1qn |
+| s-c0bd0b | s-pks1qn |
+| s-nfgv2t | s-pks1qn |
+| s-c0k9hx | s-pks1qn |
+| s-dxmhjg | s-pks1qn |
+| s-xqza9k | s-pks1qn |
+| s-3ysqhz | s-pks1qn |
+| s-hmj4mc | s-pks1qn |
+| s-mrnqdh | s-pks1qn |
+| s-krdpxq | s-pks1qn |
+| s-68mfam | s-pks1qn |
+| s-an745k | s-pks1qn |
+| s-pttahq | s-pks1qn |
+| s-pw47pk | s-pks1qn |
+| s-d0tvr8 | s-pks1qn |
+| s-h48a8n | s-pks1qn |
+| s-0tn1e8 | s-pks1qn |
+| s-hke5m9 | s-pks1qn |
+| s-73ee5k | s-pks1qn |
+| s-r2cc8d | s-pks1qn |
+| s-1hecad | s-pks1qn |
+| s-h1e6jc | s-pks1qn |
+| s-bxws89 | s-pks1qn |
+
+After the project split, s-6r0exg, s-tprwhs, and s-d1dd20 remain true and are reaffirmed in the next decision with unchanged statements.
+That reaffirmation propagates freshness through their dependants, which are likewise reaffirmed by the next section decisions.
+
+| Reaffirming decision | Unchanged entries and reason |
+|---|---|
+| d-m5mwcm | s-6r0exg, s-tprwhs, s-d1dd20; the split or reaffirmed prerequisite still supports each unchanged claim |
+| d-tan3tb | s-k570d9, s-ts73yt, s-gyamm5, s-81kf9s, s-8v6ek2, s-cf0qph, s-azfcx4, s-h4x7bx, s-1csktg, s-c0k9hx, s-dxmhjg, s-xqza9k, s-3ysqhz, s-hmj4mc, s-mrnqdh, s-krdpxq, s-68mfam, s-an745k, s-pttahq, s-pw47pk, s-d0tvr8, s-h48a8n, s-0tn1e8, s-hke5m9, s-h1e6jc, s-bxws89, s-pyr5rx; the split or reaffirmed prerequisite still supports each unchanged claim |
+| d-z5yvk7 | s-wgkrmr, s-5tgnrn, s-73ee5k, s-r2cc8d, s-1hecad; the split or reaffirmed prerequisite still supports each unchanged claim |
+
+The first final-pass reaffirmation, d-78efj7, preserves 30 statements but leaves 19 further freshness marks because formatted lodge spec omits same-area prerequisites.
+The corrected pass follows reverse supports links through lodge show --provenance; its red probe reads FAIL no current-entry changed-since marks (19).
+The final unchanged reaffirmation decision, d-2zsf4a (s-wb086g, s-w46592, s-bnnw4m, s-5wysdb, s-7pfk9d, s-y019g9, s-fns8m3, s-5sgcxx, s-chdc8y, s-cssfnb, s-yaz279, s-yv40f3, s-2wqxmw, s-raw3fj, s-rx3eqg, s-s981gy, s-25m983, s-vg9y38, s-p6n0x6), includes the complete dependant closure after the parked link migration, so freshness does not propagate to a later task.
+The final changed-since pass has two matches, the explanatory sentences in s-7wbv0e and s-kba448.
+Neither is a freshness warning on a current entry.
+
+### Acceptance first
+
+Acceptance scripts and their output stay ignored under .drafts/task-11c/.
+Each statement check compares the complete title, statement, and every required current dependency through lodge show.
+All 78 fail before any corresponding record is added or edited: 0 passed; 78 failed; 78 acceptance checks.
+The parked-link checks also fail before publication: initially 0 passed; 47 failed, then 0 passed; 46 failed after excluding the now-historical s-7ah5n7.
+All four freeze checks fail before the freeze sequence.
+An initial harness invocation rejects a string passed as Bun.spawnSync stdin; encoding it fixes the harness, after which all four semantic checks fail as expected.
+No permanent test or implementation file changes.
+
+| file:line | Test | First failing output |
+|---|---|---|
+| .drafts/task-11c/manage.ts:32 | s-pks1qn: full title, statement, and dependencies | FAIL s-pks1qn: The server build follows seven ordered steps (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-nj99c5: full title, statement, and dependencies | FAIL s-nj99c5: Runners serve only their registering person (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-r2k5t2: full title, statement, and dependencies | FAIL s-r2k5t2: An offline assignee runner creates a waiting item (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-7zx39z: full title, statement, and dependencies | FAIL s-7zx39z: Runners keep an outbound WebSocket open (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-awkdkw: full title, statement, and dependencies | FAIL s-awkdkw: A hand-over brief assembles the task context (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-dazqbj: full title, statement, and dependencies | FAIL s-dazqbj: Starting a session supplies its identity and agent (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-myvb3j: full title, statement, and dependencies | FAIL s-myvb3j: Cloud sessions start and receive follow-ups through claude (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-xe5bmq: full title, statement, and dependencies | FAIL s-xe5bmq: Cloud setup remains the environment owner's action (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-anc255: full title, statement, and dependencies | FAIL s-anc255: Sessions lodge starts are talked to in their task or artefact thread (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-25m983: full title, statement, and dependencies | FAIL s-25m983: Local session messages are relayed both ways (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-vg9y38: full title, statement, and dependencies | FAIL s-vg9y38: Cloud replies appear through session stop reports (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-68vtrb: full title, statement, and dependencies | FAIL s-68vtrb: Manually started Claude Code sessions are talked to there (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-n242p0: full title, statement, and dependencies | FAIL s-n242p0: Sessions report their work through the API (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-a62w0p: full title, statement, and dependencies | FAIL s-a62w0p: Lodge does not read Claude Code session state (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-c0zke5: full title, statement, and dependencies | FAIL s-c0zke5: Claude Code hooks report heartbeat status and usage (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-a2y9t3: full title, statement, and dependencies | FAIL s-a2y9t3: Unreadable cloud transcripts leave usage unknown (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-zjdzre: full title, statement, and dependencies | FAIL s-zjdzre: The lodge command talks to the server (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-p6n0x6: full title, statement, and dependencies | FAIL s-p6n0x6: MCP exposes the same operations to local sessions only (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-pammwd: full title, statement, and dependencies | FAIL s-pammwd: A repository mailbox carries calls without network access (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-n4pdfq: full title, statement, and dependencies | FAIL s-n4pdfq: Mailbox authority is push access and a known session ID (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-kagv3e: full title, statement, and dependencies | FAIL s-kagv3e: Artefacts live on their task through API uploads (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-m7w8c0: full title, statement, and dependencies | FAIL s-m7w8c0: Images and PDFs display inline (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-bd0qv5: full title, statement, and dependencies | FAIL s-bd0qv5: HTML mocks display in a sandbox without lodge origin access (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-xakcm0: full title, statement, and dependencies | FAIL s-xakcm0: Each artefact has its own thread (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-er4t45: full title, statement, and dependencies | FAIL s-er4t45: Mocks remain after their task finishes (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-z0zk7y: full title, statement, and dependencies | FAIL s-z0zk7y: The built task links to its source mock (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-gwppsf: full title, statement, and dependencies | FAIL s-gwppsf: An outside opinion link reveals only the artefact and thread (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-paf12c: full title, statement, and dependencies | FAIL s-paf12c: A person has one waiting list across their projects (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-raw3fj: full title, statement, and dependencies | FAIL s-raw3fj: Waiting items show enough context to answer (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-rx3eqg: full title, statement, and dependencies | FAIL s-rx3eqg: Waiting answers return as messages to the asking session (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-w37qbc: full title, statement, and dependencies | FAIL s-w37qbc: The waiting list is the phone's first screen (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-s981gy: full title, statement, and dependencies | FAIL s-s981gy: New waiting items can raise push notifications (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-4na883: full title, statement, and dependencies | FAIL s-4na883: Session steps start as reported and need independent confirmation (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-ecj6se: full title, statement, and dependencies | FAIL s-ecj6se: Lodge checks that a named commit or branch exists (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-j1bvy2: full title, statement, and dependencies | FAIL s-j1bvy2: Lodge checks whether a branch is merged (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-4p2vsz: full title, statement, and dependencies | FAIL s-4p2vsz: Gate confirmation reruns the gate on the named commit (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-7aqvsh: full title, statement, and dependencies | FAIL s-7aqvsh: The interface distinguishes reported and checked states (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-gnn2ha: full title, statement, and dependencies | FAIL s-gnn2ha: Workflow progression can require checked evidence (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-vvtd7f: full title, statement, and dependencies | FAIL s-vvtd7f: Reported usage is totalled per task and step (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-pekv90: full title, statement, and dependencies | FAIL s-pekv90: A project sets how long a session can go without reporting (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-47p36g: full title, statement, and dependencies | FAIL s-47p36g: Lodge flags a task in its third fix round (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-dv5e12: full title, statement, and dependencies | FAIL s-dv5e12: Code stays in git (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-40yykh: full title, statement, and dependencies | FAIL s-40yykh: Lodge reads code from a clone on any host (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-42kzcz: full title, statement, and dependencies | FAIL s-42kzcz: Decision IDs link commits and decisions both ways (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-5cs27z: full title, statement, and dependencies | FAIL s-5cs27z: The GitHub connector reads pull requests and CI and merges on a go (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-1k9wbc: full title, statement, and dependencies | FAIL s-1k9wbc: A task exposes its branches and diff (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-18jj1r: full title, statement, and dependencies | FAIL s-18jj1r: A task can start a session on its branch (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-p02emc: full title, statement, and dependencies | FAIL s-p02emc: A comment on a diff line becomes a thread (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-9sjp9z: full title, statement, and dependencies | FAIL s-9sjp9z: A task can merge its branch on a person's go (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-sezq1z: full title, statement, and dependencies | FAIL s-sezq1z: People join projects through invitation links (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-x7sw4r: full title, statement, and dependencies | FAIL s-x7sw4r: Owners decide confirm authorise merges and change workflows (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-pjnxhg: full title, statement, and dependencies | FAIL s-pjnxhg: Members work on tasks answer questions and raise doubts (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-t7wqxn: full title, statement, and dependencies | FAIL s-t7wqxn: Local session tokens end with the session and cloud tokens are shared (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-bk3f8p: full title, statement, and dependencies | FAIL s-bk3f8p: Registering a machine issues its runner token (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-ksg593: full title, statement, and dependencies | FAIL s-ksg593: The browser app uses the agents' API (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-w46592: full title, statement, and dependencies | FAIL s-w46592: The browser receives live updates through server-sent events (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-8ysrep: full title, statement, and dependencies | FAIL s-8ysrep: The browser has a waiting-list view (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-bnnw4m: full title, statement, and dependencies | FAIL s-bnnw4m: The browser presents the project board (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-5wysdb: full title, statement, and dependencies | FAIL s-5wysdb: The browser presents task context and code (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-7pfk9d: full title, statement, and dependencies | FAIL s-7pfk9d: An artefact view includes versions and its thread (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-y019g9: full title, statement, and dependencies | FAIL s-y019g9: The browser carries forward the viewer's record pages (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-fns8m3: full title, statement, and dependencies | FAIL s-fns8m3: The browser provides a project workflow view (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-3xkj85: full title, statement, and dependencies | FAIL s-3xkj85: Phone use supports practical work except long diff reading (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-s5fa8n: full title, statement, and dependencies | FAIL s-s5fa8n: The full interface interaction for draft approval remains open (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-fe4kyr: full title, statement, and dependencies | FAIL s-fe4kyr: Builder choices include workflow syntax and interface layout (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-g8m3qv: full title, statement, and dependencies | FAIL s-g8m3qv: A project groups records settings and its owner (statement or dependency differs) |
+| .drafts/task-11c/manage.ts:32 | s-mn4xj9: full title, statement, and dependencies | FAIL s-mn4xj9: A project holds its export target (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-sge25h: full title, statement, and dependencies | FAIL s-sge25h: A project holds its workflow (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-ts16f0: full title, statement, and dependencies | FAIL s-ts16f0: Project code views link its repositories (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-3y79d0: full title, statement, and dependencies | FAIL s-3y79d0: A project holds members and their roles (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-5sgcxx: full title, statement, and dependencies | FAIL s-5sgcxx: Import checks the source state with source settings (statement or dependency differs) |
+| .drafts/task-11c/manage.ts:32 | s-chdc8y: full title, statement, and dependencies | FAIL s-chdc8y: Import checks the mapped state with project settings (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-cssfnb: full title, statement, and dependencies | FAIL s-cssfnb: A failed source or mapped check publishes nothing (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-5fd1qs: full title, statement, and dependencies | FAIL s-5fd1qs: Python tests specify the carried server behaviour (statement or dependency differs) |
+| .drafts/task-11c/manage.ts:32 | s-5af9zq: full title, statement, and dependencies | FAIL s-5af9zq: Development is test-first (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-7ah5n7: full title, statement, and dependencies | FAIL s-7ah5n7: Kinds of knowledge and projects outside lodge 0.2 scope (statement or dependency differs) |
+| .drafts/task-11c/manage.ts:32 | s-0c65f3: full title, statement, and dependencies | FAIL s-0c65f3: A thread holds no claim of its own (entry absent) |
+| .drafts/task-11c/manage.ts:32 | s-65pyqz: full title, statement, and dependencies | FAIL s-65pyqz: Other lodge 0.2 knowledge requires evaluation then a pilot (entry absent) |
+| .drafts/task-11c/links.ts:24 | s-07ar34: parked dependencies | FAIL s-07ar34: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-k570d9: parked dependencies | FAIL s-k570d9: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-wgkrmr: parked dependencies | FAIL s-wgkrmr: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-gyamm5: parked dependencies | FAIL s-gyamm5: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-fpxzb9: parked dependencies | FAIL s-fpxzb9: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-t4tbrj: parked dependencies | FAIL s-t4tbrj: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-81kf9s: parked dependencies | FAIL s-81kf9s: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-5tgnrn: parked dependencies | FAIL s-5tgnrn: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-cg69z0: parked dependencies | FAIL s-cg69z0: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-6r0exg: parked dependencies | FAIL s-6r0exg: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-wrksm5: parked dependencies | FAIL s-wrksm5: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-nhx8zw: parked dependencies | FAIL s-nhx8zw: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-a4jfp1: parked dependencies | FAIL s-a4jfp1: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-gcwv38: parked dependencies | FAIL s-gcwv38: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-7cseam: parked dependencies | FAIL s-7cseam: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-51ab7j: parked dependencies | FAIL s-51ab7j: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-ava922: parked dependencies | FAIL s-ava922: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-yenn11: parked dependencies | FAIL s-yenn11: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-g8m3qv: parked dependencies | FAIL s-g8m3qv: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-tprwhs: parked dependencies | FAIL s-tprwhs: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-d1dd20: parked dependencies | FAIL s-d1dd20: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-8v6ek2: parked dependencies | FAIL s-8v6ek2: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-cf0qph: parked dependencies | FAIL s-cf0qph: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-azfcx4: parked dependencies | FAIL s-azfcx4: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-c0bd0b: parked dependencies | FAIL s-c0bd0b: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-nfgv2t: parked dependencies | FAIL s-nfgv2t: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-c0k9hx: parked dependencies | FAIL s-c0k9hx: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-dxmhjg: parked dependencies | FAIL s-dxmhjg: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-xqza9k: parked dependencies | FAIL s-xqza9k: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-3ysqhz: parked dependencies | FAIL s-3ysqhz: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-hmj4mc: parked dependencies | FAIL s-hmj4mc: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-mrnqdh: parked dependencies | FAIL s-mrnqdh: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-krdpxq: parked dependencies | FAIL s-krdpxq: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-68mfam: parked dependencies | FAIL s-68mfam: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-an745k: parked dependencies | FAIL s-an745k: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-pttahq: parked dependencies | FAIL s-pttahq: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-pw47pk: parked dependencies | FAIL s-pw47pk: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-d0tvr8: parked dependencies | FAIL s-d0tvr8: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-h48a8n: parked dependencies | FAIL s-h48a8n: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-0tn1e8: parked dependencies | FAIL s-0tn1e8: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-hke5m9: parked dependencies | FAIL s-hke5m9: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-73ee5k: parked dependencies | FAIL s-73ee5k: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-r2cc8d: parked dependencies | FAIL s-r2cc8d: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-1hecad: parked dependencies | FAIL s-1hecad: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-h1e6jc: parked dependencies | FAIL s-h1e6jc: parked prerequisites |
+| .drafts/task-11c/links.ts:24 | s-bxws89: parked dependencies | FAIL s-bxws89: parked prerequisites |
+| .drafts/task-11c/verify-report.ts:9 | Historical report, complete line map, valid IDs, and append-only freeze | Mutation: remove the line-317 mapping from an ignored report copy; Error: Incomplete line map |
+| .drafts/task-11c/refresh.ts:8 | No current-entry freshness marks | FAIL no current-entry changed-since marks (14), then (19) before the second correction |
+| .drafts/task-11c/freeze.ts:8 | design frozen last line | FAIL design frozen last line |
+| .drafts/task-11c/freeze.ts:9 | hook configuration freezes server design | FAIL hook configuration freezes server design |
+| .drafts/task-11c/freeze.ts:10 | CLAUDE names three frozen designs and the ledger | FAIL CLAUDE names three frozen designs and the ledger |
+| .drafts/task-11c/freeze.ts:11 | hook gives frozen-file advice | FAIL hook gives frozen-file advice |
+
+The final acceptance results are 78 passed; 0 failed; 78 statement and dependency checks, 46 passed; 0 failed; 46 parked-link checks, four freeze checks passed, and the report integrity check passed.
+The freshness probe passes with PASS no current-entry changed-since marks (0).
+All child processes in the ignored scripts use Bun.spawnSync.
+
+### Coordinator rulings, deviations, and uncertainty
+
+The coordinator approves the step mapping, with numbers used only for items named in Build order.
+She approves the four parked splits, narrowing coordinator decisions only.
+She approves action link without replaces or narrows for the dependency-only decision, because no statement becomes false.
+Talking stays unnumbered and names d-wc9wt2; its goal is linked through the existing model and conversation context rather than added to s-c8hrye again.
+The existing GitHub integration, installation, and phone-answer entries are linked rather than repeated.
+
+The original 50-to-80 estimate covers all three parts; the independently looked-up claims and the parked splits make this part alone 74 new entries and four edited entries before reaffirmations and links.
+This expansion follows the explicit requirement to separate independent claims.
+The four split decisions are additional to the section decisions because the earlier claims already exist in immutable published decisions.
+The final freshness pass requires two further unchanged reaffirmation decisions because the first closure calculation misses same-area links omitted from formatted lodge spec.
+This is an implementation deviation in the ignored acceptance tooling, corrected through provenance reads and a new immutable decision.
+The dependency migration is one additional link decision under the coordinator ruling.
+The absent sessions area is created in the first Sessions add; all other areas already exist.
+Build order is published first so subsequent numbered claims can depend on it.
+People and sign-in is published before Sessions so Talking can depend on the local session-token policy.
+
+The freeze sequence runs before writing the report line map, rather than after it.
+The coordinator accepts this sequencing deviation, requires it to be reported, and directs that the frozen file remain untouched.
+The internal freeze order is preserved: append the design sentence, then add the frozen glob, then update CLAUDE.md.
+The line map uses original lines 8 to 317, which are unchanged.
+
+The code-only test-porting rules do not require new permanent tests for this records-only task; ignored acceptance probes give red-to-green evidence, and the unchanged repository tests run in both gates.
+No package is missing or added, no bun add runs, and no installation is needed.
+Source-line numbers in reasoning can produce advisory missing-number feedback; number handles cover the quantities in statements, while design lines remain provenance handles.
+The related-record and area-order notes are advisory, with no unaddressed failing check.
+Cloud transcript access, workflow syntax, mailbox file layout, board appearance, task-page appearance, and the full approval interaction remain open exactly where the design leaves them open.
+No unresolved question about this task remains after the coordinator rulings.
+
+Claims without an assigned build step are Talking and its local/cloud/manual transports (196-201), no Claude state-read command (206), command and MCP/mailbox access (212-216), phone-first and push (232), code remaining in git (252), local/cloud session credentials and machine tokens (262-263), the workflow view and practical phone scope (276-278), approval interaction (308), and delegated builder choices (313-317).
+Their entries deliberately carry no guessed step.
+Historical scope and carried-test rules also have no invented build step.
+
+### Commands and results
+
+| Command or command family | Result or last line |
+|---|---|
+| git status --short --branch | server-import-records, initially clean |
+| uv run --frozen --quiet lodge guide | Exit 0; exit-code definitions |
+| uv run --frozen --quiet lodge waiting | Exit 0; nothing waiting |
+| lodge spec and lodge search, through uv run --frozen --quiet | Current specification read; searches include build order, From build step, mailbox, passkeys, API, Kysely, and dependency checker |
+| lodge show ID --reasoning --provenance and lodge draft REF | Required source decisions, all eight author decisions, split sources, and edit bases read |
+| bun .drafts/task-11c/manage.ts prepare; verify, before adds | Prepared 78 probes; exit 1; 0 passed; 78 failed |
+| bun .drafts/task-11c/manage.ts assemble SECTION; dry-run SECTION; add SECTION | Exit 0 for every section; dry run: nothing published; staged each section decision and its entries |
+| lodge spec filtered for changed since after every section | Final 2, both explanatory sentences named above; intermediate freshness marks reaffirmed in the next section |
+| bun .drafts/task-11c/links.ts prepare; verify, before add | Exit 1; initially 47 failed, then 46 failed after removing the historical-only entry |
+| bun .drafts/task-11c/links.ts assemble; dry-run; add | Exit 0; dry run: nothing published; staged the link decision and entries |
+| bun .drafts/task-11c/freeze.ts, before and after edits | Exit 1 with four failures, then exit 0 with four passes |
+| lodge check | Exit 0; ok |
+| printf hook input piped to uv run --frozen --quiet lodge hook post-tool-use | Exit 0; frozen-file advice naming the server design |
+| lodge spec filtered and counted for changed since | 2; only the explanatory sentences in s-7wbv0e and s-kba448 |
+| git diff --check and git diff --cached --check | Exit 0; no output |
+| sh scripts/check.sh | Exit 0; 1,399 Python tests passed, 2,137 TypeScript tests passed, structure checks passed, and 0 differential differences; last line: Ran 1 test across 1 file. [218.00ms] |
+| sh scripts/check-ts.sh, last verification gate | Exit 0; 2,137 pass, 0 fail, strict typing, Biome, unused-code, dependency, and structure checks passed; last line: Ran 2137 tests across 191 files. [11.63s] |
+| bun .drafts/task-11c/refresh.ts verify; prepare; dry-run; add | Initial freshness probes fail with 14 and 19 marks; both adds dry-run successfully; final probe passes with 0 |
+| bun .drafts/task-11c/verify-report.ts, mutated copy and final report | Mutation fails with Incomplete line map; final report passes all integrity checks |
+| rg, sed, cat, nl, ls, and a process inspection | Requirements, source handles, draft helpers, command definitions, and gate progress inspected |
+| Ignored Bun and Python drafting/report helpers | Drafts prepared outside lodge; report appended without changing historical sections; freeze edits made in the required internal order |
+| Explicit-path commit with the requested identity and Codex trailer; git push origin server-import-records | Commit and push performed after both gates pass |
+
+### Complete design-line map
+
+Every original design line from 8 through 317 is accounted for below.
+Headings, blank lines, and example delimiters are presentation, with no independent specification claim.
+Quoted incidents and external-service eligibility are reasons, not additional product promises.
+Unnumbered means Build order does not explicitly assign that claim a step.
+
+| Lines | Entry ID or omission | Reason |
+|---|---|---|
+| 8 | Omitted | Section heading; no independent claim |
+| 9 | Omitted | Blank separator; no independent claim |
+| 10 | s-fw6xhy | Intent and loss-of-context reasons |
+| 11 | s-fw6xhy | Intent and loss-of-context reasons |
+| 12 | s-fw6xhy | Intent and loss-of-context reasons |
+| 13 | Omitted | Blank separator; no independent claim |
+| 14 | s-fw6xhy | Intent and loss-of-context reasons |
+| 15 | s-fw6xhy | Intent and loss-of-context reasons |
+| 16 | s-fw6xhy | Intent and loss-of-context reasons |
+| 17 | s-fw6xhy | Intent and loss-of-context reasons |
+| 18 | Omitted | Blank separator; no independent claim |
+| 19 | Omitted | Section heading; no independent claim |
+| 20 | Omitted | Blank separator; no independent claim |
+| 21 | s-k570d9, s-7ah5n7 | Design claim retained in the named entry or entries |
+| 22 | s-ts73yt, s-c8hrye | Design claim retained in the named entry or entries |
+| 23 | s-wgkrmr, s-7ah5n7 | Design claim retained in the named entry or entries |
+| 24 | s-gyamm5 | Design claim retained in the named entry or entries |
+| 25 | s-fpxzb9, s-7ah5n7 | Design claim retained in the named entry or entries |
+| 26 | s-81kf9s | Design claim retained in the named entry or entries |
+| 27 | s-5tgnrn, s-c8hrye | Design claim retained in the named entry or entries |
+| 28 | s-cg69z0 | Design claim retained in the named entry or entries |
+| 29 | s-31atpc | Design claim retained in the named entry or entries |
+| 30 | s-6r0exg, s-7ah5n7 | Design claim retained in the named entry or entries |
+| 31 | Omitted | Blank separator; no independent claim |
+| 32 | Omitted | Section heading; no independent claim |
+| 33 | Omitted | Blank separator; no independent claim |
+| 34 | s-6z04mq | Design claim retained in the named entry or entries |
+| 35 | s-gdtksn | Design claim retained in the named entry or entries |
+| 36 | s-chycjf, s-wrksm5, s-q6g68q | Design claim retained in the named entry or entries |
+| 37 | s-tjq0rm | Design claim retained in the named entry or entries |
+| 38 | s-gyyt5k | Non-goal, with external-service eligibility retained as reasoning |
+| 39 | s-4gjz9j | Non-goal, with external-service eligibility retained as reasoning |
+| 40 | s-nhx8zw, s-mnfeyz, s-d56aky | Design claim retained in the named entry or entries |
+| 41 | Omitted | Blank separator; no independent claim |
+| 42 | Omitted | Section heading; no independent claim |
+| 43 | Omitted | Blank separator; no independent claim |
+| 44 | s-q4s548, s-pncjp8, s-4ykcm0 | Design claim retained in the named entry or entries |
+| 45 | s-ydkmyq, s-jqh7hf, s-4w05xp, s-xy6qte | Design claim retained in the named entry or entries |
+| 46 | Omitted | Blank separator; no independent claim |
+| 47 | s-ydkmyq | Design claim retained in the named entry or entries |
+| 48 | s-jqh7hf | Design claim retained in the named entry or entries |
+| 49 | s-4w05xp | Design claim retained in the named entry or entries |
+| 50 | s-xy6qte | Design claim retained in the named entry or entries |
+| 51 | Omitted | Blank separator; no independent claim |
+| 52 | Omitted | Section heading; no independent claim |
+| 53 | Omitted | Blank separator; no independent claim |
+| 54 | s-fk3yzy | Design claim retained in the named entry or entries |
+| 55 | s-a4jfp1 | Design claim retained in the named entry or entries |
+| 56 | s-sb9gee | Design claim retained in the named entry or entries |
+| 57 | s-gcwv38 | Design claim retained in the named entry or entries |
+| 58 | s-165qfh | Design claim retained in the named entry or entries |
+| 59 | s-5fd1qs, s-5af9zq | Design claim retained in the named entry or entries |
+| 60 | s-7cseam | Design claim retained in the named entry or entries |
+| 61 | s-t8sj11 | Design claim retained in the named entry or entries |
+| 62 | s-51ab7j | Design claim retained in the named entry or entries |
+| 63 | Omitted | Blank separator; no independent claim |
+| 64 | Omitted | Section heading; no independent claim |
+| 65 | Omitted | Blank separator; no independent claim |
+| 66 | s-z1zvb4, s-j8tp0n | Design claim retained in the named entry or entries |
+| 67 | s-31atpc | Design claim retained in the named entry or entries |
+| 68 | Omitted | Blank separator; no independent claim |
+| 69 | Omitted | Section heading; no independent claim |
+| 70 | Omitted | Blank separator; no independent claim |
+| 71 | s-31atpc | Design claim retained in the named entry or entries |
+| 72 | s-z1zvb4 | Design claim retained in the named entry or entries |
+| 73 | Omitted | Blank separator; no independent claim |
+| 74 | s-ava922 | Design claim retained in the named entry or entries |
+| 75 | s-yenn11 | Design claim retained in the named entry or entries |
+| 76 | s-yenn11 | Design claim retained in the named entry or entries |
+| 77 | s-wb086g | Design claim retained in the named entry or entries |
+| 78 | s-b6jxhr, s-yaz279 | Design claim retained in the named entry or entries |
+| 79 | s-e5rrwm | Design claim retained in the named entry or entries |
+| 80 | s-fabgyh | Design claim retained in the named entry or entries |
+| 81 | s-fabgyh | Design claim retained in the named entry or entries |
+| 82 | Omitted | Blank separator; no independent claim |
+| 83 | Omitted | Section heading; no independent claim |
+| 84 | Omitted | Blank separator; no independent claim |
+| 85 | s-g8m3qv, s-mn4xj9, s-sge25h, s-ts16f0, s-3y79d0 | Design claim retained in the named entry or entries |
+| 86 | s-tprwhs | Design claim retained in the named entry or entries |
+| 87 | s-d1dd20, s-azfcx4, s-1csktg | Design claim retained in the named entry or entries |
+| 88 | s-d1dd20 | Design claim retained in the named entry or entries |
+| 89 | s-h4x7bx | Design claim retained in the named entry or entries |
+| 90 | s-8v6ek2 | Design claim retained in the named entry or entries |
+| 91 | s-cf0qph | Design claim retained in the named entry or entries |
+| 92 | s-cf0qph | Design claim retained in the named entry or entries |
+| 93 | s-nfgv2t | Design claim retained in the named entry or entries |
+| 94 | s-c0bd0b | Design claim retained in the named entry or entries |
+| 95 | Omitted | Blank separator; no independent claim |
+| 96 | Omitted | Section heading; no independent claim |
+| 97 | Omitted | Blank separator; no independent claim |
+| 98 | s-c0k9hx, s-dxmhjg | Design claim retained in the named entry or entries |
+| 99 | s-xqza9k, s-3ysqhz, s-hmj4mc, s-mrnqdh, s-krdpxq, s-68mfam, s-an745k | Design claim retained in the named entry or entries |
+| 100 | Omitted | Blank separator; no independent claim |
+| 101 | s-xqza9k | Design claim retained in the named entry or entries |
+| 102 | s-3ysqhz | Design claim retained in the named entry or entries |
+| 103 | s-hmj4mc | Design claim retained in the named entry or entries |
+| 104 | s-mrnqdh | Design claim retained in the named entry or entries |
+| 105 | s-krdpxq | Design claim retained in the named entry or entries |
+| 106 | s-68mfam | Design claim retained in the named entry or entries |
+| 107 | s-an745k | Design claim retained in the named entry or entries |
+| 108 | Omitted | Blank separator; no independent claim |
+| 109 | s-pttahq, s-pw47pk | Design claim retained in the named entry or entries |
+| 110 | s-d0tvr8 | Design claim retained in the named entry or entries |
+| 111 | s-h48a8n | Design claim retained in the named entry or entries |
+| 112 | s-0tn1e8 | Design claim retained in the named entry or entries |
+| 113 | Omitted | Blank separator; no independent claim |
+| 114 | Omitted | Example delimiter; no independent claim |
+| 115 | s-0tn1e8 | Default workflow content; example syntax remains open |
+| 116 | s-0tn1e8 | Default workflow content; example syntax remains open |
+| 117 | s-0tn1e8 | Default workflow content; example syntax remains open |
+| 118 | s-0tn1e8 | Default workflow content; example syntax remains open |
+| 119 | s-0tn1e8 | Default workflow content; example syntax remains open |
+| 120 | s-0tn1e8 | Default workflow content; example syntax remains open |
+| 121 | s-0tn1e8 | Default workflow content; example syntax remains open |
+| 122 | s-0tn1e8 | Default workflow content; example syntax remains open |
+| 123 | s-0tn1e8 | Default workflow content; example syntax remains open |
+| 124 | s-0tn1e8 | Default workflow content; example syntax remains open |
+| 125 | s-0tn1e8 | Default workflow content; example syntax remains open |
+| 126 | s-0tn1e8 | Default workflow content; example syntax remains open |
+| 127 | s-0tn1e8 | Default workflow content; example syntax remains open |
+| 128 | s-0tn1e8 | Default workflow content; example syntax remains open |
+| 129 | s-0tn1e8 | Default workflow content; example syntax remains open |
+| 130 | s-0tn1e8 | Default workflow content; example syntax remains open |
+| 131 | s-0tn1e8 | Default workflow content; example syntax remains open |
+| 132 | s-0tn1e8 | Default workflow content; example syntax remains open |
+| 133 | s-0tn1e8 | Default workflow content; example syntax remains open |
+| 134 | s-0tn1e8 | Default workflow content; example syntax remains open |
+| 135 | s-0tn1e8 | Default workflow content; example syntax remains open |
+| 136 | s-0tn1e8 | Default workflow content; example syntax remains open |
+| 137 | s-0tn1e8 | Default workflow content; example syntax remains open |
+| 138 | s-0tn1e8 | Default workflow content; example syntax remains open |
+| 139 | s-0tn1e8 | Default workflow content; example syntax remains open |
+| 140 | s-0tn1e8 | Default workflow content; example syntax remains open |
+| 141 | s-0tn1e8 | Default workflow content; example syntax remains open |
+| 142 | s-0tn1e8 | Default workflow content; example syntax remains open |
+| 143 | s-0tn1e8 | Default workflow content; example syntax remains open |
+| 144 | s-0tn1e8 | Default workflow content; example syntax remains open |
+| 145 | s-0tn1e8 | Default workflow content; example syntax remains open |
+| 146 | s-hke5m9 | Default workflow content; example syntax remains open |
+| 147 | s-hke5m9 | Default workflow content; example syntax remains open |
+| 148 | s-hke5m9 | Default workflow content; example syntax remains open |
+| 149 | s-hke5m9 | Default workflow content; example syntax remains open |
+| 150 | s-hke5m9 | Default workflow content; example syntax remains open |
+| 151 | s-hke5m9 | Default workflow content; example syntax remains open |
+| 152 | s-hke5m9 | Default workflow content; example syntax remains open |
+| 153 | s-hke5m9 | Default workflow content; example syntax remains open |
+| 154 | s-hke5m9 | Default workflow content; example syntax remains open |
+| 155 | s-hke5m9 | Default workflow content; example syntax remains open |
+| 156 | s-hke5m9 | Default workflow content; example syntax remains open |
+| 157 | s-hke5m9 | Default workflow content; example syntax remains open |
+| 158 | s-hke5m9 | Default workflow content; example syntax remains open |
+| 159 | s-hke5m9 | Default workflow content; example syntax remains open |
+| 160 | s-hke5m9 | Default workflow content; example syntax remains open |
+| 161 | s-hke5m9 | Default workflow content; example syntax remains open |
+| 162 | s-hke5m9 | Default workflow content; example syntax remains open |
+| 163 | s-hke5m9 | Default workflow content; example syntax remains open |
+| 164 | s-hke5m9 | Default workflow content; example syntax remains open |
+| 165 | s-hke5m9 | Default workflow content; example syntax remains open |
+| 166 | Omitted | Example delimiter; no independent claim |
+| 167 | Omitted | Blank separator; no independent claim |
+| 168 | s-fe4kyr | Design claim retained in the named entry or entries |
+| 169 | s-73ee5k, s-r2cc8d, s-1hecad | Design claim retained in the named entry or entries |
+| 170 | s-an745k | Design claim retained in the named entry or entries |
+| 171 | Omitted | Blank separator; no independent claim |
+| 172 | Omitted | Section heading; no independent claim |
+| 173 | Omitted | Blank separator; no independent claim |
+| 174 | s-h1e6jc | Design claim retained in the named entry or entries |
+| 175 | s-bxws89 | Design claim retained in the named entry or entries |
+| 176 | s-pyr5rx | Design claim retained in the named entry or entries |
+| 177 | Omitted | Blank separator; no independent claim |
+| 178 | Omitted | Section heading; no independent claim |
+| 179 | Omitted | Blank separator; no independent claim |
+| 180 | Omitted | Section heading; no independent claim |
+| 181 | Omitted | Blank separator; no independent claim |
+| 182 | s-nj99c5 | Design claim retained in the named entry or entries |
+| 183 | s-r2k5t2 | Design claim retained in the named entry or entries |
+| 184 | s-7zx39z | Design claim retained in the named entry or entries |
+| 185 | s-dazqbj | Design claim retained in the named entry or entries |
+| 186 | Omitted | Blank separator; no independent claim |
+| 187 | s-awkdkw | Design claim retained in the named entry or entries |
+| 188 | s-dazqbj | Design claim retained in the named entry or entries |
+| 189 | s-dazqbj | Design claim retained in the named entry or entries |
+| 190 | Omitted | Blank separator; no independent claim |
+| 191 | s-myvb3j | Design claim retained in the named entry or entries |
+| 192 | s-xe5bmq | Design claim retained in the named entry or entries |
+| 193 | Omitted | Blank separator; no independent claim |
+| 194 | Omitted | Section heading; no independent claim |
+| 195 | Omitted | Blank separator; no independent claim |
+| 196 | s-anc255 | Design claim retained; no step explicitly assigned |
+| 197 | s-anc255 | Design claim retained; no step explicitly assigned |
+| 198 | s-25m983 | Design claim retained; no step explicitly assigned |
+| 199 | s-vg9y38 | Design claim retained; no step explicitly assigned |
+| 200 | s-68vtrb | Design claim retained; no step explicitly assigned |
+| 201 | s-anc255 | Design claim retained; no step explicitly assigned |
+| 202 | Omitted | Blank separator; no independent claim |
+| 203 | Omitted | Section heading; no independent claim |
+| 204 | Omitted | Blank separator; no independent claim |
+| 205 | s-n242p0 | Design claim retained in the named entry or entries |
+| 206 | s-a62w0p | Design claim retained; no step explicitly assigned |
+| 207 | s-c0zke5 | Design claim retained in the named entry or entries |
+| 208 | s-a2y9t3 | Design claim retained in the named entry or entries |
+| 209 | Omitted | Blank separator; no independent claim |
+| 210 | Omitted | Section heading; no independent claim |
+| 211 | Omitted | Blank separator; no independent claim |
+| 212 | s-zjdzre | Design claim retained; no step explicitly assigned |
+| 213 | s-p6n0x6 | Design claim retained; no step explicitly assigned |
+| 214 | s-pammwd | Design claim retained; no step explicitly assigned |
+| 215 | s-pammwd | Design claim retained; no step explicitly assigned |
+| 216 | s-n4pdfq | Design claim retained; no step explicitly assigned |
+| 217 | Omitted | Blank separator; no independent claim |
+| 218 | Omitted | Section heading; no independent claim |
+| 219 | Omitted | Blank separator; no independent claim |
+| 220 | s-kagv3e | Design claim retained in the named entry or entries |
+| 221 | s-m7w8c0, s-bd0qv5 | Design claim retained in the named entry or entries |
+| 222 | s-xakcm0 | Design claim retained in the named entry or entries |
+| 223 | s-er4t45 | Design claim retained in the named entry or entries |
+| 224 | s-z0zk7y | Design claim retained in the named entry or entries |
+| 225 | s-gwppsf | Design claim retained in the named entry or entries |
+| 226 | Omitted | Blank separator; no independent claim |
+| 227 | Omitted | Section heading; no independent claim |
+| 228 | Omitted | Blank separator; no independent claim |
+| 229 | s-paf12c | Design claim retained in the named entry or entries |
+| 230 | s-raw3fj | Design claim retained in the named entry or entries |
+| 231 | s-rx3eqg | Design claim retained in the named entry or entries |
+| 232 | s-w37qbc, s-s981gy | Design claim retained; no step explicitly assigned |
+| 233 | Omitted | Blank separator; no independent claim |
+| 234 | Omitted | Section heading; no independent claim |
+| 235 | Omitted | Blank separator; no independent claim |
+| 236 | s-4na883 | Design claim retained in the named entry or entries |
+| 237 | s-4na883 | Design claim retained in the named entry or entries |
+| 238 | Omitted | Blank separator; no independent claim |
+| 239 | s-ecj6se | Design claim retained in the named entry or entries |
+| 240 | s-j1bvy2 | Design claim retained in the named entry or entries |
+| 241 | s-4p2vsz | Design claim retained in the named entry or entries |
+| 242 | Omitted | Blank separator; no independent claim |
+| 243 | s-7aqvsh, s-gnn2ha | Design claim retained in the named entry or entries |
+| 244 | Omitted | Blank separator; no independent claim |
+| 245 | Omitted | Section heading; no independent claim |
+| 246 | Omitted | Blank separator; no independent claim |
+| 247 | s-vvtd7f | Design claim retained in the named entry or entries |
+| 248 | s-pekv90, s-47p36g | Design claim retained in the named entry or entries |
+| 249 | Omitted | Blank separator; no independent claim |
+| 250 | Omitted | Section heading; no independent claim |
+| 251 | Omitted | Blank separator; no independent claim |
+| 252 | s-dv5e12 | Design claim retained; no step explicitly assigned |
+| 253 | s-40yykh | Design claim retained in the named entry or entries |
+| 254 | s-42kzcz | Design claim retained in the named entry or entries |
+| 255 | s-5cs27z | Design claim retained in the named entry or entries |
+| 256 | s-1k9wbc, s-18jj1r, s-p02emc, s-9sjp9z | Design claim retained in the named entry or entries |
+| 257 | Omitted | Blank separator; no independent claim |
+| 258 | Omitted | Section heading; no independent claim |
+| 259 | Omitted | Blank separator; no independent claim |
+| 260 | s-c0bd0b, s-sezq1z | Design claim retained in the named entry or entries |
+| 261 | s-x7sw4r, s-pjnxhg | Design claim retained in the named entry or entries |
+| 262 | s-t7wqxn | Design claim retained; no step explicitly assigned |
+| 263 | s-bk3f8p | Design claim retained; no step explicitly assigned |
+| 264 | Omitted | Blank separator; no independent claim |
+| 265 | Omitted | Section heading; no independent claim |
+| 266 | Omitted | Blank separator; no independent claim |
+| 267 | s-wrksm5, s-ksg593 | Design claim retained in the named entry or entries |
+| 268 | s-w46592 | Design claim retained in the named entry or entries |
+| 269 | s-ksg593 | Design claim retained in the named entry or entries |
+| 270 | Omitted | Blank separator; no independent claim |
+| 271 | s-8ysrep | Design claim retained in the named entry or entries |
+| 272 | s-bnnw4m | Design claim retained in the named entry or entries |
+| 273 | s-5wysdb | Design claim retained in the named entry or entries |
+| 274 | s-7pfk9d | Design claim retained in the named entry or entries |
+| 275 | s-y019g9 | Design claim retained in the named entry or entries |
+| 276 | s-fns8m3 | Design claim retained; no step explicitly assigned |
+| 277 | Omitted | Blank separator; no independent claim |
+| 278 | s-3xkj85 | Design claim retained; no step explicitly assigned |
+| 279 | Omitted | Blank separator; no independent claim |
+| 280 | Omitted | Section heading; no independent claim |
+| 281 | Omitted | Blank separator; no independent claim |
+| 282 | s-j8tp0n | Design claim retained in the named entry or entries |
+| 283 | s-f6eaj1, s-20dnpp | Design claim retained in the named entry or entries |
+| 284 | s-f6eaj1, s-b6jxhr | Design claim retained in the named entry or entries |
+| 285 | s-b4dtqk | Design claim retained in the named entry or entries |
+| 286 | Omitted | Blank separator; no independent claim |
+| 287 | Omitted | Section heading; no independent claim |
+| 288 | Omitted | Blank separator; no independent claim |
+| 289 | s-txrm4h, s-5sgcxx, s-chdc8y, s-cssfnb, s-yv40f3, s-2wqxmw, s-yaz279 | Design claim retained in the named entry or entries |
+| 290 | s-3cagcv | Design claim retained in the named entry or entries |
+| 291 | Omitted | Blank separator; no independent claim |
+| 292 | Omitted | Section heading; no independent claim |
+| 293 | Omitted | Blank separator; no independent claim |
+| 294 | s-pks1qn | Build-order rationale and [my call] ordering |
+| 295 | Omitted | Blank separator; no independent claim |
+| 296 | s-pks1qn | Design claim retained in the named entry or entries |
+| 297 | s-pks1qn | Design claim retained in the named entry or entries |
+| 298 | s-pks1qn | Design claim retained in the named entry or entries |
+| 299 | s-pks1qn | Design claim retained in the named entry or entries |
+| 300 | s-pks1qn | Design claim retained in the named entry or entries |
+| 301 | s-pks1qn | Design claim retained in the named entry or entries |
+| 302 | s-pks1qn | Design claim retained in the named entry or entries |
+| 303 | Omitted | Blank separator; no independent claim |
+| 304 | s-c0bd0b | Design claim retained in the named entry or entries |
+| 305 | Omitted | Blank separator; no independent claim |
+| 306 | Omitted | Section heading; no independent claim |
+| 307 | Omitted | Blank separator; no independent claim |
+| 308 | s-s5fa8n | Design claim retained; no step explicitly assigned |
+| 309 | Omitted | Blank separator; no independent claim |
+| 310 | Omitted | Blank separator; no independent claim |
+| 311 | Omitted | Section heading; no independent claim |
+| 312 | Omitted | Blank separator; no independent claim |
+| 313 | s-fe4kyr | Design claim retained; no step explicitly assigned |
+| 314 | s-fe4kyr | Design claim retained; no step explicitly assigned |
+| 315 | s-fe4kyr | Design claim retained; no step explicitly assigned |
+| 316 | s-fe4kyr | Design claim retained; no step explicitly assigned |
+| 317 | s-fe4kyr | Design claim retained; no step explicitly assigned |

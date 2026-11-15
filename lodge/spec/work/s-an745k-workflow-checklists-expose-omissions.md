@@ -2,7 +2,7 @@
 id: s-an745k
 kind: spec
 title: "Workflow checklists expose omissions"
-rests_on: [s-tprwhs, s-d1dd20]
+rests_on: [s-tprwhs, s-d1dd20, s-pks1qn]
 ---
 
 From build step 5, each workflow step has a checklist of items its session is expected to report, such as brief, build, and report.

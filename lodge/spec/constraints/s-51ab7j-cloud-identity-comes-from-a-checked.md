@@ -2,6 +2,7 @@
 id: s-51ab7j
 kind: spec
 title: "Cloud identity comes from a checked session ID"
+rests_on: [s-pks1qn]
 ---
 
 From build step 4, every cloud session in an environment presents the same project token, because a network secret belongs to the environment.

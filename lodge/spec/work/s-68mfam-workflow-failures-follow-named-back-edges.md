@@ -2,7 +2,7 @@
 id: s-68mfam
 kind: spec
 title: "Workflow failures follow named back-edges"
-rests_on: [s-tprwhs]
+rests_on: [s-tprwhs, s-pks1qn]
 ---
 
 From build step 5, a workflow is a list of steps with named back-edges rather than a free graph.

@@ -2,6 +2,7 @@
 id: s-07ar34
 kind: spec
 title: "lodge 0.2 is serverless and the server exists"
+rests_on: [s-pks1qn]
 ---
 
 lodge 0.2 has no server and no MCP server, as settled by d-14vk9b.

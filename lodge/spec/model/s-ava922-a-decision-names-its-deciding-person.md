@@ -2,6 +2,7 @@
 id: s-ava922
 kind: spec
 title: "A decision names its deciding person or agent role"
+rests_on: [s-pks1qn]
 ---
 
 On the server, `decided_by` names a person or an agent role.

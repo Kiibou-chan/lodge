@@ -2,7 +2,7 @@
 id: s-0tn1e8
 kind: spec
 title: "The default plan workflow runs from mock to authorised merge"
-rests_on: [s-tprwhs, s-h4x7bx]
+rests_on: [s-tprwhs, s-h4x7bx, s-pks1qn]
 ---
 
 From build step 5, the default `plan` workflow follows lodge's build process with mocking before planning.

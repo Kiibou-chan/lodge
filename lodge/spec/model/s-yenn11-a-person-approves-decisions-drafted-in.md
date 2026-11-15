@@ -2,7 +2,7 @@
 id: s-yenn11
 kind: spec
 title: "A person approves decisions drafted in their name"
-rests_on: [s-ava922]
+rests_on: [s-ava922, s-pks1qn]
 ---
 
 A person's decision is written only through that person.
