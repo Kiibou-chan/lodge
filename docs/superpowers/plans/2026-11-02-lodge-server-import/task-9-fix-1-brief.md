@@ -1,0 +1,13 @@
+# Fix round 1 brief: Task 9 of `docs/superpowers/plans/2026-11-02-lodge-server-import.md`
+
+Worktree `/var/tmp/lodge-import-hook`, branch `server-import-hook`; read `CLAUDE.md` and `task-9-brief.md` in this folder for the rules (test-first, gate `sh scripts/check-ts.sh` exit 0, commit with explicit paths and trailer `Co-Authored-By: Codex <noreply@openai.com>`, push the branch, report to `task-9-fix-1-report.md`, final message DONE or DONE_WITH_CONCERNS with one test line).
+The Sonnet review of the Task 9 commit `d122542` found 2 Important and 5 Minor; fix each, each test seen to fail first or its mutation noted in the report.
+Important:
+- I-1: `lodge hook -h` and `lodge hook x -h` differ from lodge 0.2. Python (`src/lodge/cli/parser.py:147`, `add_argument("event", choices=(HOOK_EVENT,))`) prints `usage: lodge hook [-h] {post-tool-use}` and `  -h, --help       show this help message and exit`, and `lodge hook x -h` exits 2 with "invalid choice: 'x'" where TS prints help with 0. In `ts/src/cli/grammar-data.ts` give the hook declaration `choices: ["post-tool-use"]`, `{post-tool-use}` in usage and help, the 0.2 column width; fix `ts/tests/cli/grammar.test.ts:144` (it pins the wrong text) and add a `hook x -h` case, as the `id` declaration's `{d,s}` has. Verify against the real command: `uv run --frozen --quiet lodge hook -h` and `lodge hook x -h` (stdout, stderr, exit code) and match them byte for byte.
+- I-2: the strict UTF-8 read in `hook-context.ts:30` is untested; replacing `readExact` with `readFileSync(path, "utf8")` passes every test. Add a case to `malformed_hook_context_is_null` with a file `# \xff\n[hook]\nfrozen=[]\n` (bytes) that expects null; it must fail with the lenient read.
+Minor:
+- M-a: put the `hook` line in `TOP_HELP` and its declaration where lodge 0.2 does (after `guide` and `view`, before the threads); check `lodge -h` and the "choose from" error list against `uv run --frozen --quiet lodge -h` and `lodge nosuch`.
+- M-b: add a `main.ts`-level test (in `entrypoint.test.ts`) with a symlinked repository or `lodge/` folder so that replacing `resolvePath` with an identity function, or passing `null` for cwd, fails.
+- M-c: apply the `hookCwd() ?? ""` guard only to the hook, so a non-hook command in a deleted working folder behaves as before.
+- M-d: leave as it is (the hook accepting what lodge 0.2's other settings reject is judged harmless); list it in the report.
+- M-e: reuse `settings.ts`'s `table()` in `hook-context.ts` instead of the duplicate (export it through `settings.ts`, not through `#cli`'s front door); add `expect(text(r.out)).not.toContain("git checkout")` to `hook_gives_the_moved_advice_for_a_project_on_the_server`.
