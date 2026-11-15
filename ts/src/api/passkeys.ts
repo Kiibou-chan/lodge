@@ -35,25 +35,30 @@ export interface CeremonyAnswer {
   readonly cookie?: string;
 }
 export function passkeys(options: ApiOptions) {
-  const challenges = new Map<string, { kind: string; expires: number }>();
+  const registrationChallenges = new Map<string, number>();
+  const signInChallenges = new Map<string, number>();
+  const challengesFor = (kind: string) =>
+    kind === "register" ? registrationChallenges : signInChallenges;
   function spend(kind: string) {
     return (challenge: string) => {
-      const issued = challenges.get(challenge);
+      const challenges = challengesFor(kind);
+      const expires = challenges.get(challenge);
       challenges.delete(challenge);
-      return issued?.kind === kind && issued.expires > options.clock.now().epochMs;
+      return expires !== undefined && expires > options.clock.now().epochMs;
     };
   }
   function remember(challenge: string, kind: string) {
+    const challenges = challengesFor(kind);
     const now = options.clock.now().epochMs;
-    for (const [key, issued] of challenges) {
-      if (issued.expires > now) break;
+    for (const [key, expires] of challenges) {
+      if (expires > now) break;
       challenges.delete(key);
     }
     if (challenges.size >= MAX_CHALLENGES) {
       const oldest = challenges.keys().next().value;
       if (oldest !== undefined) challenges.delete(oldest);
     }
-    challenges.set(challenge, { kind, expires: now + 300000 });
+    challenges.set(challenge, now + 300000);
   }
   async function registrationAccess(args: Args, request: Request): Promise<string | null> {
     const code = args.nullable("setupCode");

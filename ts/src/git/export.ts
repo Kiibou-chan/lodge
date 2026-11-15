@@ -1,44 +1,25 @@
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { LodgeError } from "#app";
+import {
+  type ExportOutcome,
+  type ExportTarget,
+  exportTargetProblem,
+  LodgeError,
+  lodgePathProblem,
+} from "#app";
 import { decodeUtf8, encodeUtf8, splitLines, strip } from "#core";
 import { attempt, resolveRev, run } from "./run.ts";
 
-interface Target {
-  readonly repository: string;
-  readonly branch: string;
-  readonly remote: string | null;
-}
-type Outcome =
-  | { readonly kind: "committed"; readonly commit: string }
-  | { readonly kind: "unchanged" }
-  | { readonly kind: "moved" };
-
-function validate(target: Target, files: ReadonlyMap<string, string>): void {
+function validate(target: ExportTarget, files: ReadonlyMap<string, string>): void {
   for (const path of files.keys()) {
-    const parts = path.split("/");
-    if (
-      parts[0] !== "lodge" ||
-      parts.length < 2 ||
-      path.includes("\\") ||
-      path.includes("\0") ||
-      parts.some((part) => ["", ".", "..", ".git"].includes(part))
-    )
-      throw new LodgeError(`${path} is outside lodge/, which is all the store writes`);
+    const problem = lodgePathProblem(path);
+    if (problem !== null) throw new LodgeError(problem);
   }
-  if (
-    !/^[A-Za-z0-9]/.test(target.branch) ||
-    /[^A-Za-z0-9._/-]/.test(target.branch) ||
-    target.branch.includes("..")
-  )
-    throw new LodgeError(
-      "export-target: branch must be a name of letters, digits, and . _ / -, not starting with a symbol",
-    );
-  if (target.remote?.startsWith("-"))
-    throw new LodgeError("export-target: remote must not start with -");
+  const problem = exportTargetProblem(target);
+  if (problem !== null) throw new LodgeError(problem);
 }
-function remoteTip(target: Target): string | null {
+function remoteTip(target: ExportTarget): string | null {
   const ref = `refs/heads/${target.branch}`;
   const out = run(["ls-remote", target.remote as string, ref], target.repository);
   for (const line of splitLines(out)) {
@@ -78,10 +59,10 @@ function failure(stderr: Uint8Array, stdout: Uint8Array, command: string): Lodge
   return new LodgeError(lines.map(strip).find(Boolean) || `git ${command} failed`);
 }
 export async function exportStore(
-  target: Target,
+  target: ExportTarget,
   files: ReadonlyMap<string, string>,
   message: string,
-): Promise<Outcome> {
+): Promise<ExportOutcome> {
   validate(target, files);
   const { repository, branch, remote } = target;
   const ref = `refs/heads/${branch}`;

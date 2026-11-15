@@ -64,6 +64,7 @@ const extras = new Set([
   "EXPORT_INTERVAL_SECONDS",
   "KEPT",
   "exportTargetProblem",
+  "lodgePathProblem",
   "exportFiles",
   "exportMessage",
   "exportFailedLine",

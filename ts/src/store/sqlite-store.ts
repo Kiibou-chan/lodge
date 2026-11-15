@@ -6,6 +6,7 @@ import {
   type Held,
   type HeldDraft,
   LodgeError,
+  lodgePathProblem,
   NotFound,
   PublishOutcome,
   type Store,
@@ -93,15 +94,8 @@ export class SqliteStore implements Store {
     if (base.rev === null || String(Number(base.rev)) !== base.rev) return PublishOutcome.REJECTED;
     const events: { kind: string; path: string; body: Uint8Array; message: string }[] = [];
     for (const path of writes.keys()) {
-      const parts = path.split("/");
-      if (
-        parts[0] !== "lodge" ||
-        parts.length < 2 ||
-        path.includes("\\") ||
-        path.includes("\0") ||
-        parts.some((part) => ["", ".", "..", ".git"].includes(part))
-      )
-        throw new LodgeError(`${path} is outside lodge/, which is all the store writes`);
+      const problem = lodgePathProblem(path);
+      if (problem !== null) throw new LodgeError(problem);
       if (base.attachments.has(path))
         throw new LodgeError(`${path} is an attachment, and lodge never overwrites an attachment`);
     }

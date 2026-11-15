@@ -36,7 +36,7 @@ test.each(["add", "sign-in-options"])(
         throw new Error("body must not be read");
       });
       const response = await w.fetch(request);
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(413);
       expect(await response.json()).toEqual({
         error: { kind: "usage", message: "the body exceeds 8 MiB" },
       });

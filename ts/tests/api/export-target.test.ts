@@ -127,3 +127,25 @@ test.each([
   expect(await w.targets.target("moved")).toBeNull();
   await w.database.close();
 });
+
+test.each(["\0", "\n", "\x7f"])("control_character_target_is_not_stored %j", async (control) => {
+  const w = await ready();
+  w.exporters.written = async () => {};
+  try {
+    const r = await w.asPerson("export-target", {
+      ...w.body,
+      target: { ...w.target, repository: `/synthetic/${control}repository` },
+    });
+    expect(r.status).toBe(400);
+    expect(await r.json()).toEqual({
+      error: {
+        kind: "usage",
+        message:
+          "export-target: repository, branch, and remote must not contain control characters",
+      },
+    });
+    expect(await w.targets.target("moved")).toBeNull();
+  } finally {
+    await w.database.close();
+  }
+});

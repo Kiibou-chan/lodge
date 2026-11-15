@@ -1,10 +1,5 @@
-import {
-  type ExportOutcome,
-  type ExportTarget,
-  type ExportTargets,
-  exportFiles,
-  exportMessage,
-} from "./exporting.ts";
+import type { ExportOutcome, ExportTarget } from "./export-rules.ts";
+import { type ExportTargets, exportFiles, exportMessage } from "./exporting.ts";
 import type { Clock, Store } from "./ports.ts";
 
 export interface ExportPorts {

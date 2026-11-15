@@ -119,7 +119,7 @@ test.each([[], ["repo"], ["repo", "HEAD", "HEAD", "extra"]])(
   "script_rejects_wrong_argument_count %j",
   (...args) => {
     const result = script(...args);
-    expect(result.exitCode).toBe(1);
+    expect(result.exitCode).toBe(2);
     expect(new TextDecoder().decode(result.stderr)).toBe(
       "Usage: round-trip.ts REPOSITORY REV [SETTINGS_REV]\n",
     );
