@@ -96,7 +96,7 @@ process.exitCode =
         },
       })
     : await run(argv, {
-        cwd: hookCwd() ?? "",
+        cwd: argv[0] === "hook" ? (hookCwd() ?? "") : process.cwd(),
         env: process.env,
         fetch,
         out,

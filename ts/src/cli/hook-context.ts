@@ -2,11 +2,8 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { parseHookSettings } from "#app";
 import { readExact } from "./files.ts";
-import { tomlTable } from "./settings.ts";
+import { table, tomlTable } from "./settings.ts";
 
-function table(value: unknown): value is Readonly<Record<string, unknown>> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
 export async function hookContextFor(
   edited: string,
   git: {

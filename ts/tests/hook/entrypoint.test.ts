@@ -1,4 +1,5 @@
 import { expect, test } from "bun:test";
+import { mkdirSync, renameSync, symlinkSync } from "node:fs";
 import { join } from "node:path";
 import { hookProject } from "./repository.ts";
 
@@ -48,4 +49,48 @@ test("main_keeps_the_hook_silent_when_the_process_folder_cannot_be_read", () => 
   expect(result.exitCode).toBe(0);
   expect(result.stdout.toString()).toBe("");
   expect(result.stderr.toString()).toBe("");
+});
+
+test("main_resolves_a_symlinked_store_from_the_session_folder", () => {
+  const p = hookProject();
+  p.initialise();
+  renameSync(join(p.root, "lodge"), join(p.root, "records"));
+  symlinkSync("records", join(p.root, "lodge"));
+  const session = join(p.root, "session");
+  mkdirSync(session);
+  const result = Bun.spawnSync([process.execPath, main, "hook", "post-tool-use"], {
+    cwd: session,
+    env: { ...process.env },
+    stdin: Buffer.from(
+      JSON.stringify({
+        tool_name: "Edit",
+        tool_input: { file_path: "../records/decisions/new/d-abc123-slug.md" },
+      }),
+    ),
+    stdout: "pipe",
+    stderr: "pipe",
+  });
+  expect([result.exitCode, result.stderr.toString()]).toEqual([0, ""]);
+  const response = JSON.parse(result.stdout.toString());
+  expect(response.hookSpecificOutput.additionalContext).toContain(
+    "records/decisions/new/d-abc123-slug.md",
+  );
+  expect(response.hookSpecificOutput.additionalContext).toContain("lodge draft");
+});
+test("main_preserves_cwd_errors_for_non_hook_commands", () => {
+  const p = hookProject();
+  const script = `
+    process.cwd = () => { throw new Error("working folder unavailable"); };
+    process.argv = [process.execPath, ${JSON.stringify(main)}, "--help"];
+    await import(${JSON.stringify(main)});
+  `;
+  const result = Bun.spawnSync([process.execPath, "--eval", script], {
+    cwd: p.root,
+    env: { ...process.env },
+    stdout: "pipe",
+    stderr: "pipe",
+  });
+  expect(result.exitCode).not.toBe(0);
+  expect(result.stdout.toString()).toBe("");
+  expect(result.stderr.toString()).toContain("working folder unavailable");
 });

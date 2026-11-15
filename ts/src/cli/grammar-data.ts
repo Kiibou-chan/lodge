@@ -2,23 +2,23 @@ import type { Declaration } from "./args.ts";
 import { RECORDS } from "./grammar-records.ts";
 import { THREADS } from "./grammar-threads.ts";
 export const TOP_HELP =
-  "usage: lodge [-h] [--version] COMMAND ...\n\nDecisions and specification entries for agent-built software.\n\noptions:\n  -h, --help  show this help message and exit\n  --version   show program's version number and exit\n\ncommands:\n  COMMAND\n    init      create the empty store in this repository\n    id        print a new ID for a decision (d) or a specification entry (s)\n    search    find records by words, ID, or code; one level-1 block each\n    show      show one record; reasoning and provenance only when asked for\n    draft     print the file of an entry to edit and add; area:<name> for an\n              area; a decision is immutable, so change it with a new decision\n              that replaces or narrows it\n    add       add draft files: new records, edits, areas\n    check     run the checks; --gate compares with the published state\n    spec      print the readable specification: areas by rank, entries after\n              what they rest on\n    waiting   list what waits: for an agent, then for the author\n    guide     print the guide for agents\n    threads   list the open threads: doubts and questions on records\n    thread    show one thread with its messages\n    ask       open a thread on a record: a doubt or a question\n    reply     add a message to an open thread\n    close     close a thread, with a closing message\n    hook      answer a Claude Code hook event: post-tool-use\n\nAgents: start with `lodge guide`.\n";
+  "usage: lodge [-h] [--version] COMMAND ...\n\nDecisions and specification entries for agent-built software.\n\noptions:\n  -h, --help  show this help message and exit\n  --version   show program's version number and exit\n\ncommands:\n  COMMAND\n    init      create the empty store in this repository\n    id        print a new ID for a decision (d) or a specification entry (s)\n    search    find records by words, ID, or code; one level-1 block each\n    show      show one record; reasoning and provenance only when asked for\n    draft     print the file of an entry to edit and add; area:<name> for an\n              area; a decision is immutable, so change it with a new decision\n              that replaces or narrows it\n    add       add draft files: new records, edits, areas\n    check     run the checks; --gate compares with the published state\n    spec      print the readable specification: areas by rank, entries after\n              what they rest on\n    waiting   list what waits: for an agent, then for the author\n    guide     print the guide for agents\n    hook      answer a Claude Code hook event: post-tool-use\n    threads   list the open threads: doubts and questions on records\n    thread    show one thread with its messages\n    ask       open a thread on a record: a doubt or a question\n    reply     add a message to an open thread\n    close     close a thread, with a closing message\n\nAgents: start with `lodge guide`.\n";
 export const DECLARATIONS: Readonly<Record<string, Declaration>> = {
   ...RECORDS,
-  ...THREADS,
   hook: {
-    usage: "usage: lodge hook [-h] EVENT\n",
-    help: "usage: lodge hook [-h] EVENT\n\nanswer a Claude Code hook event: post-tool-use\n\npositional arguments:\n  EVENT\n\noptions:\n  -h, --help  show this help message and exit\n",
+    usage: "usage: lodge hook [-h] {post-tool-use}\n",
+    help: "usage: lodge hook [-h] {post-tool-use}\n\nanswer a Claude Code hook event: post-tool-use\n\npositional arguments:\n  {post-tool-use}\n\noptions:\n  -h, --help       show this help message and exit\n",
     actions: [
       {
         name: "event",
         options: [],
-        metavar: "EVENT",
+        metavar: "event",
         nargs: null,
         required: true,
-        choices: null,
+        choices: ["post-tool-use"],
         default: null,
       },
     ],
   },
+  ...THREADS,
 };

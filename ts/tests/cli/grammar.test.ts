@@ -144,9 +144,33 @@ test.each([
 test("hook_help_and_summary_match_argparse", () => {
   expect(parse(["hook", "-h"], "test")).toMatchObject({
     code: 0,
-    out: "usage: lodge hook [-h] EVENT\n\nanswer a Claude Code hook event: post-tool-use\n\npositional arguments:\n  EVENT\n\noptions:\n  -h, --help  show this help message and exit\n",
+    out: "usage: lodge hook [-h] {post-tool-use}\n\nanswer a Claude Code hook event: post-tool-use\n\npositional arguments:\n  {post-tool-use}\n\noptions:\n  -h, --help       show this help message and exit\n",
   });
   expect(parse(["--help"], "test")).toMatchObject({
     out: expect.stringContaining("hook      answer a Claude Code hook event: post-tool-use"),
   });
+});
+
+test("hook_invalid_event_before_help_is_an_error", () => {
+  expect(parse(["hook", "x", "-h"], "test")).toEqual({
+    kind: "exit",
+    code: 2,
+    out: "",
+    err: "usage: lodge hook [-h] {post-tool-use}\nlodge hook: error: argument event: invalid choice: 'x' (choose from post-tool-use)\n",
+  });
+});
+test("hook_precedes_threads_in_help_and_command_choices", () => {
+  const names =
+    "init, id, search, show, draft, add, check, spec, waiting, guide, hook, threads, thread, ask, reply, close";
+  expect(parse(["nosuch"], "test")).toMatchObject({
+    code: 2,
+    err: `usage: lodge [-h] [--version] COMMAND ...\nlodge: error: argument COMMAND: invalid choice: 'nosuch' (choose from ${names})\n`,
+  });
+  const result = parse(["-h"], "test");
+  if (result.kind !== "exit") throw Error("expected help");
+  const listed = result.out
+    .split("\n")
+    .filter((line) => /^ {4}[a-z]/u.test(line))
+    .map((line) => line.trim().split(/\s+/u)[0]);
+  expect(listed.join(", ")).toBe(names);
 });

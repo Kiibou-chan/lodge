@@ -97,6 +97,9 @@ test.each(["", BRANCH])(
     const r = await fire(p, join(p.root, "lodge/decisions/d-abc123-slug.md"));
     expect([r.code, r.err]).toEqual([0, ""]);
     expect(text(r.out)).toContain("https://lodge.test");
+    expect(text(r.out).replace(/Do not run `git checkout`[^.]*\. /u, "")).not.toContain(
+      "git checkout",
+    );
     expect(text(r.out)).toContain("lodge draft");
   },
 );

@@ -74,6 +74,7 @@ test.each([
   "[hook]\nfrozne=[]",
   "[hook]\nfrozen=3",
   new Uint8Array([255]),
+  Buffer.concat([Buffer.from("# "), Buffer.from([255]), Buffer.from("\n[hook]\nfrozen=[]\n")]),
 ])("malformed_hook_context_is_null %p", async (settings) => {
   const f = fixture(settings);
   expect(await hookContextFor("file.md", f.git)).toBeNull();

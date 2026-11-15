@@ -26,7 +26,7 @@ export function repositoryRoot(cwd: string): string {
     current = parent;
   }
 }
-function table(value: unknown): value is Record<string, unknown> {
+export function table(value: unknown): value is Record<string, unknown> {
   return (
     value !== null && typeof value === "object" && !Array.isArray(value) && !(value instanceof Date)
   );
