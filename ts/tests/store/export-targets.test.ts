@@ -40,7 +40,7 @@ test("target_set_is_read_back", async () => {
   expect(await targets.target("work")).toEqual(first);
   expect(await targets.target("other")).toEqual(second);
 });
-test("escaped_path_is_read_back", async () => {
+test("escaped_path_round_trips_through_the_encoder", async () => {
   const { targets } = await world();
   const target = { ...first, repository: "/made-up/\udcff" };
   await targets.setTarget("work", target, person("ana"));

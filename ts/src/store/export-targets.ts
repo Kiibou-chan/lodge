@@ -7,8 +7,8 @@ import {
   NotFound,
   stampOf,
 } from "#app";
-import { decodeUtf8, encodeUtf8 } from "#core";
-import { appendEvents } from "./events.ts";
+import { decodeUtf8 } from "#core";
+import { appendEvents, json } from "./events.ts";
 import { touchHead } from "./read-tree.ts";
 import type { LodgeDatabase } from "./schema.ts";
 
@@ -37,7 +37,7 @@ export class SqliteExportTargets implements ExportTargets {
         {
           kind: "export-target",
           path: null,
-          body: encodeUtf8(JSON.stringify({ target })),
+          body: json({ target }),
           message: null,
         },
       ]);
