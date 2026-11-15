@@ -5,6 +5,7 @@ import {
   Conflict,
   LodgeError,
   NotFound,
+  PROJECT_NAME,
   type Projects,
   type Role,
   stampOf,
@@ -15,7 +16,6 @@ import { headOf, readTree, touchHead } from "./read-tree.ts";
 import type { LodgeDatabase } from "./schema.ts";
 import { SqliteStore } from "./sqlite-store.ts";
 
-const PROJECT_NAME = { pattern: /^[a-z0-9][a-z0-9-]{0,62}$/u, what: "a project name" };
 const PERSON_NAME = { pattern: /^[a-z][a-z0-9-]{0,31}$/u, what: "a person's name" };
 function checkName(name: string, rule: { pattern: RegExp; what: string }): void {
   if (!rule.pattern.test(name))

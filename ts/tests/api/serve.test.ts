@@ -18,7 +18,12 @@ test.each(["SIGINT", "SIGTERM"] as const)(
       settled = true;
     });
     try {
-      expect(serve).toHaveBeenCalledWith({ fetch, hostname: "127.0.0.1", port: 8787 });
+      expect(serve).toHaveBeenCalledWith({
+        fetch,
+        hostname: "127.0.0.1",
+        port: 8787,
+        maxRequestBodySize: 8 * 1024 * 1024,
+      });
       expect(process.listenerCount("SIGINT")).toBe(before[0] + 1);
       expect(process.listenerCount("SIGTERM")).toBe(before[1] + 1);
       process.emit(first);
@@ -36,6 +41,7 @@ test.each(["SIGINT", "SIGTERM"] as const)(
       expect(process.listenerCount("SIGINT")).toBe(before[0]);
       expect(process.listenerCount("SIGTERM")).toBe(before[1]);
     } finally {
+      if (process.listenerCount(first) > before[first === "SIGINT" ? 0 : 1]) process.emit(first);
       stopped.resolve();
       await done;
       serve.mockRestore();

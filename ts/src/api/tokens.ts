@@ -1,4 +1,5 @@
-import { type AgentToken, stampOf } from "#app";
+import { type AgentToken, PROJECT_NAME, stampOf } from "#app";
+import { ApiError } from "./errors.ts";
 import type { ApiOptions } from "./options.ts";
 
 const ALPHABET = "0123456789abcdefghjkmnpqrstvwxyz";
@@ -15,6 +16,15 @@ export async function issueToken(
   label: string,
   role: string | null,
 ): Promise<{ readonly token: AgentToken; readonly secret: string }> {
+  if (!PROJECT_NAME.pattern.test(project))
+    throw new ApiError("usage", "project must be a project name");
+  if (role !== null && !PROJECT_NAME.pattern.test(role))
+    throw new ApiError("usage", "role must be a project name");
+  if (label.length < 1 || label.length > 80 || /[\p{Cc}\p{Zl}\p{Zp}]/u.test(label))
+    throw new ApiError(
+      "usage",
+      "label must be 1 to 80 characters without control characters or line breaks",
+    );
   const secret = `lodge_${Buffer.from(options.random(32)).toString("base64url")}`;
   const token: AgentToken = {
     id: tokenId(options.random(6)),

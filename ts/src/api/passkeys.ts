@@ -12,6 +12,8 @@ import { ApiError } from "./errors.ts";
 import type { ApiOptions } from "./options.ts";
 import { endSession, sessionActor, sessionSecret, startSession } from "./session.ts";
 import { hashSecret } from "./tokens.ts";
+
+const MAX_CHALLENGES = 1000;
 export const publicOperations = [
   "register-options",
   "register",
@@ -43,7 +45,14 @@ export function passkeys(options: ApiOptions) {
   }
   function remember(challenge: string, kind: string) {
     const now = options.clock.now().epochMs;
-    for (const [key, issued] of challenges) if (issued.expires <= now) challenges.delete(key);
+    for (const [key, issued] of challenges) {
+      if (issued.expires > now) break;
+      challenges.delete(key);
+    }
+    if (challenges.size >= MAX_CHALLENGES) {
+      const oldest = challenges.keys().next().value;
+      if (oldest !== undefined) challenges.delete(oldest);
+    }
     challenges.set(challenge, { kind, expires: now + 300000 });
   }
   async function registrationAccess(args: Args, request: Request): Promise<string | null> {

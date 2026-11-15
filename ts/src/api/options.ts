@@ -17,3 +17,5 @@ export function lodgesOver(
   return (project, settings, actor) =>
     new Lodge(projects.storeFor(project, actor), clock, ids, settings, actor);
 }
+
+export const MAX_REQUEST_BODY_SIZE = 8 * 1024 * 1024;

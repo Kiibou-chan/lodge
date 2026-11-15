@@ -38,7 +38,10 @@ test.each([
   const response = await w.fetch(
     new Request(`https://lodge.test${path}`, {
       method,
-      headers: contentType ? { "Content-Type": contentType } : {},
+      headers: {
+        Authorization: `Bearer ${w.issued.secret}`,
+        ...(contentType ? { "Content-Type": contentType } : {}),
+      },
       body,
     }),
   );

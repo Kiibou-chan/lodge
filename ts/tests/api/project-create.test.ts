@@ -1,5 +1,6 @@
 import { expect, test } from "bun:test";
 import { issueToken } from "#api";
+import { signed } from "./signed.ts";
 import { world } from "./world.ts";
 
 async function creating(setUp = true, project = "new") {
@@ -45,8 +46,8 @@ test("project_create_twice_is_already_initialised", async () => {
   await w.database.close();
 });
 test("project_name_is_checked", async () => {
-  const w = await creating(true, "Bad");
-  const r = await w.create();
+  const w = await signed();
+  const r = await w.call("project-create", { project: "Bad", settings: {} });
   expect(r.status).toBe(400);
   expect(await r.json()).toMatchObject({
     error: { message: expect.stringContaining("Bad is not a project name") },

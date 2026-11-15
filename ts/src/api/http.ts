@@ -3,10 +3,11 @@ import { isObject } from "./args.ts";
 import { authenticate } from "./auth.ts";
 import { ApiError, mappedError, statuses } from "./errors.ts";
 import { operate, operationArgs } from "./operations.ts";
-import type { ApiOptions } from "./options.ts";
+import { type ApiOptions, MAX_REQUEST_BODY_SIZE } from "./options.ts";
 import { PAGE, SCRIPT } from "./page.ts";
 import { passkeys, publicOperations } from "./passkeys.ts";
 import { isPersonOperation, personOperation } from "./person.ts";
+import { sessionSecret } from "./session.ts";
 import { toWire } from "./wire.ts";
 
 const policies = {
@@ -45,6 +46,15 @@ export function handler(options: ApiOptions): (request: Request) => Promise<Resp
         "application/json"
       )
         throw new ApiError("usage", "send JSON");
+      const operation = path.slice("/api/v1/".length);
+      if (
+        !publicOperations.includes(operation) &&
+        !request.headers.has("Authorization") &&
+        sessionSecret(request) === null
+      )
+        throw new ApiError("unauthorised", "sign in, or send an agent token");
+      if (Number(request.headers.get("Content-Length")) > MAX_REQUEST_BODY_SIZE)
+        throw new ApiError("usage", "the body exceeds 8 MiB");
       let body: unknown;
       try {
         body = await request.json();
@@ -52,7 +62,6 @@ export function handler(options: ApiOptions): (request: Request) => Promise<Resp
         throw new ApiError("usage", "the body is not JSON");
       }
       if (!isObject(body)) throw new ApiError("usage", "the body is not a JSON object");
-      const operation = path.slice("/api/v1/".length);
       if (publicOperations.includes(operation)) {
         const result = await ceremony(operation, body, request);
         const response = answer({ result: toWire(result.result) });

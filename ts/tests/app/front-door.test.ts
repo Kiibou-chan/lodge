@@ -44,6 +44,7 @@ const extras = new Set([
   "actorText",
   "Role",
   "Projects",
+  "PROJECT_NAME",
   "stampOf",
   "minuteOf",
   "Forbidden",
